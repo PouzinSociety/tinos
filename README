@@ -1,0 +1,14 @@
+TINOS:
+=====
+
++- documentation
+   Project documentation, initial configuration files (db/env).
+
++- projects
+   Source Code - java projects.
+
++- repository
+   Downloaded artifacts (quick setup) and areas for integration-repo / ivy-cache.
+
++- build
+   Spring-build backup & template for creation of java projects.
