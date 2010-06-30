@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:osgi="http://www.springframework.org/schema/osgi" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/osgi  
+       http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd
+       http://www.springframework.org/schema/beans   
+       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+	<!-- Update for your own service -->
+	<osgi:service id="ipv4NetworkLayerService" ref="ipv4NetworkLayerBean">
+		<osgi:interfaces>
+			<value>org.jnode.net.ipv4.IPv4Service
+			</value>
+			<value>org.jnode.net.NetworkLayer</value>
+		</osgi:interfaces>
+	</osgi:service>
+
+	<osgi:reference id="arpService" interface="org.jnode.net.arp.ARPService"
+		bean-name="arpNetworkLayerBean" />
+	<osgi:reference id="resolverService" interface="org.jnode.net.Resolver"
+		bean-name="hostFileResolverBean" />
+</beans>           

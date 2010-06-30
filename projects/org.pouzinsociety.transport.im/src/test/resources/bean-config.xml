@@ -1,0 +1,24 @@
+<!-- 	
+	<bean name="testServer" class="org.pouzinsociety.transport.test.TestClientServer" init-method="run">
+	<property name="configuration">
+		<list value-type="java.lang.String">
+			<value>localhost</value>
+			<value>5222</value>
+			<value>tester</value>
+			<value>tester</value>
+			<value>node1</value>
+			<value>subneta@conference.chimera</value>
+		</list>
+	</property>
+	<property name="configurationTwo">
+		<list value-type="java.lang.String">
+			<value>localhost</value>
+			<value>5222</value>
+			<value>tester2</value>
+			<value>tester2</value>
+			<value>node2</value>
+			<value>subneta@conference.chimera</value>
+		</list>
+	</property>
+	</bean>
+-->

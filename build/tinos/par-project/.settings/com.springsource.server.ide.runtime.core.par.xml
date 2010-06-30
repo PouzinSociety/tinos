@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<com.springsource.server.ide.par:Par xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:com.springsource.server.ide.par="http:///com/springsource/server/ide/par.ecore">
+<!--
+ #
+ # FIX-ME : Add the wrapped bundles here, samples provided
+ #          Add a new entry for each bundle.
+-->
+  <bundle symbolicName="<%= organization %>.bundle_a"/>
+<!--
+  <bundle symbolicName="<%= organization %>.bundle_b"/>
+-->
+</com.springsource.server.ide.par:Par>

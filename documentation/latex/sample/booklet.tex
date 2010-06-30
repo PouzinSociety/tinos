@@ -1,0 +1,34 @@
+\documentclass[11pt,twoside,a4paper]{report}
+\input{../template/header.tex}
+
+%% indicates to subsequently included .tex chapters that they are part of a collection of files.
+\newcommand{\collected}{\true}
+
+% Pull in default project settings (Project Name etc.)
+\input{../project-settings}
+
+% Overide default settings and set the document name.
+\renewcommand{\TINOSDocumentTitle}{Sample Document}
+
+\begin{document}
+\maketitle
+\newpage
+\tableofcontents
+\newpage
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Add Chapters as required.
+\input{sample-chapter.tex}
+\input{sample-chapter.tex}
+
+%% Add Appendix
+%\appendix
+
+%% Add Glossary
+%\input{sample-chapter-glossary.tex}
+
+%% Add BibTex
+%\input{sample-chapter-biblio.tex}
+
+\end{document}
+

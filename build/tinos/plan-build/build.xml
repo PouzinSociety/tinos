@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="build-<%= organization %>" xmlns:ivy="antlib:org.apache.ivy.ant">
+	<!-- List all the bundles, you wish to include in the build process here -->
+	<!-- NOTE: Beware the build order -->
+	<path id="bundles">
+<!-- Update to reflect your bundle dependencies -->
+		<pathelement location="../<%= organization %>.bundle_a"/>
+		<pathelement location="../<%= organization %>.bundle_b"/>
+		<pathelement location="../<%= organization %>.plan"/>
+	</path>
+	<property file="${basedir}/../build.properties"/>
+	<property file="${basedir}/../build.versions"/>
+	<import file="${basedir}/../spring-build/cbne/package-top-level.xml" />
+	<import file="${basedir}/../spring-build/multi-bundle/default.xml"/>
+	<target name="precommit" depends="clean, clean-integration, jar, findbugs, clover"/>
+	<target name="publish" depends="publish-package, publish-multi-bundle.publish"/>
+</project>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+   xmlns="http://www.springframework.org/schema/beans"
+   xmlns:osgi="http://www.springframework.org/schema/osgi"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.springframework.org/schema/osgi  
+       http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd
+       http://www.springframework.org/schema/beans   
+       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+     <osgi:reference id="bootstrapService" interface="org.pouzinsociety.bootstrap.api.BootStrapAPI" bean-name="bootstrapDriver" />
+     <osgi:reference id="deviceManagerService" interface="org.jnode.driver.DeviceManager" bean-name="pouzinsocietyDeviceManagerBean" />
+     <osgi:reference id="ipv4ConfigurationService" interface="org.jnode.net.ipv4.config.IPv4ConfigurationService" bean-name="ipv4ConfigurationServiceBean"/>
+     <osgi:reference id="resolverService" interface="org.jnode.net.Resolver" bean-name="hostFileResolverBean" />
+     <osgi:reference id="ipv4Service" interface="org.jnode.net.ipv4.IPv4Service" bean-name="ipv4NetworkLayerBean"/>
+     <osgi:service id="setupStackService" ref="setupInterfacesBean" interface="org.pouzinsociety.config.stack.StackConfiguration" />
+</beans>

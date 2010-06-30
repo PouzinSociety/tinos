@@ -1,0 +1,14 @@
+#
+# Default Entry  - Add the current Spring Framework Version
+#
+org.springframework.spring=2.5.6.A
+org.springframework.osgi=1.1.3.RELEASE
+org.eclipse.osgi=3.5.0.v20081201-1815
+org.apache.commons.logging=1.1.1
+org.objectweb.asm=2.2.3
+org.aspectj=1.6.3.RELEASE
+org.slf4j=1.5.0
+org.antlr=2.7.6
+org.junit=4.4.0
+org.apache.log4j=1.2.15
+org.aopalliance=1.0.0
