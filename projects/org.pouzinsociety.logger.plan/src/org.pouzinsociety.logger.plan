@@ -7,6 +7,6 @@
 	<artifact type="bundle" name="org.pouzinsociety.config.dao" version="[1, 2)"/>
 	<artifact type="bundle" name="org.pouzinsociety.transport.im" version="[1, 2)"/>
 	<artifact type="bundle" name="org.pouzinsociety.transport.im.logger" version="[1, 2)">
-		<property name="output.dir" value="/home/pphelan" />
+		<property name="output.dir" value="/tmp" />
 	</artifact>
 </plan>

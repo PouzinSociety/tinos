@@ -7,6 +7,7 @@
 
 <!-- Properties -->
 	<dirname property="spring.build.dir" file="${ant.file.common-common}/.."/>
+	<property environment="env"/>
 	<property file="${spring.build.dir}/common/common.properties"/>
 
 <!-- Global tasks -->

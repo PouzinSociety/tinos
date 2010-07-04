@@ -21,6 +21,7 @@
 		<pathelement location="../org.pouzinsociety.org.jnode.net.ipv4.resolver" />
 		<pathelement location="../org.pouzinsociety.socket.sample.tcp" />
 		<pathelement location="../org.pouzinsociety.socket.sample.udp" />
+		<pathelement location="../org.pouzinsociety.org.jnode.java.net" />
 		<pathelement location="../org.pouzinsociety.actions.ping" />
 		<pathelement location="../org.pouzinsociety.bootstrap.api" />
 		<pathelement location="../org.pouzinsociety.bootstrap.driver" />

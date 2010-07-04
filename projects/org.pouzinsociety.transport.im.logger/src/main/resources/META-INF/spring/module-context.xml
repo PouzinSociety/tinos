@@ -9,37 +9,21 @@
 			http://www.springframework.org/schema/context/spring-context-2.5.xsd">
 
 <!--  IM Connections for Logger(s) -->
-	<bean id="im-connection-FO" class="org.pouzinsociety.config.dao.IMDao">
+	<bean id="im-connection-1" class="org.pouzinsociety.config.dao.IMDao">
 		<property name="im_server" value="localhost"/>
 		<property name="im_port" value="5222"/>
 		<property name="im_buddyId" value="logger"/>
 		<property name="im_buddyPassword" value="logger"/>
-		<property name="im_resourceId" value="logger-FO"/>
-		<property name="im_chatroom" value="fo@conference.localhost"/>		
+		<property name="im_resourceId" value="logger-NetA"/>
+		<property name="im_chatroom" value="networka@conference.localhost"/>		
 	</bean>
-	<bean id="im-connection-WEB" class="org.pouzinsociety.config.dao.IMDao">
+	<bean id="im-connection-2" class="org.pouzinsociety.config.dao.IMDao">
 		<property name="im_server" value="localhost"/>
 		<property name="im_port" value="5222"/>
 		<property name="im_buddyId" value="logger"/>
 		<property name="im_buddyPassword" value="logger"/>
-		<property name="im_resourceId" value="logger-WEB"/>
-		<property name="im_chatroom" value="web@conference.localhost"/>		
-	</bean>
-	<bean id="im-connection-EMT" class="org.pouzinsociety.config.dao.IMDao">
-		<property name="im_server" value="localhost"/>
-		<property name="im_port" value="5222"/>
-		<property name="im_buddyId" value="logger"/>
-		<property name="im_buddyPassword" value="logger"/>
-		<property name="im_resourceId" value="logger-EMT"/>
-		<property name="im_chatroom" value="emt@conference.localhost"/>		
-	</bean>
-	<bean id="im-connection-NDR" class="org.pouzinsociety.config.dao.IMDao">
-		<property name="im_server" value="localhost"/>
-		<property name="im_port" value="5222"/>
-		<property name="im_buddyId" value="logger"/>
-		<property name="im_buddyPassword" value="logger"/>
-		<property name="im_resourceId" value="logger-NDR"/>
-		<property name="im_chatroom" value="ndr@conference.localhost"/>		
+		<property name="im_resourceId" value="logger-NetB"/>
+		<property name="im_chatroom" value="networkb@conference.localhost"/>		
 	</bean>
 	<bean id="im-connection-Bootstrap" class="org.pouzinsociety.config.dao.IMDao">
 		<property name="im_server" value="localhost"/>
@@ -56,20 +40,12 @@
 	</bean>
 	
 <!--  Loggers -->
-	<bean id="logger-FO" class="org.pouzinsociety.transport.im.logger.LoggerBuddy" destroy-method="close">
-		<constructor-arg ref="im-connection-FO" />
+	<bean id="logger-NetA" class="org.pouzinsociety.transport.im.logger.LoggerBuddy" destroy-method="close">
+		<constructor-arg ref="im-connection-1" />
 		<constructor-arg ref="dumpFileDir"/>
 	</bean>
-	<bean id="logger-WEB" class="org.pouzinsociety.transport.im.logger.LoggerBuddy" destroy-method="close">
-		<constructor-arg ref="im-connection-WEB" />
-		<constructor-arg ref="dumpFileDir"/>
-	</bean>
-	<bean id="logger-EMT" class="org.pouzinsociety.transport.im.logger.LoggerBuddy" destroy-method="close">
-		<constructor-arg ref="im-connection-EMT" />
-		<constructor-arg ref="dumpFileDir"/>
-	</bean>
-	<bean id="logger-NDR" class="org.pouzinsociety.transport.im.logger.LoggerBuddy" destroy-method="close">
-		<constructor-arg ref="im-connection-NDR" />
+	<bean id="logger-NetB" class="org.pouzinsociety.transport.im.logger.LoggerBuddy" destroy-method="close">
+		<constructor-arg ref="im-connection-2" />
 		<constructor-arg ref="dumpFileDir"/>
 	</bean>
 	<bean id="logger-Bootstrap" class="org.pouzinsociety.transport.im.logger.LoggerBuddy" destroy-method="close">

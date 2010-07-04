@@ -38,6 +38,7 @@
   <dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4.tcp" rev="1.0.0" />
   <dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4.udp" rev="1.0.0" />
   <dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4.resolver" rev="1.0.0" />
+  <dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.java.net" rev="1.0.0" />
 <!-- Config Manager -->
   <dependency org="org.pouzinsociety.transport" name="org.pouzinsociety.transport.im.configmanager" rev="1.0.0"/>
 
