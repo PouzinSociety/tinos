@@ -1,6 +1,59 @@
 TINOS:
 =====
 
+What is TINOS:
+--------------
+
+In essence, TINOS consists of a fully functional componentised IPv4 network stack and
+the ancillary supporting infrastructure. The network stack is implemented as a set of
+software components. A component typically is a well-defined unit such as a protocol
+e.g. TCP is a single component. These components are then deployed as an OSGi based
+application within an application server (Virgo Web Server).
+
+TINOS network components (ARP, IP, TCP, UDP,...) have been ported from the JNode
+operating system. These OSGi components are then grouped into an application instance
+for deployment within the Virgo Web Server. These application instances are entirely
+isolated and self-contained from each other in the application server allowing for
+multiple network stack instances to co-exist in isolation - in other words multiple
+network stacks running independently. The underlying network medium “ethernet” is
+provided by using Extensible Messaging and Presence Protocol (XMPP) as a network
+network overlay across which the stacks can communicate.
+
+TINOS network stack applications function as completely independent and isolated
+virtual nodes. Further components (e.g. traffic generators) can be added into
+the OSGi applications which then use the TINOS stack to perform the inter-node
+network communication.
+
+Java New Operating system Design Effort (JNode) is an open-source project to
+create a Java platform operating system. The project has taken the unique direction
+of creating all the software in java itself, with the exception of some assembly
+language to boot and load the system. JNode has an entirely java based Internet
+Protocol, version 4 (IPv4) network stack which has been used in the field.
+
+The OSGi framework is a module system for Java that implements a complete and
+dynamic component model, something that does not exist in standalone Java Virtual
+Machine (JVM) environments. Applications or components (coming in the form of
+bundles for deployment) can be remotely installed, started, stopped, updated and
+uninstalled without requiring a reboot; management of Java packages/classes is
+specified in great detail. Life cycle management is done via APIs which allow for
+remote downloading of management policies. The service registry allows bundles to
+detect the addition of new services, or the removal of services, and adapt accordingly.
+
+License:
+--------
+LGPL : http://www.gnu.org/licenses/lgpl.html
+
+The reason behind the selection of the LGPL license is based primarily on the
+code base that has been ported from the JNode project. The JNode project uses the
+LGPL license. All modified source code must remain under this license and it is
+efficient to keep additional source code contributed by WIT (via the EU FP7 ICT
+4WARD project) under the same license as they may be intermixed within the same
+organisational packages.
+
+
+Directory Structure:
+--------------------
+
 +- documentation
    Project documentation, initial configuration files (db/env).
 
