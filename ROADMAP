@@ -1,0 +1,30 @@
+TINOS ROADMAP:
+
+TBD - Timelines / Priority to be add.
+
+ - Documentation
+   - More Guides, Demos, Samples.
+
+ - Virgo Migration
+   - Update to Build Templates / Project Settings (eclipse)
+
+ - RINA
+   - Implementation of Specifications
+
+ - IPv6
+   - IPv6 Stack Support
+
+ - MultiStack
+   - Triple Play Stack (IPv4, IPv6, RINA)
+
+ - WiFi Support
+   - Add Wireless driver support for Roaming Scenarios
+
+ - Core
+   - Simplified Configuration (Config Manager)
+   - Autogenerate OpenFire configurations
+   - Eclipse Config GUI
+   - Cloud Deployment
+
+ - Addition of WebGui
+   - Baseline WebGui with "Slices" support
