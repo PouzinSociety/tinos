@@ -417,14 +417,14 @@ required within OpenFire for all the users, groups and chatrooms.
 \item [Note] Add the following lines between the TINOS Start / End to the end
 of the serviceability.xml file. To exit ''vi'' use the key sequence [ESC]:wq[RETURN]
 \begin{verbatim}
-<-- TINOS - Start -->
+<!-- TINOS - Start -->
         <logger level="DEBUG" additivity="false" name="org.jnode">
                 <appender-ref ref="SIFTED_LOG_FILE" />
         </logger>
         <logger level="DEBUG" additivity="false" name="org.pouzinsociety">
                 <appender-ref ref="SIFTED_LOG_FILE" />
         </logger>
-<-- TINOS - End -->
+<!-- TINOS - End -->
 
         <root level="WARN">
                 <appender-ref ref="SIFTED_LOG_FILE" />
