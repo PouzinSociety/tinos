@@ -50,18 +50,25 @@ efficient to keep additional source code contributed by WIT (via the EU FP7 ICT
 4WARD project) under the same license as they may be intermixed within the same
 organisational packages.
 
+Where to begin:
+---------------
+Have a look under the documentation/UserGuides folder. A presentation from 
+FutureNet 2010 about TINOS, Installation & Build System Guides. Plus more to
+come :)
 
 Directory Structure:
 --------------------
 
 +- documentation
-   Project documentation, initial configuration files (db/env).
+   Project documentation, Initial configuration files (db/env), UserGuides,
+   Sample Demo (Simple Ping Test) and latex templates for documentation.
 
 +- projects
-   Source Code - java projects.
+   Source Code - java projects. All the bundles that make TINOS possible.
 
 +- repository
-   Downloaded artifacts (quick setup) and areas for integration-repo / ivy-cache.
+   Downloaded artifacts (local repository of dependencies) and areas
+   for integration-repo / ivy-cache.
 
 +- build
    Spring-build backup & template for creation of java projects.
