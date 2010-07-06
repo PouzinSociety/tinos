@@ -15,7 +15,7 @@ operating system. These OSGi components are then grouped into an application ins
 for deployment within the Virgo Web Server. These application instances are entirely
 isolated and self-contained from each other in the application server allowing for
 multiple network stack instances to co-exist in isolation - in other words multiple
-network stacks running independently. The underlying network medium “ethernet” is
+network stacks running independently. The underlying network medium "ethernet" is
 provided by using Extensible Messaging and Presence Protocol (XMPP) as a network
 network overlay across which the stacks can communicate.
 
