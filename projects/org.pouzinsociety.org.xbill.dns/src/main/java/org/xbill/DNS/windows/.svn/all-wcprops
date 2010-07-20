@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svnroot/dnsjava/!svn/ver/1613/trunk/org/xbill/DNS/windows
+END
+DNSServer_pl.properties
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/dnsjava/!svn/ver/1329/trunk/org/xbill/DNS/windows/DNSServer_pl.properties
+END
+DNSServer_fr.properties
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/dnsjava/!svn/ver/1522/trunk/org/xbill/DNS/windows/DNSServer_fr.properties
+END
+DNSServer.properties
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svnroot/dnsjava/!svn/ver/1329/trunk/org/xbill/DNS/windows/DNSServer.properties
+END
+DNSServer_ja.properties
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/dnsjava/!svn/ver/1613/trunk/org/xbill/DNS/windows/DNSServer_ja.properties
+END
+DNSServer_de.properties
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/dnsjava/!svn/ver/1329/trunk/org/xbill/DNS/windows/DNSServer_de.properties
+END

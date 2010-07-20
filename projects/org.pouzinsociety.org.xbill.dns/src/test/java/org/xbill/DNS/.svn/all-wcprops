@@ -1,0 +1,323 @@
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svnroot/dnsjava/!svn/ver/1602/trunk/tests/org/xbill/DNS
+END
+KXRecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/KXRecordTest.java
+END
+EmptyRecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/EmptyRecordTest.java
+END
+AFSDBRecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/AFSDBRecordTest.java
+END
+MXRecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/MXRecordTest.java
+END
+TypeTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/TypeTest.java
+END
+TokenizerTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/TokenizerTest.java
+END
+MRRecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/MRRecordTest.java
+END
+SOARecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/SOARecordTest.java
+END
+U16NameBaseTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/U16NameBaseTest.java
+END
+DClassTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/DClassTest.java
+END
+SerialTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/SerialTest.java
+END
+AddressTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/AddressTest.java
+END
+RTRecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/RTRecordTest.java
+END
+RecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svnroot/dnsjava/!svn/ver/1602/trunk/tests/org/xbill/DNS/RecordTest.java
+END
+AAAARecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/AAAARecordTest.java
+END
+ExceptionTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/ExceptionTest.java
+END
+HeaderTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svnroot/dnsjava/!svn/ver/1479/trunk/tests/org/xbill/DNS/HeaderTest.java
+END
+TTLTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/TTLTest.java
+END
+NameTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/NameTest.java
+END
+MFRecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/MFRecordTest.java
+END
+MDRecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/MDRecordTest.java
+END
+HINFORecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/HINFORecordTest.java
+END
+MessageTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/MessageTest.java
+END
+FlagsTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/FlagsTest.java
+END
+CompressionTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/CompressionTest.java
+END
+A6RecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/A6RecordTest.java
+END
+MBRecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/MBRecordTest.java
+END
+SingleCompressedNameBaseTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/SingleCompressedNameBaseTest.java
+END
+SingleNameBaseTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/SingleNameBaseTest.java
+END
+SetResponseTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/SetResponseTest.java
+END
+DNAMERecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/DNAMERecordTest.java
+END
+DSRecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/DSRecordTest.java
+END
+GPOSRecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/GPOSRecordTest.java
+END
+OptionsTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/OptionsTest.java
+END
+ReverseMapTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/ReverseMapTest.java
+END
+NSRecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/NSRecordTest.java
+END
+NSAP_PTRRecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/NSAP_PTRRecordTest.java
+END
+ARecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/ARecordTest.java
+END
+KEYRecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/KEYRecordTest.java
+END
+KEYBaseTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/KEYBaseTest.java
+END
+OpcodeTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/OpcodeTest.java
+END
+APLRecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/APLRecordTest.java
+END
+ExtendedFlagsTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/ExtendedFlagsTest.java
+END
+MGRecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/MGRecordTest.java
+END
+DNSOutputTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/DNSOutputTest.java
+END
+FormattedTimeTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/FormattedTimeTest.java
+END
+DNSKEYRecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/DNSKEYRecordTest.java
+END
+SectionTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/SectionTest.java
+END
+MnemonicTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/MnemonicTest.java
+END
+RRsetTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/dnsjava/!svn/ver/1508/trunk/tests/org/xbill/DNS/RRsetTest.java
+END
+DNSInputTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/DNSInputTest.java
+END
+CNAMERecordTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/CNAMERecordTest.java
+END
+RcodeTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/dnsjava/!svn/ver/1447/trunk/tests/org/xbill/DNS/RcodeTest.java
+END
