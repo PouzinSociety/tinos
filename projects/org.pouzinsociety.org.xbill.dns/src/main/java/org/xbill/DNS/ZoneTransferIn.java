@@ -26,6 +26,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jnode.net.TransportLayer;
+
 import jnode.net.InetSocketAddress;
 import jnode.net.SocketAddress;
 
@@ -57,7 +59,7 @@ public class ZoneTransferIn {
 
 	private SocketAddress localAddress;
 	private SocketAddress address;
-	private TCPClient client;
+	private Client client;
 	private TSIG tsig;
 	private TSIG.StreamVerifier verifier;
 	private long timeout = 900 * 1000;
@@ -279,8 +281,10 @@ public class ZoneTransferIn {
 
 	private void
 	openConnection() throws IOException {
-		long endTime = System.currentTimeMillis() + timeout;
-		client = new TCPClient(endTime);
+		int endTime = (int)System.currentTimeMillis() + (int)timeout;
+		//TODO get TCP transport layer from the OSGi registry
+		TransportLayer transportLayer = null;
+		client = new Client(endTime, transportLayer);
 		if (localAddress != null)
 			client.bind(localAddress);
 		client.connect(address);

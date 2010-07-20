@@ -7,6 +7,8 @@ import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jnode.net.TransportLayer;
+
 import jnode.net.InetAddress;
 import jnode.net.InetSocketAddress;
 
@@ -243,18 +245,22 @@ public class SimpleResolver implements Resolver {
 		byte [] out = query.toWire(Message.MAXLENGTH);
 		int udpSize = maxUDPSize(query);
 		boolean tcp = false;
-		long endTime = System.currentTimeMillis() + timeoutValue;
+		int endTime = (int) System.currentTimeMillis() + (int) timeoutValue;
 		do {
 			byte [] in;
 
 			if (useTCP || out.length > udpSize)
 				tcp = true;
-			if (tcp)
-				in = TCPClient.sendrecv(localAddress, address, out,
-						endTime);
-			else
-				in = UDPClient.sendrecv(localAddress, address, out,
-						udpSize, endTime);
+			//TODO get the TCP and UDP transport layers from the OSGi registry;
+			TransportLayer transportLayer = null;
+			if (tcp){
+				//Get TCP transport layer
+			}else{
+				//Get UDP transport layer
+			}
+			
+			in = Client.sendrecv(localAddress, address, out,
+					endTime, transportLayer);
 
 			/*
 			 * Check that the response is long enough.

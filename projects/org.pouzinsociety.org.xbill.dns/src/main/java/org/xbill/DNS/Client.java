@@ -3,57 +3,95 @@
 package org.xbill.DNS;
 
 import java.io.IOException;
-import java.net.SocketTimeoutException;
-import java.nio.channels.SelectableChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 
-import org.xbill.DNS.utils.hexdump;
+import jnode.net.Socket;
+import jnode.net.SocketAddress;
+import jnode.net.SocketImplFactory;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jnode.net.TransportLayer;
 
 class Client {
+	protected Socket socket = null;
+	protected int endTime = 0;
+	
+	/**
+     * My logger
+     */
+    private static final Log log = LogFactory.getLog(Client.class);
 
-	protected long endTime;
-	protected SelectionKey key;
-
-	protected
-	Client(SelectableChannel channel, long endTime) throws IOException {
-		boolean done = false;
-		Selector selector = null;
+	protected Client(int endTime, TransportLayer transportLayer){
 		this.endTime = endTime;
+		try{
+			SocketImplFactory sFactory = transportLayer.getSocketImplFactory();
+			Socket.setSocketImplFactory(sFactory);
+			socket = new Socket();
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+	}
+	
+	void bind(SocketAddress addr) throws IOException {
+		socket.bind(addr);
+	}
+
+	void
+	connect(SocketAddress addr) throws IOException {
+		socket.connect(addr,endTime);
+	}
+
+	void
+	send(byte [] data) throws IOException {
+		log.debug("Write" + data);
+		socket.getOutputStream().write(data);
+	}
+
+	private byte []
+	              _recv(int length) throws IOException {
+		byte [] data = new byte[length];
+		for(int i=0; i<length; i++){
+			data[i] = (byte) socket.getInputStream().read();
+		}
+		return data;
+	}
+
+	byte []
+	      recv() throws IOException {
+		byte [] buf = _recv(2);
+		int length = ((buf[0] & 0xFF) << 8) + (buf[1] & 0xFF);
+		byte [] data = _recv(length);
+		log.debug("Read"+ data);
+		return data;
+	}
+
+	static byte []
+	             sendrecv(SocketAddress local, SocketAddress remote, byte [] data, int endTime, 
+	            		 TransportLayer transportLayer)
+	throws IOException
+	{
+		Client client = new Client(endTime, transportLayer);
 		try {
-			selector = Selector.open();
-			channel.configureBlocking(false);
-			key = channel.register(selector, SelectionKey.OP_READ);
-			done = true;
+			if (local != null)
+				client.bind(local);
+			client.connect(remote);
+			client.send(data);
+			return client.recv();
 		}
 		finally {
-			if (!done && selector != null)
-				selector.close();
-			if (!done)
-				channel.close();
+			client.cleanup();
 		}
 	}
 
-	static protected void blockUntil(SelectionKey key, long endTime) throws IOException {
-		long timeout = endTime - System.currentTimeMillis();
-		int nkeys = 0;
-		if (timeout > 0)
-			nkeys = key.selector().select(timeout);
-		else if (timeout == 0)
-			nkeys = key.selector().selectNow();
-		if (nkeys == 0)
-			throw new SocketTimeoutException();
-	}
-
-	static protected void verboseLog(String prefix, byte [] data) {
-		if (Options.check("verbosemsg"))
-			System.err.println(hexdump.dump(prefix, data));
+	static byte []
+	             sendrecv(SocketAddress addr, byte [] data, int endTime, 
+	            		 TransportLayer transportLayer) throws IOException {
+		return sendrecv(null, addr, data, endTime, transportLayer);
 	}
 
 	void
 	cleanup() throws IOException {
-		key.selector().close();
-		key.channel().close();
+		socket.close();
 	}
 
 }
