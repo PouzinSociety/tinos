@@ -16,6 +16,9 @@
 	</publications>
 
 	<dependencies>
+	
+	<!-- JNode -->
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.support" rev="1.0.0" conf="compile->runtime" />
 <!-- Spring Framework 
 		<dependency org="org.springframework" name="org.springframework.spring-library" rev="${org.springframework.spring}" conf="dm-server-provided->compile" />
 -->
