@@ -251,12 +251,11 @@ public class SimpleResolver implements Resolver {
 
 			if (useTCP || out.length > udpSize)
 				tcp = true;
-			//TODO get the TCP and UDP transport layers from the OSGi registry;
 			TransportLayer transportLayer = null;
 			if (tcp){
-				//Get TCP transport layer
+				transportLayer = Activator.getTransportLayer("TCP");
 			}else{
-				//Get UDP transport layer
+				transportLayer = Activator.getTransportLayer("UDP");
 			}
 			
 			in = Client.sendrecv(localAddress, address, out,

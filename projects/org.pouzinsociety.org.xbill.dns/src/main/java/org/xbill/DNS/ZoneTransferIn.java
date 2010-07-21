@@ -282,8 +282,7 @@ public class ZoneTransferIn {
 	private void
 	openConnection() throws IOException {
 		int endTime = (int)System.currentTimeMillis() + (int)timeout;
-		//TODO get TCP transport layer from the OSGi registry
-		TransportLayer transportLayer = null;
+		TransportLayer transportLayer = Activator.getTransportLayer("TCP");
 		client = new Client(endTime, transportLayer);
 		if (localAddress != null)
 			client.bind(localAddress);
