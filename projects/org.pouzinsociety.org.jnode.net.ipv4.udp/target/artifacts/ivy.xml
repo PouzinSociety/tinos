@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="http://ivyrep.jayasoft.org/ivy-doc.xsl"?>
+<ivy-module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://incubator.apache.org/ivy/schemas/ivy.xsd" version="2.0">
+	
+	<info organisation="org.pouzinsociety.org.jnode" module="org.pouzinsociety.org.jnode.net.ipv4.udp" revision="1.0.0" status="integration" publication="20100709071959">
+		<ivyauthor name="Patsy Phelan"/>
+	</info>
+
+	<configurations>
+		<conf name="compile" visibility="public" extends="aspects" description="Maven compile dependencies"/>
+		<conf name="optional" visibility="public" extends="compile" description="Maven optional dependencies"/>
+		<conf name="provided" visibility="public" description="Maven provided dependencies"/>
+		<conf name="dm-server-provided" visibility="public" description="Maven provided dependencies that already exist in the platform"/>
+		<conf name="runtime" visibility="public" extends="compile" description="Runtime dependencies"/>
+		<conf name="test" visibility="private" description="Test dependencies"/>
+		<conf name="aspects" visibility="private" description="Aspects to be woven"/>
+		<conf name="external" visibility="private" description="External candidates to be woven"/>
+		<conf name="additional" visibility="private" description="Additional candidates to be included in the PAR"/>
+	</configurations>
+
+	<publications>
+		<artifact name="org.pouzinsociety.org.jnode.net.ipv4.udp"/>
+		<artifact name="org.pouzinsociety.org.jnode.net.ipv4.udp-sources" type="src" ext="jar"/>
+	</publications>
+
+	<dependencies>
+<!-- JNode -->
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.support" rev="1.0.0" conf="compile->runtime"/>
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ethernet" rev="1.0.0" conf="compile->runtime"/>
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4" rev="1.0.0" conf="compile->runtime"/>
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4.icmp" rev="1.0.0" conf="compile->runtime"/>
+
+<!-- Spring Framework
+		<dependency org="org.springframework" name="org.springframework.spring-library" rev="${org.springframework.spring}" conf="dm-server-provided->compile" />
+-->
+
+<!-- Logging -->
+		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="1.1.1" conf="dm-server-provided->runtime"/>
+<!-- Tests -->
+		<dependency org="org.antlr" name="com.springsource.antlr" rev="2.7.6" conf="test->runtime"/>
+		<dependency org="org.junit" name="com.springsource.org.junit" rev="4.4.0" conf="test->runtime"/>
+	</dependencies>
+
+</ivy-module>
