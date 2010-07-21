@@ -13,6 +13,9 @@
  		<value>org.jnode.net.ipv4.IPv4Protocol</value>
  		<value>org.jnode.net.TransportLayer</value>
  	</osgi:interfaces>
+ 	<osgi:service-properties>
+ 		<entry key="transport" value="TCP"/>
+ 	</osgi:service-properties>
  </osgi:service>
  
  <osgi:reference id="ipv4Service" interface="org.jnode.net.ipv4.IPv4Service" bean-name="ipv4NetworkLayerBean"/>
