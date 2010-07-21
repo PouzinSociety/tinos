@@ -16,12 +16,11 @@
 	</publications>
 
 	<dependencies>
-	
-	<!-- JNode -->
+<!-- OSGi API -->
+	<dependency org="org.osgi" name="org.osgi.core" rev="4.1.0" />
+	<dependency org="org.osgi" name="org.osgi.compendium" rev="4.1.0" />
+<!-- JNode -->
 		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.support" rev="1.0.0" conf="compile->runtime" />
-<!-- Spring Framework 
-		<dependency org="org.springframework" name="org.springframework.spring-library" rev="${org.springframework.spring}" conf="dm-server-provided->compile" />
--->
 <!-- Logging -->
 		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" conf="dm-server-provided->runtime" />
 <!-- Tests -->
