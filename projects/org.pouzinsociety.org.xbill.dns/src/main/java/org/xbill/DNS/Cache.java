@@ -3,6 +3,7 @@
 package org.xbill.DNS;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -193,10 +194,14 @@ public class Cache {
 	public
 	Cache(String file) throws IOException {
 		data = new CacheMap(defaultMaxEntries);
-		Master m = new Master(file);
+		Master m = new Master(getInputStream(file), null, -1);
 		Record record;
 		while ((record = m.nextRecord()) != null)
 			addRecord(record, Credibility.HINT, m);
+	}
+	
+	private InputStream getInputStream(String resource){
+		return this.getClass().getResourceAsStream(resource);
 	}
 
 	private synchronized Object

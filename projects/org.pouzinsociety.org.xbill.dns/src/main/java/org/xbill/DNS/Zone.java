@@ -3,6 +3,7 @@
 package org.xbill.DNS;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -142,13 +143,17 @@ public class Zone implements Serializable {
 
 		if (zone == null)
 			throw new IllegalArgumentException("no zone name specified");
-		Master m = new Master(file, zone);
+		Master m = new Master(getInputStream(file), zone, -1);
 		Record record;
 
 		origin = zone;
 		while ((record = m.nextRecord()) != null)
 			maybeAddRecord(record);
 		validate();
+	}
+	
+	private InputStream getInputStream(String resource){
+		return this.getClass().getResourceAsStream(resource);
 	}
 
 	/**

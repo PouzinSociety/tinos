@@ -19,5 +19,6 @@
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.org.jnode/org.pouzinsociety.org.jnode.net.support/1.0.0/org.pouzinsociety.org.jnode.net.support-1.0.0.jar"/>
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/ivy-cache/repository/org.osgi/org.osgi.core/4.1.0/org.osgi.core-4.1.0.jar"/>
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/ivy-cache/repository/org.osgi/org.osgi.compendium/4.1.0/org.osgi.compendium-4.1.0.jar"/>
+	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.config/org.pouzinsociety.config.stack/1.0.0/org.pouzinsociety.config.stack-1.0.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

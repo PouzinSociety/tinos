@@ -21,6 +21,8 @@
 	<dependency org="org.osgi" name="org.osgi.compendium" rev="4.1.0" />
 <!-- JNode -->
 		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.support" rev="1.0.0" conf="compile->runtime" />
+<!-- Configuration -->
+		<dependency org="org.pouzinsociety.config" name="org.pouzinsociety.config.stack" rev="1.0.0" conf="compile->runtime" />
 <!-- Logging -->
 		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" conf="dm-server-provided->runtime" />
 <!-- Tests -->

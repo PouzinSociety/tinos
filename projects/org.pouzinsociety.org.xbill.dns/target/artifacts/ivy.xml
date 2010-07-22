@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="http://ivyrep.jayasoft.org/ivy-doc.xsl"?>
+<ivy-module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://incubator.apache.org/ivy/schemas/ivy.xsd" version="2.0">
+	
+	<info organisation="org.pouzinsociety.org.xbill" module="org.pouzinsociety.org.xbill.dns" revision="1.0.0" status="integration" publication="20100722084927">
+		<ivyauthor name="Eduard Grasa"/>
+	</info>
+
+	<configurations>
+		<conf name="compile" visibility="public" extends="aspects" description="Maven compile dependencies"/>
+		<conf name="optional" visibility="public" extends="compile" description="Maven optional dependencies"/>
+		<conf name="provided" visibility="public" description="Maven provided dependencies"/>
+		<conf name="dm-server-provided" visibility="public" description="Maven provided dependencies that already exist in the platform"/>
+		<conf name="runtime" visibility="public" extends="compile" description="Runtime dependencies"/>
+		<conf name="test" visibility="private" description="Test dependencies"/>
+		<conf name="aspects" visibility="private" description="Aspects to be woven"/>
+		<conf name="external" visibility="private" description="External candidates to be woven"/>
+		<conf name="additional" visibility="private" description="Additional candidates to be included in the PAR"/>
+	</configurations>
+
+	<publications>
+		<artifact name="org.pouzinsociety.org.xbill.dns"/>
+		<artifact name="org.pouzinsociety.org.xbill.dns-sources" type="src" ext="jar"/>
+	</publications>
+
+	<dependencies>
+<!-- OSGi API -->
+	<dependency org="org.osgi" name="org.osgi.core" rev="4.1.0"/>
+	<dependency org="org.osgi" name="org.osgi.compendium" rev="4.1.0"/>
+<!-- JNode -->
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.support" rev="1.0.0" conf="compile->runtime"/>
+<!-- Configuration -->
+		<dependency org="org.pouzinsociety.config" name="org.pouzinsociety.config.stack" rev="1.0.0" conf="compile->runtime"/>
+<!-- Logging -->
+		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="1.1.1" conf="dm-server-provided->runtime"/>
+<!-- Tests -->
+		<dependency org="org.antlr" name="com.springsource.antlr" rev="2.7.6" conf="test->runtime"/>
+		<dependency org="org.junit" name="com.springsource.org.junit" rev="4.4.0" conf="test->runtime"/>
+	</dependencies>
+
+</ivy-module>
