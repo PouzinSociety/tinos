@@ -9,6 +9,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * An implementation of Resolver that can send queries to multiple servers,
  * sending the queries multiple times if necessary.
@@ -18,7 +21,8 @@ import java.util.List;
  */
 
 public class ExtendedResolver implements Resolver {
-
+	private static Log log = LogFactory.getLog(ExtendedResolver.class);
+	
 	private static class Resolution implements ResolverListener {
 		Resolver [] resolvers;
 		int [] sent;
@@ -145,7 +149,7 @@ public class ExtendedResolver implements Resolver {
 		public void
 		receiveMessage(Object id, Message m) {
 			if (Options.check("verbose"))
-				System.err.println("ExtendedResolver: " +
+				log.info("ExtendedResolver: " +
 				"received message");
 			synchronized (this) {
 				if (done)
@@ -167,7 +171,7 @@ public class ExtendedResolver implements Resolver {
 		public void
 		handleException(Object id, Exception e) {
 			if (Options.check("verbose"))
-				System.err.println("ExtendedResolver: got " + e);
+				log.info("ExtendedResolver: got " + e);
 			synchronized (this) {
 				outstanding--;
 				if (done)

@@ -18,6 +18,9 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * A class that tries to locate name servers and the search path to
  * be appended to unqualified names.
@@ -45,6 +48,7 @@ import java.util.StringTokenizer;
 
 public class ResolverConfig {
 
+	private Log log = LogFactory.getLog(ResolverConfig.class);
 	private String [] servers = null;
 	private Name [] searchlist = null;
 
@@ -85,7 +89,7 @@ public class ResolverConfig {
 		if (list.contains(server))
 			return;
 		if (Options.check("verbose"))
-			System.out.println("adding server " + server);
+			log.debug("adding server " + server);
 		list.add(server);
 	}
 
@@ -93,7 +97,7 @@ public class ResolverConfig {
 	addSearch(String search, List list) {
 		Name name;
 		if (Options.check("verbose"))
-			System.out.println("adding search " + search);
+			log.debug("adding search " + search);
 		try {
 			name = Name.fromString(search, Name.root);
 		}

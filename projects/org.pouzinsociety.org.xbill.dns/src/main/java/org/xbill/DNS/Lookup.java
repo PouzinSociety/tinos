@@ -11,6 +11,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * The Lookup object issues queries to caching DNS servers.  The input consists
  * of a name, an optional type, and an optional class.  Caching is enabled
@@ -30,7 +33,8 @@ import java.util.Map;
  */
 
 public final class Lookup {
-
+	private static Log log = LogFactory.getLog(Lookup.class);
+			
 	private static Resolver defaultResolver;
 	private static Name [] defaultSearchPath;
 	private static Map defaultCaches;
@@ -439,9 +443,9 @@ public final class Lookup {
 	lookup(Name current) {
 		SetResponse sr = cache.lookupRecords(current, type, credibility);
 		if (verbose) {
-			System.err.println("lookup " + current + " " +
+			log.info("lookup " + current + " " +
 					Type.string(type));
-			System.err.println(sr);
+			log.info(sr);
 		}
 		processResponse(current, sr);
 		if (done || doneCurrent)
@@ -481,9 +485,9 @@ public final class Lookup {
 		if (sr == null)
 			sr = cache.lookupRecords(current, type, credibility);
 		if (verbose) {
-			System.err.println("queried " + current + " " +
+			log.info("queried " + current + " " +
 					Type.string(type));
-			System.err.println(sr);
+			log.info(sr);
 		}
 		processResponse(current, sr);
 	}

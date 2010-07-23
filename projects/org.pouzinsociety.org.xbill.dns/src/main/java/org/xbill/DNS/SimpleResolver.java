@@ -7,6 +7,8 @@ import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jnode.net.TransportLayer;
 
 import jnode.net.InetAddress;
@@ -25,6 +27,8 @@ import jnode.net.InetSocketAddress;
 
 
 public class SimpleResolver implements Resolver {
+	
+	Log log = LogFactory.getLog(SimpleResolver.class);
 
 	/** The default port to send queries to */
 	public static final int DEFAULT_PORT = 53;
@@ -198,7 +202,7 @@ public class SimpleResolver implements Resolver {
 			return;
 		int error = tsig.verify(response, b, query.getTSIG());
 		if (Options.check("verbose"))
-			System.err.println("TSIG verify: " + Rcode.string(error));
+			log.debug("TSIG verify: " + Rcode.string(error));
 	}
 
 	private void
@@ -227,7 +231,7 @@ public class SimpleResolver implements Resolver {
 	public Message
 	send(Message query) throws IOException {
 		if (Options.check("verbose"))
-			System.err.println("Sending to " +
+			log.debug("Sending to " +
 					address.getAddress().getHostAddress() +
 					":" + address.getPort());
 
@@ -283,7 +287,7 @@ public class SimpleResolver implements Resolver {
 					throw new WireParseException(error);
 				} else {
 					if (Options.check("verbose")) {
-						System.err.println(error);
+						log.debug(error);
 					}
 					continue;
 				}

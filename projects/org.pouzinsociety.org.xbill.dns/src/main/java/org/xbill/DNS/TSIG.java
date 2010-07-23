@@ -4,6 +4,8 @@ package org.xbill.DNS;
 
 import java.util.Date;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.xbill.DNS.utils.HMAC;
 import org.xbill.DNS.utils.base64;
 
@@ -17,6 +19,7 @@ import org.xbill.DNS.utils.base64;
 
 public class TSIG {
 
+	private static Log log = LogFactory.getLog(TSIG.class);
 	private static final String HMAC_MD5_STR = "HMAC-MD5.SIG-ALG.REG.INT.";
 	private static final String HMAC_SHA1_STR = "hmac-sha1.";
 	private static final String HMAC_SHA256_STR = "hmac-sha256.";
@@ -331,7 +334,7 @@ public class TSIG {
 
 		if (!tsig.getName().equals(name) || !tsig.getAlgorithm().equals(alg)) {
 			if (Options.check("verbose"))
-				System.err.println("BADKEY failure");
+				log.warn("BADKEY failure");
 			return Rcode.BADKEY;
 		}
 		long now = System.currentTimeMillis();
@@ -339,7 +342,7 @@ public class TSIG {
 		long fudge = tsig.getFudge();
 		if (Math.abs(now - then) > fudge * 1000) {
 			if (Options.check("verbose"))
-				System.err.println("BADTIME failure");
+				log.warn("BADTIME failure");
 			return Rcode.BADTIME;
 		}
 
@@ -385,7 +388,7 @@ public class TSIG {
 			return Rcode.NOERROR;
 		} else {
 			if (Options.check("verbose"))
-				System.err.println("BADSIG failure");
+				log.warn("BADSIG failure");
 			return Rcode.BADSIG;
 		}
 	}
@@ -506,7 +509,7 @@ public class TSIG {
 					!tsig.getAlgorithm().equals(key.alg))
 			{
 				if (Options.check("verbose"))
-					System.err.println("BADKEY failure");
+					log.warn("BADKEY failure");
 				m.tsigState = Message.TSIG_FAILED;
 				return Rcode.BADKEY;
 			}
@@ -522,7 +525,7 @@ public class TSIG {
 
 			if (verifier.verify(tsig.getSignature()) == false) {
 				if (Options.check("verbose"))
-					System.err.println("BADSIG failure");
+					log.warn("BADSIG failure");
 				return Rcode.BADSIG;
 			}
 

@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * A representation of a domain name.  It may either be absolute (fully
  * qualified) or relative.
@@ -14,7 +17,8 @@ import java.text.DecimalFormat;
  */
 
 public class Name implements Comparable, Serializable {
-
+	private static Log log = LogFactory.getLog(Name.class);
+	
 	private static final long serialVersionUID = -7257019940971525644L;
 
 	private static final int LABEL_NORMAL = 0;
@@ -367,7 +371,7 @@ public class Name implements Comparable, Serializable {
 				pos = in.readU8();
 				pos += ((len & ~LABEL_MASK) << 8);
 				if (Options.check("verbosecompression"))
-					System.err.println("currently " + in.current() +
+					log.debug("currently " + in.current() +
 							", pointer to " + pos);
 
 				if (pos >= in.current() - 2)
@@ -378,7 +382,7 @@ public class Name implements Comparable, Serializable {
 				}
 				in.jump(pos);
 				if (Options.check("verbosecompression"))
-					System.err.println("current name '" + this +
+					log.debug("current name '" + this +
 							"', seeking to " + pos);
 				break;
 			default:

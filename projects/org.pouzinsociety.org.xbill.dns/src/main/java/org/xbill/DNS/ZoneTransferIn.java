@@ -26,6 +26,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jnode.net.TransportLayer;
 
 import jnode.net.InetSocketAddress;
@@ -42,6 +44,7 @@ import jnode.net.SocketAddress;
 
 public class ZoneTransferIn {
 
+	private Log log = LogFactory.getLog(ZoneTransferIn.class);
 	private static final int INITIALSOA	= 0;
 	private static final int FIRSTDATA	= 1;
 	private static final int IXFR_DELSOA	= 2;
@@ -319,7 +322,7 @@ public class ZoneTransferIn {
 	private void
 	logxfr(String s) {
 		if (Options.check("verbose"))
-			System.out.println(zname + ": " + s);
+			log.debug(zname + ": " + s);
 	}
 
 	private void

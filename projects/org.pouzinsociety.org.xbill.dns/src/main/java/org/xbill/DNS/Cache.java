@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * A cache of DNS records.  The cache obeys TTLs, so items are purged after
  * their validity period is complete.  Negative answers are cached, to
@@ -25,6 +28,8 @@ import java.util.Set;
  */
 
 public class Cache {
+	
+	private static Log log = LogFactory.getLog(Cache.class);
 
 	private interface Element {
 		public boolean expired();
@@ -731,7 +736,7 @@ public class Cache {
 			addRRset(addl[i], cred);
 		}
 		if (verbose)
-			System.out.println("addMessage: " + response);
+			log.info("addMessage: " + response);
 		return (response);
 	}
 

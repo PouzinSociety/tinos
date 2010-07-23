@@ -2,6 +2,9 @@
 
 package org.xbill.DNS;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * DNS Name Compression object.
  * @see Message
@@ -11,6 +14,7 @@ package org.xbill.DNS;
  */
 
 public class Compression {
+	private static Log log = LogFactory.getLog(Compression.class);
 
 	private static class Entry {
 		Name name;
@@ -45,7 +49,7 @@ public class Compression {
 		entry.next = table[row];
 		table[row] = entry;
 		if (verbose)
-			System.err.println("Adding " + name + " at " + pos);
+			log.info("Adding " + name + " at " + pos);
 	}
 
 	/**
@@ -62,7 +66,7 @@ public class Compression {
 				pos = entry.pos;
 		}
 		if (verbose)
-			System.err.println("Looking for " + name + ", found " + pos);
+			log.info("Looking for " + name + ", found " + pos);
 		return pos;
 	}
 
