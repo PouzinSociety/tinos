@@ -20,6 +20,6 @@
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/ivy-cache/repository/org.osgi/org.osgi.core/4.1.0/org.osgi.core-4.1.0.jar"/>
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/ivy-cache/repository/org.osgi/org.osgi.compendium/4.1.0/org.osgi.compendium-4.1.0.jar"/>
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.config/org.pouzinsociety.config.stack/1.0.0/org.pouzinsociety.config.stack-1.0.0.jar"/>
-	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.org.xbill/org.pouzinsociety.org.xbill.dns/1.0.0/org.pouzinsociety.org.xbill.dns-1.0.0.jar"/>
+	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/projects/org.pouzinsociety.org.xbill.dns/target/artifacts/org.pouzinsociety.org.xbill.dns.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

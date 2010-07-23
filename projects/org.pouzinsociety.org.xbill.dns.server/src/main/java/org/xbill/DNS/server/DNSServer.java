@@ -137,7 +137,7 @@ public class DNSServer{
 					addSecondaryZone(st.nextToken(),
 							st.nextToken());
 				else if (keyword.equals("cache")) {
-					Cache cache = new Cache(st.nextToken());
+					Cache cache = new Cache(this.getClass().getResourceAsStream(st.nextToken()));
 					caches.put(new Integer(DClass.IN), cache);
 				} else if (keyword.equals("key")) {
 					String s1 = st.nextToken();
@@ -187,7 +187,7 @@ public class DNSServer{
 		Name origin = null;
 		if (zname != null)
 			origin = Name.fromString(zname, Name.root);
-		Zone newzone = new Zone(origin, zonefile);
+		Zone newzone = new Zone(origin, this.getClass().getResourceAsStream(zonefile));
 		znames.put(newzone.getOrigin(), newzone);
 	}
 
