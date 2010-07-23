@@ -8,11 +8,4 @@
        http://www.springframework.org/schema/beans   
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-	<osgi:reference id="udpProtocolService" interface="org.jnode.net.TransportLayer"
-		filter="(&amp;(transport=UDP))"/>
-	<osgi:reference id="tcpProtocolService" interface="org.jnode.net.TransportLayer"
-		filter="(&amp;(transport=TCP))"/>
-	<osgi:reference id="stackConfigurationService" 
-		interface="org.pouzinsociety.config.stack.StackConfiguration"/>
-
 </beans>

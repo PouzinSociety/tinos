@@ -205,6 +205,18 @@ public class Cache {
 			addRecord(record, Credibility.HINT, m);
 	}
 	
+	/**
+	 * Creates a Cache which initially contains all records in the specified file.
+	 */
+	public
+	Cache(InputStream stream) throws IOException {
+		data = new CacheMap(defaultMaxEntries);
+		Master m = new Master(stream, null, -1);
+		Record record;
+		while ((record = m.nextRecord()) != null)
+			addRecord(record, Credibility.HINT, m);
+	}
+	
 	private InputStream getInputStream(String resource){
 		return this.getClass().getResourceAsStream(resource);
 	}
