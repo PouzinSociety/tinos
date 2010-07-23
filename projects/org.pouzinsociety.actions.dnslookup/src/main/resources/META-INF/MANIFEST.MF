@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: ping-sample
+Bundle-SymbolicName: org.pouzinsociety.actions.dnslookup
+Bundle-Version: 1.0.0
+Bundle-Vendor: Pouzin Society
+Export-Package: org.pouzinsociety.actions.dnslookup;version="1.0.0"
+Import-Package: jnode.net;version="[1.0.0,1.0.0]",
+ org.apache.commons.logging;version="[1.1.1,1.1.1]",
+ org.jnode.net;version="[1.0.0,1.0.0]",
+ org.pouzinsociety.config.stack;version="[1.0.0,1.0.0]",
+ org.xbill.DNS
+ 
+
+
+
+
