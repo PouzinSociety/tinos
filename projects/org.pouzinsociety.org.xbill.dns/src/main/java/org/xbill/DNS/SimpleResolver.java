@@ -129,7 +129,11 @@ public class SimpleResolver implements Resolver {
 	 */
 	public void
 	setLocalAddress(InetAddress addr) {
-		localAddress = new InetSocketAddress(addr, 0);
+		setLocalAddress(addr, 0);
+	}
+	
+	public void setLocalAddress(InetAddress addr, int port){
+		localAddress = new InetSocketAddress(addr, port);
 	}
 
 	public void
