@@ -2,7 +2,7 @@
 <?xml-stylesheet type="text/xsl" href="http://ivyrep.jayasoft.org/ivy-doc.xsl"?>
 <ivy-module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://incubator.apache.org/ivy/schemas/ivy.xsd" version="2.0">
 	
-	<info organisation="org.pouzinsociety.org.xbill" module="org.pouzinsociety.org.xbill.dns.server" revision="1.0.0" status="integration" publication="20100723094111">
+	<info organisation="org.pouzinsociety.org.xbill" module="org.pouzinsociety.org.xbill.dns.server" revision="1.0.0" status="integration" publication="20100728080040">
 		<ivyauthor name="Eduard Grasa"/>
 	</info>
 

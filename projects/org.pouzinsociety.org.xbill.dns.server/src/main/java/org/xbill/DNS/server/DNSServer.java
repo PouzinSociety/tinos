@@ -170,7 +170,7 @@ public class DNSServer{
 				Iterator iport = ports.iterator();
 				while (iport.hasNext()) {
 					int port = ((Integer)iport.next()).intValue();
-					addUDP(addr, port);
+					//addUDP(addr, port);
 					addTCP(addr, port);
 					log.info("DNS server: listening on " +
 							addrport(addr, port));
@@ -449,6 +449,8 @@ public class DNSServer{
 		boolean badversion;
 		int maxLength;
 		int flags = 0;
+		
+		log.debug("Received query: "+query.toString());
 
 		header = query.getHeader();
 		if (header.getFlag(Flags.QR))
@@ -543,6 +545,7 @@ public class DNSServer{
 	
 	public void TCPclient(Socket s) {
 		try {
+			log.debug("Processing the new request");
 			int inLength;
 			DataInputStream dataIn;
 			DataOutputStream dataOut;
@@ -551,35 +554,35 @@ public class DNSServer{
 			InputStream is = s.getInputStream();
 			dataIn = new DataInputStream(is);
 			inLength = dataIn.readUnsignedShort();
+			log.debug("Read "+inLength+" bytes of data");
 			in = new byte[inLength];
 			dataIn.readFully(in);
 
 			Message query;
 			byte [] response = null;
 			try {
+				log.debug("Parsing DNS message");
 				query = new Message(in);
 				response = generateReply(query, in, in.length, s);
-				if (response == null)
+				if (response == null){
+					log.warn("No response for the query "+query.toString());
 					return;
-			}
-			catch (IOException e) {
+				}
+			}catch (IOException e) {
 				response = formerrMessage(in);
 			}
 			dataOut = new DataOutputStream(s.getOutputStream());
 			dataOut.writeShort(response.length);
 			dataOut.write(response);
-		}
-		catch (IOException e) {
+		}catch (IOException e) {
 			log.error("TCPclient(" +
 					addrport(s.getLocalAddress(),
 							s.getLocalPort()) +
 							"): " + e);
-		}
-		finally {
+		}finally {
 			try {
 				s.close();
-			}
-			catch (IOException e) {}
+			}catch (IOException e) {}
 		}
 	}
 	
@@ -589,7 +592,9 @@ public class DNSServer{
 			Socket.setSocketImplFactory(tcpTransportLayer.getSocketImplFactory());
 			ServerSocket sock = new ServerSocket(port, 128, addr);
 			while (true) {
+				log.debug("Waiting for incoming TCP requests");
 				final Socket s = sock.accept();
+				log.debug("Gor TCP request, I'm going to process it");
 				Thread t;
 				t = new Thread(new Runnable() {
 					public void run() {TCPclient(s);}});
@@ -611,9 +616,11 @@ public class DNSServer{
 			DatagramPacket indp = new DatagramPacket(in, in.length);
 			DatagramPacket outdp = null;
 			while (true) {
+				log.debug("Waiting for incoming UDP requests");
 				indp.setLength(in.length);
 				try {
 					sock.receive(indp);
+					log.debug("Gor UDP request, I'm going to process it");
 				}
 				catch (InterruptedIOException e) {
 					continue;
@@ -653,15 +660,19 @@ public class DNSServer{
 
 	public void addTCP(final InetAddress addr, final int port) {
 		Thread t;
+		log.debug("Starting a thread listening to "+addr.getHostAddress()+" port "+port+" for incoming TCP connections");
 		t = new Thread(new Runnable() {
 			public void run() {serveTCP(addr, port);}});
 		t.start();
+		log.debug("Thread started");
 	}
 
 	public void addUDP(final InetAddress addr, final int port) {
 		Thread t;
+		log.debug("Starting a thread listening to "+addr.getHostAddress()+" port "+port+" for incoming UDP connections");
 		t = new Thread(new Runnable() {
 			public void run() {serveUDP(addr, port);}});
 		t.start();
+		log.debug("Thread started");
 	}
 }
