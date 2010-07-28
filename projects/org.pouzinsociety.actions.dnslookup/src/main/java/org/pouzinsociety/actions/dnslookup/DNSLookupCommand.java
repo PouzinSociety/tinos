@@ -46,6 +46,8 @@ public class DNSLookupCommand {
 			InetAddress dnsServerAddress = InetAddress.getByName("10.0.0.1");
 			simpleResolver.setAddress(dnsServerAddress);
 			simpleResolver.setTCP(true);
+			InetAddress localAddress = InetAddress.getByName("10.0.0.2");
+			simpleResolver.setLocalAddress(localAddress, 8888);
 			lookup.setResolver(simpleResolver);
 			lookup.run();
 			printAnswer("ns1.internal", lookup);
