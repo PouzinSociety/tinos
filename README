@@ -72,3 +72,7 @@ Directory Structure:
 
 +- build
    Spring-build backup & template for creation of java projects.
+
+Branch Model:
+-------------
+Checkout gitflow, this is the branching model that is going to be used.
