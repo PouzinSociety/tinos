@@ -45,7 +45,7 @@ public class DnsServerLauncher implements BootStrapCompleteAPI {
 		try {
 		String primaryZoneDatabase = readResourceAsString("/DnsConfig/internal.db");
 		log.info("<PrimaryZone>\n" + primaryZoneDatabase + "\n</PrimaryZone>");
-		dnsServer.addPrimaryZone("internal", primaryZoneDatabase);
+		dnsServer.addPrimaryZone("0.0.127.in-addr.arpa", primaryZoneDatabase);
 		
 		String cacheDatabase = readResourceAsString("/DnsConfig/cache.db");
 		log.info("<CacheDatabase>\n" + cacheDatabase + "\n</CacheDatabase>");

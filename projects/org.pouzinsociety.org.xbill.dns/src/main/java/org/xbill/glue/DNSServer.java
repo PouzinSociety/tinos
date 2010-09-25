@@ -107,7 +107,9 @@ public class DNSServer {
 	
 	public void setCache(String dnsCacheFile) {
 		try {
-			Cache cache = new Cache(dnsCacheFile);
+			ArrayList recordList = new ArrayList();
+			InputStream is = new ByteArrayInputStream(dnsCacheFile.getBytes("UTF-8"));
+			Cache cache = new Cache(is);
 			caches.put(new Integer(DClass.IN), cache);
 		} catch (Exception e) {
 			log.error("setCache(" + dnsCacheFile + ")");
@@ -116,7 +118,7 @@ public class DNSServer {
 	}
 	public void setServerInterface(String hostname, String port) {
 		ArrayList ports = new ArrayList();
-		if (serverInterfaces.containsKey(hostname)) {
+		if (serverInterfaces.containsKey(hostname) == true) {
 			ports = (ArrayList)serverInterfaces.get(hostname);
 		}
 		ports.add(port);
@@ -131,7 +133,7 @@ public class DNSServer {
 		while (keyIterator.hasNext()) {
 			String hostname = (String)keyIterator.next();
 			InetAddress serverIp = InetAddress.getByName(hostname);
-			ArrayList ports = (ArrayList)serverInterfaces.get(serverIp);
+			ArrayList ports = (ArrayList)serverInterfaces.get(hostname);
 			for (int i = 0; i < ports.size(); i++) {
 				int port = new Integer((String)ports.get(i)).intValue();
 				if (tcpTransport == true)
@@ -154,14 +156,16 @@ public class DNSServer {
 		// All this to avoid Zone reading a file.
 		ArrayList recordList = new ArrayList();
 		InputStream is = new ByteArrayInputStream(zoneFileIn.getBytes("UTF-8"));
-		Master m = new Master(is);
+		Master m = new Master(is, origin, -1);
 		Record record;
 		while ((record = m.nextRecord()) != null) {
 			log.info("Record: " + record.toString());
 			recordList.add(record);
 		}
-		Record[] recArray = (Record[])recordList.toArray();
-		
+		Object[] objArray = recordList.toArray();
+		Record[] recArray = new Record[objArray.length];
+		for (int i = 0; i < objArray.length; i++)
+			recArray[i] = (Record)objArray[i];
 		
 		Zone newzone = new Zone(origin, recArray);
 		znames.put(newzone.getOrigin(), newzone);

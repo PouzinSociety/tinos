@@ -1,25 +1,36 @@
-$TTL 3600
+$TTL 3D
+@       IN      SOA     ns.linux.bogus. hostmaster.linux.bogus. (
+                        199802151       ; serial, todays date + todays serial #
+                        8H              ; refresh, seconds
+                        2H              ; retry, seconds
+                        4W              ; expire, seconds
+                        1D )            ; minimum, seconds
+;
+                TXT     "Linux.Bogus, your DNS consultants"
+                NS      ns              ; Inet Address of name server
+                NS      ns.friend.bogus.
+                MX      10 mail         ; Primary Mail Exchanger
+                MX      20 mail.friend.bogus. ; Secondary Mail Exchanger
 
-internal. IN SOA ns1.internal. admin.internal. (
-                        5               ; Serial
-                        10800           ; Refresh
-                        3600            ; Retry
-                        604800          ; Expire
-                        86400 )         ; Minimum TTL
-;
-; DNS Servers
-;@       IN NS           ns1.internal.
-;@       IN NS           ns2.internal.
-;
-; Machine Names
-localhost       IN A    127.0.0.1
-ns1             IN A    3.2.1.2
-ns2             IN A    3.2.1.3
-mail            IN A    3.2.1.10
-;@               IN A    3.2.1.30
-;
-; Aliases
-;www             IN CNAME        @
+localhost       A       127.0.0.1
 
-; MX Record
-;@               IN MX   10      mail.internal.
+gw              A       192.168.196.1
+                TXT     "The router"
+
+ns              A       192.168.196.2
+                MX      10 mail
+                MX      20 mail.friend.bogus.
+www             CNAME   ns
+
+donald          A       192.168.196.3
+                MX      10 mail
+                MX      20 mail.friend.bogus.
+                TXT     "DEK"
+
+mail            A       192.168.196.4
+                MX      10 mail
+                MX      20 mail.friend.bogus.
+
+ftp             A       192.168.196.5
+                MX      10 mail
+                MX      20 mail.friend.bogus.

@@ -197,6 +197,16 @@ Cache(String file) throws IOException {
 		addRecord(record, Credibility.HINT, m);
 }
 
+public
+Cache(InputStream stream) throws IOException {
+	data = new CacheMap(defaultMaxEntries);
+	Master m = new Master(stream, null, -1);
+	Record record;
+	while ((record = m.nextRecord()) != null)
+		addRecord(record, Credibility.HINT, m);
+	
+}
+
 private synchronized Object
 exactName(Name name) {
 	return data.get(name);
