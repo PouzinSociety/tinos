@@ -2,7 +2,7 @@
 
 package org.xbill.DNS;
 
-import java.io.IOException;
+import java.io.*;
 
 /**
  * The NULL Record.  This has no defined purpose, but can be used to
@@ -13,55 +13,55 @@ import java.io.IOException;
 
 public class NULLRecord extends Record {
 
-	private static final long serialVersionUID = -5796493183235216538L;
+private static final long serialVersionUID = -5796493183235216538L;
 
-	private byte [] data;
+private byte [] data;
 
-	NULLRecord() {}
+NULLRecord() {}
 
-	Record
-	getObject() {
-		return new NULLRecord();
+Record
+getObject() {
+	return new NULLRecord();
+}
+
+/**
+ * Creates a NULL record from the given data.
+ * @param data The contents of the record.
+ */
+public
+NULLRecord(Name name, int dclass, long ttl, byte [] data) {
+	super(name, Type.NULL, dclass, ttl);
+
+	if (data.length > 0xFFFF) {
+		throw new IllegalArgumentException("data must be <65536 bytes");
 	}
+	this.data = data;
+}
 
-	/**
-	 * Creates a NULL record from the given data.
-	 * @param data The contents of the record.
-	 */
-	public
-	NULLRecord(Name name, int dclass, long ttl, byte [] data) {
-		super(name, Type.NULL, dclass, ttl);
+void
+rrFromWire(DNSInput in) throws IOException {
+	data = in.readByteArray();
+}
 
-		if (data.length > 0xFFFF) {
-			throw new IllegalArgumentException("data must be <65536 bytes");
-		}
-		this.data = data;
-	}
+void
+rdataFromString(Tokenizer st, Name origin) throws IOException {
+	throw st.exception("no defined text format for NULL records");
+}
 
-	void
-	rrFromWire(DNSInput in) throws IOException {
-		data = in.readByteArray();
-	}
+String
+rrToString() {
+	return unknownToString(data);
+}
 
-	void
-	rdataFromString(Tokenizer st, Name origin) throws IOException {
-		throw st.exception("no defined text format for NULL records");
-	}
+/** Returns the contents of this record. */
+public byte []
+getData() {
+	return data;
+}
 
-	String
-	rrToString() {
-		return unknownToString(data);
-	}
-
-	/** Returns the contents of this record. */
-	public byte []
-	             getData() {
-		return data;
-	}
-
-	void
-	rrToWire(DNSOutput out, Compression c, boolean canonical) {
-		out.writeByteArray(data);
-	}
+void
+rrToWire(DNSOutput out, Compression c, boolean canonical) {
+	out.writeByteArray(data);
+}
 
 }

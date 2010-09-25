@@ -45,6 +45,11 @@ public class RecordTest extends TestCase
 {
     private static class SubRecord extends Record
     {
+	/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
 	public SubRecord(){}
 
 	public SubRecord(Name name, int type, int dclass, long ttl)
@@ -549,7 +554,7 @@ public class RecordTest extends TestCase
     public void test_byteArrayToString()
     {
 	byte[] in = new byte[] { ' ', 0x1F, 'A', 'a', ';', '"', '\\', 0x7E, 0x7F, (byte)0xFF };
-	String exp = "\" \\031Aa;\\\"\\\\~\\127\\255\"";
+	String exp = "\" \\031Aa\\;\\\"\\\\~\\127\\255\"";
 	assertEquals(exp, SubRecord.byteArrayToString(in, true));
     }
 
@@ -602,8 +607,6 @@ public class RecordTest extends TestCase
 	int t = Type.A;
 	int d = DClass.IN;
 	int ttl = 0xABE99;
-	InetAddress addr = InetAddress.getByName("191.234.43.10");
-
 	Tokenizer st = new Tokenizer("191.234.43.10");
 
 	try {

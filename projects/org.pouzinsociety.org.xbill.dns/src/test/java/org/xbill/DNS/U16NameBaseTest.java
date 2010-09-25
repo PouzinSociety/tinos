@@ -40,13 +40,18 @@ import	junit.framework.TestCase;
 
 public class U16NameBaseTest extends TestCase
 {
-    private void assertEquals( byte[] exp, byte[] act )
+  /*  private void assertEquals( byte[] exp, byte[] act )
     {
 	assertTrue(java.util.Arrays.equals(exp, act));
     }
-
+*/
     private static class TestClass extends U16NameBase
     {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public TestClass(){}
 
 	public TestClass(Name name, int type, int dclass, long ttl)

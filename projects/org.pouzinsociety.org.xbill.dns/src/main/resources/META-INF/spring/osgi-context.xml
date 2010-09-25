@@ -7,5 +7,10 @@
        http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd
        http://www.springframework.org/schema/beans   
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+       
+    <!--   <osgi:reference id="stackConfigurationService" interface="org.pouzinsociety.config.stack.StackConfiguration" bean-name="setupInterfacesBean"/>
+    <osgi:reference id="tcpTransportService" interface="org.jnode.net.TransportLayer" bean-name="IPV4_TCP_Protocol"/>
+    <osgi:reference id="udpTransportService" interface="org.jnode.net.TransportLayer" bean-name="IPV4_UDP_Protocol"/>
+    -->
 
 </beans>

@@ -2,9 +2,8 @@
 
 package org.xbill.DNS;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import org.xbill.DNS.utils.base16;
+import java.io.*;
+import org.xbill.DNS.utils.*;
 
 /**
  * NSAP Address Record.

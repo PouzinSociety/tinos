@@ -2,9 +2,7 @@
 
 package org.xbill.DNS;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * Boolean options:<BR>
@@ -26,100 +24,100 @@ import java.util.StringTokenizer;
 
 public final class Options {
 
-	private static Map table;
+private static Map table;
 
-	static {
+static {
+	try {
+		refresh();
+	}
+	catch (SecurityException e) {
+	}
+}
+
+private
+Options() {}
+
+public static void
+refresh() {
+	String s = System.getProperty("dnsjava.options");
+	if (s != null) {
+		StringTokenizer st = new StringTokenizer(s, ",");
+		while (st.hasMoreTokens()) {
+			String token = st.nextToken();
+			int index = token.indexOf('=');
+			if (index == -1)
+				set(token);
+			else {
+				String option = token.substring(0, index);
+				String value = token.substring(index + 1);
+				set(option, value);
+			}
+		}
+	}
+}
+
+/** Clears all defined options */
+public static void
+clear() {
+	table = null;
+}
+
+/** Sets an option to "true" */
+public static void
+set(String option) {
+	if (table == null)
+		table = new HashMap();
+	table.put(option.toLowerCase(), "true");
+}
+
+/** Sets an option to the the supplied value */
+public static void
+set(String option, String value) {
+	if (table == null)
+		table = new HashMap();
+	table.put(option.toLowerCase(), value.toLowerCase());
+}
+
+/** Removes an option */
+public static void
+unset(String option) {
+	if (table == null)
+		return;
+	table.remove(option.toLowerCase());
+}
+
+/** Checks if an option is defined */
+public static boolean
+check(String option) {
+	if (table == null)
+		return false;
+	return (table.get(option.toLowerCase()) != null);
+}
+
+/** Returns the value of an option */
+public static String
+value(String option) {
+	if (table == null)
+		return null;
+	return ((String)table.get(option.toLowerCase()));
+}
+
+/**
+ * Returns the value of an option as an integer, or -1 if not defined.
+ */
+public static int
+intValue(String option) {
+	String s = value(option);
+	if (s != null) {
 		try {
-			refresh();
+			int val = Integer.parseInt(s);
+			if (val > 0)
+				return (val);
 		}
-		catch (SecurityException e) {
-		}
-	}
-
-	private
-	Options() {}
-
-	public static void
-	refresh() {
-		String s = System.getProperty("dnsjava.options");
-		if (s != null) {
-			StringTokenizer st = new StringTokenizer(s, ",");
-			while (st.hasMoreTokens()) {
-				String token = st.nextToken();
-				int index = token.indexOf('=');
-				if (index == -1)
-					set(token);
-				else {
-					String option = token.substring(0, index);
-					String value = token.substring(index + 1);
-					set(option, value);
-				}
-			}
+		catch (NumberFormatException e) {
 		}
 	}
-
-	/** Clears all defined options */
-	public static void
-	clear() {
-		table = null;
-	}
-
-	/** Sets an option to "true" */
-	public static void
-	set(String option) {
-		if (table == null)
-			table = new HashMap();
-		table.put(option.toLowerCase(), "true");
-	}
-
-	/** Sets an option to the the supplied value */
-	public static void
-	set(String option, String value) {
-		if (table == null)
-			table = new HashMap();
-		table.put(option.toLowerCase(), value.toLowerCase());
-	}
-
-	/** Removes an option */
-	public static void
-	unset(String option) {
-		if (table == null)
-			return;
-		table.remove(option.toLowerCase());
-	}
-
-	/** Checks if an option is defined */
-	public static boolean
-	check(String option) {
-		if (table == null)
-			return false;
-		return (table.get(option.toLowerCase()) != null);
-	}
-
-	/** Returns the value of an option */
-	public static String
-	value(String option) {
-		if (table == null)
-			return null;
-		return ((String)table.get(option.toLowerCase()));
-	}
-
-	/**
-	 * Returns the value of an option as an integer, or -1 if not defined.
-	 */
-	public static int
-	intValue(String option) {
-		String s = value(option);
-		if (s != null) {
-			try {
-				int val = Integer.parseInt(s);
-				if (val > 0)
-					return (val);
-			}
-			catch (NumberFormatException e) {
-			}
-		}
-		return (-1);
-	}
+	return (-1);
+}
 
 }

@@ -188,9 +188,9 @@ public class DSRecordTest extends TestCase
 
     public void test_rdataFromString() throws IOException
     {
-	byte[] raw = new byte[] { (byte)0xAB, (byte)0xCD, (byte)0xEF, 
-				  (byte)0x01, (byte)0x23, (byte)0x45,
-				  (byte)0x67, (byte)0x89 };
+//	byte[] raw = new byte[] { (byte)0xAB, (byte)0xCD, (byte)0xEF, 
+//				  (byte)0x01, (byte)0x23, (byte)0x45,
+//				  (byte)0x67, (byte)0x89 };
 	Tokenizer t = new Tokenizer(0xABCD + " " + 0xEF + " " + 0x01 + " 23456789AB");
 
 	DSRecord dr = new DSRecord();

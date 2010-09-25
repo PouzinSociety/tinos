@@ -34,7 +34,6 @@
 //
 package	org.xbill.DNS;
 
-import	java.util.Arrays;
 import	junit.framework.TestCase;
 
 public class AFSDBRecordTest extends TestCase

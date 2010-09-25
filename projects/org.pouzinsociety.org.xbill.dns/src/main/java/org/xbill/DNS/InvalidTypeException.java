@@ -10,9 +10,14 @@ package org.xbill.DNS;
 
 public class InvalidTypeException extends IllegalArgumentException {
 
-	public
-	InvalidTypeException(int type) {
-		super("Invalid DNS type: " + type);
-	}
+/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+public
+InvalidTypeException(int type) {
+	super("Invalid DNS type: " + type);
+}
 
 }
