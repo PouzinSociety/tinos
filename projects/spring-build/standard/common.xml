@@ -10,6 +10,7 @@
 		<attribute name="output.dir"/>
 		<attribute name="resources.dir"/>
 		<sequential>
+		<echo message="Source ${source.version}, Target ${target.version}"/>
 			<s:javac destdir="@{output.dir}" source="${source.version}" target="${target.version}"
 					debug="${compile.debug}" debugLevel="${compile.debug.level}">
 				<compilerarg line="${compiler.args}"/>
