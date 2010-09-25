@@ -11,6 +11,11 @@
 	<bean name="bootstrapAgent" class="org.pouzinsociety.bootstrap.agent.Agent">
 		<property name="medium" ref="bootstrapService"/>
 		<property name="setupService" ref="setupInterfacesBean" />
+		<property name="bootstrapNotifications" ref="bootstrapNotificationBean" />
+	</bean>
+
+	<bean name="bootstrapNotificationBean" class="org.pouzinsociety.bootstrap.api.BootstrapNotifications">
+		<property name="notificationList" ref="notificationList" />
 	</bean>
 	
 	<bean id="methodInvokingTask" class="org.springframework.scheduling.timer.MethodInvokingTimerTaskFactoryBean">
@@ -38,6 +43,5 @@
 		<property name="hostResolverService" ref="resolverService"/>
 		<property name="ipv4Service" ref="ipv4Service" />
 	 </bean>
-	  
 	
 </beans>

@@ -35,6 +35,7 @@ import org.pouzinsociety.bootstrap.api.BootstrapConstants;
 import org.pouzinsociety.bootstrap.api.BootstrapEvent;
 import org.pouzinsociety.bootstrap.api.BootstrapEventListener;
 import org.pouzinsociety.bootstrap.api.BootstrapException;
+import org.pouzinsociety.bootstrap.api.BootstrapNotifications;
 import org.pouzinsociety.config.dao.EthernetOverIMDao;
 import org.pouzinsociety.config.dao.HostEntryDao;
 import org.pouzinsociety.config.dao.RouteDao;
@@ -47,6 +48,7 @@ public class Agent implements BootstrapEventListener {
 	private BootStrapAPI medium;
 	private SetupInterfaces setupService;
 	private boolean nodeConfigured = false;
+	private BootstrapNotifications bootstrapNotifications;
 
 	public void setMedium(BootStrapAPI medium) {
 		this.medium = medium;
@@ -55,6 +57,10 @@ public class Agent implements BootstrapEventListener {
 
 	public void setSetupService(SetupInterfaces setupService) {
 		this.setupService = setupService;
+	}
+
+	public void setBootstrapNotifications(BootstrapNotifications bootstrapNotifications) {
+		this.bootstrapNotifications = bootstrapNotifications;
 	}
 
 	private String getDateTime() {
@@ -96,6 +102,10 @@ public class Agent implements BootstrapEventListener {
 				setupService.setRouteList(routes);
 				setupService.setHostList(hosts);
 				setupService.execute();
+
+				// IPv4 Stack booted - Notify everyone.
+
+				bootstrapNotifications.notifyBootstrapComplete();
 				nodeConfigured = true;
 			} catch (Exception e) {	
 				nodeConfigured = false;  // Try again

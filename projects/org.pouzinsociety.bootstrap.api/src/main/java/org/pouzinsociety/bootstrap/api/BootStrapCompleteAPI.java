@@ -6,17 +6,6 @@
  *   - Forked from EU ICT 4WARD Open Source Distribution.
  *   - Organisation Strings updated to reflect fork.
  *
- *
- * 2010 (c) Pouzin Society
- *   - Forked from EU ICT 4WARD Open Source Distribution.
- *
- * 2010 (c) Pouzin Society
- *   - Forked from EU ICT 4WARD Open Source Distribution.
- *   - Organisation Strings updated to reflect fork.
- *
- *   - Organisation Strings updated to reflect fork.
- *
- *
  * Author        : pphelan(at)pouzinsociety.org
  *
  * This library is free software; you can redistribute it and/or modify it

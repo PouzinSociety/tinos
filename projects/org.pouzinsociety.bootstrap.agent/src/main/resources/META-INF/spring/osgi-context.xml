@@ -9,9 +9,16 @@
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
      <osgi:reference id="bootstrapService" interface="org.pouzinsociety.bootstrap.api.BootStrapAPI" bean-name="bootstrapDriver" />
+<!-- Devices -->
      <osgi:reference id="deviceManagerService" interface="org.jnode.driver.DeviceManager" bean-name="pouzinsocietyDeviceManagerBean" />
+<!-- IPv4 -->
      <osgi:reference id="ipv4ConfigurationService" interface="org.jnode.net.ipv4.config.IPv4ConfigurationService" bean-name="ipv4ConfigurationServiceBean"/>
      <osgi:reference id="resolverService" interface="org.jnode.net.Resolver" bean-name="hostFileResolverBean" />
      <osgi:reference id="ipv4Service" interface="org.jnode.net.ipv4.IPv4Service" bean-name="ipv4NetworkLayerBean"/>
+<!-- Setup Stack -->
      <osgi:service id="setupStackService" ref="setupInterfacesBean" interface="org.pouzinsociety.config.stack.StackConfiguration" />
+
+<!-- Bootstrap Complete Notification -->
+     <osgi:list id="notificationList" interface="org.pouzinsociety.bootstrap.api.BootStrapCompleteAPI" cardinality="0..N" />
+
 </beans>
