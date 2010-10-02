@@ -15,12 +15,14 @@ final public class UDPClient {
 	private DatagramSocket socket;
 	private int timeout = 0;
 
-	public UDPClient(TransportLayer transportLayer, long endTime) throws IOException {
-		DatagramSocketImplFactory factory = transportLayer.getDatagramSocketImplFactory();
+	public UDPClient(TransportLayer transportLayer, long endTime)
+			throws IOException {
+		DatagramSocketImplFactory factory = transportLayer
+				.getDatagramSocketImplFactory();
 		DatagramSocket.setDatagramSocketImplFactory(factory);
 		socket = new DatagramSocket();
 		long tmp = endTime - System.currentTimeMillis();
-		timeout = (tmp > 0) ? (int)tmp : 0;
+		timeout = (tmp > 0) ? (int) tmp : 0;
 		if (timeout > 0)
 			socket.setSoTimeout(timeout);
 	}
@@ -33,16 +35,18 @@ final public class UDPClient {
 		return (in);
 	}
 
-	private void writeUDP(DatagramSocket s, byte[] out) throws IOException {
+	private void writeUDP(SocketAddress remote, DatagramSocket s, byte[] out)
+			throws IOException {
 		System.err.println(hexdump.dump("UDP write", out));
-		s.send(new DatagramPacket(out, out.length));
+		DatagramPacket packet = new DatagramPacket(out, out.length, remote);
+		s.send(packet);
 	}
 
-	byte[] sendAndWait(SocketAddress remote, byte[] out, int maxPacketSize) throws IOException {
+	byte[] sendAndWait(SocketAddress remote, byte[] out, int maxPacketSize)
+			throws IOException {
 		byte[] in;
-		socket.connect(remote);
 		try {
-			writeUDP(socket, out);
+			writeUDP(remote, socket, out);
 			in = readUDP(socket, maxPacketSize);
 		} finally {
 			socket.close();
@@ -50,8 +54,9 @@ final public class UDPClient {
 		return in;
 	}
 
-	public static byte[] sendrecv(TransportLayer transportLayer, SocketAddress local, SocketAddress remote,
-			byte[] data, int max, long endTime) throws IOException {
+	public static byte[] sendrecv(TransportLayer transportLayer,
+			SocketAddress local, SocketAddress remote, byte[] data, int max,
+			long endTime) throws IOException {
 		UDPClient client = new UDPClient(transportLayer, endTime);
 		return client.sendAndWait(remote, data, max);
 	}
