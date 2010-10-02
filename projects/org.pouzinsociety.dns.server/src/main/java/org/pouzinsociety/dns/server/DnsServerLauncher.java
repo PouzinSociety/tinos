@@ -4,23 +4,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.util.StringTokenizer;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jnode.net.TransportLayer;
 import org.pouzinsociety.bootstrap.api.BootStrapCompleteAPI;
 import org.pouzinsociety.bootstrap.api.BootstrapException;
-import org.xbill.DNS.Address;
-import org.xbill.DNS.Cache;
-import org.xbill.DNS.DClass;
 import org.xbill.glue.DNSServer;
 
 public class DnsServerLauncher implements BootStrapCompleteAPI {
 	private static Log log = LogFactory.getLog(DnsServerLauncher.class);
-	private TransportLayer udpTransportLayer;
-	private TransportLayer tcpTransportLayer;
+	private TransportLayer transportLayer;
 	private DNSServer dnsServer;
 	
 	public void bootstrapComplete(Object arg0) throws BootstrapException {
@@ -32,7 +25,7 @@ public class DnsServerLauncher implements BootStrapCompleteAPI {
 		// Read DNS Configuration Files
 		
 		dnsServer = new DNSServer();
-		dnsServer.setTransportLayer(tcpTransportLayer);
+		dnsServer.setTransportLayer(transportLayer);
 		
 		/**
 		 * Same as - dns.conf:
@@ -45,8 +38,8 @@ public class DnsServerLauncher implements BootStrapCompleteAPI {
 		try {
 		String primaryZoneDatabase = readResourceAsString("/DnsConfig/internal.db");
 		log.info("<PrimaryZone>\n" + primaryZoneDatabase + "\n</PrimaryZone>");
-		dnsServer.addPrimaryZone("0.0.127.in-addr.arpa", primaryZoneDatabase);
 		
+		dnsServer.addPrimaryZone("linux.bogus", primaryZoneDatabase);
 		String cacheDatabase = readResourceAsString("/DnsConfig/cache.db");
 		log.info("<CacheDatabase>\n" + cacheDatabase + "\n</CacheDatabase>");
 		dnsServer.setCache(cacheDatabase);
@@ -70,12 +63,8 @@ public class DnsServerLauncher implements BootStrapCompleteAPI {
 		return null;
 	}
 
-	public void setUdpTransportLayer(TransportLayer udpTransportLayer) {
-		this.udpTransportLayer = udpTransportLayer;
-	}
-
-	public void setTcpTransportLayer(TransportLayer tcpTransportLayer) {
-		this.tcpTransportLayer = tcpTransportLayer;
+	public void setTransportLayer(TransportLayer transportLayer) {
+		this.transportLayer = transportLayer;
 	}
 	
 	

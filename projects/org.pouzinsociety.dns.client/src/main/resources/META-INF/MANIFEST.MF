@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Dns Client Launcher
+Bundle-SymbolicName: org.pouzinsociety.dns.client
+Bundle-Version: 1.0.0
+Bundle-Vendor: Pouzin Society
+Export-Package: org.pouzinsociety.dns.client;version="1.0.0";uses:="org.jnode.net,org.pouzinsociety.bootstrap.api"
+Import-Package: org.apache.commons.logging;version="[1.1.1,1.1.1]",
+ org.jnode.net;version="[1.0.0,1.0.0]",
+ org.pouzinsociety.bootstrap.api;version="[1.0.0,1.0.0]",
+ org.springframework.scheduling.timer;version="[3.0.0.RELEASE,3.0.0.RELEASE]",
+ org.xbill.DNS;version="1.0.0",
+ org.xbill.glue;version="1.0.0"
+Import-Bundle: org.pouzinsociety.bootstrap.api;version="[1.0.0,1.0.0]",
+ org.pouzinsociety.org.jnode.net.support;version="[1.0.0,1.0.0]",
+ org.pouzinsociety.org.xbill.dns;version="[1.0.0,1.0.0]"
+Import-Library: org.springframework.spring;version="[3.0.0.RELEASE,3.0.0.RELEASE]"

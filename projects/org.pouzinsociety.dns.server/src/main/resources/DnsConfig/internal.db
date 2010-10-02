@@ -8,9 +8,9 @@ $TTL 3D
 ;
                 TXT     "Linux.Bogus, your DNS consultants"
                 NS      ns              ; Inet Address of name server
-                NS      ns.friend.bogus.
+                NS      ns.linux.bogus.
                 MX      10 mail         ; Primary Mail Exchanger
-                MX      20 mail.friend.bogus. ; Secondary Mail Exchanger
+                MX      20 mail.linux.bogus. ; Secondary Mail Exchanger
 
 localhost       A       127.0.0.1
 
@@ -19,18 +19,18 @@ gw              A       192.168.196.1
 
 ns              A       192.168.196.2
                 MX      10 mail
-                MX      20 mail.friend.bogus.
+                MX      20 mail.linux.bogus.
 www             CNAME   ns
 
 donald          A       192.168.196.3
                 MX      10 mail
-                MX      20 mail.friend.bogus.
+                MX      20 mail.linux.bogus.
                 TXT     "DEK"
 
 mail            A       192.168.196.4
                 MX      10 mail
-                MX      20 mail.friend.bogus.
+                MX      20 mail.linux.bogus.
 
 ftp             A       192.168.196.5
                 MX      10 mail
-                MX      20 mail.friend.bogus.
+                MX      20 mail.linux.bogus.

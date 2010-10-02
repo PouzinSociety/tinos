@@ -10,7 +10,7 @@
 						
 	<!-- Start DNS Server -->
 	<bean name="dnsServerLauncher" class="org.pouzinsociety.dns.server.DnsServerLauncher">
-		<property name="udpTransportLayer" ref="udpTransportService"/>
-		<property name="tcpTransportLayer" ref="tcpTransportService"/>
+		<!-- <property name="transportLayer" ref="tcpTransportService"/> -->
+		<property name="transportLayer" ref="udpTransportService"/>
 	</bean>
 </beans>
