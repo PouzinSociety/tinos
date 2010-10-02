@@ -4,7 +4,6 @@ package org.xbill.DNS;
 
 import java.util.*;
 import java.io.*;
-import java.net.UnknownHostException;
 
 /**
  * The Lookup object issues queries to caching DNS servers.  The input consists
@@ -78,21 +77,23 @@ public static final int HOST_NOT_FOUND = 3;
 /** The host exists, but has no records associated with the queried type. */
 public static final int TYPE_NOT_FOUND = 4;
 
-public static synchronized void
-refreshDefault() {
-
-	try {
-		defaultResolver = new ExtendedResolver();
-	}
-	catch (UnknownHostException e) {
-		throw new RuntimeException("Failed to initialize resolver");
-	}
-	defaultSearchPath = ResolverConfig.getCurrentConfig().searchPath();
-	defaultCaches = new HashMap();
-}
-
+//public static synchronized void
+//refreshDefault() {
+//
+//	try {
+//		defaultResolver = new ExtendedResolver();
+//	}
+//	catch (UnknownHostException e) {
+//		throw new RuntimeException("Failed to initialize resolver");
+//	}
+//	defaultSearchPath = ResolverConfig.getCurrentConfig().searchPath();
+//	defaultCaches = new HashMap();
+//}
 static {
-	refreshDefault();
+	defaultResolver = null;
+	defaultSearchPath = null;
+	defaultCaches = new HashMap();
+	//refreshDefault();
 }
 
 /**
