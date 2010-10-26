@@ -1,5 +1,17 @@
 // Copyright (c) 1999-2004 Brian Wellington (bwelling@xbill.org)
 
+/*
+ * 2010 (c) Pouzin Society
+ *
+ * Author        : pphelan(at)tssg.org
+ *
+ * Original source code from the DNSJAVA project (BSD License).
+ *     Copyright (c) 1999-2005, Brian Wellington
+ *     All rights reserved.
+ * Modified to support integration into the TINOS project.
+ *
+ */
+
 package org.xbill.glue;
 
 import java.util.*;

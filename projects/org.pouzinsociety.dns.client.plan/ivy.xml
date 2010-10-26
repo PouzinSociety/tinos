@@ -46,6 +46,7 @@
 
 <!-- DNS Testing -->
 		<dependency org="org.pouzinsociety.dns" name="org.pouzinsociety.org.xbill.dns" rev="1.0.0" />
+		<dependency org="org.pouzinsociety.dns" name="org.pouzinsociety.dns.client" rev="1.0.0" />
 
 	</dependencies>
 
