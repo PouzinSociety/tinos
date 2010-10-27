@@ -36,7 +36,10 @@
 		<pathelement location="../org.pouzinsociety.logger.plan"/>
 		<pathelement location="../org.pouzinsociety.org.xbill.dns"/>
 		<pathelement location="../org.pouzinsociety.dns.server"/>
+		<pathelement location="../org.pouzinsociety.dns.client"/>
+		<pathelement location="../org.pouzinsociety.dns.client.plan"/>
 		<pathelement location="../org.pouzinsociety.dns.server.plan"/>
+		<pathelement location="../org.pouzinsociety.web.console"/>
 	</path>
 
 	<property file="${basedir}/../build.properties"/>

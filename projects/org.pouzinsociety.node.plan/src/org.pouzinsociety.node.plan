@@ -29,5 +29,9 @@
 <!-- TINOS Support -->
 	<artifact type="bundle" name="org.pouzinsociety.support.jnode" version="[1, 2)" />
 	<artifact type="bundle" name="org.pouzinsociety.driver.net.idrive" version="[1, 2)" />
+<!-- Web Console -->
+	<artifact type="bundle" name="org.pouzinsociety.web.console" version="[1, 2)">
+		<property name="header:Web-ContextPath" value="node"/>
+	</artifact>
 
 </plan>

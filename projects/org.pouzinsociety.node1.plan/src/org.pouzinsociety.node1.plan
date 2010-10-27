@@ -31,4 +31,8 @@
 	<artifact type="bundle" name="org.pouzinsociety.driver.net.idrive" version="[1, 2)" />
 <!-- Traffic Generation -->
 	<artifact type="bundle" name="org.pouzinsociety.actions.ping" version="[1, 2)" />
+<!-- Web Console -->
+	<artifact type="bundle" name="org.pouzinsociety.web.console" version="[1, 2)">
+		<property name="header:Web-ContextPath" value="node1"/>
+	</artifact>
 </plan>
