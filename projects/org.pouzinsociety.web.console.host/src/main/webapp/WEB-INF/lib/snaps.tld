@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<taglib xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd"
+    version="2.1">
+    
+  <description>SpringSource Snaps Tag Library 1.0</description>
+  <display-name>SpringSource Snaps</display-name>
+  <tlib-version>1.0</tlib-version>
+  <short-name>snaps</short-name>
+  <uri>http://www.springsource.org/dmserver/snaps</uri>
+
+  <tag>
+    <description>
+		Searches the OSGi service registry for registered Snaps and makes them available
+		as a List via the PageContext's org.eclipse.virgo.snaps.Snaps attribute.
+	</description>
+    <name>snaps</name>
+    <tag-class>org.eclipse.virgo.snaps.SnapsTag</tag-class>
+    <body-content>scriptless</body-content>
+    <attribute>
+    	<description>
+    		The variable name for the snaps collection to be exposed at.  This name is scoped only to the body of the tag.
+    	</description>
+    	<name>var</name>
+    </attribute>
+  </tag>
+
+</taglib>

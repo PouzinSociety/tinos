@@ -1,0 +1,92 @@
+.tundra .dijitTitlePane .dijitTitlePaneTitle {
+	background-image: url(../images/table-header-background.png);
+    background-repeat: repeat-x;
+ 	height:19px;
+ 	text-align:left;
+ 	font-weight:bold;
+ 	margin:0;
+ 	padding:3px 6px 0 6px;
+ 	line-height:19px;
+ 	border:1px solid #b8c885;
+}
+
+.tundra .dijitTitlePane {
+	margin-top: 1em;
+}
+
+.tundra .dijitTitlePane .dijitTitlePaneTitle a.edit {
+	float: right;
+	text-decoration: none;
+}
+
+.tundra .dijitTitlePane .dijitTitlePaneContentOuter {
+ 	border:1px solid #b8c885;
+}
+
+.tundra .dijitTitlePane .dijitArrowNode {
+	float: left;
+}
+
+/*
+ * SUB MENUS IN A PAGE
+ */
+
+#sub-navigation {
+	width: 212px;
+	height: 100%;
+	margin: 0 8px 0 16px;
+	float: left;
+}
+
+#sub-navigation ul {
+	margin: 0;
+	padding: 12px 0 0 0;
+	list-style: none;
+}
+
+#sub-navigation li a {
+	display: block;
+	text-decoration: none;
+	padding: 6px 5px;
+}
+
+#sub-navigation ul ul {
+	margin: 0;
+	padding: 0 0 0 12px;
+	list-style: none;
+}
+
+/*
+ * ASSOCIATED MODULES WITHIN TABLES
+ */
+ul.associated-modules {
+	list-style-image: url(../images/module-icon.png);
+	margin: 0;
+	padding: 0 0 0 20px;
+}
+
+ul.associated-modules li table {
+	border-collapse: collapse;
+	margin: 0;
+	padding: 0;
+}
+
+ul.associated-modules li table td {
+	padding: 0 20px 0 0;
+}
+
+/*
+ * DUMP TEXT BOX STYLE
+ */
+select {
+	width: 350px; 
+	margin: 5px;
+}
+ 
+.inspection-box {
+	overflow: auto;
+    height:400px;
+    font-family : "Courier New", Courier, monospace;
+    margin: 10px;
+    padding-left: 5px;
+}
