@@ -5,15 +5,20 @@
 	xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 	version="2.5">
+	
 	<filter>
 		<filter-name>host-filter</filter-name>
 		<filter-class>org.eclipse.virgo.snaps.core.SnapHostFilter</filter-class>
 	</filter>
+	
 	<filter-mapping>
 		<filter-name>host-filter</filter-name>
 		<url-pattern>/*</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>INCLUDE</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
 	</filter-mapping>
-	
+
 	<session-config>
 		<session-timeout>10</session-timeout>
 	</session-config>
@@ -23,4 +28,5 @@
 		<!-- Displays a stack trace -->
 		<location>/uncaughtException.jsp</location>
 	</error-page>
+	
 </web-app>

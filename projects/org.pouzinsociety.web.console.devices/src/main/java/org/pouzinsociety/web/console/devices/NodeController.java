@@ -24,14 +24,15 @@ import java.util.Collection;
 import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-//import org.jnode.driver.Device;
-//import org.jnode.driver.DeviceManager;
-//import org.jnode.driver.net.NetDeviceAPI;
-//import org.jnode.net.ethernet.EthernetConstants;
+import org.jnode.driver.Device;
+import org.jnode.driver.DeviceManager;
+import org.jnode.driver.net.NetDeviceAPI;
+import org.jnode.net.ProtocolAddressInfo;
+import org.jnode.net.ethernet.EthernetConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
@@ -42,17 +43,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
  */
 @Controller
 public class NodeController {
-	//private final DeviceManager devManager;
+	private final DeviceManager devManager;
 	private static Log log = LogFactory.getLog(NodeController.class);
 
-//	@Autowired
-	public NodeController() {
-		log.info("Instantiate");
+	@Autowired
+	public NodeController(DeviceManager devMan) {
+		this.devManager = devMan;
 	}
-	//@Autowired
-	//public NodeController(DeviceManager devMan) {
-	//	this.devManager = devMan;
-	//}
 
 	/**
 	 * Custom handler for displaying device interfaces.
@@ -64,11 +61,10 @@ public class NodeController {
 	 *
 	 * @return a ModelMap with the model attributes for the view
 	 */
-	@RequestMapping("/devices/index.do")
-	public ModelAndView indexHandler() {
-		log.info("IndexHandler");
+	@RequestMapping("/devices/index")
+	public ModelMap indexHandler() {
 		List<DeviceDao> devList = new ArrayList<DeviceDao>();
-/*		Collection<Device> devices = this.devManager.getDevices();
+		Collection<Device> devices = this.devManager.getDevices();
 		try {
 			for (Device dev : devices) {
 				DeviceDao tmp = new DeviceDao();
@@ -77,24 +73,16 @@ public class NodeController {
 				final NetDeviceAPI api = (NetDeviceAPI) dev.getAPI(NetDeviceAPI.class);
 				tmp.setAddress(api.getAddress().toString());
 				tmp.setMtu(new Integer(api.getMTU()).toString());
-				tmp.setProtocolAddress(api.getProtocolAddressInfo(EthernetConstants.ETH_P_IP).toString());
+				ProtocolAddressInfo protoAddrInf = api.getProtocolAddressInfo(EthernetConstants.ETH_P_IP);
+				if (protoAddrInf != null)
+					tmp.setProtocolAddress(protoAddrInf.toString());
+				else
+					tmp.setProtocolAddress("[IP Address - NotApplicable]");
 				devList.add(tmp);
 			}
 		} catch (Exception e) {
-			log.debug("Cannot Translate Devices");
+			log.debug("Cannot Translate Devices retrieved from DeviceManager");
 		}
-*/
-		DeviceDao tmp = new DeviceDao();
-		tmp.setName("TEST");
-		tmp.setAddress("TEST-ADDR");
-		tmp.setMtu("0");
-		tmp.setProtocolAddress("BOBO");
-		devList.add(tmp);
-log.info("Returning ModelAndView");
-		return new ModelAndView("index", "deviceList", devList);
-
-		//return new ModelMap().addAttribute("deviceList", devList);
+		return new ModelMap().addAttribute("deviceList", devList);
 	}
-	
-
 }

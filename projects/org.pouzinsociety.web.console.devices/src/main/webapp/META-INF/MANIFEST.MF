@@ -5,13 +5,18 @@ Bundle-Version: 1.0
 Bundle-Name: TINOS Web Console Devices Snap
 Bundle-Vendor: Pouzin Society
 Import-Library: org.springframework.spring;version="[3.0,3.1)"
-Import-Bundle: com.springsource.org.apache.taglibs.standard;version="[1.1.2,1.2)",com.springsource.org.tuckey.web.filters.urlrewrite;version="[3.1.0,3.1.0]"
+Import-Bundle: com.springsource.org.apache.taglibs.standard;version="[1.1.2,1.2)", 
+ org.pouzinsociety.org.jnode.net.support;version="[1.0.0,1.0.0]",
+ org.pouzinsociety.org.jnode.net.ethernet;version="[1.0.0,1.0.0]"
 Import-Package: org.eclipse.virgo.web.dm;version="[2.0.0,2.5.0)",
  org.eclipse.virgo.snaps.core;version="[1.0,2.0)",
  javax.servlet;version="[2.4.0,3.0.0)",
  javax.servlet.http;version="[2.4.0,3.0.0)",
  javax.servlet.jsp.jstl.core;version="[1.1.2,1.2.0)",
  org.apache.commons.logging;version="[1.1.1,1.1.1]",
+ org.jnode.driver;version="[1.0.0,1.0.0]",
+ org.jnode.driver.net;version="[1.0.0,1.0.0]",
+ org.jnode.net.ethernet;version="[1.0.0,1.0.0]",
  org.springframework.web.context;version="[3.0.0,3.1.0)",
  org.springframework.web.context.support;version="[3.0.0,3.1.0)"
 Snap-Host: org.pouzinsociety.web.console.host;version="[1.0, 2.0)"

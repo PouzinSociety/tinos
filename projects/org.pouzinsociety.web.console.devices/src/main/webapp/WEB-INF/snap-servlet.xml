@@ -3,9 +3,16 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:p="http://www.springframework.org/schema/p" 
        xmlns:context="http://www.springframework.org/schema/context" 
+	   xmlns:osgi="http://www.springframework.org/schema/osgi"
     xsi:schemaLocation="
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+		http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd">
+<!--
+ OSGi Services
+ -->
+<osgi:reference id="deviceManagerService" interface="org.jnode.driver.DeviceManager" bean-name="pouzinsocietyDeviceManagerBean" />
+
 <!--
  - The controllers are autodetected POJOs labeled with the @Controller annotation.
 -->
@@ -17,13 +24,6 @@
 	- returned by Controllers. For example, a logical view name of "devices" 
 	- will be mapped to "/WEB-INF/jsp/devices.jsp".
 -->
-<!--
 <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" p:prefix="/WEB-INF/jsp/" p:suffix=".jsp"/>
--->
-<bean id="jspViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
-  <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
-  <property name="prefix" value="/WEB-INF/jsp/"/>
-  <property name="suffix" value=".jsp"/>
-</bean>
 
 </beans>

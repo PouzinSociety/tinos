@@ -6,28 +6,32 @@
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener>
-	
+
 	<context-param>
 		<param-name>contextClass</param-name>
 		<param-value>org.eclipse.virgo.web.dm.ServerOsgiBundleXmlWebApplicationContext</param-value>
 	</context-param>
-	
+
 	<!-- Handles all requests into the slice -->
 	<servlet>
 		<servlet-name>snap</servlet-name>
 		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<load-on-startup>2</load-on-startup>
+		<init-param>
+			<param-name>contextClass</param-name>
+			<param-value>org.eclipse.virgo.web.dm.ServerOsgiBundleXmlWebApplicationContext</param-value>
+		</init-param>
 	</servlet>
     
 	<servlet-mapping>
 		<servlet-name>snap</servlet-name>
-		<url-pattern>*.do</url-pattern>
+		<url-pattern>*.htm</url-pattern>
 	</servlet-mapping>
 
 	<filter>
 		<filter-name>httpMethodFilter</filter-name>
 		<filter-class>org.springframework.web.filter.HiddenHttpMethodFilter</filter-class>
 	</filter>
-
 	<filter-mapping>
 		<filter-name>httpMethodFilter</filter-name>
 		<servlet-name>snap</servlet-name>

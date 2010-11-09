@@ -1,6 +1,11 @@
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <jsp:include page="/../top.jsp"/>
-
 <h1>Devices</h1>
+
+<h2>Boo2 : ${message} </h2>
 <table>
   <tr>
   <thead><th>Name</th><th>H/W Address</th><th>MTU</th><th>IP Address</th></thead>

@@ -17,7 +17,6 @@
 	</publications>
 
 	<dependencies>
-		<dependency org="org.tuckey" name="com.springsource.org.tuckey.web.filters.urlrewrite" rev="3.1.0" conf="compile->runtime" />
 		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.support" rev="1.0.0" conf="compile->runtime"/>
 		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ethernet" rev="1.0.0" conf="compile->runtime"/>
 		<!-- Compile-time dependencies that are known to be provided by the dmServer -->
