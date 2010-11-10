@@ -21,9 +21,9 @@
 <!--
 	- This bean configures the 'prefix' and 'suffix' properties of 
 	- InternalResourceViewResolver, which resolves logical view names 
-	- returned by Controllers. For example, a logical view name of "devices" 
-	- will be mapped to "/WEB-INF/jsp/devices.jsp".
+	- returned by Controllers. For example, a logical view name of "devices/index" 
+	- will be mapped to "/WEB-INF/devices/index.jsp".
 -->
-<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" p:prefix="/WEB-INF/jsp/" p:suffix=".jsp"/>
+<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" p:prefix="/WEB-INF/" p:suffix=".jsp"/>
 
 </beans>
