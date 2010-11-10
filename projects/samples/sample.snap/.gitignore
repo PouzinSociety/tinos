@@ -1,0 +1,5 @@
+# vi temporary files
+*~
+.DS_STORE
+# target directory
+target/

@@ -1,0 +1,25 @@
+Sample Bundles/Snap
+===================
+
+Simple samples to show how the pieces are wired together.
+
+API is just that, independent of the implementation and Snap.
+IMPL - is the implementation of the API, provides the OSGi service.
+SNAP - The Web Snap which uses the API to find the OSGi Service and presents a few simple web pages.
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<plan name="sample.plan" version="1.0.0" scoped="true" atomic="true"
+        xmlns="http://www.springsource.org/schema/dm-server/plan"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springsource.org/schema/dm-server/plan 
+                            http://www.springsource.org/schema/dm-server/plan/springsource-dm-server-plan.xsd">
+<!-- Web Console -->
+	<artifact type="bundle" name="org.pouzinsociety.web.console.host" version="[1, 2)">
+<!--		<property name="header:Web-ContextPath" value="node1"/> -->
+	</artifact>
+	<artifact type="bundle" name="sample.api" version="[1, 2)"  />
+	<artifact type="bundle" name="sample.impl" version="[1, 2)"  />
+<!--	<artifact type="bundle" name="sample.snap" version="[1, 2)"  /> -->
+
+</plan>

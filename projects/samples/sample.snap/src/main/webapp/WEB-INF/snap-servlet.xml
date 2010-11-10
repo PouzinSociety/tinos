@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p" 
+       xmlns:context="http://www.springframework.org/schema/context" 
+	   xmlns:osgi="http://www.springframework.org/schema/osgi"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+		http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd">
+<!--
+ OSGi Services
+ -->
+<osgi:reference id="sampleApiService" interface="sample.api.SampleAPI" bean-name="sampleAPIImplBean" />
+
+<!--
+ - The controllers are autodetected POJOs labeled with the @Controller annotation.
+-->
+<context:component-scan base-package="sample.snap"/>
+
+<!--
+	- This bean configures the 'prefix' and 'suffix' properties of 
+	- InternalResourceViewResolver, which resolves logical view names 
+	- returned by Controllers. For example, a logical view name of "devices/index" 
+	- will be mapped to "/WEB-INF/devices/index.jsp".
+-->
+<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" p:prefix="/WEB-INF/" p:suffix=".jsp"/>
+
+</beans>

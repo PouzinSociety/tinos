@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Sample API bundle
+Bundle-SymbolicName: sample.api
+Bundle-Version: 1.0.0
+Bundle-Vendor: Pouzin Society
+Export-Package: sample.api;version="1.0.0"
