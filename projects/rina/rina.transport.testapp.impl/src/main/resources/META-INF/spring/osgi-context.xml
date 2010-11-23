@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+   xmlns="http://www.springframework.org/schema/beans"
+   xmlns:osgi="http://www.springframework.org/schema/osgi"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.springframework.org/schema/osgi  
+       http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd
+       http://www.springframework.org/schema/beans   
+       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+       
+    <!-- Import --> 
+    <osgi:reference id="transportService" interface="org.pouzinsociety.rina.transport.api.TransportAPI" bean-name="multicastTransport"/>
+    
+    <osgi:service id="discoveryBootstrapComplete" ref="DomainDiscoveryBean">
+		<osgi:interfaces>
+ 			<value>org.pouzinsociety.bootstrap.api.BootStrapCompleteAPI</value>
+ 		</osgi:interfaces>
+ 	</osgi:service>
+ 	
+ 	<osgi:service id="domainDiscoveryService" ref="DomainDiscoveryBean">
+		<osgi:interfaces>
+ 			<value>rina.transport.testapp.api.DomainDiscoveryAPI</value>
+ 		</osgi:interfaces>
+ 	</osgi:service>
+       
+</beans>           
