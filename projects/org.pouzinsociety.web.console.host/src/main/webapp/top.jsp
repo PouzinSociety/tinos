@@ -19,7 +19,7 @@
 		<div id="header">
 			<div id="name-and-company">
 				<div id='site-name'>
-					<a href="<c:url value="/" />" title="TINOS - Web Console" rel="home">TINOS - Web Console</a>
+					<a href="<c:url value="/" />" title="TINOS - Web Console" rel="home"></a>
 				</div>
 				<div id='company-name'>
 					<a href="http://www.pouzinsociety.org/" title="PSOC" target="_blank">Pouzin Society</a>

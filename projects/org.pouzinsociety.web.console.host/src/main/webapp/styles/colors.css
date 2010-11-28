@@ -15,7 +15,7 @@
 
   body
   {
-    background-color: #dfdfdf;
+    background-color: #ffffff;
   }
 
   #page
@@ -69,7 +69,7 @@ h4 {
   a:visited
   {
     color: #333;
-    text-decoration: underline;
+    text-decoration: none;
   }
 
   a:hover,
