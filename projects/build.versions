@@ -12,6 +12,7 @@ org.aopalliance=1.0.0
 org.jnode.net=1.0.0
 org.jivesoftware.smack=3.1.0
 org.jivesoftware.smackx=3.1.0
+org.pouzinsociety.samples=1.0.0
 
 # Test
 org.antlr=2.7.6
