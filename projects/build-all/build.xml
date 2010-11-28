@@ -31,15 +31,23 @@
 		<pathelement location="../org.pouzinsociety.config.dao"/>
 		<pathelement location="../org.pouzinsociety.bootstrap.api"/>
 		<pathelement location="../org.pouzinsociety.transport.im.configmanager"/>
-		<pathelement location="../org.pouzinsociety.node.plan"/>
-		<pathelement location="../org.pouzinsociety.config.manager.plan"/>
-		<pathelement location="../org.pouzinsociety.logger.plan"/>
+<!-- DNS Support -->
 		<pathelement location="../org.pouzinsociety.org.xbill.dns"/>
 		<pathelement location="../org.pouzinsociety.dns.server"/>
 		<pathelement location="../org.pouzinsociety.dns.client"/>
+<!-- Web Console -->
+		<pathelement location="../org.pouzinsociety.web.console.host"/>
+		<pathelement location="../org.pouzinsociety.web.console.devices"/>
+<!-- Samples -->
+		<pathelement location="../samples/sample.api"/>
+		<pathelement location="../samples/sample.impl"/>
+		<pathelement location="../samples/sample.snap"/>
+<!-- Deployment Plans -->
+		<pathelement location="../org.pouzinsociety.config.manager.plan"/>
+		<pathelement location="../org.pouzinsociety.logger.plan"/>
 		<pathelement location="../org.pouzinsociety.dns.client.plan"/>
 		<pathelement location="../org.pouzinsociety.dns.server.plan"/>
-		<pathelement location="../org.pouzinsociety.web.console"/>
+		<pathelement location="../org.pouzinsociety.node.plan"/>
 	</path>
 
 	<property file="${basedir}/../build.properties"/>
