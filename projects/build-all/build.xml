@@ -42,6 +42,12 @@
 		<pathelement location="../samples/sample.api"/>
 		<pathelement location="../samples/sample.impl"/>
 		<pathelement location="../samples/sample.snap"/>
+<!-- RINA -->
+		<pathelement location="../rina/rina.transport.api"/>
+		<pathelement location="../rina/rina.config.dao"/>
+		<pathelement location="../rina/rina.transport.impl"/>
+		<pathelement location="../rina/rina.transport.testapp.api"/>
+		<pathelement location="../rina/rina.transport.testapp.impl"/>
 <!-- Deployment Plans -->
 		<pathelement location="../deployment/org.pouzinsociety.config.manager.plan"/>
 		<pathelement location="../deployment/org.pouzinsociety.logger.plan"/>
