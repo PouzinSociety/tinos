@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="sample.snap">
+<project name="org.pouzinsociety.web.console.host">
 	<property environment="env"/>
 	<property name="disable.bundlor" value="true"/>
 	<property file="${env.TINOS_HOME}/projects/build.properties"/>

@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="sample.api" xmlns:ivy="antlib:org.apache.ivy.ant">
+<project name="org.pouzinsociety.dns.client" xmlns:ivy="antlib:org.apache.ivy.ant">
 	<property environment="env"/>
 	<property name="disable.bundlor" value="true"/>
+	<property name="source.version" value="1.4"/>
+	<property name="target.version" value="1.4"/>
 	<property file="${env.TINOS_HOME}/projects/build.properties"/>
+	<property name="source.version" value="1.4"/>
+	<property name="target.version" value="1.4"/>
 	<property file="${env.TINOS_HOME}/projects/build.versions"/>
 	<import file="${env.TINOS_HOME}/projects/spring-build/tinos/package-bundle.xml"/>
 	<import file="${env.TINOS_HOME}/projects/spring-build/standard/default.xml"/>
