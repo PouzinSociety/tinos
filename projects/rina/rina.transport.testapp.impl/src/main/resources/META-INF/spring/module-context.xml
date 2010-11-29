@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="
+			http://www.springframework.org/schema/beans
+			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+	<bean id="DomainDiscoveryBean" class="rina.transport.testapp.impl.DomainDiscovery">
+		<property name="transportService" ref="transportService"/>
+	</bean>
+
+	<bean id="methodInvokingTask" class="org.springframework.scheduling.timer.MethodInvokingTimerTaskFactoryBean">
+		<property name="targetObject" ref="DomainDiscoveryBean" />
+		<property name="targetMethod" value="timerFired"/>
+	</bean>
+	
+	<bean id="scheduledTask" class="org.springframework.scheduling.timer.ScheduledTimerTask">
+		<!--  10 seconds delay -->
+	 	<property name="delay" value="10000"/>
+	 	<!--  Run every 30 seconds -->
+	 	<property name="period" value="30000"/>
+	 	<property name="timerTask" ref="methodInvokingTask" />
+	 </bean>
+	 
+	 <bean id="timerFactory" class="org.springframework.scheduling.timer.TimerFactoryBean">
+	 	<property name="scheduledTimerTasks">
+	 		<list>
+	 			<ref local="scheduledTask"/>
+	 		</list>
+	 	</property>
+	 </bean>
+</beans>

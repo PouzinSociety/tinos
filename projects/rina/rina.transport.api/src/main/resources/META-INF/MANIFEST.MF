@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: test-rina-transport-api
+Bundle-SymbolicName: rina.transport.api
+Bundle-Version: 1.0.0
+Bundle-Vendor: Pouzin Society
+Export-Package: rina.transport.api;version="1.0.0";uses:="org.apache.commons.logging,org.jnode.util"
+Import-Package: org.apache.commons.logging;version="[1.1.1,1.1.1]",
+ org.jnode.util;version="[1.0.0,1.0.0]"
+Import-Bundle: org.pouzinsociety.org.jnode.net.support;version="[1.0.0,1.0.0]"
