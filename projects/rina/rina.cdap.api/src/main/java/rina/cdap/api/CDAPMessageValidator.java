@@ -1,6 +1,7 @@
 package rina.cdap.api;
 
-import rina.cdap.api.CDAPMessage.Opcode;
+import rina.cdap.api.message.CDAPMessage;
+import rina.cdap.api.message.CDAPMessage.Opcode;
 
 
 /**

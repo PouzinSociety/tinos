@@ -1,5 +1,7 @@
 package rina.cdap.api;
 
+import rina.cdap.api.message.CDAPMessage;
+
 /**
  * Represents a CDAP session. Clients of the library are the ones managing the invoke ids. Application entities must 
  * use the CDAP library this way:

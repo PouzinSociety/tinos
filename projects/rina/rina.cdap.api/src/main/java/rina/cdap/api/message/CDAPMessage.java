@@ -1,6 +1,9 @@
-package rina.cdap.api;
+package rina.cdap.api.message;
 
 import java.io.Serializable;
+
+import rina.cdap.api.CDAPException;
+import rina.cdap.api.CDAPMessageValidator;
 
 
 /**
@@ -32,7 +35,9 @@ public class CDAPMessage implements Serializable{
 		M_DELETE, M_DELETE_R, M_READ, M_READ_R, M_CANCELREAD, M_CANCELREAD_R, M_WRITE, 
 		M_WRITE_R, M_START, M_START_R, M_STOP, M_STOP_R};
 		
-	public enum Flags {F_INCOMPLETE, FLAG2};
+	public enum AuthTypes {AUTH_NONE, AUTH_PASSWD, AUTH_SSHRSA, AUTH_SSHDSA};
+		
+	public enum Flags {F_SYNC, F_RD_INCOMPLETE};
 	
 	/** 
 	 * AbstractSyntaxID (int32), mandatory. The specific version of the 
@@ -41,18 +46,18 @@ public class CDAPMessage implements Serializable{
 	private int absSyntax = -1;
 	
 	/**
-	 * AuthenticationMechanismName (string), optional, not validated by CDAP. 
+	 * AuthenticationMechanismName (authtypes), optional, not validated by CDAP. 
 	 * Identification of the method to be used by the destination application to
 	 * authenticate the source application
 	 */
-	private String authMech = null;
+	private AuthTypes authMech = null;
 	
 	/**
-	 * AuthenticationValue (bytes), optional, not validated by CDAP.
+	 * AuthenticationValue (authvalue), optional, not validated by CDAP.
 	 * Authentication information accompanying authMech, format and value 
 	 * appropiate to the selected authMech
 	 */
-	private byte[] authValue = null;
+	private AuthValue authValue = null;
 	
 	/**
 	 * DestinationApplication-Entity-Instance-Id (string), optional, not validated by CDAP.
@@ -99,7 +104,7 @@ public class CDAPMessage implements Serializable{
 	 * InvokeID, (int32). Unique identifier provided to identify a request, used to
 	 * identify subsequent associated messages.
 	 */
-	private int invokeID = -1;
+	private int invokeID = 0;
 	
 	/**
 	 * ObjectClass (string). Identifies the object class definition of the 
@@ -115,7 +120,7 @@ public class CDAPMessage implements Serializable{
 	 * an ObjectInstance value may be returned, and that may be used in future operations
 	 * in lieu of objClass and objName for the duration of this connection.
 	 */
-	private long objInst = -1;
+	private long objInst = 0;
 	
 	/**
 	 * ObjectName (string). Identifies a named object that the operation is 
@@ -125,9 +130,9 @@ public class CDAPMessage implements Serializable{
 	private String objName = null;
 	
 	/**
-	 * ObjectValue (bytes). The value of the object.
+	 * ObjectValue (ObjectValue). The value of the object.
 	 */
-	private byte[] objValue = null;
+	private ObjectValue objValue = null;
 		
 	/**
 	 * Opcode (enum, int32), mandatory.
@@ -141,7 +146,7 @@ public class CDAPMessage implements Serializable{
 	 * the default for this field), partial success in the case of 
 	 * synchronized operations, or reason for failure
 	 */
-	private int result = -1;
+	private int result = 0;
 	
 	/**
 	 * Result-Reason (string), optional in the responses, forbidden in the requests
@@ -155,7 +160,7 @@ public class CDAPMessage implements Serializable{
 	 * is to apply (if missing or present and having the value 0, the default, 
 	 * only the targeted application's objects are addressed)
 	 */
-	private int scope = -1;
+	private int scope = 0;
 	
 	/**
 	 * SourceApplication-Entity-Instance-Id (string).
@@ -189,13 +194,13 @@ public class CDAPMessage implements Serializable{
 	 * related behaviors that are subject to change over time. See text for details
 	 * of use.
 	 */
-	private int version = -1;
+	private long version = -1;
 	
-	private CDAPMessage(){
+	public CDAPMessage(){
 	}
 	
-	public static CDAPMessage getOpenConnectionRequestMessage(int absSyntax, String authMech, 
-			byte[] authValue, String destAEInst, String destAEName, String destApInst,
+	public static CDAPMessage getOpenConnectionRequestMessage(int absSyntax, AuthTypes authMech, 
+			AuthValue authValue, String destAEInst, String destAEName, String destApInst,
 			String destApName, String srcAEInst, String srcAEName, String srcApInst,
 			String srcApName, int version) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
@@ -217,8 +222,8 @@ public class CDAPMessage implements Serializable{
 		return cdapMessage;
 	}
 	
-	public static CDAPMessage getOpenConnectionResponseMessage(int absSyntax, String authMech, 
-			byte[] authValue, String destAEInst, String destAEName, String destApInst,
+	public static CDAPMessage getOpenConnectionResponseMessage(int absSyntax, AuthTypes authMech, 
+			AuthValue authValue, String destAEInst, String destAEName, String destApInst,
 			String destApName, int result, String resultReason, String srcAEInst, String srcAEName, 
 			String srcApInst, String srcApName, int version) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
@@ -269,7 +274,7 @@ public class CDAPMessage implements Serializable{
 	}
 	
 	public static CDAPMessage getCreateObjectRequestMessage(byte[] filter, Flags[] flags, 
-			int invokeID, String objClass, long objInst, String objName, byte[] objValue, 
+			int invokeID, String objClass, long objInst, String objName, ObjectValue objValue, 
 			int scope) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFilter(filter);
@@ -286,7 +291,7 @@ public class CDAPMessage implements Serializable{
 	}
 	
 	public static CDAPMessage getCreateObjectResponseMessage(Flags[] flags, int invokeID, 
-			String objClass, long objInst, String objName, byte[] objValue, int result,
+			String objClass, long objInst, String objName, ObjectValue objValue, int result,
 			String resultReason) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFlags(flags);
@@ -333,7 +338,7 @@ public class CDAPMessage implements Serializable{
 	}
 	
 	public static CDAPMessage getStartObjectRequestMessage(byte[] filter, Flags[] flags, int invokeID,
-			String objClass, byte[] objValue, long objInst, String objName, int scope) throws CDAPException{
+			String objClass, ObjectValue objValue, long objInst, String objName, int scope) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFilter(filter);
 		cdapMessage.setFlags(flags);
@@ -361,7 +366,7 @@ public class CDAPMessage implements Serializable{
 	}
 	
 	public static CDAPMessage getStopObjectRequestMessage(byte[] filter, Flags[] flags, int invokeID,
-			String objClass, byte[] objValue, long objInst, String objName, int scope) throws CDAPException{
+			String objClass, ObjectValue objValue, long objInst, String objName, int scope) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFilter(filter);
 		cdapMessage.setFlags(flags);
@@ -404,7 +409,7 @@ public class CDAPMessage implements Serializable{
 	}
 	
 	public static CDAPMessage getReadObjectResponseMessage(Flags[] flags, int invokeID, String objClass, 
-			long objInst, String objName, byte[] objValue, int result, String resultReason) throws CDAPException{
+			long objInst, String objName, ObjectValue objValue, int result, String resultReason) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFlags(flags);
 		cdapMessage.setInvokeID(invokeID);
@@ -420,7 +425,7 @@ public class CDAPMessage implements Serializable{
 	}
 	
 	public static CDAPMessage getWriteObjectRequestMessage(byte[] filter, Flags[] flags, int invokeID,
-			String objClass, long objInst, byte[] objValue, String objName, int scope) throws CDAPException{
+			String objClass, long objInst, ObjectValue objValue, String objName, int scope) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFilter(filter);
 		cdapMessage.setFlags(flags);
@@ -476,19 +481,19 @@ public class CDAPMessage implements Serializable{
 		this.absSyntax = absSyntax;
 	}
 
-	public String getAuthMech() {
+	public AuthTypes getAuthMech() {
 		return authMech;
 	}
 
-	public void setAuthMech(String authMech) {
+	public void setAuthMech(AuthTypes authMech) {
 		this.authMech = authMech;
 	}
 
-	public byte[] getAuthValue() {
+	public AuthValue getAuthValue() {
 		return authValue;
 	}
 
-	public void setAuthValue(byte[] authValue) {
+	public void setAuthValue(AuthValue authValue) {
 		this.authValue = authValue;
 	}
 
@@ -572,11 +577,11 @@ public class CDAPMessage implements Serializable{
 		this.objName = objName;
 	}
 
-	public byte[] getObjValue() {
+	public ObjectValue getObjValue() {
 		return objValue;
 	}
 
-	public void setObjValue(byte[] objValue) {
+	public void setObjValue(ObjectValue objValue) {
 		this.objValue = objValue;
 	}
 
@@ -644,7 +649,7 @@ public class CDAPMessage implements Serializable{
 		this.srcApName = srcApName;
 	}
 
-	public int getVersion() {
+	public long getVersion() {
 		return version;
 	}
 
