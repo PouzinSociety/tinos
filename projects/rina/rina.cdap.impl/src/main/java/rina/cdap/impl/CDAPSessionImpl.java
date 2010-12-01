@@ -14,6 +14,7 @@ import rina.cdap.api.CDAPMessageValidator;
 import rina.cdap.api.CDAPSession;
 import rina.cdap.api.CDAPMessage.Flags;
 import rina.cdap.api.CDAPMessage.Opcode;
+import rina.cdap.impl.message.CDAP;
 
 /**
  * Implements a CDAP session. Has the necessary logic to ensure that a 
@@ -361,9 +362,33 @@ public class CDAPSessionImpl implements CDAPSession{
 
 	private CDAPMessage deserializeMessage(byte[] message) throws CDAPException{
 		try{
-			ByteArrayInputStream byteInputStream = new ByteArrayInputStream(message);
-			ObjectInputStream ois = new ObjectInputStream(byteInputStream);
-			return (CDAPMessage) ois.readObject();
+			rina.cdap.impl.message.CDAP.CDAPMessage cdapMessage = rina.cdap.impl.message.CDAP.CDAPMessage.parseFrom(message);
+			CDAPMessage response = new CDAPMessage();
+			response.setAbsSyntax(cdapMessage.getAbsSyntax());
+			//response.setAuthMech(cdapMessage.getAuthMech().)
+			//response.setAuthValue(cdapMessage.getAuthValue());
+			response.setDestAEInst(cdapMessage.getDestAEInst());
+			response.setDestAEName(cdapMessage.getDestAEName());
+			response.setDestApInst(cdapMessage.getDestApInst());
+			response.setDestApName(cdapMessage.getDestApName());
+			//response.setFilter(cdapMessage.getFilter());
+			//response.setFlags(cdapMessage.getFlags());
+			response.setInvokeID(cdapMessage.getInvokeID());
+			response.setObjClass(cdapMessage.getObjClass());
+			response.setObjInst(cdapMessage.getObjInst());
+			response.setObjName(cdapMessage.getObjName());
+			//response.setObjValue(cdapMessage.getObjValue());
+			//response.setOpCode(cdapMessage.getOpCode());
+			response.setResult(cdapMessage.getResult());
+			response.setResultReason(cdapMessage.getResultReason());
+			response.setScope(cdapMessage.getScope());
+			response.setSrcAEInst(cdapMessage.getSrcAEInst());
+			response.setSrcAEName(cdapMessage.getSrcAEName());
+			response.setSrcApInst(cdapMessage.getSrcApInst());
+			response.setSrcApName(cdapMessage.getSrcApName());
+			//response.setVersion(cdapMessage.getVersion());
+			
+			return response;
 		}catch(Exception ex){
 			throw new CDAPException(ex);
 		}
