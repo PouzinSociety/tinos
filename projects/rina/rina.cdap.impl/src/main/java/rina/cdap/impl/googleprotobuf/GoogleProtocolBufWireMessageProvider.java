@@ -26,30 +26,82 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 			Flags flags = getFlags(cdapMessage);
 			ObjectValue objValue = getObjValue(cdapMessage);
 			Opcode opCode = getOpcode(cdapMessage);
-
+			
+			String destAEInst = cdapMessage.getDestAEInst();
+			if (destAEInst.equals("")){
+				destAEInst = null;
+			}
+			String destAEName = cdapMessage.getDestAEName();
+			if (destAEName.equals("")){
+				destAEName = null;
+			}
+			String destApInst = cdapMessage.getDestApInst();
+			if (destApInst.equals("")){
+				destApInst = null;
+			}
+			String destApName = cdapMessage.getDestApName();
+			if (destApName.equals("")){
+				destApName = null;
+			}
+			
+			byte[] filter = null;
+			if (!cdapMessage.getFilter().equals(ByteString.EMPTY)){
+				filter = cdapMessage.getFilter().toByteArray();
+			}
+			
+			String objClass = cdapMessage.getObjClass();
+			if (objClass.equals("")){
+				objClass = null;
+			}
+			String objName = cdapMessage.getObjName();
+			if (objName.equals("")){
+				objName = null;
+			}
+			String resultReason = cdapMessage.getResultReason();
+			if (resultReason.equals("")){
+				resultReason = null;
+			}
+			
+			String srcAEInst = cdapMessage.getSrcAEInst();
+			if (srcAEInst.equals("")){
+				srcAEInst = null;
+			}
+			String srcAEName = cdapMessage.getSrcAEName();
+			if (srcAEName.equals("")){
+				srcAEName = null;
+			}
+			String srcApInst = cdapMessage.getSrcApInst();
+			if (srcApInst.equals("")){
+				srcApInst = null;
+			}
+			String srcApName = cdapMessage.getSrcApName();
+			if (srcApName.equals("")){
+				srcApName = null;
+			}
+			
 			CDAPMessage response = new CDAPMessage();
 			response.setAbsSyntax(cdapMessage.getAbsSyntax());
 			response.setAuthMech(authMech);
 			response.setAuthValue(authValue);
-			response.setDestAEInst(cdapMessage.getDestAEInst());
-			response.setDestAEName(cdapMessage.getDestAEName());
-			response.setDestApInst(cdapMessage.getDestApInst());
-			response.setDestApName(cdapMessage.getDestApName());
-			response.setFilter(cdapMessage.getFilter().toByteArray());
+			response.setDestAEInst(destAEInst);
+			response.setDestAEName(destAEName);
+			response.setDestApInst(destApInst);
+			response.setDestApName(destApName);
+			response.setFilter(filter);
 			response.setFlags(flags);
 			response.setInvokeID(cdapMessage.getInvokeID());
-			response.setObjClass(cdapMessage.getObjClass());
+			response.setObjClass(objClass);
 			response.setObjInst(cdapMessage.getObjInst());
-			response.setObjName(cdapMessage.getObjName());
+			response.setObjName(objName);
 			response.setObjValue(objValue);
 			response.setOpCode(opCode);
 			response.setResult(cdapMessage.getResult());
-			response.setResultReason(cdapMessage.getResultReason());
+			response.setResultReason(resultReason);
 			response.setScope(cdapMessage.getScope());
-			response.setSrcAEInst(cdapMessage.getSrcAEInst());
-			response.setSrcAEName(cdapMessage.getSrcAEName());
-			response.setSrcApInst(cdapMessage.getSrcApInst());
-			response.setSrcApName(cdapMessage.getSrcApName());
+			response.setSrcAEInst(srcAEInst);
+			response.setSrcAEName(srcAEName);
+			response.setSrcApInst(srcApInst);
+			response.setSrcApName(srcApName);
 			response.setVersion(cdapMessage.getVersion());
 
 			return response;
@@ -61,9 +113,7 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 	private AuthTypes getAuthMech(CDAP.CDAPMessage cdapMessage){
 		AuthTypes authMech = null;
 		
-		if (cdapMessage.getAuthMech().equals(null)){
-			return null;
-		}else if (cdapMessage.getAuthMech().equals(authTypes_t.AUTH_NONE)){
+		if (cdapMessage.getAuthMech().equals(authTypes_t.AUTH_NONE)){
 			authMech = AuthTypes.AUTH_NONE;
 		}else if (cdapMessage.getAuthMech().equals(authTypes_t.AUTH_PASSWD)){
 			authMech = AuthTypes.AUTH_PASSWD;
@@ -78,27 +128,33 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 	
 	private AuthValue getAuthValue(CDAP.CDAPMessage cdapMessage){
 		AuthValue authValue = null;
+		String authName = null;
+		String authPassword = null;
 		
-		if (cdapMessage.getAuthValue() == null){
+		if (cdapMessage.getAuthValue().equals(authValue_t.getDefaultInstance())){
 			return null;
-		}else{
-			authValue = new AuthValue();
-			authValue.setAuthName(cdapMessage.getAuthValue().getAuthName());
-			if (cdapMessage.getAuthValue().getAuthOther() != null){
-				authValue.setAuthOther(cdapMessage.getAuthValue().getAuthOther().toByteArray());
-			}
-			authValue.setAuthPassword(cdapMessage.getAuthValue().getAuthPassword());
 		}
-		
+
+		authValue = new AuthValue();
+		authName = cdapMessage.getAuthValue().getAuthName();
+		if (!authName.equals("")){
+			authValue.setAuthName(authName);
+		}
+		if (!cdapMessage.getAuthValue().getAuthOther().equals(ByteString.EMPTY)){
+			authValue.setAuthOther(cdapMessage.getAuthValue().getAuthOther().toByteArray());
+		}
+		authPassword = cdapMessage.getAuthValue().getAuthPassword();
+		if (!authPassword.equals("")){
+			authValue.setAuthPassword(authPassword);
+		}
+
 		return authValue;
 	}
 	
 	private Flags getFlags(CDAP.CDAPMessage cdapMessage){
 		Flags flags = null;
 		
-		if (cdapMessage.getFlags() == null){
-			return null;
-		}else if (cdapMessage.getFlags().equals(flagValues_t.F_RD_INCOMPLETE)){
+		if (cdapMessage.getFlags().equals(flagValues_t.F_RD_INCOMPLETE)){
 			flags = Flags.F_RD_INCOMPLETE;
 		}else if (cdapMessage.getFlags().equals(flagValues_t.F_SYNC)){
 			flags = Flags.F_SYNC;
@@ -109,19 +165,25 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 	
 	private ObjectValue getObjValue(CDAP.CDAPMessage cdapMessage){
 		ObjectValue objectValue = null;
+		String strVal = null;
 		
-		if (cdapMessage.getObjValue() != null){
-			objectValue = new ObjectValue();
-			if (cdapMessage.getObjValue().getByteval() != null){
-				objectValue.setByteval(cdapMessage.getObjValue().getByteval().toByteArray());
-			}
-			objectValue.setDoubleval(cdapMessage.getObjValue().getDoubleval());
-			objectValue.setFloatval(cdapMessage.getObjValue().getFloatval());
-			objectValue.setInt64val(cdapMessage.getObjValue().getInt64Val());
-			objectValue.setIntval(cdapMessage.getObjValue().getIntval());
-			objectValue.setSint64val(cdapMessage.getObjValue().getSint64Val());
-			objectValue.setSintval(cdapMessage.getObjValue().getSintval());
-			objectValue.setStrval(cdapMessage.getObjValue().getStrval());
+		if (cdapMessage.getObjValue().equals(objVal_t.getDefaultInstance())){
+			return null;
+		}
+		
+		objectValue = new ObjectValue();
+		if (!cdapMessage.getObjValue().getByteval().equals(ByteString.EMPTY)){
+			objectValue.setByteval(cdapMessage.getObjValue().getByteval().toByteArray());
+		}
+		objectValue.setDoubleval(cdapMessage.getObjValue().getDoubleval());
+		objectValue.setFloatval(cdapMessage.getObjValue().getFloatval());
+		objectValue.setInt64val(cdapMessage.getObjValue().getInt64Val());
+		objectValue.setIntval(cdapMessage.getObjValue().getIntval());
+		objectValue.setSint64val(cdapMessage.getObjValue().getSint64Val());
+		objectValue.setSintval(cdapMessage.getObjValue().getSintval());
+		strVal = cdapMessage.getObjValue().getStrval();
+		if (!strVal.equals("")){
+			objectValue.setStrval(strVal);
 		}
 		
 		return objectValue;
@@ -130,9 +192,7 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 	private Opcode getOpcode(CDAP.CDAPMessage cdapMessage){
 		Opcode opcode = null;
 		
-		if (cdapMessage.getOpCode() == null){
-			return null;
-		}else if (cdapMessage.getOpCode().equals(opCode_t.M_CANCELREAD)){
+		if (cdapMessage.getOpCode().equals(opCode_t.M_CANCELREAD)){
 			opcode = Opcode.M_CANCELREAD;
 		}else if (cdapMessage.getOpCode().equals(opCode_t.M_CANCELREAD_R)){
 			opcode = Opcode.M_CANCELREAD_R;
@@ -180,36 +240,80 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 			flagValues_t flags = getFlags(cdapMessage);
 			objVal_t objValue = getObjValue(cdapMessage);
 			opCode_t opCode = getOpCode(cdapMessage);
-			ByteString filter = null;
+			ByteString filter = ByteString.EMPTY;
 			if (cdapMessage.getFilter() != null){
 				filter = ByteString.copyFrom(cdapMessage.getFilter());
+			}
+			String destAEInst = cdapMessage.getDestAEInst();
+			if (destAEInst == null){
+				destAEInst = "";
+			}
+			String destAEName = cdapMessage.getDestAEName();
+			if (destAEName == null){
+				destAEName = "";
+			}
+			String destApInst = cdapMessage.getDestApInst();
+			if (destApInst == null){
+				destApInst = "";
+			}
+			String destApName = cdapMessage.getDestApName();
+			if (destApName == null){
+				destApName = "";
+			}
+			String objClass = cdapMessage.getObjClass();
+			if (objClass == null){
+				objClass = "";
+			}
+			String objName = cdapMessage.getObjName();
+			if (objName == null){
+				objName = "";
+			}
+			String resultReason = cdapMessage.getResultReason();
+			if (resultReason == null){
+				resultReason = "";
+			}
+			String srcAEInst = cdapMessage.getSrcAEInst();
+			if (srcAEInst == null){
+				srcAEInst = "";
+			}
+			String srcAEName = cdapMessage.getSrcAEName();
+			if (srcAEName == null){
+				srcAEName = "";
+			}
+			String srcApInst = cdapMessage.getSrcApInst();
+			if (srcApInst == null){
+				srcApInst = "";
+			}
+			String srcApName = cdapMessage.getSrcApName();
+			if (srcApName == null){
+				srcApName = "";
 			}
 			
 			CDAP.CDAPMessage response = CDAP.CDAPMessage.newBuilder().
 											setAbsSyntax(cdapMessage.getAbsSyntax()).
 											setAuthMech(authMech).
 											setAuthValue(authValue).
-											setDestAEInst(cdapMessage.getDestAEInst()).
-											setDestAEName(cdapMessage.getDestAEName()).
-											setDestApInst(cdapMessage.getDestApInst()).
-											setDestApName(cdapMessage.getDestApName()).
+											setDestAEInst(destAEInst).
+											setDestAEName(destAEName).
+											setDestApInst(destApInst).
+											setDestApName(destApName).
 											setFilter(filter).
 											setFlags(flags).
 											setInvokeID(cdapMessage.getInvokeID()).
-											setObjClass(cdapMessage.getObjClass()).
+											setObjClass(objClass).
 											setObjInst(cdapMessage.getObjInst()).
-											setObjName(cdapMessage.getObjName()).
-											setObjValue(objValue).setOpCode(opCode).
+											setObjName(objName).
+											setObjValue(objValue).
+											setOpCode(opCode).
 											setResult(cdapMessage.getResult()).
-											setResultReason(cdapMessage.getResultReason()).
+											setResultReason(resultReason).
 											setScope(cdapMessage.getScope()).
-											setSrcAEInst(cdapMessage.getSrcAEInst()).
-											setSrcAEName(cdapMessage.getSrcAEName()).
-											setSrcApInst(cdapMessage.getSrcApInst()).
-											setSrcApName(cdapMessage.getSrcApName()).
+											setSrcAEInst(srcAEInst).
+											setSrcAEName(srcAEName).
+											setSrcApInst(srcApInst).
+											setSrcApName(srcApName).
 											setVersion(cdapMessage.getVersion()).
 											build();
-			
 			return response.toByteArray();
 		}catch(Exception ex){
 			throw new CDAPException(ex);
@@ -220,7 +324,7 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 		authTypes_t authMech = null;
 		
 		if (cdapMessage.getAuthMech() == null){
-			return null;
+			authMech = authTypes_t.AUTH_NONE;
 		}else if (cdapMessage.getAuthMech().equals(AuthTypes.AUTH_NONE)){
 			authMech = authTypes_t.AUTH_NONE;
 		}else if (cdapMessage.getAuthMech().equals(AuthTypes.AUTH_PASSWD)){
@@ -237,17 +341,32 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 	private authValue_t getAuthValue(CDAPMessage cdapMessage){
 		authValue_t authValue = null;
 		ByteString authOther = null;
+		String authName = null;
+		String authPassword = null;
 		
 		if (cdapMessage.getAuthValue() == null){
-			return null;
+			return authValue_t.getDefaultInstance();
 		}
 		
 		if (cdapMessage.getAuthValue().getAuthOther() != null){
 			authOther = ByteString.copyFrom(cdapMessage.getAuthValue().getAuthOther());
+		}else{
+			authOther = ByteString.EMPTY;
 		}
+		
+		authName = cdapMessage.getAuthValue().getAuthName();
+		if (authName == null){
+			authName = "";
+		}
+		
+		authPassword = cdapMessage.getAuthValue().getAuthPassword();
+		if (authPassword == null){
+			authPassword = "";
+		}
+		
 		authValue = CDAP.authValue_t.newBuilder().
-										setAuthName(cdapMessage.getAuthValue().getAuthName()).
-										setAuthPassword(cdapMessage.getAuthValue().getAuthName()).
+										setAuthName(authName).
+										setAuthPassword(authPassword).
 										setAuthOther(authOther).
 										build();
 		return authValue;
@@ -257,7 +376,7 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 		flagValues_t flags = null;
 		
 		if (cdapMessage.getFlags() == null){
-			return null;
+			return flagValues_t.F_SYNC;
 		}else if (cdapMessage.getFlags().equals(Flags.F_RD_INCOMPLETE)){
 			flags = flagValues_t.F_RD_INCOMPLETE;
 		}else if (cdapMessage.getFlags().equals(Flags.F_SYNC)){
@@ -270,13 +389,21 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 	private objVal_t getObjValue(CDAPMessage cdapMessage){
 		objVal_t objValue = null;
 		ByteString byteVal = null;
+		String strVal = null;
 		
 		if (cdapMessage.getObjValue() == null){
-			return null;
+			return objVal_t.getDefaultInstance();
 		}
 		
 		if (cdapMessage.getObjValue().getByteval() != null){
 			byteVal = ByteString.copyFrom(cdapMessage.getObjValue().getByteval());
+		}else{
+			byteVal = ByteString.EMPTY;
+		}
+		
+		strVal = cdapMessage.getObjValue().getStrval();
+		if (strVal == null){
+			strVal = "";
 		}
 		
 		objValue = CDAP.objVal_t.newBuilder().setByteval(byteVal).
@@ -286,7 +413,7 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 											setInt64Val(cdapMessage.getObjValue().getInt64val()).
 											setSint64Val(cdapMessage.getObjValue().getSint64val()).
 											setSintval(cdapMessage.getObjValue().getSintval()).
-											setStrval(cdapMessage.getObjValue().getStrval()).
+											setStrval(strVal).
 											build();
 		return objValue;
 	}
@@ -295,7 +422,7 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 		opCode_t opCode = null;
 		
 		if (cdapMessage.getOpCode() == null){
-			return null;
+			opCode = opCode_t.M_CONNECT;
 		}else if (cdapMessage.getOpCode().equals(Opcode.M_CANCELREAD)){
 			opCode = opCode_t.M_CANCELREAD;
 		}else if (cdapMessage.getOpCode().equals(Opcode.M_CANCELREAD_R)){
