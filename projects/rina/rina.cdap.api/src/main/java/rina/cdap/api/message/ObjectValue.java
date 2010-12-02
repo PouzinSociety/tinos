@@ -12,7 +12,7 @@ public class ObjectValue {
 	private long int64val = 0;
 	private long sint64val = 0;
 	private String strval = null;
-	private byte[] buteval = null;
+	private byte[] byteval = null;
 	private int floatval = 0;
 	private long doubleval = 0;
 	
@@ -56,12 +56,12 @@ public class ObjectValue {
 		this.strval = strval;
 	}
 	
-	public byte[] getButeval() {
-		return buteval;
+	public byte[] getByteval() {
+		return byteval;
 	}
 	
-	public void setButeval(byte[] buteval) {
-		this.buteval = buteval;
+	public void setByteval(byte[] buteval) {
+		this.byteval = buteval;
 	}
 	
 	public int getFloatval() {

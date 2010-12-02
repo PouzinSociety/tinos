@@ -123,7 +123,7 @@ public class CDAPMessageValidator{
 	}
 	
 	private static void validateInvokeID(CDAPMessage message) throws CDAPException{
-		if (message.getInvokeID() != -1){
+		if (message.getInvokeID() != 0){
 			if (message.getOpCode().equals(Opcode.M_CONNECT) || message.getOpCode().equals(Opcode.M_CONNECT_R)){
 				throw new CDAPException("The invoke id parameter cannot be set for M_CREATE and M_CREATE_R messages");
 			}
@@ -151,7 +151,7 @@ public class CDAPMessageValidator{
 	}
 	
 	private static void validateObjInst(CDAPMessage message) throws CDAPException{
-		if (message.getObjInst() != -1){
+		if (message.getObjInst() != 0){
 			if (!message.getOpCode().equals(Opcode.M_CREATE) && !message.getOpCode().equals(Opcode.M_CREATE_R)
 				&& !message.getOpCode().equals(Opcode.M_DELETE) && !message.getOpCode().equals(Opcode.M_DELETE_R)
 				&& !message.getOpCode().equals(Opcode.M_READ) && !message.getOpCode().equals(Opcode.M_READ_R)
@@ -202,7 +202,7 @@ public class CDAPMessageValidator{
 	}
 	
 	private static void validateResult(CDAPMessage message) throws CDAPException{
-		if (message.getResult() != -1){
+		if (message.getResult() != 0){
 			if (!message.getOpCode().equals(Opcode.M_CREATE_R) && !message.getOpCode().equals(Opcode.M_DELETE_R)
 					&& !message.getOpCode().equals(Opcode.M_READ_R) && !message.getOpCode().equals(Opcode.M_WRITE_R)
 					&& !message.getOpCode().equals(Opcode.M_CONNECT_R) && !message.getOpCode().equals(Opcode.M_RELEASE_R)
@@ -237,7 +237,7 @@ public class CDAPMessageValidator{
 	}
 	
 	private static void validateScope(CDAPMessage message) throws CDAPException{
-		if (message.getScope() != -1){
+		if (message.getScope() != 0){
 			if (!message.getOpCode().equals(Opcode.M_CREATE) && !message.getOpCode().equals(Opcode.M_DELETE)
 					&& !message.getOpCode().equals(Opcode.M_READ) && !message.getOpCode().equals(Opcode.M_WRITE)
 					&& !message.getOpCode().equals(Opcode.M_START) && !message.getOpCode().equals(Opcode.M_STOP)){
