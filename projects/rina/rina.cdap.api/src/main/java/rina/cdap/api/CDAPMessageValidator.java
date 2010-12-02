@@ -52,7 +52,7 @@ public class CDAPMessageValidator{
 	}
 	
 	private static void validateAuthMech(CDAPMessage message) throws CDAPException{
-		if (message.getAuthMech() != null){
+		if (message.getAuthMech()!=null && !message.getAuthMech().equals(CDAPMessage.AuthTypes.AUTH_NONE)){
 			if (!message.getOpCode().equals(Opcode.M_CONNECT) && !message.getOpCode().equals(Opcode.M_CONNECT_R)){
 				throw new CDAPException("AuthMech can only be set for M_CONNECT and M_CONNECT_R messages");
 			}
@@ -127,10 +127,6 @@ public class CDAPMessageValidator{
 			if (message.getOpCode().equals(Opcode.M_CONNECT) || message.getOpCode().equals(Opcode.M_CONNECT_R)){
 				throw new CDAPException("The invoke id parameter cannot be set for M_CREATE and M_CREATE_R messages");
 			}
-		}else{
-			if (!message.getOpCode().equals(Opcode.M_CONNECT) && !message.getOpCode().equals(Opcode.M_CONNECT_R)){
-				throw new CDAPException("The invoke id parameter must be set for all messages that are not M_CREATE and M_CREATE_R");
-			}
 		}
 	}
 	
@@ -202,25 +198,6 @@ public class CDAPMessageValidator{
 	}
 	
 	private static void validateResult(CDAPMessage message) throws CDAPException{
-		if (message.getResult() != 0){
-			if (!message.getOpCode().equals(Opcode.M_CREATE_R) && !message.getOpCode().equals(Opcode.M_DELETE_R)
-					&& !message.getOpCode().equals(Opcode.M_READ_R) && !message.getOpCode().equals(Opcode.M_WRITE_R)
-					&& !message.getOpCode().equals(Opcode.M_CONNECT_R) && !message.getOpCode().equals(Opcode.M_RELEASE_R)
-					&& !message.getOpCode().equals(Opcode.M_CANCELREAD) && !message.getOpCode().equals(Opcode.M_CANCELREAD_R)
-					&& !message.getOpCode().equals(Opcode.M_START_R) && !message.getOpCode().equals(Opcode.M_STOP_R)){
-				throw new CDAPException("The result parameter can only be set for M_CREATE_R, M_DELETE_R, M_READ_R, " +
-						"M_WRITE_R, M_START_R, M_STOP_R, M_CONNECT_R, M_RELEASE_R, M_CANCELREAD and M_CANCELREAD_R messages");
-			}
-		}else{
-			if (message.getOpCode().equals(Opcode.M_CREATE_R) || message.getOpCode().equals(Opcode.M_DELETE_R)
-					|| message.getOpCode().equals(Opcode.M_READ_R) || message.getOpCode().equals(Opcode.M_WRITE_R)
-					|| message.getOpCode().equals(Opcode.M_CONNECT_R) || message.getOpCode().equals(Opcode.M_RELEASE_R)
-					|| message.getOpCode().equals(Opcode.M_CANCELREAD) || message.getOpCode().equals(Opcode.M_CANCELREAD_R)
-					|| message.getOpCode().equals(Opcode.M_START_R) || message.getOpCode().equals(Opcode.M_STOP_R)){
-				throw new CDAPException("The result parameter must be set for M_CREATE_R, M_DELETE_R, M_READ_R, " +
-						"M_WRITE_R, M_START_R, M_STOP_R, M_CONNECT_R, M_RELEASE_R, M_CANCELREAD and M_CANCELREAD_R messages");
-			}
-		}
 	}
 	
 	private static void validateResultReason(CDAPMessage message) throws CDAPException{
