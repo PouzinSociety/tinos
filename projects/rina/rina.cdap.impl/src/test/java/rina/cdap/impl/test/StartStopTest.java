@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import rina.cdap.api.CDAPException;
-import rina.cdap.api.CDAPMessage;
+import rina.cdap.api.message.CDAPMessage;
 
 public class StartStopTest extends BaseCDAPTest{
 	@Before

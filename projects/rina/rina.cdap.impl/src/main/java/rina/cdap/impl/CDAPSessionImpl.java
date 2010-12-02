@@ -9,12 +9,11 @@ import java.util.Map;
 
 
 import rina.cdap.api.CDAPException;
-import rina.cdap.api.CDAPMessage;
+import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.CDAPMessageValidator;
 import rina.cdap.api.CDAPSession;
-import rina.cdap.api.CDAPMessage.Flags;
-import rina.cdap.api.CDAPMessage.Opcode;
-import rina.cdap.impl.message.CDAP;
+import rina.cdap.api.message.CDAPMessage.Flags;
+import rina.cdap.api.message.CDAPMessage.Opcode;
 
 /**
  * Implements a CDAP session. Has the necessary logic to ensure that a 
@@ -38,10 +37,16 @@ public class CDAPSessionImpl implements CDAPSession{
 	
 	private Map<Integer, CDAPOperationState> cancelReadPendingMessages = null;
 	
+	private WireMessageProvider wireMessageProvider = null;
+	
 	public CDAPSessionImpl(){
 		pendingMessages = new HashMap<Integer, CDAPOperationState>();
 		this.cancelReadPendingMessages = new HashMap<Integer, CDAPOperationState>();
 		this.connectionStateMachine = new ConnectionStateMachine(this);
+	}
+	
+	public void setWireMessageProvider(WireMessageProvider wireMessageProvider){
+		this.wireMessageProvider = wireMessageProvider;
 	}
 	
 	protected void resetConnection(){
@@ -318,12 +323,9 @@ public class CDAPSessionImpl implements CDAPSession{
 		checkCanSendOrReceiveResponse(cdapMessage, opcode, sent);
 		boolean operationComplete = true;
 		if (opcode.equals(Opcode.M_READ)){
-			Flags[] flags = cdapMessage.getFlags();
-			for(int i=0; i<flags.length; i++){
-				if (flags[i].equals(Flags.F_INCOMPLETE)){
+			Flags flags = cdapMessage.getFlags();
+			if (flags.equals(Flags.F_RD_INCOMPLETE)){
 					operationComplete = false;
-					break;
-				}
 			}
 		}
 		if (operationComplete){
@@ -346,51 +348,10 @@ public class CDAPSessionImpl implements CDAPSession{
 	}
 	
 	private byte[] serializeMessage(CDAPMessage cdapMessage) throws CDAPException{
-		// Serialize to a byte array
-		try{
-			ByteArrayOutputStream bos = new ByteArrayOutputStream() ;
-			ObjectOutputStream out = new ObjectOutputStream(bos) ;
-			out.writeObject(cdapMessage);
-			out.close();
-
-			// Get the bytes of the serialized object
-			return bos.toByteArray();
-		}catch(Exception ex){
-			throw new CDAPException(ex);
-		}
+		return wireMessageProvider.serializeMessage(cdapMessage);
 	}
 
 	private CDAPMessage deserializeMessage(byte[] message) throws CDAPException{
-		try{
-			rina.cdap.impl.message.CDAP.CDAPMessage cdapMessage = rina.cdap.impl.message.CDAP.CDAPMessage.parseFrom(message);
-			CDAPMessage response = new CDAPMessage();
-			response.setAbsSyntax(cdapMessage.getAbsSyntax());
-			//response.setAuthMech(cdapMessage.getAuthMech().)
-			//response.setAuthValue(cdapMessage.getAuthValue());
-			response.setDestAEInst(cdapMessage.getDestAEInst());
-			response.setDestAEName(cdapMessage.getDestAEName());
-			response.setDestApInst(cdapMessage.getDestApInst());
-			response.setDestApName(cdapMessage.getDestApName());
-			//response.setFilter(cdapMessage.getFilter());
-			//response.setFlags(cdapMessage.getFlags());
-			response.setInvokeID(cdapMessage.getInvokeID());
-			response.setObjClass(cdapMessage.getObjClass());
-			response.setObjInst(cdapMessage.getObjInst());
-			response.setObjName(cdapMessage.getObjName());
-			//response.setObjValue(cdapMessage.getObjValue());
-			//response.setOpCode(cdapMessage.getOpCode());
-			response.setResult(cdapMessage.getResult());
-			response.setResultReason(cdapMessage.getResultReason());
-			response.setScope(cdapMessage.getScope());
-			response.setSrcAEInst(cdapMessage.getSrcAEInst());
-			response.setSrcAEName(cdapMessage.getSrcAEName());
-			response.setSrcApInst(cdapMessage.getSrcApInst());
-			response.setSrcApName(cdapMessage.getSrcApName());
-			//response.setVersion(cdapMessage.getVersion());
-			
-			return response;
-		}catch(Exception ex){
-			throw new CDAPException(ex);
-		}
+		return wireMessageProvider.deserializeMessage(message);
 	}
 }

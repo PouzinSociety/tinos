@@ -1,4 +1,4 @@
-package rina.cdap.impl.message;
+package rina.cdap.impl.googleprotobuf;
 
 // Message types.
 enum opCode_t {

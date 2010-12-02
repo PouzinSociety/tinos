@@ -4,7 +4,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import rina.cdap.api.CDAPException;
-import rina.cdap.api.CDAPMessage;
+import rina.cdap.api.message.CDAPMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

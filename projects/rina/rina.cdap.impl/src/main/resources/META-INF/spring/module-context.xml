@@ -3,6 +3,9 @@
 		xsi:schemaLocation="
 			http://www.springframework.org/schema/beans
 			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+	<bean name="wireMessageProviderFactory" class="rina.cdap.impl.googleprotobuf.GoogleProtoBufWireMessageProviderFactory">
+	</bean>	
 	<bean name="cdapSessionFactoryBean" class="rina.cdap.impl.CDAPSessionFactoryImpl">
+		<property name="wireMessageProviderFactory" ref="wireMessageProviderFactory"/>
 	</bean>
 </beans>

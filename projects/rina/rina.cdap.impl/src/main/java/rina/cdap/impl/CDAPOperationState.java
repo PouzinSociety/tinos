@@ -1,6 +1,6 @@
 package rina.cdap.impl;
 
-import rina.cdap.api.CDAPMessage.Opcode;
+import rina.cdap.api.message.CDAPMessage.Opcode;
 
 /**
  * Encapsulates an operation state
