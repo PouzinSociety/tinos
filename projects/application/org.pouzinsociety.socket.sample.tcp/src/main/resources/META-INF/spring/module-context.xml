@@ -7,11 +7,9 @@
 <!-- Update for your bean -->	
 	<bean name="serverSocket" class="org.pouzinsociety.socket.tcp.SocketServer">
 		<constructor-arg ref="tcpTransportService"/>
-		<constructor-arg ref="stackConfigurationService"/>
 	</bean>
 	
 	<bean name="clientSocket" class="org.pouzinsociety.socket.tcp.SocketClient">
 		<constructor-arg ref="tcpTransportService"/>
-		<constructor-arg ref="stackConfigurationService"/>
 	</bean>
 </beans>

@@ -33,24 +33,27 @@ import java.net.SocketException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jnode.net.TransportLayer;
-import org.pouzinsociety.config.stack.StackConfiguration;
+import org.pouzinsociety.bootstrap.api.BootStrapCompleteAPI;
+import org.pouzinsociety.bootstrap.api.BootstrapException;
 import jnode.net.ServerSocket;
 import jnode.net.Socket;
 import jnode.net.SocketImplFactory;
 
-public class SocketServer implements Runnable {
+public class SocketServer implements BootStrapCompleteAPI,Runnable {
 	private static final Log log = LogFactory.getLog(SocketServer.class);
 	private TransportLayer tcpTransport;
-	@SuppressWarnings("unused")
-	private StackConfiguration stackConfiguration;
 
-	public SocketServer(TransportLayer tcpTransport, StackConfiguration stackConfiguration) throws SocketException {
+	public SocketServer(TransportLayer tcpTransport) throws SocketException {
 		this.tcpTransport = tcpTransport;
-		this.stackConfiguration = stackConfiguration;
-		if (stackConfiguration.Complete())
-			new Thread(this).start();
-		else
-			throw new SocketException("StackConfiguration not complete");
+	}
+	
+	public void bootstrapComplete(Object arg0) throws BootstrapException {
+		log.debug("BootStrapComplete()");
+		new Thread(this).start();
+	}
+	public String getConfigDaoClassName() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	public void run() {
