@@ -34,23 +34,27 @@ import jnode.net.PlainDatagramSocketImpl;
 import jnode.net.PlainDatagramSocketImplFactory;
 import org.apache.commons.logging.*;
 import org.jnode.net.TransportLayer;
-import org.pouzinsociety.config.stack.StackConfiguration;
+import org.pouzinsociety.bootstrap.api.BootStrapCompleteAPI;
+import org.pouzinsociety.bootstrap.api.BootstrapException;
 
-public class SocketClient implements Runnable {
+
+public class SocketClient implements Runnable, BootStrapCompleteAPI {
 	private static final Log log = LogFactory.getLog(SocketClient.class);
 	private TransportLayer udpTransport;
-	@SuppressWarnings("unused")
-	private StackConfiguration stackConfiguration;
 	private String request = "DEAD";
 
 
-	public SocketClient(TransportLayer udpTransport, StackConfiguration stackConfiguration) throws SocketException {
+	public SocketClient(TransportLayer udpTransport) throws SocketException {
 		this.udpTransport = udpTransport;
-		this.stackConfiguration = stackConfiguration;
-		if (stackConfiguration.Complete())
-			new Thread(this).start();
-		else
-			throw new SocketException("StackConfiguration not complete");
+	}
+	
+	public void bootstrapComplete(Object arg0) throws BootstrapException {
+		log.debug("BootStrapComplete()");
+		new Thread(this).start();
+	}
+	public String getConfigDaoClassName() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	public void run() {	    	

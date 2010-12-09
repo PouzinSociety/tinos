@@ -16,15 +16,11 @@
 	</publications>
 
 	<dependencies>
+<!-- Bootstrap -->
+		<dependency org="org.pouzinsociety.bootstrap" name="org.pouzinsociety.bootstrap.api" rev="1.0.0" conf="compile->runtime" />
 <!-- JNode -->
 		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.support" rev="1.0.0" conf="compile->runtime"/>
-		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ethernet" rev="1.0.0" conf="compile->runtime" />
-<!-- Configuration -->
-		<dependency org="org.pouzinsociety.config" name="org.pouzinsociety.config.stack" rev="1.0.0" conf="compile->runtime" />
 
-<!-- Spring Framework
-		<dependency org="org.springframework" name="org.springframework.spring-library" rev="${org.springframework.spring}" conf="dm-server-provided->compile" />
--->
 <!-- Logging -->
 		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" conf="dm-server-provided->runtime" />
 <!-- Tests -->
