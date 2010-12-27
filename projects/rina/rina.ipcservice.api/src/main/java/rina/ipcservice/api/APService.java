@@ -13,15 +13,15 @@ public interface APService {
 	 * @param port_id
 	 * @param result
 	 */
-	void deliverAllocateResponse(ApplicationProcessNamingInfo requestedAPinfo, int port_id, boolean result, String resultReason) ;
+	public void deliverAllocateResponse(ApplicationProcessNamingInfo requestedAPinfo, int port_id, boolean result, String resultReason) ;
 
 	/**
 	 * Invoked when in the Transfer state to deliver an SDU on this port-id
 	 * @param port_id
 	 * @param sdu
-	 * @param result
+	 * @return result
 	 */
-	void deliverTransfer(int port_id, byte[] sdu, boolean result);
+	public void deliverTransfer(int port_id, byte[] sdu, boolean result);
 	
 	/**
 	 * Invoked in any state by an AAEI to notify the local application process that the release 
@@ -29,7 +29,7 @@ public interface APService {
 	 * @param port_id
 	 * @param result
 	 */
-	void deliverDeallocate(int port_id, boolean result);
+	public void deliverDeallocate(int port_id, boolean result);
 	
 	/**
 	 * This primitive is invoked in response to a sumbitStatus to report the current status of 
@@ -37,11 +37,11 @@ public interface APService {
 	 * @param port_id
 	 * @param result
 	 */
-	void deliverStatus(int port_id, boolean result);
+	public void deliverStatus(int port_id, boolean result);
 	
 	/**
 	 * Invoked when a Create_Request primitive is received at the requested IPC process
 	 * @param request
 	 */
-	void deliverAllocateRequest(AllocateRequest request) ;
+	public void deliverAllocateRequest(AllocateRequest request) ;
 }
