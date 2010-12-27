@@ -37,24 +37,17 @@ public class QoSCube {
 	//Jitter in secs2
 	public String jitter = "jitter";
 
-
-
 	public Map<String, Object> getCube() {
 		return cube;
 	}
-
-
-
+	
 	public void setCube(Map<String, Object> cube) {
 		this.cube = cube;
 	}
-
-
 
 	public boolean isValidFormat(){
 		//TODO: Add the format check
 		return validFormat;
 		
 	}
-
 }

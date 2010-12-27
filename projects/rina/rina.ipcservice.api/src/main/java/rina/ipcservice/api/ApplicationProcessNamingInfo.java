@@ -10,6 +10,7 @@ public class ApplicationProcessNamingInfo {
 	private int applicationProcessInstance_id = 0;
 	private String applicationEntity_id = null;
 	private int applicationEntityInstance_id = 0;
+	private boolean validFormat = false;
 	
 	public ApplicationProcessNamingInfo( String applicationProcessName, int applicationProcessInstance_id, String flowAllocator_id, int flowAllocatorInstance_id){
 		this.applicationProcessName = applicationProcessName;
@@ -50,15 +51,9 @@ public class ApplicationProcessNamingInfo {
 		applicationEntityInstance_id = applicationEntityInstanceId;
 	}
 
-	private boolean validFormat = false;
-	
-	
-	
 	public boolean isValidFormat(){
 		//TODO: Add the format check
 		return validFormat;
 		
 	}
-	
-
 }
