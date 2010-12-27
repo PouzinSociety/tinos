@@ -7,16 +7,16 @@ package rina.ipcservice.api;
 public class ApplicationProcessNamingInfo {
 	
 	private String applicationProcessName = null;
-	private int applicationProcessInstance_id = 0;
-	private String applicationEntity_id = null;
-	private int applicationEntityInstance_id = 0;
+	private String applicationProcessInstance = null;
+	private String applicationEntityName = null;
+	private String applicationEntityInstance = null;
 	private boolean validFormat = false;
 	
-	public ApplicationProcessNamingInfo( String applicationProcessName, int applicationProcessInstance_id, String flowAllocator_id, int flowAllocatorInstance_id){
+	public ApplicationProcessNamingInfo(String applicationProcessName, String applicationProcessInstance, String applicationEntityName, String applicationEntityInstance){
 		this.applicationProcessName = applicationProcessName;
-		this.applicationProcessInstance_id = applicationProcessInstance_id;
-		this.applicationEntity_id = flowAllocator_id;
-		this.applicationEntityInstance_id = flowAllocatorInstance_id;
+		this.applicationProcessInstance = applicationProcessInstance;
+		this.applicationEntityName = applicationEntityName;
+		this.applicationEntityInstance = applicationEntityInstance;
 	}
 	
 	public String getApplicationProcessName() {
@@ -27,28 +27,28 @@ public class ApplicationProcessNamingInfo {
 		this.applicationProcessName = applicationProcessName;
 	}
 
-	public int getApplicationProcessInstance_id() {
-		return applicationProcessInstance_id;
+	public String getApplicationProcessInstance() {
+		return applicationProcessInstance;
 	}
 
-	public void setApplicationProcessInstance_id(int applicationProcessInstanceId) {
-		applicationProcessInstance_id = applicationProcessInstanceId;
+	public void setApplicationProcessInstance(String applicationProcessInstance) {
+		this.applicationProcessInstance = applicationProcessInstance;
 	}
 
-	public String getApplicationEntity_id() {
-		return applicationEntity_id;
+	public String getApplicationEntityName() {
+		return applicationEntityName;
 	}
 
-	public void setApplicationEntity_id(String applicationEntityId) {
-		applicationEntity_id = applicationEntityId;
+	public void setApplicationEntityName(String applicationEntityName) {
+		this.applicationEntityName = applicationEntityName;
 	}
 
-	public int getApplicationEntityInstance_id() {
-		return applicationEntityInstance_id;
+	public String getApplicationEntityInstance() {
+		return applicationEntityInstance;
 	}
 
-	public void setApplicationEntityInstance_id(int applicationEntityInstanceId) {
-		applicationEntityInstance_id = applicationEntityInstanceId;
+	public void setApplicationEntityInstance(String applicationEntityInstance) {
+		this.applicationEntityInstance = applicationEntityInstance;
 	}
 
 	public boolean isValidFormat(){
