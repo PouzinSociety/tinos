@@ -7,7 +7,6 @@ public class AllocateRequest {
 	private int port_id = 0;
 	private QoSCube cube = null;
 	private boolean result = false;
-
 	private boolean validFormat = false;
 	private boolean acceptRequest = false;
 
