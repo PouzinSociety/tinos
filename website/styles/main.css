@@ -1,0 +1,522 @@
+/* 
+ * MAIN CSS
+ *
+ * All styles for the screen, other than color-specific styles,
+ * should be included here.  Color styles should be included
+ * in colors.css.
+ *
+  * COMMON STYLES
+ */
+body {
+	 background:#FFF url(../images/page_bg.png) 50% 0 repeat-x;
+    font-family:Arial, Helvetica, sans-serif;
+    color:#282828;
+    font-size:13px;
+
+}
+
+#page {
+	margin: 30px;
+	width: auto;
+}
+
+/*
+ * HEADER STYLES
+ */
+#header {
+	background: #6c940b url(../images/header-stretch.png);
+	width: 100%;
+	height: 199px;
+}
+
+#name-and-company {
+	background: url(../images/header-left.png) top left no-repeat;
+	width: 100%;
+	height: 199px;
+	position: relative;
+	top: 0px;
+	left: 0px;
+}
+
+#site-name {
+	margin: 0;
+	display: inline;
+	font-size: 150%;
+}
+
+#site-name a,#site-name a:hover {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	position: absolute;
+	top: 99px;
+	left: 56px;
+	text-decoration: none;
+	width: 274px;
+	height: 37px;
+}
+
+#company-name a {
+	position: absolute;
+	right: 0px;
+	background: url(../images/header-right.png) top right no-repeat;
+	height: 199px;
+	width: 309px;
+	font-size: 8px;
+	text-align: center;
+}
+
+#search {
+	position: absolute;
+	padding: 0;
+	top: 0;
+	right: 0;
+}
+
+/*
+ * TEXT FORMATTING STYLES
+ */
+h1 {
+	font-size: 1.4em;
+	padding: 12px 0 5px 0;
+	line-height: 125%;
+}
+
+h2 {
+	font-size: 1.2em;
+	padding: 10px 0 2px 0;
+}
+
+h3 {
+	font-size: 1em;
+	padding: 8px 0 5px 0;
+}
+
+h4 {
+	font-size: 1em;
+	padding-top: 8px;
+}
+
+/*
+ * MENU STYLES
+ */
+#primary-navigation {
+	padding: 0;
+	background: url(../images/primary-menu-stretch.png) repeat-x;
+	height: 23px;
+	position: relative;
+	margin: 8px 0 0 0;
+}
+
+#primary-left {
+	background-image: url(../images/primary-wrapper-left.png);
+	background-repeat: no-repeat;
+	background-position: top left;
+	font-size: 93%;
+	line-height: normal;
+	padding: 0 0 0 8px;
+	height: 23px;
+	position: relative;
+	float: left;
+}
+
+#primary-right {
+	background-image: url(../images/primary-wrapper-right.png);
+	background-repeat: no-repeat;
+	background-position: top right;
+	font-size: 93%;
+	line-height: normal;
+	padding: 0 8px 0 0;
+	height: 23px;
+	position: relative;
+	float: right;
+}
+
+#primary-left ul,#primary-right ul {
+	padding: 0 0 0 5px;
+	margin: 0;
+	list-style: none;
+}
+
+#primary-left li,#primary-right li {
+	display: inline;
+}
+
+#primary-left a,#primary-right a {
+	font-weight: normal;
+	display: block;
+	float: left;
+	padding: 5px 14px 5px 14px;
+	margin: 0px 1px 0 0;
+	background-position: 0% 0;
+	background-image: url(../images/primary-item-background.png);
+	background-repeat: repeat-x;
+}
+
+#primary-left a:hover,#primary-right a:hover {
+	background-image: none;
+}
+
+#secondary-navigation {
+	width: 212px;
+	height: 100%;
+	margin-left: 16px;
+	float: left;
+}
+
+#secondary-navigation ul {
+	margin: 0;
+	padding: 12px 0 0 0;
+	list-style: none;
+}
+
+#secondary-navigation li a {
+	display: block;
+	text-decoration: none;
+	padding: 6px 5px;
+}
+
+#secondary-navigation ul ul {
+	margin: 0;
+	padding: 0 0 0 12px;
+	list-style: none;
+}
+
+#content,#content-no-nav {
+	display: block;
+	padding-bottom: 20px;
+}
+
+#content-no-nav {
+	margin-left: 5px;
+}
+
+/*
+ * CONTAINER STYLES
+ */
+#container {
+	margin: 0;
+	padding-bottom: 20px;
+    overflow:hidden;
+}
+
+/*
+ * TABLE STYLES
+ */
+table {
+	border-spacing: 0;
+	margin: 0;
+	border-collapse: collapse;
+}
+
+th {
+	height: 19px;
+	text-align: left;
+	font-weight: bold;
+	margin: 0;
+	padding: 3px 6px 0 6px;
+	line-height: 19px;
+}
+
+.bordered-table th {
+	background-image: url(../images/table-header-background.png);
+	background-repeat: repeat-x;
+	white-space: nowrap;
+}
+
+td {
+	margin: 0;
+	padding: 4px 6px;
+	vertical-align: top;
+}
+
+.name-sublevel1-odd {
+	padding-left: 20px;
+	font-weight: bold;
+}
+
+.name-sublevel1-even {
+	padding-left: 20px;
+	font-weight: bold;
+}
+
+.two-tables {
+	width:100%;
+}
+
+.two-tables .left {
+	float:left;
+}
+
+.two-tables .right {
+	float:right;
+}
+
+/*
+ * FORM STYLES
+ */
+
+input, textarea, textfield {
+    margin: 0;
+    font-family: Arial, Helvetica, "Bitstream Vera Sans", sans-serif;
+    padding: 1px;
+    font-size: 100%;
+  }
+
+input.form-checkbox, input.form-radio {
+  border: none;
+}
+
+#search .form-text, #user-login-form .form-text {
+  padding: 2px;
+}
+
+.form-submit, .button {
+  padding: 1px;
+}
+
+#user-login-form {
+  text-align: left;
+}
+
+#user-login-form .item-list ul {
+  margin-top: 10px;
+}
+
+/*
+ * ALERTS, STATUS, HELP MESSAGE STYLES
+ */
+
+.messages {
+  padding: 1.3em 1em .3em 52px;
+  margin: 10px 0;
+}
+
+.messages ul {
+  padding: 0 0 0 20px;
+  margin: 0;
+}
+
+/*
+ * FOOTER STYLES
+ */
+#footer-wrapper {
+	clear: both;
+	margin: 0;
+	background-image: url(../images/footer-stretch.png);
+	background-repeat: repeat-x;
+	height: 60px;
+	width: 100%;
+}
+
+#footer-left,#footer-right {
+	margin: 0;
+	font-size: 85%;
+	padding: 1em;
+	height: 29px;
+}
+
+#footer-left {
+	text-align: left;
+	background-image: url(../images/footer-left.png);
+	background-repeat: no-repeat;
+	position: relative;
+	left: 0;
+	float: left;
+}
+
+#footer-right {
+	text-align: right;
+	background-image: url(../images/footer-right.png);
+	background-repeat: no-repeat;
+	background-position: top right;
+	position: relative;
+	right: 0;
+	float: right;
+}
+
+
+/* NEW CSS DETAILS */
+
+fieldset,img{
+    border:0;
+}
+
+
+/* wrapper setup */
+div.rapidxwpr{
+	margin:auto;
+	width:900px;
+}
+
+
+
+/* main body setup */
+div#middle{
+    width:auto;
+    margin:30px 0px 0px 0px;
+    clear:both;
+    border:#C6C6C6 1px solid;
+    padding:20px;;
+}
+
+/* right column */
+div#right{
+    width:277px;
+    padding:0px 0px 0px 18px;
+    float:right;
+}
+
+* html div#right{
+    padding:0px 0px 0px 15px;
+}
+
+/* content column */
+div#main{
+    width:auto;
+    margin:0px 0px 0px 0px;
+    padding:0px 0px 0px 0px;
+}
+
+div#mainmiddle{
+    margin:0px 0px 0px 0px;
+}
+
+div#content{
+    width:auto;
+}
+
+
+/* clearing & floating */
+.clearingfix:after{
+    content:".";
+    display:block;
+    line-height:0px;
+    clear:both;
+    visibility:hidden;
+}
+
+.clearingfix{
+    display:block;
+}
+
+.floatbox{
+    overflow:hidden;
+	padding-top:10px;
+}
+
+/* alignments */
+.alignleft{
+    float:left;
+    margin:0 20px 0 0;
+}
+
+.alignright{
+    float:right;
+    margin:0 0 0 20px;
+}
+
+
+/* welcome */
+div.welcome{
+    background:url(../images/growth.jpg) 100% 0 no-repeat;
+    padding:0 220px 10px 0;
+    margin:0 0 10px 0;
+}
+
+div.welcome h1, div.welcome h2{
+    font-weight:normal;
+    text-transform:uppercase;
+    margin:0;
+}
+
+div.welcome h1 span, div.welcome h2 span{
+    color:#B7C730;
+}
+
+/* benefits box */
+div.benefits{
+    background:url(../images/benefits-top.jpg) 0 0 no-repeat;
+    padding:15px 0 0 0;
+}
+
+div.benefits-bg{
+    background:url(../images/benefits-bg.jpg) 0 100% no-repeat;
+    padding:0 13px 15px 13px;
+}
+
+div.benefits h3{
+    text-transform:uppercase;
+	font-size:15px;
+    font-weight:normal;
+    margin:0 30 0px;
+}
+
+div.benefits ul{
+    list-style:none;
+    margin:5px 0px;
+}
+
+div.benefits ul li{
+    background:url(../images/icon-leaf.png) 7px 50% no-repeat;
+    padding:10px 0 8px 33px;
+    border-bottom:#d4d3d3 1px solid;
+}
+
+div.benefits ul li a{
+    font-size:17px;
+    color:#282828;
+	text-decoration:none;
+}
+
+/* learn more */
+a.learnmore {
+    background:url(../images/learn-more.png) 0 0 no-repeat;
+    color:#FFF;
+    width:55px;
+    display:block;
+    padding:0px 10px;
+    line-height:16px;
+    height:18px;
+    margin:10px 0 0 0;
+    float:right;
+}
+
+/* features box */
+div.box{
+    padding:0px 0 0 0;
+}
+
+div.box-bg{
+    padding:0 0px 10px 0px;
+}
+
+/* features */
+ul.features{
+    list-style:none;
+	padding:0px;
+}
+
+ul.features li{
+    float:left;
+    width:240px;
+    margin:10px 15px;
+    height:60px;
+}
+
+* html ul.features li{
+    margin:10px 10px;
+}
+
+ul.features li img.features-icon{
+    float:left;
+    width:50px;
+}
+
+ul.features li div.details{
+    float:right;
+    width:180px;
+}
+
+ul.features li div.details h4{
+    margin:0;
+}
