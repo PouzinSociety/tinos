@@ -1,5 +1,7 @@
 package rina.ribdaemon.api;
 
+import rina.cdap.api.message.CDAPMessage;
+
 /**
  * Specifies the interface of the RIB Daemon
  * @author eduardgrasa
@@ -17,19 +19,26 @@ public interface RIBDaemon {
 	public void cdapMessageDelivered(byte[] cdapMessage);
 	
 	/**
-	 * Interested MessageSubscribers will be called when CDAP messages related to objects of one of the classes 
-	 * contained within the objClasses array are received. The same MessageSubscriber can receive messages 
-	 * from different types of object classes.
-	 * @param objClass
-	 * @param objectClasses
-	 */
-	public void subscribeToMessages(String[] objectClasses, MessageSubscriber messageSubscriber);
-	
-	/**
-	 * Message subscribers will stop receiving CDAP messages related to objects of one of the classes 
-	 * contained within the objClasses array
-	 * @param objectClasses
+	 * Interested MessageSubscribers will be called when CDAP that comply with the 
+	 * filter defined by the non-default attributes of the messageSubscription class are received.
+	 * @param messageSubscription
 	 * @param messageSubscriber
 	 */
-	public void unsubscribeFromMessages(String[] objectClasses, MessageSubscriber messageSubscriber);
+	public void subscribeToMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber);
+	
+	/**
+	 * Uninterested MessageSubscribers will be called when CDAP that comply with the 
+	 * filter defined by the non-default attributes of the messageSubscription class are received.
+	 * @param messageSubscription
+	 * @param messageSubscriber
+	 */
+	public void unsubscribeFromMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber);
+	
+	/**
+	 * Send an information update, consisting in a set of cdap messages, using the updateStrategy update strategy
+	 * (on demand, scheduled)
+	 * @param cdapMessages
+	 * @param updateStrategy
+	 */
+	public void sendMessages(CDAPMessage[] cdapMessages, UpdateStrategy updateStrategy);
 }
