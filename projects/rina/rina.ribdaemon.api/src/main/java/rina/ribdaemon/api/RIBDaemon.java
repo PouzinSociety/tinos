@@ -23,19 +23,22 @@ public interface RIBDaemon {
 	 * filter defined by the non-default attributes of the messageSubscription class are received.
 	 * @param messageSubscription
 	 * @param messageSubscriber
+	 * @throws Exception if there's something wrong with the messageSubscription or messageSubscriber is null
 	 */
-	public void subscribeToMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber);
+	public void subscribeToMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber) throws Exception;
 	
 	/**
 	 * Uninterested MessageSubscribers will be called when CDAP that comply with the 
 	 * filter defined by the non-default attributes of the messageSubscription class are received.
 	 * @param messageSubscription
 	 * @param messageSubscriber
+	 * @throws Exception if there's something wrong with the messageSubscription or messageSubscriber is null, or the 
+	 * messageSubscription does not exist
 	 */
-	public void unsubscribeFromMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber);
+	public void unsubscribeFromMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber) throws Exception;
 	
 	/**
-	 * Send an information update, consisting in a set of cdap messages, using the updateStrategy update strategy
+	 * Send an information update, consisting on a set of CDAP messages, using the updateStrategy update strategy
 	 * (on demand, scheduled)
 	 * @param cdapMessages
 	 * @param updateStrategy
