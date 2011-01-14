@@ -7,7 +7,6 @@ public class AllocateRequest {
 	private int port_id = 0;
 	private QoSCube cube = null;
 	private boolean result = false;
-	private boolean validFormat = false;
 	private boolean acceptRequest = false;
 
 	public AllocateRequest(ApplicationProcessNamingInfo requestedAPinfo, int port_id, QoSCube cube, boolean result) {
@@ -57,9 +56,5 @@ public class AllocateRequest {
 		this.acceptRequest = acceptRequest;
 	}
 
-	public boolean isValidFormat(){
-		//TODO: Add the format check
-		return validFormat;
-	}
 
 }
