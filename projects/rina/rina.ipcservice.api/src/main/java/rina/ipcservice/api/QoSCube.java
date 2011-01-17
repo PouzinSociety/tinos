@@ -9,8 +9,6 @@ import java.util.*;
 public class QoSCube {
 
 	private Map<String, Object> cube = new HashMap<String, Object>();
-
-	public boolean validFormat = false;
 	
 	//Average bandwidth (measured at the application in bits/sec) 
 	public String avgBW = "average bandwidth"; 
@@ -45,9 +43,7 @@ public class QoSCube {
 		this.cube = cube;
 	}
 	
-	public boolean isValidFormat(){
-		//TODO: Add the format check
-		return validFormat;
+	//TODO get - set a value??
+	
 		
-	}
 }

@@ -1,10 +1,13 @@
 package rina.flowallocator.impl;
 
+import java.util.Map;
+
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCService;
 import rina.ipcservice.api.QoSCube;
+import java.util.Enumeration;
 
 
 /** 
@@ -33,11 +36,9 @@ public class FlowAllocator implements IPCService {
 		try {
 			if(validateRequest(request))
 			{
-				//if translate request into policies ok
 				request.setPort_id(assignPortId());
 				FlowAllocatorInstance FAI = new FlowAllocatorInstance();
-				//subscription could be to the FAI constructor?
-				//subscribeToMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber);
+				//TODO subscribeToMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber);
 				
 //			if(AllocateNotifyPolicy)
 //				deliverAllocateResponse(request.getRequestedAPinfo(), request.getPort_id(), true, "");
@@ -91,7 +92,8 @@ public class FlowAllocator implements IPCService {
 	 * @throws Exception 
 	 */
 	public boolean validateRequest(AllocateRequest request) throws Exception{
-		if (validateApplicationProcessNamingInfo(request.getRequestedAPinfo()))
+		if (validateApplicationProcessNamingInfo(request.getRequestedAPinfo())
+				&& validateQoScube(request.getCube()))
 			validAllocateRequest = true; 
 		return validAllocateRequest;
 	}
@@ -186,6 +188,14 @@ public class FlowAllocator implements IPCService {
 		else
 			throw new Exception("Application entity instance is empty");
 	}
+	
+	
+	public boolean validateQoScube(QoSCube cube) {
+		Map<String, Object> qos_cube = cube.getCube();
+		//TODO add check
+		return true;
+	}
+
 	
 
 }
