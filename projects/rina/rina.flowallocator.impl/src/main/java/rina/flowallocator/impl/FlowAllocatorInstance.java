@@ -17,5 +17,10 @@ public class FlowAllocatorInstance implements FlowAllocatorInstanceService{
 		// TODO Auto-generated method stub
 		
 	}
+	
+	public void receivedCreateFlowRequest() {
+		// TODO Auto-generated method stub
+		
+	}
 
 }
