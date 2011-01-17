@@ -7,7 +7,7 @@ public class AllocateRequest {
 	private int port_id = 0;
 	private QoSCube cube = null;
 	private boolean result = false;
-	private boolean acceptRequest = false;
+	
 
 	public AllocateRequest(ApplicationProcessNamingInfo requestedAPinfo, int port_id, QoSCube cube, boolean result) {
 		this.requestedAPinfo = requestedAPinfo;
@@ -46,14 +46,6 @@ public class AllocateRequest {
 
 	public void setResult(boolean result) {
 		this.result = result;
-	}
-
-	public boolean isAcceptRequest() {
-		return acceptRequest;
-	}
-
-	public void setAcceptRequest(boolean acceptRequest) {
-		this.acceptRequest = acceptRequest;
 	}
 
 

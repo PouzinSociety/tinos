@@ -1,8 +1,5 @@
 package rina.flowallocator.impl;
 
-
-import org.apache.commons.validator.UrlValidator;
-
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
@@ -23,6 +20,7 @@ public class FlowAllocator implements IPCService {
 	private int FAid = 0;
 	
 	private boolean validAllocateRequest = false;
+	private boolean validApplicationProcessNamingInfo = false;
 	private boolean AllocateNotifyPolicy = false;
 
 
@@ -83,13 +81,18 @@ public class FlowAllocator implements IPCService {
 	}
 	
 	/**
-	 * Validates an AllocateRequest
+	 * Validates an AllocateRequest: 
+	 * 		- ApplicationProcessNamingInfo requestedAPinfo
+	 * 		- int port_id
+	 * 		- QoSCube cube
+	 * 		- boolean result
 	 * @param request
 	 * @return yes if valid, no otherwise
 	 * @throws Exception 
 	 */
 	public boolean validateRequest(AllocateRequest request) throws Exception{
-		validateApplicationProcessNamingInfo(request.getRequestedAPinfo());
+		if (validateApplicationProcessNamingInfo(request.getRequestedAPinfo()))
+			validAllocateRequest = true; 
 		return validAllocateRequest;
 	}
 
@@ -118,11 +121,13 @@ public class FlowAllocator implements IPCService {
 	 * @param APnamingInfo
 	 * @throws Exception
 	 */
-	public static void validateApplicationProcessNamingInfo(ApplicationProcessNamingInfo APnamingInfo) throws Exception{
-		validateApplicationProcessName(APnamingInfo.getApplicationProcessName());
-		validateApplicationProcessInstance(APnamingInfo.getApplicationProcessInstance());
-		validateApplicationEntityName(APnamingInfo.getApplicationEntityName());
-		validateApplicationEntityInstance(APnamingInfo.getApplicationEntityInstance());
+	public boolean validateApplicationProcessNamingInfo(ApplicationProcessNamingInfo APnamingInfo) throws Exception{
+		if (validateApplicationProcessName(APnamingInfo.getApplicationProcessName()) &&
+		validateApplicationProcessInstance(APnamingInfo.getApplicationProcessInstance()) &&
+		validateApplicationEntityName(APnamingInfo.getApplicationEntityName()) &&
+		validateApplicationEntityInstance(APnamingInfo.getApplicationEntityInstance()))
+			validApplicationProcessNamingInfo = true;
+		return validApplicationProcessNamingInfo;	
 	}
 	
 	/**
@@ -130,14 +135,10 @@ public class FlowAllocator implements IPCService {
 	 * @param applicationProcessName
 	 * @throws Exception
 	 */
-	private static void validateApplicationProcessName(String applicationProcessName) throws Exception
+	private boolean validateApplicationProcessName(String applicationProcessName) throws Exception
 	{
 		if (applicationProcessName!=null)
-		{
-			UrlValidator urlValidator = new UrlValidator();
-			if (!urlValidator.isValid(applicationProcessName))
-				throw new Exception("Application process name is not a valid URL");
-		}
+			return true;
 		else
 			throw new Exception("Application process name is empty");
 	}
@@ -148,20 +149,10 @@ public class FlowAllocator implements IPCService {
 	 * @param applicationProcessInstance
 	 * @throws Exception
 	 */
-	private static void validateApplicationProcessInstance(String applicationProcessInstance) throws Exception
+	private boolean validateApplicationProcessInstance(String applicationProcessInstance) throws Exception
 	{
 		if (applicationProcessInstance!=null)
-		{
-			//TODO: has to be unique within the AP
-			try
-			{
-				Integer.parseInt(applicationProcessInstance);
-			}
-			catch(NumberFormatException nfe)
-			{
-				System.out.println("Application process instance is not an interger");
-			}
-		}
+			return true;
 		else
 			throw new Exception("Application process instance is empty");	
 	}
@@ -173,12 +164,10 @@ public class FlowAllocator implements IPCService {
 	 * @param ApplicationEntityName
 	 * @throws Exception
 	 */
-	private static void validateApplicationEntityName(String ApplicationEntityName) throws Exception
+	private boolean validateApplicationEntityName(String ApplicationEntityName) throws Exception
 	{
 		if (ApplicationEntityName!=null)
-		{
-			//TODO: add format check
-		}
+			return true;
 		else
 			throw new Exception("Application entity name is empty");
 	}
@@ -190,19 +179,10 @@ public class FlowAllocator implements IPCService {
 	 * @param applicationEntityInstance
 	 * @throws Exception
 	 */
-	private static void validateApplicationEntityInstance(String applicationEntityInstance) throws Exception
+	private boolean validateApplicationEntityInstance(String applicationEntityInstance) throws Exception
 	{
 		if (applicationEntityInstance!=null)
-		{
-			try
-			{
-				Integer.parseInt(applicationEntityInstance);
-			}
-			catch(NumberFormatException nfe)
-			{
-				System.out.println("Application entity instance is not an interger");
-			}
-		}
+			return true;
 		else
 			throw new Exception("Application entity instance is empty");
 	}
