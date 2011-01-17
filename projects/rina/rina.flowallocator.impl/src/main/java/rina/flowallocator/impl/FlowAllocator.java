@@ -24,8 +24,6 @@ public class FlowAllocator implements IPCService {
 	
 	private boolean validAllocateRequest = false;
 	private boolean validApplicationProcessNamingInfo = false;
-	private boolean AllocateNotifyPolicy = false;
-
 
 
 	public FlowAllocator() {
@@ -34,15 +32,15 @@ public class FlowAllocator implements IPCService {
 
 	public void submitAllocateRequest(AllocateRequest request) {
 		try {
-			if(validateRequest(request))
-			{
-				request.setPort_id(assignPortId());
-				FlowAllocatorInstance FAI = new FlowAllocatorInstance();
-				//TODO subscribeToMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber);
-				
-//			if(AllocateNotifyPolicy)
-//				deliverAllocateResponse(request.getRequestedAPinfo(), request.getPort_id(), true, "");
-}
+			validateRequest(request);
+			
+			request.setPort_id(assignPortId());
+			FlowAllocatorInstance FAI = new FlowAllocatorInstance();
+			// TODO FA subscribes to create-delete flow objects
+			// subscribeToMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber);
+			// TODO check AllocateNotifyPolicy to see if you should return AllocateResponse 
+			// if(AllocateNotifyPolicy)
+				// deliverAllocateResponse(request.getRequestedAPinfo(), request.getPort_id(), true, "");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -91,11 +89,10 @@ public class FlowAllocator implements IPCService {
 	 * @return yes if valid, no otherwise
 	 * @throws Exception 
 	 */
-	public boolean validateRequest(AllocateRequest request) throws Exception{
-		if (validateApplicationProcessNamingInfo(request.getRequestedAPinfo())
-				&& validateQoScube(request.getCube()))
-			validAllocateRequest = true; 
-		return validAllocateRequest;
+	public static void validateRequest(AllocateRequest request) throws Exception{
+		validateApplicationProcessNamingInfo(request.getRequestedAPinfo());
+		validateQoScube(request.getCube());
+			
 	}
 
 
@@ -123,13 +120,11 @@ public class FlowAllocator implements IPCService {
 	 * @param APnamingInfo
 	 * @throws Exception
 	 */
-	public boolean validateApplicationProcessNamingInfo(ApplicationProcessNamingInfo APnamingInfo) throws Exception{
-		if (validateApplicationProcessName(APnamingInfo.getApplicationProcessName()) &&
-		validateApplicationProcessInstance(APnamingInfo.getApplicationProcessInstance()) &&
-		validateApplicationEntityName(APnamingInfo.getApplicationEntityName()) &&
-		validateApplicationEntityInstance(APnamingInfo.getApplicationEntityInstance()))
-			validApplicationProcessNamingInfo = true;
-		return validApplicationProcessNamingInfo;	
+	public static void validateApplicationProcessNamingInfo(ApplicationProcessNamingInfo APnamingInfo) throws Exception{
+		validateApplicationProcessName(APnamingInfo.getApplicationProcessName());
+		validateApplicationProcessInstance(APnamingInfo.getApplicationProcessInstance());
+		validateApplicationEntityName(APnamingInfo.getApplicationEntityName());
+		validateApplicationEntityInstance(APnamingInfo.getApplicationEntityInstance());
 	}
 	
 	/**
@@ -137,11 +132,9 @@ public class FlowAllocator implements IPCService {
 	 * @param applicationProcessName
 	 * @throws Exception
 	 */
-	private boolean validateApplicationProcessName(String applicationProcessName) throws Exception
+	private static void validateApplicationProcessName(String applicationProcessName) throws Exception
 	{
-		if (applicationProcessName!=null)
-			return true;
-		else
+		if (applicationProcessName.equals(null))
 			throw new Exception("Application process name is empty");
 	}
 	
@@ -151,11 +144,9 @@ public class FlowAllocator implements IPCService {
 	 * @param applicationProcessInstance
 	 * @throws Exception
 	 */
-	private boolean validateApplicationProcessInstance(String applicationProcessInstance) throws Exception
+	private static void validateApplicationProcessInstance(String applicationProcessInstance) throws Exception
 	{
-		if (applicationProcessInstance!=null)
-			return true;
-		else
+		if (applicationProcessInstance.equals(null))
 			throw new Exception("Application process instance is empty");	
 	}
 	
@@ -166,11 +157,9 @@ public class FlowAllocator implements IPCService {
 	 * @param ApplicationEntityName
 	 * @throws Exception
 	 */
-	private boolean validateApplicationEntityName(String ApplicationEntityName) throws Exception
+	private static void validateApplicationEntityName(String ApplicationEntityName) throws Exception
 	{
-		if (ApplicationEntityName!=null)
-			return true;
-		else
+		if (ApplicationEntityName.equals(null))
 			throw new Exception("Application entity name is empty");
 	}
 	
@@ -181,19 +170,16 @@ public class FlowAllocator implements IPCService {
 	 * @param applicationEntityInstance
 	 * @throws Exception
 	 */
-	private boolean validateApplicationEntityInstance(String applicationEntityInstance) throws Exception
+	private static void validateApplicationEntityInstance(String applicationEntityInstance) throws Exception
 	{
-		if (applicationEntityInstance!=null)
-			return true;
-		else
+		if (applicationEntityInstance.equals(null))
 			throw new Exception("Application entity instance is empty");
 	}
 	
 	
-	public boolean validateQoScube(QoSCube cube) {
+	public static void validateQoScube(QoSCube cube) throws Exception{
 		Map<String, Object> qos_cube = cube.getCube();
 		//TODO add check
-		return true;
 	}
 
 	
