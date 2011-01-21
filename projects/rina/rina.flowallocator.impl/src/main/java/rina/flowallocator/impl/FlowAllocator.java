@@ -2,19 +2,18 @@ package rina.flowallocator.impl;
 
 import java.util.Map;
 
-import rina.cdap.api.message.CDAPMessage;
 import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCService;
 import rina.ipcservice.api.QoSCube;
-import java.util.Enumeration;
+import rina.flowallocator.api.*;
 
 
 /** 
  * Implements the Flow Allocator
  */
 
-public class FlowAllocator implements IPCService {
+public class FlowAllocator implements IPCService, ReleaseResourcesService {
 	
 	private ApplicationProcessNamingInfo requestedAPinfo = null;
 	private int portId = 0;
@@ -35,7 +34,8 @@ public class FlowAllocator implements IPCService {
 			validateRequest(request);
 			
 			request.setPort_id(assignPortId());
-			FlowAllocatorInstance FAI = new FlowAllocatorInstance();
+			//FlowAllocatorInstance FAI = new FlowAllocatorInstance();
+			//forwardAllocateRequest(request);
 			// TODO FA subscribes to create-delete flow objects
 			// subscribeToMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber);
 			// TODO check AllocateNotifyPolicy to see if you should return AllocateResponse 
@@ -146,8 +146,7 @@ public class FlowAllocator implements IPCService {
 	 */
 	private static void validateApplicationProcessInstance(String applicationProcessInstance) throws Exception
 	{
-		if (applicationProcessInstance.equals(null))
-			throw new Exception("Application process instance is empty");	
+			
 	}
 	
 	
@@ -159,8 +158,7 @@ public class FlowAllocator implements IPCService {
 	 */
 	private static void validateApplicationEntityName(String ApplicationEntityName) throws Exception
 	{
-		if (ApplicationEntityName.equals(null))
-			throw new Exception("Application entity name is empty");
+		
 	}
 	
 	
@@ -172,14 +170,19 @@ public class FlowAllocator implements IPCService {
 	 */
 	private static void validateApplicationEntityInstance(String applicationEntityInstance) throws Exception
 	{
-		if (applicationEntityInstance.equals(null))
-			throw new Exception("Application entity instance is empty");
+		
 	}
 	
 	
 	public static void validateQoScube(QoSCube cube) throws Exception{
 		Map<String, Object> qos_cube = cube.getCube();
 		//TODO add check
+	}
+
+	
+	public void forwardDeAllocateRequest(int portId) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	

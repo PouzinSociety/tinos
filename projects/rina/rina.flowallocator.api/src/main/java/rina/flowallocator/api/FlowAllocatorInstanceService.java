@@ -1,7 +1,6 @@
 package rina.flowallocator.api;
 
 import rina.ipcservice.api.AllocateRequest;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
 /**
  * The interface between the FA and a FAI
  * @author elenitrouva

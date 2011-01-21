@@ -5,5 +5,4 @@
 			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
 <!-- Update for your bean -->	
-	<bean name="bundleService" class="rina.flowallocator.api.impl.BundleServiceImpl"/>
 </beans>
