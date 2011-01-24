@@ -1,9 +1,11 @@
 package rina.flowallocator.impl;
 
+import rina.cdap.api.message.CDAPMessage;
 import rina.flowallocator.api.FlowAllocatorInstanceService;
 import rina.ipcservice.api.AllocateRequest;
 
-public class FlowAllocatorInstance implements FlowAllocatorInstanceService{
+public class FlowAllocatorInstance implements FlowAllocatorInstanceService
+{
 
 	public FlowAllocatorInstance(){
 		
@@ -18,7 +20,7 @@ public class FlowAllocatorInstance implements FlowAllocatorInstanceService{
 		
 	}
 	
-	public void receivedCreateFlowRequest() {
+	public void receivedCreateFlowRequest(CDAPMessage message) {
 		// TODO Auto-generated method stub
 		
 	}

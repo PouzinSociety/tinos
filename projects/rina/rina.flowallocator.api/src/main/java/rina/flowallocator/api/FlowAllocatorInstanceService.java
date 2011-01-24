@@ -1,12 +1,13 @@
 package rina.flowallocator.api;
 
+import rina.cdap.api.message.CDAPMessage;
 import rina.ipcservice.api.AllocateRequest;
 /**
- * The interface between the FA and a FAI
+ * The interface between the FA and the FAI
  * @author elenitrouva
  *
  */
-public interface FlowAllocatorInstanceService {
+public interface FlowAllocatorInstanceService{
 
 	/**
 	 * Called by the FA to forward an Allocate request to a FAI 
@@ -25,8 +26,10 @@ public interface FlowAllocatorInstanceService {
 	/**
 	 * Called by the FA when it receives a createFlowRequest through the subscription to the RIB Daemon.
 	 * The FA instantiates a FAI and passes the request to it.
+	 * @param CDAP message
 	 */
-	public void receivedCreateFlowRequest();
+	public void receivedCreateFlowRequest(CDAPMessage message);
+	//TODO: Not sure about the param
 
 
 	

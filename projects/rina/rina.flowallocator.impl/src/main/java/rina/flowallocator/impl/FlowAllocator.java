@@ -13,7 +13,7 @@ import rina.flowallocator.api.*;
  * Implements the Flow Allocator
  */
 
-public class FlowAllocator implements IPCService, ReleaseResourcesService {
+public class FlowAllocator implements IPCService, ReleaseResources {
 	
 	private ApplicationProcessNamingInfo requestedAPinfo = null;
 	private int portId = 0;
