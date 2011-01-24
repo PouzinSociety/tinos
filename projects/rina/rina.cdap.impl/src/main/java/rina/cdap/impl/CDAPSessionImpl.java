@@ -8,6 +8,7 @@ import rina.cdap.api.CDAPException;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.CDAPMessageValidator;
 import rina.cdap.api.CDAPSession;
+import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage.Flags;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 
@@ -34,6 +35,8 @@ public class CDAPSessionImpl implements CDAPSession{
 	private Map<Integer, CDAPOperationState> cancelReadPendingMessages = null;
 	
 	private WireMessageProvider wireMessageProvider = null;
+	
+	private CDAPSessionDescriptor sessionDescriptor = null;
 	
 	public CDAPSessionImpl(){
 		pendingMessages = new HashMap<Integer, CDAPOperationState>();
@@ -154,12 +157,14 @@ public class CDAPSessionImpl implements CDAPSession{
 			break;
 		case M_CONNECT_R:
 			connectionStateMachine.connectResponseSentOrReceived(cdapMessage, sent);
+			populateSessionDescriptor(cdapMessage);
 			break;
 		case M_RELEASE:
 			connectionStateMachine.releaseSentOrReceived(cdapMessage, sent);
 			break;
 		case M_RELEASE_R:
 			connectionStateMachine.releaseResponseSentOrReceived(cdapMessage, sent);
+			emptySessionDescriptor();
 			break;
 		case M_CREATE:
 			requestMessageSentOrReceived(cdapMessage, Opcode.M_CREATE, sent);
@@ -349,5 +354,47 @@ public class CDAPSessionImpl implements CDAPSession{
 
 	private CDAPMessage deserializeMessage(byte[] message) throws CDAPException{
 		return wireMessageProvider.deserializeMessage(message);
+	}
+
+	public void setSessionDescriptor(CDAPSessionDescriptor sessionDescriptor) {
+		this.sessionDescriptor = sessionDescriptor;
+	}
+
+	public CDAPSessionDescriptor getSessionDescriptor() {
+		return sessionDescriptor;
+	}
+
+	public String getSessionId() {
+		return sessionDescriptor.getSessionID();
+	}
+	
+	private void populateSessionDescriptor(CDAPMessage cdapMessage){
+		sessionDescriptor.setAbsSyntax(cdapMessage.getAbsSyntax());
+		sessionDescriptor.setAuthMech(cdapMessage.getAuthMech());
+		sessionDescriptor.setAuthValue(cdapMessage.getAuthValue());
+		sessionDescriptor.setDestAEInst(cdapMessage.getDestAEInst());
+		sessionDescriptor.setDestAEName(cdapMessage.getDestAEName());
+		sessionDescriptor.setDestApInst(cdapMessage.getDestApInst());
+		sessionDescriptor.setDestApName(cdapMessage.getDestApName());
+		sessionDescriptor.setSrcAEInst(cdapMessage.getSrcApInst());
+		sessionDescriptor.setSrcAEName(cdapMessage.getSrcAEName());
+		sessionDescriptor.setSrcApInst(cdapMessage.getSrcApInst());
+		sessionDescriptor.setSrcApName(cdapMessage.getSrcApName());
+		sessionDescriptor.setVersion(cdapMessage.getVersion());
+	}
+	
+	private void emptySessionDescriptor(){
+		sessionDescriptor.setAbsSyntax(-1);
+		sessionDescriptor.setAuthMech(null);
+		sessionDescriptor.setAuthValue(null);
+		sessionDescriptor.setDestAEInst(null);
+		sessionDescriptor.setDestAEName(null);
+		sessionDescriptor.setDestApInst(null);
+		sessionDescriptor.setDestApName(null);
+		sessionDescriptor.setSrcAEInst(null);
+		sessionDescriptor.setSrcAEName(null);
+		sessionDescriptor.setSrcApInst(null);
+		sessionDescriptor.setSrcApName(null);
+		sessionDescriptor.setVersion(-1);
 	}
 }
