@@ -41,4 +41,17 @@ public interface CDAPSession {
 	 * @throws CDAPException if the message is bad formed or inconsistent with the protocol state machine
 	 */
 	public CDAPMessage messageReceived(byte[] cdapMessage) throws CDAPException;
+	
+	/**
+	 * Getter for the sessionID
+	 * @return a String that identifies a CDAP session within an IPC process
+	 */
+	public String getSessionId();
+	
+	/**
+	 * Getter for the sessionDescriptor
+	 * @return the SessionDescriptor, provides all the data that describes this CDAP session (src and dest naming info, 
+	 * authentication type, version, ...)
+	 */
+	public CDAPSessionDescriptor getSessionDescriptor();
 }
