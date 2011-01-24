@@ -26,4 +26,11 @@ public interface CDAPSessionFactory {
 	 * @return
 	 */
 	public CDAPSession getCDAPSession(String sessionID);
+	
+	/**
+	 * Remove a CDAP session if it is not connected
+	 * @param sessionID
+	 * @throws CDAPException if the CDAP session is connected
+	 */
+	public void removeCDAPSession(String sessionID) throws CDAPException;
 }
