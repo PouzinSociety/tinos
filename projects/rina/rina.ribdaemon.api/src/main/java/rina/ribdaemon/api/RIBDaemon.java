@@ -26,16 +26,18 @@ public interface RIBDaemon {
 	 * @param objectInstance objectInstance optional if objectClass specified, mandatory otherwise. An id that uniquely identifies the object within a RIB
 	 * @param objectName optional if objectClass specified, ignored otherwise. An id that uniquely identifies an object within an objectClass
 	 * @param objectToWrite the object to be written to the RIB
+	 * @throws RIBDaemonException if there are problems performing the "write" operation to the RIB
 	 */
-	public void write(String objectClass, long objectInstance, String objectName, Object objectToWrite);
+	public void write(String objectClass, long objectInstance, String objectName, Object objectToWrite) throws RIBDaemonException;
 	
 	/**
 	 * Remove an object from the RIB
 	 * @param objectClass optional if objectInstance specified, mandatory otherwise. A string identifying the class of the object
 	 * @param objectInstance objectInstance optional if objectClass specified, mandatory otherwise. An id that uniquely identifies the object within a RIB
 	 * @param objectName optional if objectClass specified, ignored otherwise. An id that uniquely identifies an object within an objectClass
+	 * @throws RIBDaemonException if there are problems removinb the objects from the RIB
 	 */
-	public void remove(String objectClass, long objectInstance, String objectName);
+	public void remove(String objectClass, long objectInstance, String objectName) throws RIBDaemonException;
 	
 	/**
 	 * Invoked by the RMT when it detects a CDAP message. The RIB Daemon has to process the CDAP message and, 
