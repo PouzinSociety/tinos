@@ -6,7 +6,8 @@ import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCService;
 import rina.ipcservice.api.QoSCube;
-import rina.flowallocator.api.*;
+import rina.flowallocator.api.ReleaseResources;
+import rina.flowallocator.impl.FlowAllocatorInstance;
 
 
 /** 
@@ -34,7 +35,7 @@ public class FlowAllocator implements IPCService, ReleaseResources {
 			validateRequest(request);
 			
 			request.setPort_id(assignPortId());
-			//FlowAllocatorInstance FAI = new FlowAllocatorInstance();
+			FlowAllocatorInstance FAI = new FlowAllocatorInstance();
 			//forwardAllocateRequest(request);
 			// TODO FA subscribes to create-delete flow objects
 			// subscribeToMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber);
