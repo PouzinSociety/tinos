@@ -17,7 +17,7 @@
 
 	<dependencies>
 <!-- Google protocol buffers -->
-		<dependency org="com.google" name="com.google.protobuf" rev="1.0.0" conf="compile->runtime" />
+		<dependency org="com.google" name="com.google.protobuf" rev="2.3.0" conf="compile->runtime" />
 <!-- CDAP API -->
 		<dependency org="org.pouzinsociety.rina" name="rina.cdap.api" rev="1.0.0"  conf="compile->runtime" />
 <!-- Spring Framework -->
