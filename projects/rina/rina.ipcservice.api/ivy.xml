@@ -2,8 +2,8 @@
 <?xml-stylesheet type="text/xsl" href="http://ivyrep.jayasoft.org/ivy-doc.xsl"?>
 <ivy-module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://incubator.apache.org/ivy/schemas/ivy.xsd" version="2.0">
 	
-	<info organisation="rina" module="${ant.project.name}">
-		<ivyauthor name="Patsy Phelan" />
+	<info organisation="org.pouzinsociety.rina" module="${ant.project.name}">
+		<ivyauthor name="Eleni Trouva" />
 	</info>
 
 	<configurations>

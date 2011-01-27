@@ -1,10 +1,10 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: ipcService.api Bundle
-Bundle-SymbolicName: rina.ipcService.api
+Bundle-SymbolicName: rina.ipcservice.api
 Bundle-Version: 1.0.0
-Bundle-Vendor: TSSG
-Export-Package: rina.ipcService.api;version="1.0.0"
+Bundle-Vendor: Pouzin Society
+Export-Package: rina.ipcservice.api;version="1.0.0"
 Import-Package: org.apache.commons.logging;version="[1.1.1,1.1.1]"
 Import-Bundle: com.springsource.org.apache.commons.logging;version="[1.1.1, 1.1.1]"
 
