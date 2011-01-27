@@ -1,3 +1,3 @@
 #!/bin/bash
 
-ruby create -n socketAPI -t $HOME/tmp/projects -o org.pouzinsociety.sample -a bundle
+ruby create -n socketAPI -t $HOME/tmp -o sample -a bundle
