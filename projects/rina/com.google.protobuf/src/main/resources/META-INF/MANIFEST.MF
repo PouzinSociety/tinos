@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Google Protocol Buffers for Java
-Bundle-SymbolicName: com.google.protobuf.protobuf-java
+Bundle-SymbolicName: com.google.protobuf
 Bundle-Version: 2.3.0
 Bundle-Vendor: Google
 Export-Package: com.google.protobuf;version="2.3.0"

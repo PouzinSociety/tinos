@@ -2,8 +2,11 @@
 <project name="com.google.protobuf" xmlns:ivy="antlib:org.apache.ivy.ant">
 	<property environment="env"/>
 	<property name="disable.bundlor" value="true"/>
-	<property file="${env.TINOS_HOME}/projects/build.properties"/>
-	<property file="${env.TINOS_HOME}/projects/build.versions"/>
+        <property name="version" value="2.3.0"/>
+        <property name="release.type" value="integration"/>
+	<property name="source.version" value="1.5"/>
+        <property name="target.version" value="1.5"/>
+        <property name="ivy.settings.file" value="${env.TINOS_HOME}/projects/ivysettings.xml"/>
 	<import file="${env.TINOS_HOME}/projects/spring-build/tinos/package-bundle.xml"/>
 	<import file="${env.TINOS_HOME}/projects/spring-build/standard/default.xml"/>
 </project>
