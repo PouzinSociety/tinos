@@ -44,7 +44,7 @@ puts "\n\t\tTo generate the .classpath file for eclipse"
 puts "\t\tcd " + target_folder + "; ant eclipse\n\n"
 
 
-#test_organization = organization + ".integration.test"
+#test_organization = organization + "." + project_name + ".integration.test"
 #puts "Starting : Create Integration Test Bundle Project Structure (" + test_organization + ")"
 # Generate Test Bundle
 #test_bundle_template = File.join(script_base, "../../tinos/bundle-integration-test-project")
@@ -58,12 +58,12 @@ puts "\t\tcd " + target_folder + "; ant eclipse\n\n"
 #test_organization = organization + ".integration.test"
 #test_folder = test_target_folder + '/src/test/java/' + src_path
 #FileUtils.mkdir_p(test_folder)
-
+#
 #file_template = File.join(script_base,
 #	"../../tinos/bundle-misc/boot-bundles.properties")
 #create_file_from_template(file_template,
 #		test_folder + '/boot-bundles.properties', binding)
-
+#
 #file_template = File.join(script_base,
 #	"../../tinos/bundle-misc/IvyPackagedArtifactFinder.java")
 #create_file_from_template(file_template,
@@ -78,7 +78,7 @@ puts "\t\tcd " + target_folder + "; ant eclipse\n\n"
 #		test_folder + '/SimpleBundleTest.java', binding)
 #
 #puts "Finished : Create Integration Test Bundle Project Structure (" + test_organization + ")"
-
+#
 #puts "\n\tNote:"
 #puts "\n\t\tTo generate the .classpath file for eclipse"
 #puts "\tcd " + test_target_folder + "; ant eclipse\n\n"
