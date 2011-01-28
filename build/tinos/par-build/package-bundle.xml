@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="package-bundle">
-
-	<target name="package" depends="ivy.init">
-		<provided-jars output.dir="${package.output.dir}/par-provided/bundles"/>
-		<provided-libs output.dir="${package.output.dir}/par-provided/libraries"/>
-	</target>
-
-</project>

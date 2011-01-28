@@ -11,7 +11,7 @@ import org.springframework.osgi.util.OsgiStringUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 
-import <%= organization %>.BundleService;
+import <%= organization %>.<%= project_name %>.BundleService;
 
 /**
  * Starts up an OSGi environment (equinox, knopflerfish, or felix according to
@@ -42,7 +42,7 @@ public class SimpleBundleTest extends AbstractConfigurableBundleCreatorTests {
 	 * add the relevant bundle to test.
 	 * 
 	 * protected String[] getTestBundlesNames() { return new String[] {
-	 * "<%= organization %>,<%= organization %>, 1.0.0" }; }
+	 * "<%= organization %>,<%= organization %>.<%= project_name %>, 1.0.0" }; }
 	 */
 
 	/**
@@ -126,7 +126,8 @@ public class SimpleBundleTest extends AbstractConfigurableBundleCreatorTests {
 	 * 
 	 */
 	public void testSimpleServiceExported() {
-		waitOnContextCreation("<%= organization %>");
+		System.out.println(">>testSimpleServiceExported\n");
+		waitOnContextCreation("<%= organization %>.<%= project_name %>");
 		ServiceReference ref = bundleContext
 				.getServiceReference(BundleService.class.getName());
 		assertNotNull("Service Reference is null", ref);
@@ -137,8 +138,11 @@ public class SimpleBundleTest extends AbstractConfigurableBundleCreatorTests {
 			assertEquals(
 					"Hello World from Bundle (<%= organization %>)",
 					bundleService.getMessage());
+			System.out.println("<%= organization %>.<%= project_name %>.BundleService.getMessage(" + bundleService.getMessage() + ")");
+
 		} finally {
 			bundleContext.ungetService(ref);
 		}
+		System.out.println("<<testSimpleServiceExported\n");
 	}
 }
