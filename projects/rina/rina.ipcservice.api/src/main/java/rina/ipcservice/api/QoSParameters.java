@@ -6,12 +6,12 @@ import java.util.*;
  * A QoS cube
  *
  */
-public class QoSCube {
+public class QoSParameters {
 
 	private Map<String, Object> cube = null;
 	
 	
-	public QoSCube() {
+	public QoSParameters() {
 		cube = new HashMap<String, Object>();
 	}
 

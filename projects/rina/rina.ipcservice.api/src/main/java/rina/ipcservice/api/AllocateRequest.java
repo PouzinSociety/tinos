@@ -5,11 +5,11 @@ public class AllocateRequest {
 
 	private ApplicationProcessNamingInfo requestedAPinfo = null;
 	private int port_id = 0;
-	private QoSCube cube = null;
+	private QoSParameters cube = null;
 	private boolean result = false;
 	
 
-	public AllocateRequest(ApplicationProcessNamingInfo requestedAPinfo, int port_id, QoSCube cube, boolean result) {
+	public AllocateRequest(ApplicationProcessNamingInfo requestedAPinfo, int port_id, QoSParameters cube, boolean result) {
 		this.requestedAPinfo = requestedAPinfo;
 		this.port_id = port_id;
 		this.cube = cube;
@@ -32,11 +32,11 @@ public class AllocateRequest {
 		port_id = portId;
 	}
 
-	public QoSCube getCube() {
+	public QoSParameters getCube() {
 		return cube;
 	}
 
-	public void setCube(QoSCube cube) {
+	public void setCube(QoSParameters cube) {
 		this.cube = cube;
 	}
 
