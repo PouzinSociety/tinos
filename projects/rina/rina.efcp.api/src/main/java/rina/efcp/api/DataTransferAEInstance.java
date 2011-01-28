@@ -2,6 +2,8 @@ package rina.efcp.api;
 
 import java.util.List;
 
+import rina.flowallocator.api.Connection;
+
 /**
  * Interface to communicate with the DataTrasferAEInstance
  * @author eduardgrasa
@@ -23,4 +25,10 @@ public interface DataTransferAEInstance {
 	 * @param pdu
 	 */
 	public void pduDelivered(byte[] pdu);
+	
+	/**
+	 * Return the connection associated to this Data Transfer AE Instance
+	 * @return
+	 */
+	public Connection getConnection();
 }
