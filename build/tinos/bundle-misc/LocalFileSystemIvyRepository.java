@@ -17,11 +17,8 @@ public class LocalFileSystemIvyRepository implements ArtifactLocator {
 	private static final Log log = LogFactory.getLog(LocalFileSystemIvyRepository.class);
 
 	/** local repo system property */
-	private static final String SYS_PROPERTY = "IVY_CACHE";
-	private static final String USER_HOME = "user.home";
-	/** discovered local ivy-cache repository home */
+	private static final String SYS_PROPERTY = "TINOS_HOME";
 	private String repositoryHome;
-
 
 	/**
 	 * Initialization method It determines the repository path by checking the
@@ -44,21 +41,16 @@ public class LocalFileSystemIvyRepository implements ArtifactLocator {
 		Map<String,String> envMap = System.getenv();
 		String localRepository = envMap.get(SYS_PROPERTY);
 		if (trace)
-			log.trace("IVY_CACHE system property [" + SYS_PROPERTY + "] has value=" + localRepository);
+			log.trace("SYS_PROPERTY system property [" + SYS_PROPERTY + "] has value=" + localRepository);
 
 		if (localRepository == null) {
-			if (trace)
-				log.trace("Unable to locate IVY_CACHE environment property [" +
-					SYS_PROPERTY + "], defaulting to system property <user.home>/ivy/ivy-cache");
-			String userHome = System.getProperty(USER_HOME);
-			if (userHome != null) {
-				localRepository = new File(userHome, "/ivy/ivy-cache").getAbsolutePath();
-			}
-			if (localRepository == null)
-				throw (RuntimeException) new RuntimeException("Unable to locate IVY_CACHE");
+				throw (RuntimeException) new RuntimeException("Unable to locate environment variable :" + SYS_PROPERTY);
+		} else {
+			// Now expecting the TINOS git repository
+			localRepository = localRepository + "/repository";
 		}
 		repositoryHome = localRepository;
-		log.info("Local IVY_CACHE repository used: [" + repositoryHome + "]");
+		log.info("Local Repository root used: [" + repositoryHome + "]");
 	}
 
 	/**
@@ -119,9 +111,10 @@ public class LocalFileSystemIvyRepository implements ArtifactLocator {
 	 * @return
 	 */
 	protected Resource localIvyBundle(String groupId, String artifact, String version, String type) {
-		StringBuffer location = new StringBuffer(SLASH_CHAR + "repository" + SLASH_CHAR);
+		StringBuffer location = new StringBuffer();
+	    Resource result;
 
-		log.info("\n\tDependency (G:" + groupId + ",A: " + artifact + ",V: "
+		System.out.println("\n\tDependency (G:" + groupId + ",A: " + artifact + ",V: "
 			+ version + ",T: " + type + ")\n\t\t=>" + artifact + "-"
 			+ version + "." + type);
 
@@ -138,7 +131,14 @@ public class LocalFileSystemIvyRepository implements ArtifactLocator {
 		location.append(".");
 		location.append(type);
 
-		return new FileSystemResource(new File(repositoryHome, location.toString()));
+	    result = new FileSystemResource(new File(repositoryHome + "/ivy-cache/repository", location.toString()));
+		if (result.exists() == false) {
+			result = new FileSystemResource(new File(repositoryHome + "/integration-repo", location.toString()));
+			System.out.println("Resolving via : integration-repo");
+	    } else {
+				System.out.println("Resolving via : ivy-cache");
+		}
+		return result;
 	}
 
 	/**

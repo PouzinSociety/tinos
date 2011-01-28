@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-Application-Name: <%= project_name %> PAR
-Application-SymbolicName: <%= organization %>
-Application-Version: 1.0.0
-Application-TraceLevels: *=error, <%= organization %>=debug
-
