@@ -33,13 +33,6 @@ Choice.options do
     default 'standard'
   end
 
-  option :par_name do
-    short '-p'
-    long '--par-name'
-    desc 'The PAR project this bundle belongs to.'
-    default ''
-  end
-
   footer ""
   footer "--help This message."
   

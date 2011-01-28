@@ -12,13 +12,14 @@
 	</configurations>
 
 	<publications>
-		<artifact name="<%= organization %>" type="plan" ext="plan"/>
+		<artifact name="<%= organization %>.<%= project_name %>" type="plan" ext="plan"/>
 	</publications>
 
 	<dependencies>
 <!-- Update to reflect the bundles required for the plan -->
 <!--
-		<dependency org="<%= organization %>" name="<%= organization %>.bundle_a" rev="latest.integration"/>
+		<dependency org="<%= organization %>" name="<%= organization %>.<%= project_name %>" rev="1.0.0"/>
+		<dependency org="<%= organization %>" name="<%= organization %>.bundle_a" rev="1.0.0"/>
 		<dependency org="<%= organization %>" name="<%= organization %>.bundle_b" rev="latest.integration"/>
 -->
 	</dependencies>

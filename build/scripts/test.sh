@@ -1,5 +1,6 @@
 #/bin/bash
 
-#ruby create -n socketAPI -t $HOME/tmp -o sample -a bundle
-ruby create -n proxy -t $HOME/tmp -o edu.bu -a bundle
-ruby create -n proxy-plan -t $HOME/tmp -o edu.bu -a plan
+# Create a Bundle project & associated Bundle Integration Test project
+ruby create -n proxy -t $HOME/tmp -o org.tssgu -a bundle
+# Create a deployment plan
+ruby create -n proxy -t $HOME/tmp -o org.tssg -a plan

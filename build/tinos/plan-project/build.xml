@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="<%= organization %>.plan">
-	<property file="${basedir}/../build.properties"/>
-	<property file="${basedir}/../build.versions"/>
-	<import file="${basedir}/../spring-build/cbne/package-bundle.xml"/>
-	<import file="${basedir}/../spring-build/resource/default.xml"/>
+<project name="<%= plan_name %>">
+	<property environment="env"/>
+	<property file="${env.TINOS_HOME}/projects/build.properties"/>
+	<property file="${env.TINOS_HOME}/projects/build.versions"/>
+	<import file="${env.TINOS_HOME}/projects/spring-build/tinos/package-bundle.xml"/>
+	<import file="${env.TINOS_HOME}/projects/spring-build/resource/default.xml"/>
 </project>

@@ -1,4 +1,4 @@
-puts "Starting : Create Bundle Project Structure (" + organization + "." project_name + ")"
+puts "Starting : Create Bundle Project Structure (" + organization + "." + project_name + ")"
 
 script_base = get_script_location()
 bundle_template = File.join(script_base, "../../tinos/bundle-project")
