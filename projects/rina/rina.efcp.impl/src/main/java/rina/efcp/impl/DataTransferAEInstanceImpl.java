@@ -5,6 +5,7 @@ import java.util.List;
 
 import rina.efcp.api.DataTransferAEInstance;
 import rina.efcp.api.EFCPConstants;
+import rina.flowallocator.api.Connection;
 
 public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 	
@@ -68,9 +69,12 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 		//Iterate over posted PDUs and give them to the RMT
 		for (int i=0; i<postablePDUs.size(); i++){
 			//TODO add the stuff if DTCP is present and there is retransmission control
-			
+			//TODO post PDU to RMT
 		}
 		
 	}
 
+	public Connection getConnection() {
+		return stateVector.getConnection();
+	}
 }
