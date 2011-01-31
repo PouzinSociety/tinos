@@ -24,7 +24,7 @@ public class Connection {
 	 * The port-id returned to the Application process that requested the flow. This port-id is used for 
 	 * the life of the connection.
 	 */
-	private int[] sourcePortId = null;
+	private long sourcePortId = 0L;
 	
 	/**
 	 * The destination application of the flow
@@ -40,7 +40,7 @@ public class Connection {
 	 * The port-id returned to the destination Application process. This port-id is used for 
 	 * the life of the connection.
 	 */
-	private int[] destinationPortId = null;
+	private long destinationPortId = 0L;
 	
 	/**
 	 * Identification of the QoS cube associated with this connection
@@ -126,11 +126,11 @@ public class Connection {
 		this.sourceAddress = sourceAddress;
 	}
 
-	public int[] getSourcePortId() {
+	public long getSourcePortId() {
 		return sourcePortId;
 	}
 
-	public void setSourcePortId(int[] sourcePortId) {
+	public void setSourcePortId(long sourcePortId) {
 		this.sourcePortId = sourcePortId;
 	}
 
@@ -150,11 +150,11 @@ public class Connection {
 		this.destinationAddress = destinationAddress;
 	}
 
-	public int[] getDestinationPortId() {
+	public long getDestinationPortId() {
 		return destinationPortId;
 	}
 
-	public void setDestinationPortId(int[] destinationPortId) {
+	public void setDestinationPortId(long destinationPortId) {
 		this.destinationPortId = destinationPortId;
 	}
 
