@@ -26,5 +26,5 @@ public interface DataTransferAEFactory {
 	 * Get the instance of the data transfer AE associated to this connection
 	 * @param connection
 	 */
-	public void getDataTransferAEInstance(Connection connection);
+	public DataTransferAEInstance getDataTransferAEInstance(Connection connection);
 }
