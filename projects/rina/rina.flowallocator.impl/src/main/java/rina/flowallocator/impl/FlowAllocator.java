@@ -5,7 +5,6 @@ import java.util.Map;
 import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCService;
-import rina.ipcservice.api.QoSCube;
 import rina.flowallocator.api.ReleaseResources;
 import rina.flowallocator.impl.FlowAllocatorInstance;
 
@@ -18,7 +17,7 @@ public class FlowAllocator implements IPCService, ReleaseResources {
 	
 	private ApplicationProcessNamingInfo requestedAPinfo = null;
 	private int portId = 0;
-	private QoSCube cube = null;
+	//private QoSCube cube = null;
 	private boolean result = false;
 	private int FAid = 0;
 	
@@ -92,7 +91,7 @@ public class FlowAllocator implements IPCService, ReleaseResources {
 	 */
 	public static void validateRequest(AllocateRequest request) throws Exception{
 		validateApplicationProcessNamingInfo(request.getRequestedAPinfo());
-		validateQoScube(request.getCube());
+		//validateQoScube(request.getCube());
 			
 	}
 
@@ -174,11 +173,11 @@ public class FlowAllocator implements IPCService, ReleaseResources {
 		
 	}
 	
-	
-	public static void validateQoScube(QoSCube cube) throws Exception{
-		Map<String, Object> qos_cube = cube.getCube();
-		//TODO add check
-	}
+//	
+//	public static void validateQoScube(QoSCube cube) throws Exception{
+//		Map<String, Object> qos_cube = cube.getCube();
+//		//TODO add check
+//	}
 
 	
 	public void forwardDeAllocateRequest(int portId) {
