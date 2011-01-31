@@ -47,4 +47,21 @@ public class ConnectionId {
 	public void setDestinationCEPId(int[] destinationCEPId) {
 		this.destinationCEPId = destinationCEPId;
 	}
+	
+	@Override
+	public boolean equals(Object candidate){
+		if (candidate == null){
+			return false;
+		}
+		
+		if (!(candidate instanceof ConnectionId)){
+			return false;
+		}
+		
+		ConnectionId connectionId = (ConnectionId) candidate;
+		
+		return (connectionId.getDestinationCEPId().equals(this.getDestinationCEPId()) &&
+				connectionId.getSourceCEPId().equals(this.getSourceCEPId()) && 
+				connectionId.getQosId().equals(this.getQosId()));
+	}
 }

@@ -253,4 +253,27 @@ public class Connection {
 	public void setQosParameters(QoSParameters qosParameters) {
 		this.qosParameters = qosParameters;
 	}
+	
+	@Override
+	public boolean equals(Object candidate){
+		if (candidate == null){
+			return false;
+		}
+		
+		if (!(candidate instanceof Connection)){
+			return false;
+		}
+		
+		Connection connection = (Connection) candidate;
+		
+		if (!(connection.getSourceAddress().equals(this.getSourceAddress()))){
+			return false;
+		}
+		
+		if (!(connection.getDestinationAddress().equals(this.getDestinationAddress()))){
+			return false;
+		}
+		
+		return connection.getCurrentConnectionId().equals(connection.getCurrentConnectionId());
+	}
 }
