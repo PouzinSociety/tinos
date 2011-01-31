@@ -1,20 +1,18 @@
 package rina.policies.impl;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-import rina.ipcservice.api.QoSCube;
 
 /**
- * The unreliable QoS cube that maps to UDP
+ * Definition of the reliable QoS cube that maps to TCP
  * @author elenitrouva
  *
  */
+public class reliableQoSParams {
 
-public class unreliableQoSCube {
-	
-	QoSCube cube = new QoSCube();
 
-	private Map<String, Object> unreliablecube = new HashMap<String, Object>();
+	private Map<String, Object> reliablecube = new HashMap<String, Object>();
 	
 	//Average bandwidth (measured at the application in bits/sec) 
 	public String avgBW = "average bandwidth"; 
@@ -42,22 +40,23 @@ public class unreliableQoSCube {
 	public String jitter = "jitter";
 	
 	
-	public unreliableQoSCube(){
-		unreliablecube.put(avgBW, null); 
-		unreliablecube.put(avgSDUBW, null); 
-		unreliablecube.put(peakBWduration, null); 
-		unreliablecube.put(peakSDUBWduration, null); 
-		unreliablecube.put(burstPeriod, null); 
-		unreliablecube.put(burstDuration, null);  
-		unreliablecube.put(undetectedBitErrorRate,  java.lang.Math.pow(10, -9) );
-		unreliablecube.put(partialDeliveryAllowed, true); 
-		unreliablecube.put(orderRequired, false); 
-		unreliablecube.put(maxGapinSDUs, null); 
-		unreliablecube.put(delay, null); 
-		unreliablecube.put(jitter, null); 
+	public reliableQoSParams(){
+		reliablecube.put(avgBW, null); 
+		reliablecube.put(avgSDUBW, null); 
+		reliablecube.put(peakBWduration, null); 
+		reliablecube.put(peakSDUBWduration, null); 
+		reliablecube.put(burstPeriod, null); 
+		reliablecube.put(burstDuration, null);  
+		reliablecube.put(undetectedBitErrorRate, null);
+		reliablecube.put(partialDeliveryAllowed, null); 
+		reliablecube.put(orderRequired, null); 
+		reliablecube.put(maxGapinSDUs, null); 
+		reliablecube.put(delay, null); 
+		reliablecube.put(jitter, null); 
 				
-		cube.setCube(unreliablecube);
 	}
 	
 	
+
+
 }
