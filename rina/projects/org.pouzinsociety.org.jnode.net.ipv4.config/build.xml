@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="org.pouzinsociety.org.jnode.net.ipv4.config" xmlns:ivy="antlib:org.apache.ivy.ant">
+	<property name="disable.bundlor" value="true"/>
+	<property file="${basedir}/../build.properties"/>
+	<property file="${basedir}/../build.versions"/>
+	<import file="${basedir}/../spring-build/tinos/package-bundle.xml"/>
+	<import file="${basedir}/../spring-build/standard/default.xml"/>
+</project>

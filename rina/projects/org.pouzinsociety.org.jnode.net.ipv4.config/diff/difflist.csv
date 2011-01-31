@@ -1,0 +1,8 @@
+ConfigurationProcessor.java,src/main/java/org/jnode/net/ipv4/config/impl,0.2.7/net/src/net/org/jnode/net/ipv4/config/impl
+ConfigurationServiceImpl.java,src/main/java/org/jnode/net/ipv4/config/impl,0.2.7/net/src/net/org/jnode/net/ipv4/config/impl
+NetDeviceConfig.java,src/main/java/org/jnode/net/ipv4/config/impl,0.2.7/net/src/net/org/jnode/net/ipv4/config/impl
+NetDeviceMonitor.java,src/main/java/org/jnode/net/ipv4/config/impl,0.2.7/net/src/net/org/jnode/net/ipv4/config/impl
+NetStaticDeviceConfig.java,src/main/java/org/jnode/net/ipv4/config/impl,0.2.7/net/src/net/org/jnode/net/ipv4/config/impl
+ConfigurationQueueEntry.java,src/main/java/org/jnode/net/ipv4/config/impl,0.2.7/net/src/net/org/jnode/net/ipv4/config/impl
+Ifconfig.java,src/main/java/org/jnode/net/ipv4/config/impl,0.2.7/net/src/net/org/jnode/net/ipv4/config/impl
+IPv4ConfigurationService.java,src/main/java/org/jnode/net/ipv4/config,0.2.7/net/src/net/org/jnode/net/ipv4/config

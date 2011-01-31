@@ -1,0 +1,36 @@
+# Compile
+org.springframework.spring=2.5.6.A
+org.springframework.osgi=1.1.3.RELEASE
+org.springframework.integration=1.0.3.RELEASE
+org.eclipse.osgi=3.5.0.v20081201-1815
+org.apache.commons.logging=1.1.1
+org.objectweb.asm=2.2.3
+org.aspectj=1.6.3.RELEASE
+org.slf4j=1.5.0
+org.apache.log4j=1.2.15
+org.aopalliance=1.0.0
+org.jnode.net=1.0.0
+org.jivesoftware.smack=3.1.0
+org.jivesoftware.smackx=3.1.0
+
+# Test
+org.antlr=2.7.6
+org.junit=4.4.0
+
+# Web App (yes - they need the world)
+com.sun.facelets=1.1.14
+javax.el=1.0.0
+net.sourceforge.cglib=2.1.3
+org.antlr=2.7.6
+org.apache.commons.collections=3.2.0
+org.apache.commons.dbcp=1.2.2.osgi
+org.apache.commons.logging=1.1.1
+org.apache.myfaces=1.2.2
+org.dom4j=1.6.1
+org.jboss.el=2.0.0.GA
+org.jboss.javassist=3.3.0.ga
+org.junit=4.4.0
+org.springframework.security=2.0.4.A
+org.springframework.webflow=2.0.5.RELEASE
+javax.el=1.0.0
+javax.transaction=1.1.0

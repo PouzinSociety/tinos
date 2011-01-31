@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="http://ivyrep.jayasoft.org/ivy-doc.xsl"?>
+<ivy-module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://incubator.apache.org/ivy/schemas/ivy.xsd" version="2.0">
+	
+	<info organisation="org.pouzinsociety" module="${ant.project.name}">
+		<ivyauthor name="Patsy Phelan" />
+	</info>
+
+	<configurations>
+		<include file="${spring.build.dir}/common/default-ivy-configurations.xml"/>
+	</configurations>
+
+	<publications>
+		<artifact name="${ant.project.name}"/>
+		<artifact name="${ant.project.name}-sources" type="src" ext="jar"/>
+	</publications>
+
+	<dependencies>
+<!-- JNODE -->
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.support" rev="1.0.0" conf="compile->runtime" />
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ethernet" rev="1.0.0" conf="compile->runtime" />
+<!-- Spring Framework 
+		<dependency org="org.springframework" name="org.springframework.spring-library" rev="${org.springframework.spring}" conf="dm-server-provided->compile" />
+-->
+<!-- Logging -->
+		<!--
+			#
+			# Logging Dependencies:
+			#	Currently pulled in via "Import-Package" in sample MANIFEST.MF,
+			#   as they are provided by the Spring-DM Server.
+			#
+		-->
+		<dependency org="org.apache.log4j" name="com.springsource.org.apache.log4j" rev="${org.apache.log4j}" conf="dm-server-provided->runtime"/>
+		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" conf="dm-server-provided->runtime" />
+		<dependency org="org.slf4j" name="com.springsource.slf4j.api" rev="${org.slf4j}" conf="dm-server-provided->runtime" />
+		<dependency org="org.slf4j" name="com.springsource.slf4j.log4j" rev="${org.slf4j}" conf="dm-server-provided->runtime" />
+		<dependency org="org.slf4j" name="com.springsource.slf4j.org.apache.commons.logging" rev="${org.slf4j}" conf="dm-server-provided->runtime" />
+
+<!-- Tests -->
+		<dependency org="org.antlr" name="com.springsource.antlr" rev="${org.antlr}" conf="test->runtime" />
+		<dependency org="org.junit" name="com.springsource.org.junit" rev="${org.junit}" conf="test->runtime" />
+	</dependencies>
+
+</ivy-module>

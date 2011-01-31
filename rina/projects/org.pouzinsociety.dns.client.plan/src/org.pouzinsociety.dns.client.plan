@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plan name="org.pouzinsociety.dns.client.plan" version="1.0.0" scoped="true" atomic="true"
+        xmlns="http://www.springsource.org/schema/dm-server/plan"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springsource.org/schema/dm-server/plan 
+                            http://www.springsource.org/schema/dm-server/plan/springsource-dm-server-plan.xsd">
+<!-- BootStrap -->
+	<artifact type="bundle" name="org.pouzinsociety.bootstrap.api" version="[1, 2)"  />
+	<artifact type="bundle" name="org.pouzinsociety.bootstrap.driver" version="[1, 2)" />
+	<artifact type="bundle" name="org.pouzinsociety.bootstrap.agent" version="[1, 2)"  />
+<!-- Transport -->
+	<artifact type="bundle" name="org.pouzinsociety.transport.im" version="[1, 2)" />
+<!-- Configuration -->
+	<artifact type="bundle" name="org.pouzinsociety.config.dao" version="[1, 2)" />
+	<artifact type="bundle" name="org.pouzinsociety.config.stack" version="[1, 2)" />
+<!-- JNode --> 
+	<artifact type="bundle" name="org.pouzinsociety.org.jnode.net.support" version="[1, 2)" />
+	<artifact type="bundle" name="org.pouzinsociety.org.jnode.net.ethernet" version="[1, 2)" />
+	<artifact type="bundle" name="org.pouzinsociety.org.jnode.driver.net.loopback" version="[1, 2)" />
+	<artifact type="bundle" name="org.pouzinsociety.org.jnode.net.arp" version="[1, 2)" />
+	<artifact type="bundle" name="org.pouzinsociety.org.jnode.net.ipv4" version="[1, 2)" />
+	<artifact type="bundle" name="org.pouzinsociety.org.jnode.net.ipv4.layer" version="[1, 2)" />
+	<artifact type="bundle" name="org.pouzinsociety.org.jnode.net.ipv4.icmp" version="[1, 2)" />
+	<artifact type="bundle" name="org.pouzinsociety.org.jnode.net.ipv4.config" version="[1, 2)" />
+	<artifact type="bundle" name="org.pouzinsociety.org.jnode.net.ipv4.tcp" version="[1, 2)" />
+	<artifact type="bundle" name="org.pouzinsociety.org.jnode.net.ipv4.udp" version="[1, 2)" />
+	<artifact type="bundle" name="org.pouzinsociety.org.jnode.net.ipv4.resolver" version="[1, 2)" />
+	<artifact type="bundle" name="org.pouzinsociety.jnode.net" version="[1, 2)" />
+<!-- TINOS Support -->
+	<artifact type="bundle" name="org.pouzinsociety.support.jnode" version="[1, 2)" />
+	<artifact type="bundle" name="org.pouzinsociety.driver.net.idrive" version="[1, 2)" />
+<!-- DNS Testing -->
+	<artifact type="bundle" name="org.pouzinsociety.org.xbill.dns" version="[1, 2)" />
+</plan>

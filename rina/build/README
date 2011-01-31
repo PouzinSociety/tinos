@@ -1,0 +1,25 @@
+README:
+=======
+
+spring-build:
+ Orginally copied from a SpringSource provided demo project. Since then it has been modified
+ slightly to be used as the "template" spring-build area for a projects folder with OSGi 
+ components sitting inside it. To get the latest version of this folder should be sync
+ to (but doesnt) go here:
+	
+	git://git.springsource.org/spring-build/spring-build.git
+
+scripts:
+ Also copied from one of the SpringSource OSGi demo projects. Originally it allowed the
+ creation of src project areas for OSGi bundles/par files in a manner that was compatiable
+ with the SpringSource build system (spring-build -- above).
+
+tinos:
+ Extension scripts for the project creation scripts in the "scripts" folder. These have
+ extended the baseline set that was originally there to the current project settings used
+ in the tinos development.
+
+Note:
+ As always these are probably slightly behind the state of the art in project folders
+for the build systems. So usually as new build/server features are available it will need
+to be tweaked forward.	

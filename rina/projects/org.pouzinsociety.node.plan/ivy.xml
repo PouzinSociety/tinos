@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="http://ivyrep.jayasoft.org/ivy-doc.xsl"?>
+<ivy-module
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:noNamespaceSchemaLocation="http://incubator.apache.org/ivy/schemas/ivy.xsd"
+		version="1.3">
+
+	<info organisation="org.pouzinsociety.plan" module="${ant.project.name}"/>
+
+	<configurations>
+		<include file="${spring.build.dir}/common/default-ivy-configurations.xml"/>
+	</configurations>
+
+	<publications>
+		<artifact name="org.pouzinsociety.node" type="plan" ext="plan"/>
+	</publications>
+
+	<dependencies>
+<!-- BootStrap -->
+		<dependency org="org.pouzinsociety.bootstrap" name="org.pouzinsociety.bootstrap.api" rev="1.0.0"  />
+		<dependency org="org.pouzinsociety.bootstrap" name="org.pouzinsociety.bootstrap.driver" rev="1.0.0" />
+		<dependency org="org.pouzinsociety.bootstrap" name="org.pouzinsociety.bootstrap.agent" rev="1.0.0"  />
+<!-- Transport -->
+		<dependency org="org.pouzinsociety.transport" name="org.pouzinsociety.transport.im" rev="1.0.0" />
+
+<!-- Configuration -->
+		<dependency org="org.pouzinsociety.config" name="org.pouzinsociety.config.dao" rev="1.0.0" />
+		<dependency org="org.pouzinsociety.config" name="org.pouzinsociety.config.stack" rev="1.0.0" />
+
+<!-- JNode -->
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.support" rev="1.0.0" />
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ethernet" rev="1.0.0" />
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.driver.net.loopback" rev="1.0.0" />
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.arp" rev="1.0.0" />
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4" rev="1.0.0" />
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4.layer" rev="1.0.0" />
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4.icmp" rev="1.0.0" />
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4.config" rev="1.0.0" />
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4.tcp" rev="1.0.0" />
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4.udp" rev="1.0.0" />
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4.resolver" rev="1.0.0" />
+<!-- TINOS Support -->
+		<dependency org="org.pouzinsociety" name="org.pouzinsociety.support.jnode" rev="1.0.0" />
+		<dependency org="org.pouzinsociety" name="org.pouzinsociety.driver.net.idrive" rev="1.0.0" />
+	</dependencies>
+
+</ivy-module>

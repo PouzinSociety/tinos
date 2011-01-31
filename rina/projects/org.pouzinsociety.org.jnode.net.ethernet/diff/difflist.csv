@@ -1,0 +1,4 @@
+EthernetAddress.java,src/main/java/org/jnode/net/ethernet,0.2.7/net/src/net/org/jnode/net/ethernet
+EthernetConstants.java,src/main/java/org/jnode/net/ethernet,0.2.7/net/src/net/org/jnode/net/ethernet
+EthernetHeader.java,src/main/java/org/jnode/net/ethernet,0.2.7/net/src/net/org/jnode/net/ethernet
+EthernetUtils.java,src/main/java/org/jnode/net/ethernet,0.2.7/net/src/net/org/jnode/net/ethernet

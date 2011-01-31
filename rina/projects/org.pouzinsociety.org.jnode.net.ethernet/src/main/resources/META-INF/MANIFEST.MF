@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: jnode-net-ethernet
+Bundle-SymbolicName: org.pouzinsociety.org.jnode.net.ethernet
+Bundle-Version: 1.0.0
+Bundle-Vendor: TINOS
+Export-Package: org.jnode.net.ethernet;version="1.0.0"
+Import-Bundle: org.pouzinsociety.org.jnode.net.support;version="[1.0.0,1.0.0]"
+Import-Package: org.jnode.driver.net;version="[1.0.0,1.0.0]",
+ org.jnode.net;version="[1.0.0,1.0.0]",
+ org.jnode.util;version="[1.0.0,1.0.0]"
+

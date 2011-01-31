@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="provided-bundle" xmlns:ivy="antlib:org.apache.ivy.ant">
+
+	<macrodef name="provided-jars">
+		<attribute name="output.dir" default="${package.lib.dir}"/>
+		<sequential>
+			<mkdir dir="@{output.dir}"/>
+			<ivy:retrieve resolveId="provided.classpath" conf="provided" type="jar"
+					pattern="@{output.dir}/[artifact]-[revision].[ext]" log="download-only"/>
+			<delete>
+				<fileset dir="@{output.dir}">
+					<include name="com.springsource.javax.persistence-*.jar" />
+					<include name="com.springsource.org.apache.commons.logging-*.jar" />
+					<include name="org.springframework.aop-*.jar" />
+					<include name="org.springframework.beans-*.jar" />
+					<include name="org.springframework.context-*.jar" />
+					<include name="org.springframework.core-*.jar" />
+					<include name="org.springframework.web-*" />
+					<include name="org.springframework.web.servlet-*.jar" />
+				</fileset>
+			</delete>
+		</sequential>
+	</macrodef>
+
+</project>

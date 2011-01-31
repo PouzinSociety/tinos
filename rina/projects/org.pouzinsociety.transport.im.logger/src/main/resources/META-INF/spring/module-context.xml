@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/beans
+			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+			http://www.springframework.org/schema/context
+			http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+
+<!--  IM Connections for Logger(s) -->
+	<bean id="im-connection-1" class="org.pouzinsociety.config.dao.IMDao">
+		<property name="im_server" value="localhost"/>
+		<property name="im_port" value="5222"/>
+		<property name="im_buddyId" value="logger"/>
+		<property name="im_buddyPassword" value="logger"/>
+		<property name="im_resourceId" value="logger-NetA"/>
+		<property name="im_chatroom" value="networka@conference.localhost"/>		
+	</bean>
+	<bean id="im-connection-2" class="org.pouzinsociety.config.dao.IMDao">
+		<property name="im_server" value="localhost"/>
+		<property name="im_port" value="5222"/>
+		<property name="im_buddyId" value="logger"/>
+		<property name="im_buddyPassword" value="logger"/>
+		<property name="im_resourceId" value="logger-NetB"/>
+		<property name="im_chatroom" value="networkb@conference.localhost"/>		
+	</bean>
+	<bean id="im-connection-Bootstrap" class="org.pouzinsociety.config.dao.IMDao">
+		<property name="im_server" value="localhost"/>
+		<property name="im_port" value="5222"/>
+		<property name="im_buddyId" value="logger"/>
+		<property name="im_buddyPassword" value="logger"/>
+		<property name="im_resourceId" value="logger-Bootstrap"/>
+		<property name="im_chatroom" value="bootstrap@conference.localhost"/>		
+	</bean>
+
+<!--  Dump Dir -->
+	<bean id="dumpFileDir" class="java.lang.String">
+		<constructor-arg value="/tmp/" />
+	</bean>
+	
+<!--  Loggers -->
+	<bean id="logger-NetA" class="org.pouzinsociety.transport.im.logger.LoggerBuddy" destroy-method="close">
+		<constructor-arg ref="im-connection-1" />
+		<constructor-arg ref="dumpFileDir"/>
+	</bean>
+	<bean id="logger-NetB" class="org.pouzinsociety.transport.im.logger.LoggerBuddy" destroy-method="close">
+		<constructor-arg ref="im-connection-2" />
+		<constructor-arg ref="dumpFileDir"/>
+	</bean>
+	<bean id="logger-Bootstrap" class="org.pouzinsociety.transport.im.logger.LoggerBuddy" destroy-method="close">
+		<constructor-arg ref="im-connection-Bootstrap" />
+		<constructor-arg ref="dumpFileDir"/>
+	</bean>
+</beans>

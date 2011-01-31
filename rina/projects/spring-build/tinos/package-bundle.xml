@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="package-bundle">
+ <target name="package" depends="ivy.init">
+  <dist-jar/>
+  <src-jar/>
+<!--  <property name="subsystem.dir" value="${package.output.dir}/repository/usr"/>
+  <mkdir dir="${subsystem.dir}"/>
+  <dist-jar output.dir="${subsystem.dir}"/>
+-->
+ </target>
+</project>

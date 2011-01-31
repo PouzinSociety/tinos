@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+   xmlns="http://www.springframework.org/schema/beans"
+   xmlns:osgi="http://www.springframework.org/schema/osgi"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.springframework.org/schema/osgi  
+       http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd
+       http://www.springframework.org/schema/beans   
+       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+<!-- Update for your own service -->
+    <osgi:service id="networkLayerManagerService" ref="pouzinsocietyNetworkLayerManagerBean" interface="org.jnode.net.NetworkLayerManager"/>
+    <osgi:list id="networkLayerServices" interface="org.jnode.net.NetworkLayer" />
+    
+    <osgi:service id="DeviceManagerService" ref="pouzinsocietyDeviceManagerBean" interface="org.jnode.driver.DeviceManager"/>
+    <osgi:list id="deviceFinders" interface="org.jnode.driver.DeviceFinder" /> 
+    
+<!--  Network Layers -->
+    <osgi:reference id="ipv4NetworkLayerService" interface="org.jnode.net.NetworkLayer" bean-name="ipv4NetworkLayerBean" />
+    <osgi:reference id="arpNetworkLayerService" interface="org.jnode.net.NetworkLayer" bean-name="arpNetworkLayerBean" />
+        
+</beans>           
