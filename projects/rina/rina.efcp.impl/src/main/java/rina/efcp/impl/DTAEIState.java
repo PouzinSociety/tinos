@@ -29,13 +29,13 @@ public class DTAEIState {
 	 * The initial sequence number for the PDUs of this flow. It is 
 	 * always 0.
 	 */
-	private int[] initialSequenceNumber = null;
+	private long initialSequenceNumber = 0L;
 	
 	/**
 	 * After this sequence number, EFCP will ask the FAI to create another 
 	 * connection for this flow, so that sequence numbers do not repeat
 	 */
-	private int[] sequenceNumberRollOverThreshold = null;
+	private long sequenceNumberRollOverThreshold = Long.MAX_VALUE/2 -1;
 	
 	/**
 	 * The state
@@ -50,19 +50,19 @@ public class DTAEIState {
 	/**
 	 * The sequence number of the PDU received in order, if applicable
 	 */
-	private int[] lastSequenceDelivered = null;
+	private long lastSequenceDelivered = 0L;
 	
 	/**
 	 * The value of the next sequence number to be assigned to a 
 	 * PDU being sent on this connection
 	 */
-	private int[] nextSequenceToSend = null;
+	private long nextSequenceToSend = 0L;
 	
 	/**
 	 * The highest sequence number that the remote application is currently 
 	 * willing to accept on this connection.
 	 */
-	private int[] rightWindowEdge = null;
+	private long rightWindowEdge = 0L;
 	
 	/**
 	 * The queue of PDUs that have been handed off to the RMT but not yet acknowledged.
@@ -102,20 +102,19 @@ public class DTAEIState {
 		this.maxFlowPDUSize = maxFlowPDUSize;
 	}
 
-	public int[] getInitialSequenceNumber() {
+	public long getInitialSequenceNumber() {
 		return initialSequenceNumber;
 	}
 
-	public void setInitialSequenceNumber(int[] initialSequenceNumber) {
+	public void setInitialSequenceNumber(long initialSequenceNumber) {
 		this.initialSequenceNumber = initialSequenceNumber;
 	}
 
-	public int[] getSequenceNumberRollOverThreshold() {
+	public long getSequenceNumberRollOverThreshold() {
 		return sequenceNumberRollOverThreshold;
 	}
 
-	public void setSequenceNumberRollOverThreshold(
-			int[] sequenceNumberRollOverThreshold) {
+	public void setSequenceNumberRollOverThreshold(long sequenceNumberRollOverThreshold) {
 		this.sequenceNumberRollOverThreshold = sequenceNumberRollOverThreshold;
 	}
 
@@ -127,27 +126,27 @@ public class DTAEIState {
 		this.state = state;
 	}
 
-	public int[] getLastSequenceDelivered() {
+	public long getLastSequenceDelivered() {
 		return lastSequenceDelivered;
 	}
 
-	public void setLastSequenceDelivered(int[] lastSequenceDelivered) {
+	public void setLastSequenceDelivered(long lastSequenceDelivered) {
 		this.lastSequenceDelivered = lastSequenceDelivered;
 	}
 
-	public int[] getNextSequenceToSend() {
+	public long getNextSequenceToSend() {
 		return nextSequenceToSend;
 	}
 
-	public void setNextSequenceToSend(int[] nextSequenceToSend) {
+	public void setNextSequenceToSend(long nextSequenceToSend) {
 		this.nextSequenceToSend = nextSequenceToSend;
 	}
 
-	public int[] getRightWindowEdge() {
+	public long getRightWindowEdge() {
 		return rightWindowEdge;
 	}
 
-	public void setRightWindowEdge(int[] rightWindowEdge) {
+	public void setRightWindowEdge(long rightWindowEdge) {
 		this.rightWindowEdge = rightWindowEdge;
 	}
 

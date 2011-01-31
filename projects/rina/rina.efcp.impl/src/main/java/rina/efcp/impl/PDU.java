@@ -51,12 +51,12 @@ public class PDU {
 	/**
 	 * The total length of the PDU in bytes
 	 */
-	private int[] pduLength = null;
+	private long pduLength = 0L;
 	
 	/**
 	 * Sequence number of the PDU
 	 */
-	private int[] sequenceNumber = null;
+	private long sequenceNumber = 0L;
 	
 	/**
 	 * This field contains one or more octets that are uninterpreted by EFCP. This field contains a 
@@ -120,19 +120,19 @@ public class PDU {
 		this.flags = flags;
 	}
 
-	public int[] getPduLength() {
+	public long getPduLength() {
 		return pduLength;
 	}
 
-	public void setPduLength(int[] pduLength) {
+	public void setPduLength(long pduLength) {
 		this.pduLength = pduLength;
 	}
 
-	public int[] getSequenceNumber() {
+	public long getSequenceNumber() {
 		return sequenceNumber;
 	}
 
-	public void setSequenceNumber(int[] sequenceNumber) {
+	public void setSequenceNumber(long sequenceNumber) {
 		this.sequenceNumber = sequenceNumber;
 	}
 
@@ -159,6 +159,17 @@ public class PDU {
 	 * @return
 	 */
 	public byte[] getSerializedPDU(){
+		//TODO implement this;
+		return null;
+	}
+	
+	/**
+	 * Return a PDU object created by deserializing a 
+	 * serialized PDU
+	 * @param pdu
+	 * @return
+	 */
+	public static PDU createPDUFromByteArray(byte[] pdu){
 		//TODO implement this;
 		return null;
 	}

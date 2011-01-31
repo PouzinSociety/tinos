@@ -29,13 +29,32 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 		return rmt;
 	}
 
+	/**
+	 * Injected by the DataTransferAEFactory
+	 * @param rmt
+	 */
 	public void setRmt(RMT rmt) {
 		this.rmt = rmt;
 	}
 	
+	/**
+	 * @see DataTransferAEInstance.pduDelivered
+	 */
 	public void pduDelivered(byte[] pdu) {
+		PDU currentPDU = PDU.createPDUFromByteArray(pdu);
+		
+		//If this PDU has already been delivered, it's either duplicate or 
+		//it's in a gap that we've already passed over
+		/*if (currentPDU.getSequenceNumber() < stateVector.getLastSequenceDelivered()){
+			//Drop PDU and increment counter of dropped duplicates
+			return;
+		}*/
+		
 	}
 
+	/**
+	 * @see DataTransferAEInstance.sdusDelivered
+	 */
 	public void sdusDelivered(List<byte[]> sdus) {
 		//Iterate over SDUs and generate PDUs
 		//PDU sequence numbers start at stateVector.NextSequenceToSend
@@ -103,11 +122,14 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 		PDU pdu = new PDU(stateVector.getConnection());
 		pdu.setSequenceNumber(stateVector.getNextSequenceToSend());
 		pdu.appendSDU(sdu);
-		//TODO increment stateVector.NextSequenceToSend
+		stateVector.setNextSequenceToSend(stateVector.getNextSequenceToSend() + 1);
 		
 		return pdu;
 	}
 
+	/**
+	 * @see DataTransferAEInstance.getConnection
+	 */
 	public Connection getConnection() {
 		return stateVector.getConnection();
 	}
