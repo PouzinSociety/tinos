@@ -152,4 +152,14 @@ public class PDU {
 	public void appendSDU(byte[] sdu){
 		//TODO do it right;
 	}
+	
+	/**
+	 * Returns the PDU as a byte array, ready to be 
+	 * delivered to the RMT
+	 * @return
+	 */
+	public byte[] getSerializedPDU(){
+		//TODO implement this;
+		return null;
+	}
 }

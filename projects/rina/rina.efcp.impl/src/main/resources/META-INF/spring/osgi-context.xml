@@ -7,5 +7,15 @@
        http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd
        http://www.springframework.org/schema/beans   
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+    
+    <!-- Import the RMT from the OSGi registry -->
+    <osgi:reference id="rmtService" interface="rina.rmt.api.RMT"/>
+       
+    <!--  Export the dataTransferAEFactory to the OSGi registry-->
+    <osgi:service id="dataTransferAEFactory" ref="dataTransferAEFactoryBean">
+     	<osgi:interfaces>
+ 			<value>rina.efcp.api.DataTransferAEFactory</value>
+ 	</osgi:interfaces>
+    </osgi:service>
 
 </beans>           

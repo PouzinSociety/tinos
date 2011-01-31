@@ -3,5 +3,9 @@
 		xsi:schemaLocation="
 			http://www.springframework.org/schema/beans
 			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
-
+			
+	<bean name="dataTransferAEFactoryBean" class="rina.efcp.impl.DataTransferAEFactoryImpl">
+		<property name="rmt" ref="rmtService"/>
+	</bean>
+	
 </beans>
