@@ -49,6 +49,11 @@ public class Unsigned {
 			break;
 		}
 	}
+	
+	public Unsigned(byte[] value) throws UnsignedException{
+		this(value.length);
+		setValue(value);
+	}
 
 	public long getValue() {
 		return value;

@@ -74,6 +74,95 @@ public class PDU {
 		flags = new Unsigned(1);
 		sequenceNumber = new Unsigned(1);
 	}
+	
+	/**
+	 * Return a PDU object created by deserializing a 
+	 * serialized PDU
+	 * @param pdu
+	 * @return
+	 */
+	public static PDU createPDUFromByteArray(byte[] buffer){
+		PDU pdu = new PDU();
+		ConnectionId connectionId = new ConnectionId();
+		Unsigned unsigned = null;
+		byte[] value = null;
+		int index = 0;
+		int userDataLength = 0;
+		
+		value = new byte[1];
+		index = readFieldFromPCI(value, index, buffer);
+		unsigned = new Unsigned(value);
+		pdu.setVersion(unsigned);
+		
+		value = new byte[EFCPConstants.addressLength];
+		index = readFieldFromPCI(value, index, buffer);
+		pdu.setSourceAddress(value);
+		
+		value = new byte[EFCPConstants.addressLength];
+		index = readFieldFromPCI(value, index, buffer);
+		pdu.setDestinationAddress(value);
+		
+		value = new byte[EFCPConstants.QoSidLength];
+		index = readFieldFromPCI(value, index, buffer);
+		unsigned = new Unsigned(value);
+		connectionId.setQosId(unsigned);
+		
+		value = new byte[EFCPConstants.PortIdLength];
+		index = readFieldFromPCI(value, index, buffer);
+		unsigned = new Unsigned(value);
+		connectionId.setSourceCEPId(unsigned);
+		
+		value = new byte[EFCPConstants.PortIdLength];
+		index = readFieldFromPCI(value, index, buffer);
+		unsigned = new Unsigned(value);
+		connectionId.setDestinationCEPId(unsigned);
+		pdu.setConnectionId(connectionId);
+		
+		value = new byte[1];
+		index = readFieldFromPCI(value, index, buffer);
+		unsigned = new Unsigned(value);
+		pdu.setPduType(unsigned);
+		
+		value = new byte[1];
+		index = readFieldFromPCI(value, index, buffer);
+		unsigned = new Unsigned(value);
+		pdu.setFlags(unsigned);
+		
+		value = new byte[EFCPConstants.lengthLength];
+		index = readFieldFromPCI(value, index, buffer);
+		userDataLength = (int) new Unsigned(value).getValue() - EFCPConstants.pciLength;
+		
+		value = new byte[EFCPConstants.SequenceNumberLength];
+		index = readFieldFromPCI(value, index, buffer);
+		unsigned = new Unsigned(value);
+		pdu.setSequenceNumber(unsigned);
+		
+		value = new byte[userDataLength];
+		index = readFieldFromPCI(value, index, buffer);
+		pdu.appendSDU(value);
+		
+		return pdu;
+	}
+	
+	/**
+	 * Copies toRead.length bytes from the PDU into the toRead byte array
+	 * @param toRead
+	 * @param index
+	 * @param pdu
+	 * @param unsigned
+	 * @return
+	 */
+	private static int readFieldFromPCI(byte[] toRead, int index, byte[] pdu){
+		for(int i=0; i<toRead.length; i++){
+			toRead[i] = pdu[index];
+			index++;
+		}
+		
+		return index;
+	}
+	
+	private PDU(){
+	}
 
 	public Unsigned getVersion() {
 		return version;
@@ -183,16 +272,5 @@ public class PDU {
 		}
 		
 		return index;
-	}
-	
-	/**
-	 * Return a PDU object created by deserializing a 
-	 * serialized PDU
-	 * @param pdu
-	 * @return
-	 */
-	public static PDU createPDUFromByteArray(byte[] pdu){
-		//TODO implement this;
-		return null;
 	}
 }
