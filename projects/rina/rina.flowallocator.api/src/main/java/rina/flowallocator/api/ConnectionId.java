@@ -1,5 +1,7 @@
 package rina.flowallocator.api;
 
+import rina.utils.types.Unsigned;
+
 /**
  * Encapsulates the data that identifies a connection
  * @author eduardgrasa
@@ -10,41 +12,41 @@ public class ConnectionId {
 	 * A DIF-assigned identifier only known within the DIF that stands for a 
 	 * particular QoS hypercube.
 	 */
-	private long qosId = 0L;
+	private Unsigned qosId = null;
 	
 	/**
 	 * An identifier unique within the DT-AEI of the source IPC Process that identifies 
 	 * the source endpoint of this connection
 	 */
-	private long sourceCEPId = 0L;
+	private Unsigned sourceCEPId = null;
 	
 	/**
 	 * An identifier unique within the DT-AEI of the destination IPC Process that identifies 
 	 * the destination endpoint of this connection
 	 */
-	private long destinationCEPId = 0L;
+	private Unsigned destinationCEPId = null;
 
-	public long getQosId() {
+	public Unsigned getQosId() {
 		return qosId;
 	}
 
-	public void setQosId(long qosId) {
+	public void setQosId(Unsigned qosId) {
 		this.qosId = qosId;
 	}
 
-	public long getSourceCEPId() {
+	public Unsigned getSourceCEPId() {
 		return sourceCEPId;
 	}
 
-	public void setSourceCEPId(long sourceCEPId) {
+	public void setSourceCEPId(Unsigned sourceCEPId) {
 		this.sourceCEPId = sourceCEPId;
 	}
 
-	public long getDestinationCEPId() {
+	public Unsigned getDestinationCEPId() {
 		return destinationCEPId;
 	}
 
-	public void setDestinationCEPId(long destinationCEPId) {
+	public void setDestinationCEPId(Unsigned destinationCEPId) {
 		this.destinationCEPId = destinationCEPId;
 	}
 	
@@ -60,8 +62,8 @@ public class ConnectionId {
 		
 		ConnectionId connectionId = (ConnectionId) candidate;
 		
-		return (connectionId.getDestinationCEPId() == this.getDestinationCEPId() &&
-				connectionId.getSourceCEPId() == this.getSourceCEPId() && 
-				connectionId.getQosId() == this.getQosId());
+		return (connectionId.getDestinationCEPId().equals(this.getDestinationCEPId()) &&
+				connectionId.getSourceCEPId().equals(this.getSourceCEPId()) && 
+				connectionId.getQosId().equals(this.getQosId()));
 	}
 }

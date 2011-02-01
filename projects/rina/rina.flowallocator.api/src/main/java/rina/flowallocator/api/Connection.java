@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import rina.ipcservice.api.QoSParameters;
+import rina.utils.types.Unsigned;
 
 /**
  * Captures the state of a single connection
@@ -24,7 +25,7 @@ public class Connection {
 	 * The port-id returned to the Application process that requested the flow. This port-id is used for 
 	 * the life of the connection.
 	 */
-	private long sourcePortId = 0L;
+	private Unsigned sourcePortId = null;
 	
 	/**
 	 * The destination application of the flow
@@ -40,7 +41,7 @@ public class Connection {
 	 * The port-id returned to the destination Application process. This port-id is used for 
 	 * the life of the connection.
 	 */
-	private long destinationPortId = 0L;
+	private Unsigned destinationPortId = null;
 	
 	/**
 	 * Identification of the QoS cube associated with this connection
@@ -126,11 +127,11 @@ public class Connection {
 		this.sourceAddress = sourceAddress;
 	}
 
-	public long getSourcePortId() {
+	public Unsigned getSourcePortId() {
 		return sourcePortId;
 	}
 
-	public void setSourcePortId(long sourcePortId) {
+	public void setSourcePortId(Unsigned sourcePortId) {
 		this.sourcePortId = sourcePortId;
 	}
 
@@ -150,11 +151,11 @@ public class Connection {
 		this.destinationAddress = destinationAddress;
 	}
 
-	public long getDestinationPortId() {
+	public Unsigned getDestinationPortId() {
 		return destinationPortId;
 	}
 
-	public void setDestinationPortId(long destinationPortId) {
+	public void setDestinationPortId(Unsigned destinationPortId) {
 		this.destinationPortId = destinationPortId;
 	}
 
