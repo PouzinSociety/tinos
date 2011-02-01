@@ -5,8 +5,9 @@
 	<classpathentry kind="src" output="target/test-classes" path="src/test/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/rina.cdap.api"/>
-	<classpathentry kind="lib" path="/Users/elenitrouva/rina/tinos/repository/downloaded/org.junit/com.springsource.org.junit/4.4.0/com.springsource.org.junit-4.4.0.jar"/>
+	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/ivy-cache/repository/org.junit/com.springsource.org.junit/4.4.0/com.springsource.org.junit-4.4.0.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/com.google.protobuf"/>
-	<classpathentry kind="lib" path="/Users/elenitrouva/rina/tinos/repository/downloaded/org.apache.commons/com.springsource.org.apache.commons.logging/1.1.1/com.springsource.org.apache.commons.logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/ivy-cache/repository/org.apache.commons/com.springsource.org.apache.commons.logging/1.1.1/com.springsource.org.apache.commons.logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/com.google/com.google.protobuf/2.3.0/com.google.protobuf-2.3.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

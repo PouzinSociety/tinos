@@ -45,10 +45,30 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 		
 		//If this PDU has already been delivered, it's either duplicate or 
 		//it's in a gap that we've already passed over
-		/*if (currentPDU.getSequenceNumber() < stateVector.getLastSequenceDelivered()){
-			//Drop PDU and increment counter of dropped duplicates
+		if (currentPDU.getSequenceNumber().getValue() < stateVector.getLastSequenceDelivered().getValue()){
+			//TODO Drop PDU and increment counter of dropped duplicates
 			return;
-		}*/
+		}
+		
+		//Ditto if it is on the Reassembly queue already. We notice that 
+		//when we find where to insert this PDU
+		//TODO add PDU to connection.reassemblyQueeu in sequence number order
+		//***Defer starting reassembly timer until later; this may not be a fragment or may be 
+		//***a fragment that completes an SDU
+		//TODO if PDU already on Connection.ReassemblyQueue then
+			//TODO drop PDU
+			//TODO return;
+		
+		//If we are encrypting, we can't let PDU sequence numbers roll over.
+		//***define exactly what the Flow Allocator needs to do
+		if (EFCPConstants.DIFIntegrity && 
+				currentPDU.getSequenceNumber().getValue() > stateVector.getSequenceNumberRollOverThreshold().getValue()){
+			//Security requires a new flow
+			//TODO requestFAICraeteNewConnection(connectionID)
+		}
+		
+		//We've added a new PDU to the reassembly queue. Collect PDUs fom the reassembly queue until 
+		//we either reach an incomplete SDU or the gap to the next SDU is too large
 		
 	}
 
@@ -62,7 +82,7 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 		PDU currentPDU = null;
 		
 		for(int i=0; i<sdus.size(); i++){
-			processCurrentSDU(sdus.get(i), currentPDU, generatedPDUs);
+			currentPDU = processCurrentSDU(sdus.get(i), currentPDU, generatedPDUs);
 		}
 		
 		if (currentPDU != null){
@@ -88,9 +108,9 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 	 * @param currentPDU the current PDU being assembled
 	 * @param generatedPDUs the list of generated PDUs
 	 */
-	private void processCurrentSDU(byte[] currentSDU, PDU currentPDU, List<PDU> generatedPDUs){
+	private PDU processCurrentSDU(byte[] currentSDU, PDU currentPDU, List<PDU> generatedPDUs){
 		if (currentPDU != null){
-			if (EFCPConstants.DIFConcatenation && currentSDU.length < (stateVector.getMaxFlowPDUSize() - currentPDU.computePDULength())){
+			if (EFCPConstants.DIFConcatenation && currentSDU.length < (stateVector.getMaxFlowPDUSize() - currentPDU.getPduLength())){
 				//There is room in the current PDU for this SDU
 				currentPDU.appendSDU(currentSDU);
 			}else{
@@ -111,6 +131,8 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 				currentPDU = createNewPDU(currentSDU);
 			}
 		}
+		
+		return currentPDU;
 	}
 	
 	/**
@@ -122,7 +144,7 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 		PDU pdu = new PDU(stateVector.getConnection());
 		pdu.setSequenceNumber(stateVector.getNextSequenceToSend());
 		pdu.appendSDU(sdu);
-		stateVector.setNextSequenceToSend(stateVector.getNextSequenceToSend() + 1);
+		stateVector.getNextSequenceToSend().increment();
 		
 		return pdu;
 	}

@@ -2,8 +2,10 @@ package rina.efcp.impl;
 
 import java.nio.ByteBuffer;
 
+import rina.efcp.api.EFCPConstants;
 import rina.flowallocator.api.Connection;
 import rina.flowallocator.api.ConnectionId;
+import rina.utils.types.Unsigned;
 
 /**
  * An EFCP PDU, consisting of the PCI plus user data
@@ -51,12 +53,12 @@ public class PDU {
 	/**
 	 * The total length of the PDU in bytes
 	 */
-	private long pduLength = 0L;
+	private long pduLength = 0;
 	
 	/**
 	 * Sequence number of the PDU
 	 */
-	private long sequenceNumber = 0L;
+	private Unsigned sequenceNumber = null;
 	
 	/**
 	 * This field contains one or more octets that are uninterpreted by EFCP. This field contains a 
@@ -70,6 +72,7 @@ public class PDU {
 		this.connectionId = connection.getCurrentConnectionId();
 		this.sourceAddress = connection.getSourceAddress();
 		this.destinationAddress = connection.getDestinationAddress();
+		computePDULength();
 	}
 
 	public byte getVersion() {
@@ -124,15 +127,11 @@ public class PDU {
 		return pduLength;
 	}
 
-	public void setPduLength(long pduLength) {
-		this.pduLength = pduLength;
-	}
-
-	public long getSequenceNumber() {
+	public Unsigned getSequenceNumber() {
 		return sequenceNumber;
 	}
 
-	public void setSequenceNumber(long sequenceNumber) {
+	public void setSequenceNumber(Unsigned sequenceNumber) {
 		this.sequenceNumber = sequenceNumber;
 	}
 
@@ -142,15 +141,22 @@ public class PDU {
 
 	public void setUserData(ByteBuffer userData) {
 		this.userData = userData;
+		computePDULength();
 	}
 	
-	public int computePDULength(){
-		//TODO do it right
-		return 0;
+	private void computePDULength(){
+		this.pduLength = 1 + 2*EFCPConstants.addressLength + 
+			EFCPConstants.QoSidLength + 2*EFCPConstants.PortIdLength + 
+			2 + EFCPConstants.lengthLength + EFCPConstants.SequenceNumberLength;
+		
+		if (this.userData != null){
+			this.pduLength = this.pduLength + userData.position();
+		}
 	}
 	
 	public void appendSDU(byte[] sdu){
 		//TODO do it right;
+		computePDULength();
 	}
 	
 	/**

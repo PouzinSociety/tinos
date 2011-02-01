@@ -2,6 +2,7 @@ package rina.efcp.impl;
 
 import rina.efcp.api.EFCPConstants;
 import rina.flowallocator.api.Connection;
+import rina.utils.types.Unsigned;
 
 /**
  * The data associated with a single active flow
@@ -29,13 +30,13 @@ public class DTAEIState {
 	 * The initial sequence number for the PDUs of this flow. It is 
 	 * always 0.
 	 */
-	private long initialSequenceNumber = 0L;
+	private Unsigned initialSequenceNumber = null;
 	
 	/**
 	 * After this sequence number, EFCP will ask the FAI to create another 
 	 * connection for this flow, so that sequence numbers do not repeat
 	 */
-	private long sequenceNumberRollOverThreshold = Long.MAX_VALUE/2 -1;
+	private Unsigned sequenceNumberRollOverThreshold = null;
 	
 	/**
 	 * The state
@@ -50,19 +51,19 @@ public class DTAEIState {
 	/**
 	 * The sequence number of the PDU received in order, if applicable
 	 */
-	private long lastSequenceDelivered = 0L;
+	private Unsigned lastSequenceDelivered = null;
 	
 	/**
 	 * The value of the next sequence number to be assigned to a 
 	 * PDU being sent on this connection
 	 */
-	private long nextSequenceToSend = 0L;
+	private Unsigned nextSequenceToSend = null;
 	
 	/**
 	 * The highest sequence number that the remote application is currently 
 	 * willing to accept on this connection.
 	 */
-	private long rightWindowEdge = 0L;
+	private Unsigned rightWindowEdge = null;
 	
 	/**
 	 * The queue of PDUs that have been handed off to the RMT but not yet acknowledged.
@@ -102,19 +103,19 @@ public class DTAEIState {
 		this.maxFlowPDUSize = maxFlowPDUSize;
 	}
 
-	public long getInitialSequenceNumber() {
+	public Unsigned getInitialSequenceNumber() {
 		return initialSequenceNumber;
 	}
 
-	public void setInitialSequenceNumber(long initialSequenceNumber) {
+	public void setInitialSequenceNumber(Unsigned initialSequenceNumber) {
 		this.initialSequenceNumber = initialSequenceNumber;
 	}
 
-	public long getSequenceNumberRollOverThreshold() {
+	public Unsigned getSequenceNumberRollOverThreshold() {
 		return sequenceNumberRollOverThreshold;
 	}
 
-	public void setSequenceNumberRollOverThreshold(long sequenceNumberRollOverThreshold) {
+	public void setSequenceNumberRollOverThreshold(Unsigned sequenceNumberRollOverThreshold) {
 		this.sequenceNumberRollOverThreshold = sequenceNumberRollOverThreshold;
 	}
 
@@ -126,27 +127,27 @@ public class DTAEIState {
 		this.state = state;
 	}
 
-	public long getLastSequenceDelivered() {
+	public Unsigned getLastSequenceDelivered() {
 		return lastSequenceDelivered;
 	}
 
-	public void setLastSequenceDelivered(long lastSequenceDelivered) {
+	public void setLastSequenceDelivered(Unsigned lastSequenceDelivered) {
 		this.lastSequenceDelivered = lastSequenceDelivered;
 	}
 
-	public long getNextSequenceToSend() {
+	public Unsigned getNextSequenceToSend() {
 		return nextSequenceToSend;
 	}
 
-	public void setNextSequenceToSend(long nextSequenceToSend) {
+	public void setNextSequenceToSend(Unsigned nextSequenceToSend) {
 		this.nextSequenceToSend = nextSequenceToSend;
 	}
 
-	public long getRightWindowEdge() {
+	public Unsigned getRightWindowEdge() {
 		return rightWindowEdge;
 	}
 
-	public void setRightWindowEdge(long rightWindowEdge) {
+	public void setRightWindowEdge(Unsigned rightWindowEdge) {
 		this.rightWindowEdge = rightWindowEdge;
 	}
 

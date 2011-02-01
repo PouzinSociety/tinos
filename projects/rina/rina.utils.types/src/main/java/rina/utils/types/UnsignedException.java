@@ -9,7 +9,7 @@ public class UnsignedException extends RuntimeException{
 	
 	private static final long serialVersionUID = -4802623184750614587L;
 
-	public enum ErrorCodes {UnsupportedNumberOfBytes};
+	public enum ErrorCodes {UnsupportedNumberOfBytes, NullValueProvided, ValueOutOfBounds};
 	
 	private ErrorCodes errorCode = null;
 	

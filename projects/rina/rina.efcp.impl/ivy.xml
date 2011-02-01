@@ -22,6 +22,8 @@
 		<dependency org="org.pouzinsociety.rina" name="rina.flowallocator.api" rev="1.0.0"  conf="compile->runtime" />
 <!-- RMT API -->
 		<dependency org="org.pouzinsociety.rina" name="rina.rmt.api" rev="1.0.0"  conf="compile->runtime" />
+<!-- Utils types-->
+		<dependency org="org.pouzinsociety.rina" name="rina.utils.types" rev="1.0.0"  conf="compile->runtime" />
 <!-- Logging -->
 		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" conf="dm-server-provided->runtime" />
 <!-- Tests -->
