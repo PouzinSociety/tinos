@@ -48,6 +48,8 @@
 		<pathelement location="../rina/rina.transport.impl"/>
 		<pathelement location="../rina/rina.transport.testapp.api"/>
 		<pathelement location="../rina/rina.transport.testapp.impl"/>
+		<pathelement location="../rina/rina.cdap.api"/>
+		<pathelement location="../rina/rina.cdap.impl"/>
 <!-- Deployment Plans -->
 		<pathelement location="../deployment/org.pouzinsociety.config.manager.plan"/>
 		<pathelement location="../deployment/org.pouzinsociety.logger.plan"/>

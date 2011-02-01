@@ -8,6 +8,4 @@
        http://www.springframework.org/schema/beans   
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-<!-- Update for your own service -->
-    <osgi:service id="bundleServiceOsgi" ref="bundleService" interface="rina.ipcService.api.BundleService" />
 </beans>           
