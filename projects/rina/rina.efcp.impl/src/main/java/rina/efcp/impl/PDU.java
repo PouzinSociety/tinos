@@ -17,7 +17,7 @@ public class PDU {
 	/**
 	 * An identifier indicating the version of the protocol, seems prudent
 	 */
-	private byte version = 0x01;
+	private Unsigned version = null;
 	
 	/**
 	 * A synonym for the application process name designating an IPC process 
@@ -40,7 +40,7 @@ public class PDU {
 	/**
 	 * The field indicates the type of PDU.
 	 */
-	private byte pduType = 0x00;
+	private Unsigned pduType = null;
 	
 	/**
 	 * This field indicates conditions that affect the handling of the PDU. Flags should only indicate 
@@ -48,12 +48,7 @@ public class PDU {
 	 * of the connection should be established during allocation or by the action of management. The 
 	 * interpretation of the flags depends on the PDU Type.
 	 */
-	private byte flags = 0x00;
-	
-	/**
-	 * The total length of the PDU in bytes
-	 */
-	private long pduLength = 0;
+	private Unsigned flags = null;
 	
 	/**
 	 * Sequence number of the PDU
@@ -72,14 +67,19 @@ public class PDU {
 		this.connectionId = connection.getCurrentConnectionId();
 		this.sourceAddress = connection.getSourceAddress();
 		this.destinationAddress = connection.getDestinationAddress();
-		computePDULength();
+		userData = ByteBuffer.allocate(EFCPConstants.maxSDUSize);
+		version = new Unsigned(1);
+		version.setValue(0x01);
+		pduType = new Unsigned(1);
+		flags = new Unsigned(1);
+		sequenceNumber = new Unsigned(1);
 	}
 
-	public byte getVersion() {
+	public Unsigned getVersion() {
 		return version;
 	}
 
-	public void setVersion(byte version) {
+	public void setVersion(Unsigned version) {
 		this.version = version;
 	}
 
@@ -107,24 +107,24 @@ public class PDU {
 		this.connectionId = connectionId;
 	}
 
-	public byte getPduType() {
+	public Unsigned getPduType() {
 		return pduType;
 	}
 
-	public void setPduType(byte pduType) {
+	public void setPduType(Unsigned pduType) {
 		this.pduType = pduType;
 	}
 
-	public byte getFlags() {
+	public Unsigned getFlags() {
 		return flags;
 	}
 
-	public void setFlags(byte flags) {
+	public void setFlags(Unsigned flags) {
 		this.flags = flags;
 	}
 
 	public long getPduLength() {
-		return pduLength;
+		return EFCPConstants.pciLength + userData.position();
 	}
 
 	public Unsigned getSequenceNumber() {
@@ -141,22 +141,10 @@ public class PDU {
 
 	public void setUserData(ByteBuffer userData) {
 		this.userData = userData;
-		computePDULength();
-	}
-	
-	private void computePDULength(){
-		this.pduLength = 1 + 2*EFCPConstants.addressLength + 
-			EFCPConstants.QoSidLength + 2*EFCPConstants.PortIdLength + 
-			2 + EFCPConstants.lengthLength + EFCPConstants.SequenceNumberLength;
-		
-		if (this.userData != null){
-			this.pduLength = this.pduLength + userData.position();
-		}
 	}
 	
 	public void appendSDU(byte[] sdu){
-		//TODO do it right;
-		computePDULength();
+		userData.put(sdu);
 	}
 	
 	/**
@@ -165,8 +153,36 @@ public class PDU {
 	 * @return
 	 */
 	public byte[] getSerializedPDU(){
-		//TODO implement this;
-		return null;
+		byte[] pci = new byte[EFCPConstants.pciLength];
+		Unsigned length = new Unsigned(EFCPConstants.lengthLength);
+		length.setValue(this.getPduLength());
+		int index = 0;
+		
+		index = addBytesToPCI(pci, index, version.getBytes());
+		index = addBytesToPCI(pci, index, sourceAddress);
+		index = addBytesToPCI(pci, index, destinationAddress);
+		index = addBytesToPCI(pci, index, connectionId.getQosId().getBytes());
+		index = addBytesToPCI(pci, index, connectionId.getSourceCEPId().getBytes());
+		index = addBytesToPCI(pci, index, connectionId.getDestinationCEPId().getBytes());
+		index = addBytesToPCI(pci, index, pduType.getBytes());
+		index = addBytesToPCI(pci, index, flags.getBytes());
+		index = addBytesToPCI(pci, index, length.getBytes());
+		index = addBytesToPCI(pci, index, sequenceNumber.getBytes());
+		
+		ByteBuffer pdu = ByteBuffer.allocate(EFCPConstants.maxPDUSize);
+		pdu.put(pci);
+		pdu.put(userData.array());
+		
+		return pdu.array();
+	}
+	
+	private int addBytesToPCI(byte[] pci, int index, byte[] toAdd){
+		for (int i=0; i<toAdd.length; i++){
+			pci[index] = toAdd[i];
+			index++;
+		}
+		
+		return index;
 	}
 	
 	/**

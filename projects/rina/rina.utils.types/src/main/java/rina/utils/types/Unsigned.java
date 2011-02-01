@@ -13,7 +13,7 @@ public class Unsigned {
 	/**
 	 * The number of bytes of this unsigned data type
 	 */
-	private byte numberOfBytes = 0;
+	private int numberOfBytes = 0;
 	
 	/**
 	 * The actual value of the type
@@ -27,7 +27,7 @@ public class Unsigned {
 	 * @param numberOfBytes
 	 * @throws UnsignedException
 	 */
-	public Unsigned(byte numberOfBytes) throws UnsignedException{
+	public Unsigned(int numberOfBytes) throws UnsignedException{
 		if (numberOfBytes < 1 || numberOfBytes > 4){
 			throw new UnsignedException(ErrorCodes.UnsupportedNumberOfBytes);
 		}
@@ -67,7 +67,7 @@ public class Unsigned {
 		this.value = value;
 	}
 
-	public byte getNumberOfBytes() {
+	public int getNumberOfBytes() {
 		return numberOfBytes;
 	}
 	

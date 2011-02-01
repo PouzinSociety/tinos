@@ -37,11 +37,11 @@ public interface EFCPConstants {
 	 * The length of the length field in the DTP PCI, in bytes
 	 */
 	public static final int lengthLength = 2;
-	
+
 	/**
-	 * The maximum length allowed for an SDU in this DIF, in bytes
+	 * The length of the PCI, in bytes
 	 */
-	public static final int maxSDUSize = 1000;
+	public static final int pciLength = 1 + 2*addressLength + QoSidLength + 2*PortIdLength + 2 + lengthLength + SequenceNumberLength;
 	
 	/**
 	 * The maximum length allowed for a PDU in this DIF, in bytes
@@ -49,9 +49,9 @@ public interface EFCPConstants {
 	public static final int maxPDUSize = 1500;
 	
 	/**
-	 * The length of the PCI, in bytes
+	 * The maximum length allowed for an SDU in this DIF, in bytes
 	 */
-	public static final int pciLength = 20;
+	public static final int maxSDUSize = maxPDUSize - pciLength;
 	
 	/**
 	 * True if the PDUs in this DIF have CRC, TTL, and/or encryption. Since 
