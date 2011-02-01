@@ -1,11 +1,11 @@
 package rina.flowallocator.impl;
 
 import java.util.Map;
-
 import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCService;
-import rina.ipcservice.api.QoSCube;
+import rina.ribdaemon.api.MessageSubscriber;
+import rina.ribdaemon.api.MessageSubscription;
 import rina.flowallocator.api.ReleaseResources;
 import rina.flowallocator.impl.FlowAllocatorInstance;
 
@@ -18,12 +18,14 @@ public class FlowAllocator implements IPCService, ReleaseResources {
 	
 	private ApplicationProcessNamingInfo requestedAPinfo = null;
 	private int portId = 0;
-	private QoSCube cube = null;
+	//private QoSCube cube = null;
 	private boolean result = false;
 	private int FAid = 0;
-	
+	private FlowAllocatorInstance FAI = null;
 	private boolean validAllocateRequest = false;
 	private boolean validApplicationProcessNamingInfo = false;
+	private MessageSubscription subscription = null;
+
 
 
 	public FlowAllocator() {
@@ -35,10 +37,12 @@ public class FlowAllocator implements IPCService, ReleaseResources {
 			validateRequest(request);
 			
 			request.setPort_id(assignPortId());
-			FlowAllocatorInstance FAI = new FlowAllocatorInstance();
-			//forwardAllocateRequest(request);
-			// TODO FA subscribes to create-delete flow objects
-			// subscribeToMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber);
+			FAI = new FlowAllocatorInstance();
+			FAI.forwardAllocateRequest(request);
+			
+			subscription = new MessageSubscription();
+			//subscribeToMessages(subscription, subscriber);
+			
 			// TODO check AllocateNotifyPolicy to see if you should return AllocateResponse 
 			// if(AllocateNotifyPolicy)
 				// deliverAllocateResponse(request.getRequestedAPinfo(), request.getPort_id(), true, "");
@@ -92,7 +96,7 @@ public class FlowAllocator implements IPCService, ReleaseResources {
 	 */
 	public static void validateRequest(AllocateRequest request) throws Exception{
 		validateApplicationProcessNamingInfo(request.getRequestedAPinfo());
-		validateQoScube(request.getCube());
+		//validateQoScube(request.getCube());
 			
 	}
 
@@ -174,11 +178,11 @@ public class FlowAllocator implements IPCService, ReleaseResources {
 		
 	}
 	
-	
-	public static void validateQoScube(QoSCube cube) throws Exception{
-		Map<String, Object> qos_cube = cube.getCube();
-		//TODO add check
-	}
+//	
+//	public static void validateQoScube(QoSCube cube) throws Exception{
+//		Map<String, Object> qos_cube = cube.getCube();
+//		//TODO add check
+//	}
 
 	
 	public void forwardDeAllocateRequest(int portId) {
