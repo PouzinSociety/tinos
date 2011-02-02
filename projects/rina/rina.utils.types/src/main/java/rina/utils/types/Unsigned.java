@@ -202,4 +202,10 @@ public class Unsigned {
 	public String toString(){
 		return ""+value;
 	}
+	
+	public Unsigned clone(){
+		Unsigned result = new Unsigned(this.numberOfBytes);
+		result.setValue(this.value);
+		return result;
+	}
 }

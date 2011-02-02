@@ -273,4 +273,17 @@ public class PDU {
 		
 		return index;
 	}
+	
+	public boolean equals(Object candidate){
+		if (candidate == null){
+			return false;
+		}
+		
+		if (!(candidate instanceof PDU)){
+			return false;
+		}
+		
+		PDU pdu = (PDU) candidate;
+		return this.getSequenceNumber().equals(pdu.getSequenceNumber());
+	}
 }

@@ -17,6 +17,13 @@ public class DTAEIState {
 	private Connection connection = null;
 	
 	/**
+	 * The reassembly queue, should go into connection 
+	 * but I'll leave it here for now (if not PDU has to 
+	 * got to the flow allocator API)
+	 */
+	private ReassemblyQueue reasemblyQeueue = null;
+	
+	/**
 	 * The maximum length of an SDU for this flow, in bytes
 	 */
 	private int maxFlowSDU = EFCPConstants.maxPDUSize;
@@ -85,6 +92,14 @@ public class DTAEIState {
 
 	public void setConnection(Connection connection) {
 		this.connection = connection;
+	}
+
+	public ReassemblyQueue getReasemblyQeueue() {
+		return reasemblyQeueue;
+	}
+
+	public void setReasemblyQeueue(ReassemblyQueue reasemblyQeueue) {
+		this.reasemblyQeueue = reasemblyQeueue;
 	}
 
 	public int getMaxFlowSDU() {

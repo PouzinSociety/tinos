@@ -7,6 +7,7 @@ import rina.efcp.api.DataTransferAEInstance;
 import rina.efcp.api.EFCPConstants;
 import rina.flowallocator.api.Connection;
 import rina.rmt.api.RMT;
+import rina.utils.types.Unsigned;
 
 public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 	
@@ -43,33 +44,178 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 	public void pduDelivered(byte[] pdu) {
 		PDU currentPDU = PDU.createPDUFromByteArray(pdu);
 		
-		//If this PDU has already been delivered, it's either duplicate or 
-		//it's in a gap that we've already passed over
-		if (currentPDU.getSequenceNumber().getValue() < stateVector.getLastSequenceDelivered().getValue()){
-			//TODO Drop PDU and increment counter of dropped duplicates
+		if (pduAlreadyDelivered(currentPDU)){
 			return;
 		}
 		
+		if (!addPDUToReassemblyQueue(currentPDU)){
+			return;
+		}
+		
+		checkSequenceNumberRollover(currentPDU);
+		
+		List<PDU> completeSDUs = processReassemblyQueue();
+		
+		postCompleteSDUs(completeSDUs);
+		
+		updateTimers();
+	}
+	
+	/**
+	 * Checks if the PDU was already delivered
+	 * @param pdu
+	 * @return
+	 */
+	private boolean pduAlreadyDelivered(PDU pdu){
+		//If this PDU has already been delivered, it's either duplicate or 
+		//it's in a gap that we've already passed over
+		if (pdu.getSequenceNumber().getValue() < stateVector.getLastSequenceDelivered().getValue()){
+			//TODO Drop PDU and increment counter of dropped duplicates
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
+	/**
+	 * Add a pdu to the reassembly queue if it is not already there
+	 * @param pdu
+	 * @return true if the pdu was added, false otherwise
+	 */
+	private boolean addPDUToReassemblyQueue(PDU pdu){
 		//Ditto if it is on the Reassembly queue already. We notice that 
 		//when we find where to insert this PDU
-		//TODO add PDU to connection.reassemblyQueeu in sequence number order
 		//***Defer starting reassembly timer until later; this may not be a fragment or may be 
 		//***a fragment that completes an SDU
-		//TODO if PDU already on Connection.ReassemblyQueue then
+		if (stateVector.getReasemblyQeueue().contains(pdu)){
 			//TODO drop PDU
-			//TODO return;
-		
+			return false;
+		}else{
+			stateVector.getReasemblyQeueue().add(pdu);
+			return true;
+		}
+	}
+	
+	private void checkSequenceNumberRollover(PDU pdu){
 		//If we are encrypting, we can't let PDU sequence numbers roll over.
 		//***define exactly what the Flow Allocator needs to do
 		if (EFCPConstants.DIFIntegrity && 
-				currentPDU.getSequenceNumber().getValue() > stateVector.getSequenceNumberRollOverThreshold().getValue()){
+				pdu.getSequenceNumber().getValue() > stateVector.getSequenceNumberRollOverThreshold().getValue()){
 			//Security requires a new flow
 			//TODO requestFAICraeteNewConnection(connectionID)
 		}
+	}
+	
+	/**
+	 * Look for complete SDUs at the reassembly queue, and pop them from the queue into
+	 * completeSDUs
+	 * @returns completeSDUs
+	 */
+	private List<PDU> processReassemblyQueue(){
+		PDU currentPDU = null;
+		boolean reassembling = false;
+		List<PDU> pdusInQueue = stateVector.getReasemblyQeueue().getQueue();
+		Unsigned nextSequenceNumber = stateVector.getLastSequenceDelivered().clone();
+		nextSequenceNumber.increment();
+		List<PDU> completeSDUs = new ArrayList<PDU>();
 		
 		//We've added a new PDU to the reassembly queue. Collect PDUs fom the reassembly queue until 
 		//we either reach an incomplete SDU or the gap to the next SDU is too large
+		for(int i=0; i<pdusInQueue.size(); i++){
+			currentPDU = pdusInQueue.get(i);
+			if (reassembling){
+				//If we are reassembling, then PDU sequence numbers must be sequential
+				if (currentPDU.getSequenceNumber().equals(nextSequenceNumber)){
+					//This is the next expected fragment, accept it
+					nextSequenceNumber.increment();
+					//If this is the last fragment, we have a complete SDU, assuming 0x01 means 
+					if (currentPDU.getFlags().getValue() == EFCPConstants.LastFragmentFlag){
+						reassembling = false;
+						if ((currentPDU.getSequenceNumber().getValue() - stateVector.getLastSequenceDelivered().getValue()) 
+								> stateVector.getConnection().getMaxGapAllowed()){
+							break;
+						}else{
+							//TODO if application is ready to accept data pop PDUs from connection.reassemblyQueue
+							//on to complete SDUs up to and including this one
+						}
+					}else if (currentPDU.getFlags().getValue() != EFCPConstants.fragmentFlag){
+						//Sanity check, we have received a FIRST_FRAGMENT, this sequence in in order
+						//and is neither a FRAGMENT or a LAST_FRAGMENT
+						//TODO signal and/or log a protocol error
+					}
+				}else{
+					//We are missing a fragment, nothing more to do
+					break;
+				}
+			}else{
+				if (currentPDU.getFlags().getValue() == EFCPConstants.firstFragmentFlag){
+					//We have the first fragment of an SDU
+					reassembling = true;
+					nextSequenceNumber.increment();
+				}else if (currentPDU.getFlags().getValue() == EFCPConstants.completeFlag ||
+						currentPDU.getFlags().getValue() == EFCPConstants.multipleFlag){
+					//TODO check the next conditional
+					if ((currentPDU.getSequenceNumber().getValue() - stateVector.getLastSequenceDelivered().getValue()) 
+							> stateVector.getConnection().getMaxGapAllowed()){
+						//Complete SDU(s), but too far away. Wait for gap to fill
+						break;
+					}else{
+						//pop first PDU from connection.reassemblyQueue to complete SDUs
+						completeSDUs.add(currentPDU);
+						pdusInQueue.remove(currentPDU);
+						nextSequenceNumber.increment();
+					}
+				}else{
+					//We are missing the first fragment of an SDU. Nothing more to do
+					break;
+				}
+			}
+		}
 		
+		return completeSDUs;
+	}
+	
+	/**
+	 * Post the complete SDUs to the port-id and update the SDUGapTimer and DTCP state if present
+	 * @param completeSDUs
+	 */
+	private void postCompleteSDUs(List<PDU> completeSDUs){
+		PDU currentPDU = null;
+		
+		for(int i=0; i<completeSDUs.size(); i++){
+			currentPDU = completeSDUs.get(i);
+			stateVector.getLastSequenceDelivered().setValue(currentPDU.getSequenceNumber().getValue());
+			//TODO cancel reassembly timer associated with this PDU
+			//TODO post all SDUs in this PDU to port-id, dealing with the reassembly, complete and multiple SDUs cases
+		}
+		
+		//We have delivered some SDUs. That satisfies the gap timer - for now.
+		//TODO cancel connection.SDUGapTimer
+		
+		//Tell DTCP we've moved the left edge of the receive window by delivering one or more SDUs
+		//TODO if DTPCP present then update state vector
+	}
+	
+	/**
+	 * Update the reassembly timers and SDUGapTimer
+	 */
+	private void updateTimers(){
+		List<PDU> pdusInQueue = stateVector.getReasemblyQeueue().getQueue();
+		
+		//If there are still PDUs in the reassembly queue, deal with timers.
+		if (pdusInQueue.size() >0){
+			//TODO for (int i=0; i<pdusInQueue.size(); i++){
+				//TODO Ensure that fragments of incomplete SDUs have reassembly timer
+				//TODO Ensure that fragments of complete SDUs do not have a reassembly timer
+			//TODO}
+			
+			if ((pdusInQueue.get(0).getSequenceNumber().getValue() - stateVector.getLastSequenceDelivered().getValue()) 
+					> stateVector.getConnection().getMaxGapAllowed()){
+				//If we are not currently running the SDUGapTimer start it now
+				//We canceled it above, if we delivered SDUs
+				//TODO if connection.sduGapTimer not running then start connection.sduGapTimer
+			}
+		}
 	}
 
 	/**

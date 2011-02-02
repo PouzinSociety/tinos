@@ -79,11 +79,11 @@ public class Connection {
 	
 	/**
 	 * More than one connection can be active within a flow and a SDU can be fragmented across two 
-	 * connections. Therefore, the reasembly queue has to be associated with the flow, not with 
+	 * connections. Therefore, the reassembly queue has to be associated with the flow, not with 
 	 * individual connections.
 	 * NOTE: This is just a placeholder for the reassembly queue, obviously it won't be a string.
 	 */
-	private String reassemblyQueue = null;
+	private List<Object> reassemblyQueue = null;
 	
 	/**
 	 * This is essentially, QoS.MaxGap. The "gap" is in terms of SDU, not PDU. Since SDUs can cross 
@@ -199,11 +199,11 @@ public class Connection {
 		this.currentConnectionId = currentConnectionId;
 	}
 
-	public String getReassemblyQueue() {
+	public List<Object> getReassemblyQueue() {
 		return reassemblyQueue;
 	}
 
-	public void setReassemblyQueue(String reassemblyQueue) {
+	public void setReassemblyQueue(List<Object> reassemblyQueue) {
 		this.reassemblyQueue = reassemblyQueue;
 	}
 

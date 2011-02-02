@@ -73,4 +73,29 @@ public interface EFCPConstants {
 	 * a single PDU.
 	 */
 	public static final boolean DIFFragmentation = false;
+	
+	/**
+	 * Value of a flag that indicates that this is the last fragment of a complete SDU
+	 */
+	public static final long LastFragmentFlag = 0x01;
+	
+	/**
+	 * Value of a flag that indicates that this is a fragment of a complete SDU
+	 */
+	public static final long fragmentFlag = 0x02;
+	
+	/**
+	 * Value of a flag that indicates that this is the first fragment of a complete SDU
+	 */
+	public static final long firstFragmentFlag = 0x03;
+	
+	/**
+	 * Value of a flag that indicates that this contains a single complete SDU
+	 */
+	public static final long completeFlag = 0x04;
+	
+	/**
+	 * Value of a flag that indicates that this contains multiple complete SDUs
+	 */
+	public static final long multipleFlag = 0x05;
 }
