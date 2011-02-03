@@ -7,11 +7,23 @@ import rina.ipcservice.api.AllocateRequest;
 
 public class FlowAllocatorInstance implements FlowAllocatorInstanceService
 {
-	private Connection connection;
+	/**
+	 * The allocate request that this flow allocator has to try to fulfill
+	 */
+	private AllocateRequest allocateRequest = null;
+	
+	private Connection connection = null;
 
-	public FlowAllocatorInstance(){
-		
+	public FlowAllocatorInstance(AllocateRequest allocateRequest){
+		this.allocateRequest = allocateRequest;
 	}
+	
+	private void initializeConnection(){
+		connection = new Connection();
+		connection.setDestinationNamingInfo(allocateRequest.getRequestedAPinfo());
+		//TODO finish this
+	}
+	
 	public void forwardAllocateRequest(AllocateRequest request) {
 		//createDataTransferAEInstance(connection);
 	}

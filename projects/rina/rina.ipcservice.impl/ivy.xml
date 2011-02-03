@@ -2,8 +2,8 @@
 <?xml-stylesheet type="text/xsl" href="http://ivyrep.jayasoft.org/ivy-doc.xsl"?>
 <ivy-module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://incubator.apache.org/ivy/schemas/ivy.xsd" version="2.0">
 	
-	<info organisation="rina" module="${ant.project.name}">
-		<ivyauthor name="Patsy Phelan" />
+	<info organisation="org.pouzinsociety.rina" module="${ant.project.name}">
+		<ivyauthor name="Eleni Trouva" />
 	</info>
 
 	<configurations>
@@ -34,12 +34,6 @@
 		<dependency org="org.pouzinsociety.rina" name="rina.ipcservice.api" rev="1.0.0"  conf="compile->runtime" />
 <!-- Flow Allocator API -->
 		<dependency org="org.pouzinsociety.rina" name="rina.flowallocator.api" rev="1.0.0"  conf="compile->runtime" />
-<!-- RIB Daemon API -->
-		<dependency org="org.pouzinsociety.rina" name="rina.ribdaemon.api" rev="1.0.0"  conf="compile->runtime" />
-<!-- CDAP API -->
-		<dependency org="org.pouzinsociety.rina" name="rina.cdap.api" rev="1.0.0"  conf="compile->runtime" />
-<!-- EFCP API -->
-		<dependency org="org.pouzinsociety.rina" name="rina.efcp.api" rev="1.0.0"  conf="compile->runtime" />
 <!-- Logging -->
 		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" conf="compile->runtime" />
 <!-- Tests -->

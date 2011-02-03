@@ -10,10 +10,11 @@ public interface IPCService {
 	/**
 	 * This primitive is invoked by an Application Process to request the allocation of 
 	 * IPC resources with the destination application.
-	 * @param request
+	 * @param request the characteristics of the requested flow
+	 * @param apService the application process, required to deliver the response as a callback
 	 * @return
 	 */
-	public void submitAllocateRequest(AllocateRequest request) ;
+	public void submitAllocateRequest(AllocateRequest request, APService apService) ;
 	
 	/**
 	 * This primitive is invoked by the Application Process when in the Transfer state to 

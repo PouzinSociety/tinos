@@ -3,6 +3,7 @@ package rina.flowallocator.api;
 import java.util.List;
 import java.util.Map;
 
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QoSParameters;
 import rina.utils.types.Unsigned;
 
@@ -14,7 +15,7 @@ public class Connection {
 	/**
 	 * The application that requested the flow
 	 */
-	private NamingInfo sourceNamingInfo = null;
+	private ApplicationProcessNamingInfo sourceNamingInfo = null;
 	
 	/**
 	 * The address of the IPC process that is the source of this connection
@@ -30,7 +31,7 @@ public class Connection {
 	/**
 	 * The destination application of the flow
 	 */
-	private NamingInfo destinationNamingInfo = null;
+	private ApplicationProcessNamingInfo destinationNamingInfo = null;
 	
 	/**
 	 * The address of the IPC process that is the destination of this connection
@@ -111,11 +112,11 @@ public class Connection {
 	 */
 	private int craeteFlowRetries = 0;
 
-	public NamingInfo getSourceNamingInfo() {
+	public ApplicationProcessNamingInfo getSourceNamingInfo() {
 		return sourceNamingInfo;
 	}
 
-	public void setSourceNamingInfo(NamingInfo sourceNamingInfo) {
+	public void setSourceNamingInfo(ApplicationProcessNamingInfo sourceNamingInfo) {
 		this.sourceNamingInfo = sourceNamingInfo;
 	}
 
@@ -135,11 +136,11 @@ public class Connection {
 		this.sourcePortId = sourcePortId;
 	}
 
-	public NamingInfo getDestinationNamingInfo() {
+	public ApplicationProcessNamingInfo getDestinationNamingInfo() {
 		return destinationNamingInfo;
 	}
 
-	public void setDestinationNamingInfo(NamingInfo destinationNamingInfo) {
+	public void setDestinationNamingInfo(ApplicationProcessNamingInfo destinationNamingInfo) {
 		this.destinationNamingInfo = destinationNamingInfo;
 	}
 
