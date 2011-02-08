@@ -1,9 +1,0 @@
-#Mon Aug 04 18:31:51 BST 2008
-DELEGATES_PREFERENCE=delegateValidatorList
-USER_BUILD_PREFERENCE=enabledBuildValidatorListorg.eclipse.wst.dtd.core.internal.validation.eclipse.Validator;org.eclipse.wst.html.internal.validation.HTMLValidator;org.eclipse.wst.wsi.ui.internal.WSIMessageValidator;
-USER_MANUAL_PREFERENCE=enabledManualValidatorListorg.eclipse.wst.dtd.core.internal.validation.eclipse.Validator;org.eclipse.wst.html.internal.validation.HTMLValidator;org.eclipse.wst.wsi.ui.internal.WSIMessageValidator;
-USER_PREFERENCE=overrideGlobalPreferencesfalse
-eclipse.preferences.version=1
-override=false
-suspend=false
-vf.version=3
