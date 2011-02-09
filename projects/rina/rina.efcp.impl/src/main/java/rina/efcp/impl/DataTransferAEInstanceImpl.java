@@ -6,6 +6,7 @@ import java.util.Timer;
 
 import rina.efcp.api.DataTransferAEInstance;
 import rina.efcp.api.EFCPConstants;
+import rina.efcp.api.SDUCollector;
 import rina.flowallocator.api.Connection;
 import rina.rmt.api.RMT;
 import rina.utils.types.Unsigned;
@@ -22,9 +23,14 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 	 */
 	private RMT rmt = null;
 	
+	/**
+	 * The entity that will deliver the SDUs to the application
+	 * bound at portId
+	 */
+	private SDUCollector sduCollector = null;
+	
 	public DataTransferAEInstanceImpl(Connection connection){
-		stateVector = new DTAEIState();
-		stateVector.setConnection(connection);
+		stateVector = new DTAEIState(connection);
 	}
 
 	public RMT getRmt() {
@@ -37,6 +43,18 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 	 */
 	public void setRmt(RMT rmt) {
 		this.rmt = rmt;
+	}
+	
+	public SDUCollector getSduCollector() {
+		return sduCollector;
+	}
+
+	public void setSduCollector(SDUCollector sduCollector) {
+		this.sduCollector = sduCollector;
+	}
+
+	public DTAEIState getStateVector(){
+		return stateVector;
 	}
 	
 	/**
@@ -130,7 +148,7 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 					//This is the next expected fragment, accept it
 					nextSequenceNumber.increment();
 					//If this is the last fragment, we have a complete SDU, assuming 0x01 means 
-					if (currentPDU.getFlags().getValue() == EFCPConstants.LastFragmentFlag){
+					if (currentPDU.getFlags().getValue() == EFCPConstants.lastFragmentFlag){
 						reassembling = false;
 						if ((currentPDU.getSequenceNumber().getValue() - stateVector.getLastSequenceDelivered().getValue()) 
 								> stateVector.getConnection().getMaxGapAllowed()){
@@ -180,19 +198,27 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 	 * Post the complete SDUs to the port-id and update the SDUGapTimer and DTCP state if present
 	 * @param completeSDUs
 	 */
-	private void postCompleteSDUs(List<PDU> completeSDUs){
+	private void postCompleteSDUs(List<PDU> pdus){
 		PDU currentPDU = null;
+		List<byte[]> sdus = new ArrayList<byte[]>();
 		
-		for(int i=0; i<completeSDUs.size(); i++){
-			currentPDU = completeSDUs.get(i);
+		for(int i=0; i<pdus.size(); i++){
+			currentPDU = pdus.get(i);
 			stateVector.getLastSequenceDelivered().setValue(currentPDU.getSequenceNumber().getValue());
 			//TODO cancel reassembly timer associated with this PDU
 			//TODO post all SDUs in this PDU to port-id, dealing with the reassembly, complete and multiple SDUs cases
+			//TODO, deal with reassembly
+			sdus.addAll(currentPDU.getUserData());
 		}
 		
+		sduCollector.deliverSDUsToApplicationProcess(sdus, 
+				new Long(stateVector.getConnection().getSourcePortId().getValue()).intValue());
+		
 		//We have delivered some SDUs. That satisfies the gap timer - for now.
-		stateVector.getConnection().getSduGapTimer().cancel();
-		stateVector.getConnection().setSduGapTimer(null);
+		if (stateVector.getConnection().getSduGapTimer() != null){
+			stateVector.getConnection().getSduGapTimer().cancel();
+			stateVector.getConnection().setSduGapTimer(null);
+		}
 		
 		//Tell DTCP we've moved the left edge of the receive window by delivering one or more SDUs
 		//TODO if DTPCP present then update state vector
@@ -294,7 +320,7 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 	 */
 	private PDU createNewPDU(byte[] sdu){
 		PDU pdu = new PDU(stateVector.getConnection());
-		pdu.setSequenceNumber(stateVector.getNextSequenceToSend());
+		pdu.setSequenceNumber(stateVector.getNextSequenceToSend().clone());
 		pdu.appendSDU(sdu);
 		stateVector.getNextSequenceToSend().increment();
 		

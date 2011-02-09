@@ -1,9 +1,11 @@
 package rina.ipcservice.impl;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import rina.efcp.api.SDUCollector;
 import rina.flowallocator.api.FlowAllocator;
 import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
@@ -18,7 +20,7 @@ import rina.ipcservice.api.APService;
  * @author eduardgrasa
  *
  */
-public class IPCServiceImpl implements IPCService{
+public class IPCServiceImpl implements IPCService, SDUCollector{
 	
 	/**
 	 * Stores the applications that have a port Id allocated
@@ -95,5 +97,25 @@ public class IPCServiceImpl implements IPCService{
 	
 	public void register(ApplicationProcessNamingInfo arg0) {
 		// TODO delegate to RIBDaemon
+	}
+
+	/**
+	 * Implementing the SDUCollector interface.
+	 */
+	public synchronized void deliverSDUsToApplicationProcess(List<byte[]> sdus, int portId) {
+		APService applicationProcess = applicationProcessesWithFlows.get(new Integer(portId));
+		
+		if (applicationProcess == null ){
+			//TODO, log, throw Exception?
+			return;
+		}
+		
+		if (sdus == null){
+			//TODO, log, throw Exception?
+			return;
+		}
+		
+		DeliverSDUThread thread = new DeliverSDUThread(applicationProcess, sdus, portId);
+		thread.start();
 	}
 }

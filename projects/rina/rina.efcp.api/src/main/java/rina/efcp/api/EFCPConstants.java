@@ -75,29 +75,29 @@ public interface EFCPConstants {
 	public static final boolean DIFFragmentation = false;
 	
 	/**
-	 * Value of a flag that indicates that this is the last fragment of a complete SDU
+	 * Value of a flag that indicates a SDU fragment that is neither the first nor the last
 	 */
-	public static final long LastFragmentFlag = 0x01;
+	public static final byte fragmentFlag = 0x00;
 	
 	/**
-	 * Value of a flag that indicates that this is a fragment of a complete SDU
+	 * Value of a flag that indicates a SDU fragment that is the first fragment of an SDU
 	 */
-	public static final long fragmentFlag = 0x02;
+	public static final byte firstFragmentFlag = 0x01;
 	
 	/**
-	 * Value of a flag that indicates that this is the first fragment of a complete SDU
+	 * Value of a flag that indicates a SDU fragment that is the last fragment of an SDU
 	 */
-	public static final long firstFragmentFlag = 0x03;
+	public static final byte lastFragmentFlag = 0x02;
 	
 	/**
-	 * Value of a flag that indicates that this contains a single complete SDU
+	 * Value of a flag that indicates a PDU carrying a complete SDU
 	 */
-	public static final long completeFlag = 0x04;
+	public static final byte completeFlag = 0x03;
 	
 	/**
-	 * Value of a flag that indicates that this contains multiple complete SDUs
+	 * Value of a flag that indicates a PDU carrying multiple SDUs
 	 */
-	public static final long multipleFlag = 0x05;
+	public static final byte multipleFlag = 0x07;
 	
 	/**
 	 * The SDU gap timer delay in ms.

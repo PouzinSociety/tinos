@@ -5,6 +5,7 @@ import java.util.Map;
 
 import rina.efcp.api.DataTransferAEFactory;
 import rina.efcp.api.DataTransferAEInstance;
+import rina.efcp.api.SDUCollector;
 import rina.flowallocator.api.Connection;
 import rina.rmt.api.RMT;
 
@@ -19,6 +20,14 @@ public class DataTransferAEFactoryImpl implements DataTransferAEFactory{
 	 * A pointer to the relaying and multiplexing task
 	 */
 	private RMT rmt = null;
+	
+	/**
+	 * A pointer to the SDU collector of the IPC process. The SDU collector is called 
+	 * when one or more SDUs are ready to be delivered to a certain port Id.
+	 * It is the responsibility of the SDU collector to call the application 
+	 * and pass it the complete SDUs
+	 */
+	private SDUCollector sduCollector = null;
 	
 	/**
 	 * Stores all the instantiated data transfer application entities
@@ -36,6 +45,23 @@ public class DataTransferAEFactoryImpl implements DataTransferAEFactory{
 	public void setRmt(RMT rmt) {
 		this.rmt = rmt;
 	}
+	
+	public SDUCollector getSduCollector() {
+		return sduCollector;
+	}
+
+	public void setSduCollector(SDUCollector sduCollector) {
+		this.sduCollector = sduCollector;
+	}
+
+	public Map<Connection, DataTransferAEInstance> getDataTransferAEInstances() {
+		return dataTransferAEInstances;
+	}
+
+	public void setDataTransferAEInstances(
+			Map<Connection, DataTransferAEInstance> dataTransferAEInstances) {
+		this.dataTransferAEInstances = dataTransferAEInstances;
+	}
 
 	public DataTransferAEInstance createDataTransferAEInstance(Connection connection) {
 		if (dataTransferAEInstances.containsKey(connection)){
@@ -43,6 +69,7 @@ public class DataTransferAEFactoryImpl implements DataTransferAEFactory{
 		}
 		DataTransferAEInstanceImpl dataTransferAEInstance = new DataTransferAEInstanceImpl(connection);
 		dataTransferAEInstance.setRmt(rmt);
+		dataTransferAEInstance.setSduCollector(sduCollector);
 		dataTransferAEInstances.put(connection, dataTransferAEInstance);
 		
 		return dataTransferAEInstance;

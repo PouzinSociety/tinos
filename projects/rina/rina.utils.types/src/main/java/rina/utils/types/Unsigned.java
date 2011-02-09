@@ -50,6 +50,11 @@ public class Unsigned {
 		}
 	}
 	
+	public Unsigned(int numberOfBytes, long value) throws UnsignedException{
+		this(numberOfBytes);
+		setValue(value);
+	}
+	
 	public Unsigned(byte[] value) throws UnsignedException{
 		this(value.length);
 		setValue(value);
@@ -178,6 +183,13 @@ public class Unsigned {
 		Unsigned one = new Unsigned(this.numberOfBytes);
 		one.setValue(1);
 		this.add(one);
+	}
+	
+	/**
+	 * Set the maximum value as the current value
+	 */
+	public void setMaxValue(){
+		this.value = this.maxValue;
 	}
 	
 	public boolean equals(Object candidate){

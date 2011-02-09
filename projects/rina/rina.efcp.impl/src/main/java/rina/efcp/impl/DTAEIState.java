@@ -85,6 +85,16 @@ public class DTAEIState {
 	 * the real type
 	 */
 	private String closedWindowQueue = null;
+	
+	public DTAEIState(Connection connection){
+		this.connection = connection;
+		this.reasemblyQeueue = new ReassemblyQueue();
+		this.sequenceNumberRollOverThreshold = new Unsigned(EFCPConstants.SequenceNumberLength);
+		this.sequenceNumberRollOverThreshold.setMaxValue();	
+		this.initialSequenceNumber = new Unsigned(EFCPConstants.SequenceNumberLength, 0x00);
+		this.lastSequenceDelivered = new Unsigned(EFCPConstants.SequenceNumberLength, 0x00);
+		this.nextSequenceToSend = new Unsigned(EFCPConstants.SequenceNumberLength, 0x01);
+	}
 
 	public Connection getConnection() {
 		return connection;

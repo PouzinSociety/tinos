@@ -1,6 +1,7 @@
 package rina.efcp.impl;
 
-import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import rina.efcp.api.EFCPConstants;
 import rina.flowallocator.api.Connection;
@@ -61,13 +62,13 @@ public class PDU {
 	 * than the last fragment should be MaxPDUSize. (Because the PCI is fixed length a field is not 
 	 * required to specify the length of the last fragment).
 	 */
-	private ByteBuffer userData = null;
+	private List<byte[]> userData = null;
 	
 	public PDU(Connection connection){
 		this.connectionId = connection.getCurrentConnectionId();
 		this.sourceAddress = connection.getSourceAddress();
 		this.destinationAddress = connection.getDestinationAddress();
-		userData = ByteBuffer.allocate(EFCPConstants.maxSDUSize);
+		userData = new ArrayList<byte[]>();
 		version = new Unsigned(1);
 		version.setValue(0x01);
 		pduType = new Unsigned(1);
@@ -137,9 +138,15 @@ public class PDU {
 		unsigned = new Unsigned(value);
 		pdu.setSequenceNumber(unsigned);
 		
-		value = new byte[userDataLength];
-		index = readFieldFromPCI(value, index, buffer);
-		pdu.appendSDU(value);
+		
+		if (pdu.getFlags().getValue() == EFCPConstants.completeFlag){
+			value = new byte[userDataLength];
+			index = readFieldFromPCI(value, index, buffer);
+			pdu.appendSDU(value);
+		}else if (pdu.getFlags().getValue() == EFCPConstants.multipleFlag){
+			//TODO to implement delimiting to handle the case
+			//of multiple SDUs within a PDU
+		}
 		
 		return pdu;
 	}
@@ -162,6 +169,7 @@ public class PDU {
 	}
 	
 	private PDU(){
+		userData = new ArrayList<byte[]>();
 	}
 
 	public Unsigned getVersion() {
@@ -212,8 +220,13 @@ public class PDU {
 		this.flags = flags;
 	}
 
-	public long getPduLength() {
-		return EFCPConstants.pciLength + userData.position();
+	public int getPduLength() {
+		int length = 0;
+		for(int i=0; i<userData.size(); i++){
+			length = length + userData.get(i).length;
+		}
+		
+		return EFCPConstants.pciLength + length;
 	}
 
 	public Unsigned getSequenceNumber() {
@@ -224,16 +237,24 @@ public class PDU {
 		this.sequenceNumber = sequenceNumber;
 	}
 
-	public ByteBuffer getUserData() {
+	public List<byte[]> getUserData() {
 		return userData;
 	}
 
-	public void setUserData(ByteBuffer userData) {
+	public void setUserData(List<byte[]> userData) {
 		this.userData = userData;
 	}
 	
 	public void appendSDU(byte[] sdu){
-		userData.put(sdu);
+		userData.add(sdu);
+		//Set the flag accordingly
+		if (userData.size()==1){
+			//There's a single SDU in this PDU
+			this.flags.setValue(EFCPConstants.completeFlag);
+		}else if (userData.size() > 1){
+			//There are multiple SDUs in this PDU
+			this.flags.setValue(EFCPConstants.multipleFlag);
+		}
 	}
 	
 	/**
@@ -258,11 +279,23 @@ public class PDU {
 		index = addBytesToPCI(pci, index, length.getBytes());
 		index = addBytesToPCI(pci, index, sequenceNumber.getBytes());
 		
-		ByteBuffer pdu = ByteBuffer.allocate(EFCPConstants.maxPDUSize);
-		pdu.put(pci);
-		pdu.put(userData.array());
+		//Add PCI
+		index = 0;
+		byte[] pdu = new byte[this.getPduLength()];
+		for(int i=0; i<pci.length; i++){
+			pdu[i] = pci[i];
+		}
+		index = index + pci.length;
 		
-		return pdu.array();
+		//Add user data
+		for(int i=0; i<userData.size(); i++){
+			for(int j=0; j<userData.get(i).length; j++){
+				pdu[index+j] = userData.get(i)[j];
+			}
+			index = index + userData.get(i).length;
+		}
+		
+		return pdu;
 	}
 	
 	private int addBytesToPCI(byte[] pci, int index, byte[] toAdd){

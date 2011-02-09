@@ -7,5 +7,12 @@
        http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd
        http://www.springframework.org/schema/beans   
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+          
+     <!--  Export the IPCServiceImpl to the OSGi registry-->
+    <osgi:service id="ipcService" ref="ipcServiceImpl">
+     	<osgi:interfaces>
+ 			<value>rina.efcp.api.SDUCollector</value>
+ 		</osgi:interfaces>
+    </osgi:service>
 
 </beans>           
