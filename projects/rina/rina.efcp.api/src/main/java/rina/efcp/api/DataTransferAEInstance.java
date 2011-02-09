@@ -27,6 +27,13 @@ public interface DataTransferAEInstance {
 	public void pduDelivered(byte[] pdu);
 	
 	/**
+	 * It indicates that the gap in sequencing on this flow from undelivered
+	 * SDUs is greater than MaxGapAllowed. The action is a policy 
+	 * (SDU Gap Timer Policy)
+	 */
+	public void sduGapTimerFired();
+	
+	/**
 	 * Return the connection associated to this Data Transfer AE Instance
 	 * @return
 	 */

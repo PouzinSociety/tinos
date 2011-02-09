@@ -2,6 +2,7 @@ package rina.flowallocator.api;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
 
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QoSParameters;
@@ -93,9 +94,9 @@ public class Connection {
 	private int maxGapAllowed = 0;
 	
 	/**
-	 * NOTE: This is just a placeholder for the sduGapTimer, obviously it won't be a string.
+	 * sduGapTimer
 	 */
-	private String sduGapTimer = null;
+	private Timer sduGapTimer = null;
 	
 	/**
 	 * The state of the communication with the remote FAI
@@ -216,11 +217,11 @@ public class Connection {
 		this.maxGapAllowed = maxGapAllowed;
 	}
 
-	public String getSduGapTimer() {
+	public Timer getSduGapTimer() {
 		return sduGapTimer;
 	}
 
-	public void setSduGapTimer(String sduGapTimer) {
+	public void setSduGapTimer(Timer sduGapTimer) {
 		this.sduGapTimer = sduGapTimer;
 	}
 

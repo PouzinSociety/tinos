@@ -30,34 +30,8 @@ public class IPCServiceImpl implements IPCService{
 	 */
 	private FlowAllocator flowAllocator = null;
 	
-	/**
-	 * The address of this IPC process
-	 */
-	private byte[] address = null;
-	
-	/**
-	 * The application naming info for this IPC process
-	 */
-	private ApplicationProcessNamingInfo namingInfo = null;
-	
 	public IPCServiceImpl(){
 		this.applicationProcessesWithFlows = new HashMap<Integer, APService>();
-	}
-	
-	public byte[] getAddress() {
-		return address;
-	}
-
-	public void setAddress(byte[] address) {
-		this.address = address;
-	}
-
-	public ApplicationProcessNamingInfo getNamingInfo() {
-		return namingInfo;
-	}
-
-	public void setNamingInfo(ApplicationProcessNamingInfo namingInfo) {
-		this.namingInfo = namingInfo;
 	}
 
 	public FlowAllocator getFlowAllocator() {

@@ -98,4 +98,9 @@ public interface EFCPConstants {
 	 * Value of a flag that indicates that this contains multiple complete SDUs
 	 */
 	public static final long multipleFlag = 0x05;
+	
+	/**
+	 * The SDU gap timer delay in ms.
+	 */
+	public static final long SDUGapTimerDelay = 2*1000;
 }

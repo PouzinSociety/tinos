@@ -2,6 +2,7 @@ package rina.efcp.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
 
 import rina.efcp.api.DataTransferAEInstance;
 import rina.efcp.api.EFCPConstants;
@@ -190,7 +191,8 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 		}
 		
 		//We have delivered some SDUs. That satisfies the gap timer - for now.
-		//TODO cancel connection.SDUGapTimer
+		stateVector.getConnection().getSduGapTimer().cancel();
+		stateVector.getConnection().setSduGapTimer(null);
 		
 		//Tell DTCP we've moved the left edge of the receive window by delivering one or more SDUs
 		//TODO if DTPCP present then update state vector
@@ -213,7 +215,11 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 					> stateVector.getConnection().getMaxGapAllowed()){
 				//If we are not currently running the SDUGapTimer start it now
 				//We canceled it above, if we delivered SDUs
-				//TODO if connection.sduGapTimer not running then start connection.sduGapTimer
+				if (stateVector.getConnection().getSduGapTimer() == null){
+					Timer sduGapTimer = new Timer();
+					sduGapTimer.schedule(new SDUGapTimerTask(this), EFCPConstants.SDUGapTimerDelay);
+					stateVector.getConnection().setSduGapTimer(sduGapTimer);
+				}
 			}
 		}
 	}
@@ -300,5 +306,14 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 	 */
 	public Connection getConnection() {
 		return stateVector.getConnection();
+	}
+	
+	/**
+	 * @see DataTransferAEInstance.sduGapTimerFired
+	 */
+	public void sduGapTimerFired() {
+		// TODO invoke the SDU gap timer policy
+		//Typically, the action would be to signal an error or abort the flow
+		
 	}
 }
