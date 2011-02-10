@@ -2,7 +2,6 @@ package rina.ipcservice.api;
 
 /**
  * All the elements needed to name an application process.
- *
  */
 public class ApplicationProcessNamingInfo {
 	
@@ -50,6 +49,42 @@ public class ApplicationProcessNamingInfo {
 	public void setApplicationEntityInstance(String applicationEntityInstance) {
 		this.applicationEntityInstance = applicationEntityInstance;
 	}
+	
+	@Override
+	public boolean equals(Object candidate){
+		if (candidate == null){
+			return false;
+		}
 		
+		if (!(candidate instanceof ApplicationProcessNamingInfo)){
+			return false;
+		}
+		
+		ApplicationProcessNamingInfo namingInfo = (ApplicationProcessNamingInfo) candidate;
+		
+		if (!(this.getApplicationProcessName().equals(namingInfo.getApplicationProcessName()))){
+			return false;
+		}
+		
+		if (this.getApplicationProcessInstance() != null){
+			if (!(this.getApplicationProcessInstance().equals(namingInfo.getApplicationProcessInstance()))){
+				return false;
+			}
+		}
+		
+		if (this.getApplicationEntityName() != null){
+			if (!(this.getApplicationEntityName().equals(namingInfo.getApplicationEntityName()))){
+				return false;
+			}
+		}
+		
+		if (this.getApplicationEntityInstance() != null){
+			if (!(this.getApplicationEntityInstance().equals(namingInfo.getApplicationEntityInstance()))){
+				return false;
+			}
+		}
+		
+		return true;
+	}
 	
 }

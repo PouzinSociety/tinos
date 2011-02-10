@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
 			http://www.springframework.org/schema/beans
 			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
-			
-		<bean name="ipcServiceImpl" class="rina.ipcservice.impl.IPCServiceImpl"/>
+
+	<bean name="ipcProcessFactoryImpl" class="rina.ipcservice.impl.IPCProcessFactoryImpl">
+		<property name="rmtFactory" ref="rmtFactoryService" />
+		<property name="flowAllocatorFactory" ref="flowAllocatorFactoryService" />
+		<property name="ribDaemonFactory" ref="ribDaemonFactoryService" />
+		<property name="dataTransferAEFactory" ref="dataTransferAEFactoryService" />
+	</bean>
 
 </beans>

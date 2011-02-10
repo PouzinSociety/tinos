@@ -8,6 +8,10 @@
        http://www.springframework.org/schema/beans   
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-<!-- Update for your own service -->
-    <osgi:service id="bundleServiceOsgi" ref="bundleService" interface="rina.flowallocator.impl.BundleService" />
+	<!--  Export the dataTransferAEFactory to the OSGi registry-->
+    <osgi:service id="flowAllocatorFactory" ref="flowAllocatorFactoryBean">
+     	<osgi:interfaces>
+ 			<value>rina.flowallocator.api.FlowAllocatorFactory</value>
+ 		</osgi:interfaces>
+    </osgi:service>
 </beans>           

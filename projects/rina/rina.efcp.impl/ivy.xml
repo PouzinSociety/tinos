@@ -16,12 +16,10 @@
 	</publications>
 
 	<dependencies>
-<!-- EFCP API -->
-		<dependency org="org.pouzinsociety.rina" name="rina.efcp.api" rev="1.0.0"  conf="compile->runtime" />
-<!-- Flow allocator API -->
-		<dependency org="org.pouzinsociety.rina" name="rina.flowallocator.api" rev="1.0.0"  conf="compile->runtime" />
-<!-- RMT API -->
-		<dependency org="org.pouzinsociety.rina" name="rina.rmt.api" rev="1.0.0"  conf="compile->runtime" />
+<!-- IPC Service API -->
+		<dependency org="org.pouzinsociety.rina" name="rina.ipcservice.api" rev="1.0.0"  conf="compile->runtime" />
+<!-- RINA Commons API -->
+		<dependency org="org.pouzinsociety.rina" name="rina.commons.api" rev="1.0.0"  conf="compile->runtime" />
 <!-- Utils types-->
 		<dependency org="org.pouzinsociety.rina" name="rina.utils.types" rev="1.0.0"  conf="compile->runtime" />
 <!-- Logging -->

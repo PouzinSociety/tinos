@@ -16,14 +16,10 @@
 	</publications>
 
 	<dependencies>
-<!-- Google protocol buffers -->
-		<dependency org="com.google" name="com.google.protobuf" rev="2.3.0" conf="compile->runtime" />
-<!-- RINA commons API -->
-		<dependency org="org.pouzinsociety.rina" name="rina.commons.api" rev="1.0.0"  conf="compile->runtime" />
-<!-- Spring Framework -->
-		<dependency org="org.springframework" name="org.springframework.spring-library" rev="${org.springframework.spring}" conf="compile->compile" />
-<!-- Logging -->
-		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" conf="dm-server-provided->runtime" />
+<!-- IPCService api -->
+		<dependency org="org.pouzinsociety.rina" name="rina.ipcservice.api" rev="1.0.0"  conf="compile->runtime" />
+<!-- Utils types -->
+		<dependency org="org.pouzinsociety.rina" name="rina.utils.types" rev="1.0.0"  conf="compile->runtime" />
 <!-- Tests -->
 		<dependency org="org.antlr" name="com.springsource.antlr" rev="${org.antlr}" conf="test->runtime" />
 		<dependency org="org.junit" name="com.springsource.org.junit" rev="${org.junit}" conf="test->runtime" />

@@ -6,9 +6,8 @@ import java.util.Timer;
 
 import rina.efcp.api.DataTransferAEInstance;
 import rina.efcp.api.EFCPConstants;
-import rina.efcp.api.SDUCollector;
 import rina.flowallocator.api.Connection;
-import rina.rmt.api.RMT;
+import rina.ipcprocess.api.IPCProcess;
 import rina.utils.types.Unsigned;
 
 public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
@@ -19,38 +18,16 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 	private DTAEIState stateVector = null;
 	
 	/**
-	 * A pointer to the relaying and multiplexing task
+	 * A pointer to the IPC process
 	 */
-	private RMT rmt = null;
-	
-	/**
-	 * The entity that will deliver the SDUs to the application
-	 * bound at portId
-	 */
-	private SDUCollector sduCollector = null;
+	private IPCProcess ipcProcess = null;
 	
 	public DataTransferAEInstanceImpl(Connection connection){
 		stateVector = new DTAEIState(connection);
 	}
 
-	public RMT getRmt() {
-		return rmt;
-	}
-
-	/**
-	 * Injected by the DataTransferAEFactory
-	 * @param rmt
-	 */
-	public void setRmt(RMT rmt) {
-		this.rmt = rmt;
-	}
-	
-	public SDUCollector getSduCollector() {
-		return sduCollector;
-	}
-
-	public void setSduCollector(SDUCollector sduCollector) {
-		this.sduCollector = sduCollector;
+	public void setIPCProcess(IPCProcess ipcProcess) {
+		this.ipcProcess = ipcProcess;
 	}
 
 	public DTAEIState getStateVector(){
@@ -211,7 +188,7 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 			sdus.addAll(currentPDU.getUserData());
 		}
 		
-		sduCollector.deliverSDUsToApplicationProcess(sdus, 
+		ipcProcess.deliverSDUsToApplicationProcess(sdus, 
 				new Long(stateVector.getConnection().getSourcePortId().getValue()).intValue());
 		
 		//We have delivered some SDUs. That satisfies the gap timer - for now.
@@ -275,7 +252,7 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 		//Iterate over posted PDUs and give them to the RMT
 		for (int i=0; i<postablePDUs.size(); i++){
 			//TODO add the stuff if DTCP is present and there is retransmission control
-			rmt.send(postablePDUs.get(i).getSerializedPDU());
+			ipcProcess.getRmt().send(postablePDUs.get(i).getSerializedPDU());
 		}
 		
 	}

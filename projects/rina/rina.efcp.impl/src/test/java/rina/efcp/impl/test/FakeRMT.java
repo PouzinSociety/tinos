@@ -1,6 +1,7 @@
 package rina.efcp.impl.test;
 
 import rina.efcp.api.EFCPConstants;
+import rina.ipcprocess.api.IPCProcess;
 import rina.rmt.api.RMT;
 
 /**
@@ -98,5 +99,10 @@ public class FakeRMT implements RMT{
 
 	public byte[] getPdu() {
 		return pdu;
+	}
+
+	public void setIPCProcess(IPCProcess arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 }

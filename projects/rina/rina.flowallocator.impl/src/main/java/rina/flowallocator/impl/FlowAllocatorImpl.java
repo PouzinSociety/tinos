@@ -1,5 +1,6 @@
 package rina.flowallocator.impl;
 
+import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
@@ -10,18 +11,19 @@ import rina.ribdaemon.api.RIBDaemon;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.efcp.api.DataTransferAEFactory;
+import rina.flowallocator.api.FlowAllocator;
 import rina.flowallocator.impl.FlowAllocatorInstance;
 
 /** 
  * Implements the Flow Allocator
  */
 
-public class FlowAllocatorImpl implements IPCService, MessageSubscriber {
+public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 
 	/**
-	 * A pointer to the RIB Daemon
+	 * A pointer to the IPC Process
 	 */
-	private RIBDaemon ribDaemon = null;
+	private IPCProcess ipcProcess = null;
 
 	/**
 	 * A pointer to the Data Transfer Application Entity Factory, so that 
@@ -45,23 +47,21 @@ public class FlowAllocatorImpl implements IPCService, MessageSubscriber {
 	private boolean validApplicationProcessNamingInfo = false;
 	private MessageSubscription subscription = null;
 	
-	public FlowAllocatorImpl(RIBDaemon ribDaemon) throws Exception{
-		this.ribDaemon = ribDaemon;
-
+	public FlowAllocatorImpl() throws Exception{
 		//Subscribe to create flow object requests and responses
 		subscription = new MessageSubscription();
 		subscription.setObjClass("Flowobject");
 		subscription.setOpCode(Opcode.M_CREATE);
-		ribDaemon.subscribeToMessages(subscription, this);
+		ipcProcess.getRibDaemon().subscribeToMessages(subscription, this);
 		
 		subscription = new MessageSubscription();
 		subscription.setObjClass("Flowobject");
 		subscription.setOpCode(Opcode.M_CREATE_R);
-		ribDaemon.subscribeToMessages(subscription, this);
+		ipcProcess.getRibDaemon().subscribeToMessages(subscription, this);
 	}
-
-	public RIBDaemon getRibDaemon() {
-		return ribDaemon;
+	
+	public void setIPCProcess(IPCProcess ipcProcess) {
+		this.ipcProcess = ipcProcess;
 	}
 
 	public DataTransferAEFactory getDataTransferAEFactory() {
@@ -237,6 +237,12 @@ public class FlowAllocatorImpl implements IPCService, MessageSubscriber {
 	public void submitAllocateRequest(AllocateRequest arg0, APService arg1) {
 		// TODO Auto-generated method stub
 
+	}
+
+	public void submitAllocateRequest(AllocateRequest arg0, APService arg1,
+			int arg2) {
+		// TODO Auto-generated method stub
+		
 	}
 
 

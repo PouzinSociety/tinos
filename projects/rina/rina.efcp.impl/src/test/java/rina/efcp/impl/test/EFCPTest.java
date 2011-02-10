@@ -7,9 +7,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import rina.efcp.api.DataTransferAEFactory;
+import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.EFCPConstants;
-import rina.efcp.impl.DataTransferAEFactoryImpl;
+import rina.efcp.impl.DataTransferAEImpl;
 import rina.efcp.impl.DataTransferAEInstanceImpl;
 import rina.efcp.impl.PDU;
 import rina.flowallocator.api.Connection;
@@ -20,8 +20,8 @@ import rina.utils.types.Unsigned;
 public class EFCPTest {
 	
 	private FakeRMT rmt = null;
-	private FakeSDUCollector sduCollector = null;
-	private DataTransferAEFactory dataTransferAEFactory = null;
+	private FakeIPCProcess fakeIPCProcess = null;
+	private DataTransferAE dataTransferAE = null;
 	private Connection connectionA = null;
 	private Connection connectionB = null;
 	private DataTransferAEInstanceImpl dataTransferAEInstanceA = null;
@@ -30,14 +30,14 @@ public class EFCPTest {
 	@Before
 	public void setup(){
 		rmt = new FakeRMT();
-		sduCollector = new FakeSDUCollector();
-		dataTransferAEFactory = new DataTransferAEFactoryImpl();
-		((DataTransferAEFactoryImpl)dataTransferAEFactory).setRmt(rmt);
-		((DataTransferAEFactoryImpl)dataTransferAEFactory).setSduCollector(sduCollector);
+		fakeIPCProcess = new FakeIPCProcess();
+		fakeIPCProcess.setRmt(rmt);
+		dataTransferAE = new DataTransferAEImpl();
+		dataTransferAE.setIPCProcess(fakeIPCProcess);
 		initConnectionA();
 		initConnectionB();
-		dataTransferAEInstanceA = (DataTransferAEInstanceImpl) dataTransferAEFactory.createDataTransferAEInstance(connectionA);
-		dataTransferAEInstanceB = (DataTransferAEInstanceImpl) dataTransferAEFactory.createDataTransferAEInstance(connectionB);
+		dataTransferAEInstanceA = (DataTransferAEInstanceImpl) dataTransferAE.createDataTransferAEInstance(connectionA);
+		dataTransferAEInstanceB = (DataTransferAEInstanceImpl) dataTransferAE.createDataTransferAEInstance(connectionB);
 	}
 	
 	private void initConnectionA(){

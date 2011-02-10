@@ -15,27 +15,11 @@
 		<artifact name="${ant.project.name}-sources" type="src" ext="jar"/>
 	</publications>
 
-<!--
- # FIX-ME: Added a few dependencies to get the ball rolling.
- #
- # If you want a bundle to appear in the final "package" add "provided" to the
- # conf e.g conf="test->runtime" -> conf="test->runtime;provided". A conf of
- # "dm-server-provided->runtime" simply means the server will provide this
- # and do not package it.
- #
- # Add a conf setting: conf->"compile->runtime" for internal bundles.
- # of this par.
- #
- # Every entry should have a "conf" setting.
- #
--->
 	<dependencies>
 <!-- IPC Service API -->
 		<dependency org="org.pouzinsociety.rina" name="rina.ipcservice.api" rev="1.0.0"  conf="compile->runtime" />
-<!-- Flow Allocator API -->
-		<dependency org="org.pouzinsociety.rina" name="rina.flowallocator.api" rev="1.0.0"  conf="compile->runtime" />
-<!-- EFCP API -->
-		<dependency org="org.pouzinsociety.rina" name="rina.efcp.api" rev="1.0.0"  conf="compile->runtime" />
+<!-- RINA Commons API -->
+		<dependency org="org.pouzinsociety.rina" name="rina.commons.api" rev="1.0.0"  conf="compile->runtime" />
 <!-- Logging -->
 		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" conf="compile->runtime" />
 <!-- Tests -->
