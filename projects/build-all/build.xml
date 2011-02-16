@@ -10,6 +10,8 @@
 		<pathelement location="../link/org.pouzinsociety.org.jnode.net.arp" />
 		<pathelement location="../physical/org.pouzinsociety.support.jnode" />
 		<pathelement location="../physical/org.pouzinsociety.config.dao" />
+		<pathelement location="../physical/org.pouzinsociety.transport.im"/>
+		<pathelement location="../physical/org.pouzinsociety.bootstrap.api" />
 		<pathelement location="../physical/org.pouzinsociety.transport.im" />
 		<pathelement location="../physical/org.pouzinsociety.driver.net.idrive" />
 		<pathelement location="../network/org.pouzinsociety.org.jnode.net.ipv4.icmp" />
@@ -23,13 +25,9 @@
 		<pathelement location="../application/org.pouzinsociety.socket.sample.udp" />
 		<pathelement location="../physical/org.pouzinsociety.org.jnode.java.net" />
 		<pathelement location="../application/org.pouzinsociety.actions.ping" />
-		<pathelement location="../physical/org.pouzinsociety.bootstrap.api" />
 		<pathelement location="../physical/org.pouzinsociety.bootstrap.driver" />
 		<pathelement location="../physical/org.pouzinsociety.bootstrap.agent" />
 		<pathelement location="../physical/org.pouzinsociety.transport.im.logger" />
-		<pathelement location="../physical/org.pouzinsociety.transport.im"/>
-		<pathelement location="../physical/org.pouzinsociety.config.dao"/>
-		<pathelement location="../physical/org.pouzinsociety.bootstrap.api"/>
 		<pathelement location="../physical/org.pouzinsociety.transport.im.configmanager"/>
 <!-- DNS Support -->
 		<pathelement location="../application/org.pouzinsociety.org.xbill.dns"/>
