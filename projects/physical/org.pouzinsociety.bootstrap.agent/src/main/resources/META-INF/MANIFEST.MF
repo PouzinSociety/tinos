@@ -18,6 +18,7 @@ Import-Package: org.apache.commons.logging;version="[1.1.1,1.1.1]",
  org.apache.commons.logging.impl;version="[1.1.1,1.1.1]",
  org.jivesoftware.smack,
  org.jivesoftware.smack.packet,
+ org.osgi.framework,
  org.pouzinsociety.config.dao;version="[1.0.0,1.0.0]",
  org.pouzinsociety.bootstrap.api;version="[1.0.0,1.0.0]",
  org.jnode.driver;version="[1.0.0,1.0.0]",
@@ -28,5 +29,7 @@ Import-Package: org.apache.commons.logging;version="[1.1.1,1.1.1]",
  org.jnode.net.ipv4.config;version="[1.0.0,1.0.0]",
  org.pouzinsociety.config.stack;version="[1.0.0,1.0.0]",
  org.pouzinsociety.config.stack.impl;version="[1.0.0,1.0.0]",
- org.pouzinsociety.driver.net.idrive;version="[1.0.0,1.0.0]"
+ org.pouzinsociety.driver.net.idrive;version="[1.0.0,1.0.0]",
+ org.springframework.osgi.context;version="[1.2.1,1.2.1]"
 Export-Package: org.pouzinsociety.bootstrap.agent;version="1.0.0"
+Bootstrap-Node-Name: dynamic

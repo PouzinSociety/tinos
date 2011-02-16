@@ -16,6 +16,11 @@
 	</publications>
 
 	<dependencies>
+<!-- OSGI -->
+		<dependency org="org.eclipse.osgi" name="org.eclipse.osgi"
+			 rev="${org.eclipse.osgi}" conf="compile->runtime" />
+                <dependency org="org.springframework.osgi" name="org.springframework.osgi.core"
+			 rev="${org.springframework.osgi}" conf="compile->runtime" />
 <!-- DAO -->
 		<dependency org="org.pouzinsociety.config" name="org.pouzinsociety.config.dao" rev="1.0.0" conf="compile->runtime"/>
 <!-- Transport -->

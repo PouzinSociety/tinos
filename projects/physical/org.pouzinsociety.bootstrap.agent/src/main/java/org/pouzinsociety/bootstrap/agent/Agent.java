@@ -30,6 +30,9 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.springframework.osgi.context.BundleContextAware;
 import org.pouzinsociety.bootstrap.api.BootStrapAPI;
 import org.pouzinsociety.bootstrap.api.BootstrapConstants;
 import org.pouzinsociety.bootstrap.api.BootstrapEvent;
@@ -43,12 +46,21 @@ import org.pouzinsociety.config.stack.impl.SetupInterfaces;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 
-public class Agent implements BootstrapEventListener {
+public class Agent implements BootstrapEventListener, BundleContextAware {
 	private static Log log = LogFactory.getLog(Agent.class);
+	private static final String NODE_NAME_SPECIFIER = "Bootstrap-Node-Name";
+	private static final String NODE_NAME_DYNAMIC = "dynamic";
 	private BootStrapAPI medium;
 	private SetupInterfaces setupService;
 	private boolean nodeConfigured = false;
+	private BundleContext bundleContext;
+	private boolean requestSpecificNodeConfig = false;
+	private String requestNodeName;
 	private BootstrapNotifications bootstrapNotifications;
+
+	public void setBundleContext(BundleContext bundleContext) {
+		this.bundleContext = bundleContext;	
+	}
 
 	public void setMedium(BootStrapAPI medium) {
 		this.medium = medium;
@@ -70,10 +82,29 @@ public class Agent implements BootstrapEventListener {
 	public void timerFired() {
 		if (nodeConfigured == true) // Nothing to do
 			return;
+
+		if (bundleContext != null) {
+			Bundle bundle = bundleContext.getBundle();
+			try {
+				requestNodeName = (String)bundle.getHeaders().get(NODE_NAME_SPECIFIER);
+				if (requestNodeName != null) {
+					if (!requestNodeName.isEmpty()) {
+					requestSpecificNodeConfig =
+						!requestNodeName.equals(NODE_NAME_DYNAMIC);
+					}
+				}
+			} catch (Exception e) {
+				log.error("Cannot determine request configuration type");
+				log.error(e);
+			}
+				
+		}
 		log.debug("(" + medium.getInstanceId() + ") Requesting Configuration");
 		try {
 			BootstrapEvent event = new BootstrapEvent();
 			event.setEventId(BootstrapConstants.CONFIG_REQUEST);
+			if (requestSpecificNodeConfig)
+				event.setKeyValue("node", requestNodeName); 
 			event.setKeyValue("dest", "ConfigurationService");
 			event.setKeyValue("LocalTime", getDateTime());
 			medium.transmit(event);

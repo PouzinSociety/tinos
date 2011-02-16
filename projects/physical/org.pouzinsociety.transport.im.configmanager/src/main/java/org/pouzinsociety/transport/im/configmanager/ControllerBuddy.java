@@ -32,6 +32,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Collection;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.springframework.osgi.context.BundleContextAware;
 import org.apache.commons.logging.*;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Message;
@@ -45,20 +48,63 @@ import org.pouzinsociety.config.dao.RouteDao;
 import org.pouzinsociety.transport.im.ConnectionImpl;
 
 
-public class ControllerBuddy implements PacketListener {
+public class ControllerBuddy implements PacketListener, BundleContextAware {
 	Log log = LogFactory.getLog(ControllerBuddy.class);
+	String CONFIGURATION_MODE_SPECIFIER = "Configuration-Assignment";
+	String DYNAMIC_MODE = "dynamic";
+	private BundleContext bundleContext;
+	boolean configurationModeDynamic = true;
 	IMDao imConnectionDetails;
 	ConnectionImpl medium;
 
 	// Config Data for Nodes
 	HashMap<String,Integer> nodeNames = new HashMap<String,Integer>();
+	HashMap<String,Integer> configNameToNode = new HashMap<String,Integer>();
 	List<NodeConfigDao> nodes;
 	int indexCounter = 0;
+
+	public void setBundleContext(BundleContext bundleContext) {
+		this.bundleContext = bundleContext;
+		Bundle bundle = this.bundleContext.getBundle();
+		try {
+			String requestOpMode =
+			    (String)bundle.getHeaders().get(CONFIGURATION_MODE_SPECIFIER);
+				if (requestOpMode != null) {
+					if (!requestOpMode.isEmpty()) {
+						configurationModeDynamic =
+							requestOpMode.equals(DYNAMIC_MODE);
+					}
+				}
+		} catch (Exception e) {
+				configurationModeDynamic = true;
+				log.error("Cannot determine configuration mode - default dynamic");
+				log.error(e);
+				
+		}
+		log.info("ConfigurationMode : " + 
+			((configurationModeDynamic == true) ? "Dynamic" : "NameAssigned"));
+	}
+
 
 
 
 	public void setNodes(List<NodeConfigDao> nodes) {
 		this.nodes = nodes;
+		// preload the configNamesToNode HashMap.
+		for (int i = 0; i < nodes.size(); i++) {
+/**
+ * TODO
+ * This is ugly until the rewrite of the configuration loading
+ *
+ */
+			NodeConfigDao node = nodes.get(i);
+			// Have to dig into the interfaces to get a node name
+			List<EthernetOverIMDao> ifaces = node.getInterfaces();
+			// Assume at least one interface - after all it is networking
+			EthernetOverIMDao dao = ifaces.get(0);
+			configNameToNode.put(dao.getNode_name(), Integer.valueOf(i));
+			log.info("configNameToNode(Node : " + dao.getNode_name() + ", Index : " + i +")");
+		}
 	}
 
 	public ControllerBuddy(IMDao imConfig) throws Exception {
@@ -104,22 +150,55 @@ public class ControllerBuddy implements PacketListener {
 		log.info("processBootstrapEvent: (" + event.getEventId() + ")");
 		if (event.getEventId() == BootstrapConstants.CONFIG_REQUEST) {
 
-			String requester = event.getKeyValue("src");
-			Integer index = nodeNames.get(requester);
 			NodeConfigDao node = null;
+			// Requesting Node
+			String requester = event.getKeyValue("src");
+			// Node Name ?
+			String nodeName = event.getKeyValue("node");
+			// Has this requester already got a configuration ?
+			Integer index = nodeNames.get(requester);
 			if (index == null) {
+				// Nope - then hand over the next one
 				synchronized (this) {
-				if (indexCounter < nodes.size()) {
-					node = nodes.get(indexCounter);
-					nodeNames.put(requester, Integer.valueOf(indexCounter));
-					indexCounter++;
+				if (configurationModeDynamic == true) {
+					if (nodeName != null) 
+						log.info("Configuration Name specified ignored in Dynamic Mode");
+					if (indexCounter < nodes.size()) {
+						node = nodes.get(indexCounter);
+						nodeNames.put(requester, Integer.valueOf(indexCounter));
+						indexCounter++;
+					}
+				} else { // Assign by requested node-name
+					if (nodeName == null) {
+					log.error("In NameAssigned configuration request mode - no node" +
+						" name specified by requester : " + requester);
+					} else {
+					if (nodeName.isEmpty()) {
+					log.error("In NameAssigned configuration request mode - no node" +
+						" name specified by requester : " + requester);
+					} else {
+						log.info("Configuration Request for NodeName : " + nodeName);
+						Integer idx = configNameToNode.get(nodeName);
+						if (idx != null) {
+							log.info("Idx: " + idx + " for node : " + nodeName);
+							node = nodes.get(idx);
+							nodeNames.put(requester, idx);
+						} else {
+							log.info("No Configuration for NodeName : " + nodeName);
+						}
+					}
+
+					}
 				}
+
 				}
 			} else {
+				// Yes, then send the same again
 				node = nodes.get(index);
 			}
+
 			if (node == null) {
-				log.error("No Configurations left");
+				log.error("No Configuration available");
 				return;
 			}
 
