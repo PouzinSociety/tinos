@@ -98,8 +98,6 @@ ConnectionListener {
 		subnet_roomname = room.toLowerCase();
 		subnet_name = room.substring(0, room.indexOf("@"));
 
-		log.info("loading configuration");
-
 		xmppConfiguration = new ConnectionConfiguration(server_hostname, server_port.intValue());
 		xmppConfiguration.setRosterLoadedAtLogin(false);
 		xmppConfiguration.setReconnectionAllowed(true);
@@ -130,7 +128,7 @@ ConnectionListener {
 				xmppConnection.addConnectionListener(this);					
 				configure();
 			} catch (Exception e) {
-				e.printStackTrace();
+				log.error("IMConnectionProblem",e);
 				throw new Exception("Cannot connect to IMServer");
 			}
 		}
@@ -140,7 +138,7 @@ ConnectionListener {
 				xmppConnection.login(login_name, login_password, login_resourceId);
 				setPresenceOnline();
 			} catch(Exception e) {
-				log.error(e);
+				log.error("IMAuthicationProblem",e);
 				throw new Exception("Cannot authenticate with IMServer");
 			}
 		}
@@ -149,7 +147,7 @@ ConnectionListener {
 		try {
 			subnet_channel = new MultiUserChat(xmppConnection, subnet_roomname);
 		} catch (Exception e) {
-			log.error(e);
+			log.error("IMRoomEntryProblem",e);
 			throw new Exception("Cannot join remote room");
 		}
 		SmackConfiguration.setPacketReplyTimeout(10000);
@@ -302,7 +300,7 @@ ConnectionListener {
 				setStatus(ConnectionStatus.DISCONNECTED);
 				XMPPConnection.removeConnectionCreationListener(this);
 			} catch (Exception e) {
-				log.error(e);
+				log.error("IMDisconnectProblem",e);
 				throw new Exception("Cannot disconnect from IMServer");
 			}
 		}
