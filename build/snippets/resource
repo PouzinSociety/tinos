@@ -1,0 +1,6 @@
+	<property environment="env"/>
+	<property file="${env.TINOS_HOME}/projects/build.properties"/>
+	<property file="${env.TINOS_HOME}/projects/build.versions"/>
+	<import file="${env.TINOS_HOME}/projects/spring-build/tinos/package-bundle.xml"/>
+	<import file="${env.TINOS_HOME}/projects/spring-build/resource/default.xml"/>
+</project>

@@ -1,0 +1,36 @@
+# AllocateNotifyPolicy
+# This policy determines when the requesting application is given an Allocate_Response primitive.  
+# In general, the choices are once the request is determined to be well-formed and a create_flow 
+# request has been sent, or withheld until a create_flow response has been received and retries 
+# have been exhausted.
+
+
+# AllocateRetryPolicy
+# This policy is used when the destination has refused the create_flow request, and the FAI can 
+# overcome the cause for refusal and try again.  This policy should re-formulate the request.  
+# This policy should formulate the contents of the reply.
+# For the demo: If the error is local and can be re-configured, then reformulate and re-try 
+# else return negative to layer above
+
+
+# FlowSetSelectionPolicy
+# This policy is used when the SeqRollOverThres event occurs and action may be required by the Flow 
+# Allocator to modify the bindings between connection-endpoint-ids and port-ids.
+# For the demo: Not used
+
+
+# NewFlowRequestPolicy
+# This policy is used to convert an Allocate Request is into a create_flow request. Its primary
+# task is to translate the request into the proper QoS-class-set, flow set, and access control capabilities.
+# For the demo: Everything maps to a reliable QoS-cube
+
+
+
+# --- REMOVE THIS ----
+# Example:
+# DATA_DIR=/var/eve-data
+# To read this file: 
+# Properties configFile = new Properties();
+# configFile.load(this.getClass().getClassLoader().getResourceAsStream("/my_config.properties"));
+# some_var = configFile.getProperty("some_key"); 
+

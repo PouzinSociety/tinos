@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" path="src/main/resources"/>
+	<classpathentry kind="src" output="target/test-classes" path="src/test/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/ivy-cache/repository/org.junit/com.springsource.org.junit/4.4.0/com.springsource.org.junit-4.4.0.jar"/>
+	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/ivy-cache/repository/org.apache.commons/com.springsource.org.apache.commons.logging/1.1.1/com.springsource.org.apache.commons.logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/com.google/com.google.protobuf/2.3.0/com.google.protobuf-2.3.0.jar"/>
+	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.commons.api/1.0.0/rina.commons.api-1.0.0.jar"/>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>

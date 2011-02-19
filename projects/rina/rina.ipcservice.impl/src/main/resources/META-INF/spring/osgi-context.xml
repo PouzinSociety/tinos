@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/osgi  
+       http://www.springframework.org/schema/osgi/spring-osgi-1.0.xsd
+       http://www.springframework.org/schema/beans   
+       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+          
+     <!-- Import the factories for RMT, Flow allocator, RIB Daemon and Data Transfer AE from the OSGi registry -->
+    <osgi:reference id="flowAllocatorFactoryService" interface="rina.flowallocator.api.FlowAllocatorFactory"/>
+    <osgi:reference id="ribDaemonFactoryService" interface="rina.ribdaemon.api.RIBDaemonFactory"/>
+    <osgi:reference id="rmtFactoryService" interface="rina.rmt.api.RMTFactory"/>
+    <osgi:reference id="dataTransferAEFactoryService" interface="rina.efcp.api.DataTransferAEFactory"/>
+          
+    <!--  Export the IPCProcessFactoryImpl to the OSGi registry-->
+    <osgi:service id="ipcProcessFactory" ref="ipcProcessFactoryImpl">
+     	<osgi:interfaces>
+ 			<value>rina.ipcprocess.api.IPCProcessFactory</value>
+ 		</osgi:interfaces>
+    </osgi:service>
+
+</beans>

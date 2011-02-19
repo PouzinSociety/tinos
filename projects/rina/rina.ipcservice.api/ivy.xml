@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="http://ivyrep.jayasoft.org/ivy-doc.xsl"?>
+<ivy-module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://incubator.apache.org/ivy/schemas/ivy.xsd" version="2.0">
+	
+	<info organisation="org.pouzinsociety.rina" module="${ant.project.name}">
+		<ivyauthor name="Eleni Trouva" />
+	</info>
+
+	<configurations>
+		<include file="${spring.build.dir}/common/default-ivy-configurations.xml"/>
+	</configurations>
+
+	<publications>
+		<artifact name="${ant.project.name}"/>
+		<artifact name="${ant.project.name}-sources" type="src" ext="jar"/>
+	</publications>
+
+<!--
+ # FIX-ME: Added a few dependencies to get the ball rolling.
+ #
+ # If you want a bundle to appear in the final "package" add "provided" to the
+ # conf e.g conf="test->runtime" -> conf="test->runtime;provided". A conf of
+ # "dm-server-provided->runtime" simply means the server will provide this
+ # and do not package it.
+ #
+ # Add a conf setting: conf->"compile->runtime" for internal bundles.
+ # of this par.
+ #
+ # Every entry should have a "conf" setting.
+ #
+-->
+	<dependencies>
+<!-- Logging -->
+		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" conf="compile->runtime" />
+<!-- Tests -->
+		<dependency org="org.antlr" name="com.springsource.antlr" rev="${org.antlr}" conf="test->runtime" />
+		<dependency org="org.junit" name="com.springsource.org.junit" rev="${org.junit}" conf="test->runtime" />
+	</dependencies>
+
+</ivy-module>
