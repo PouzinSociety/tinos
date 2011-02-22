@@ -22,7 +22,7 @@ public interface RIBDaemonFactory {
 	 * TODO add more stuff probably
 	 * @param namingInfo the name of the IPC process where this RIB Daemon belongs
 	 */
-	public void destroyRIBDeamon(ApplicationProcessNamingInfo namingInfo);
+	public void destroyRIBDaemon(ApplicationProcessNamingInfo namingInfo);
 	
 	/**
 	 * Get an existing RIB Daemon
