@@ -4,6 +4,7 @@ import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
 import rina.ribdaemon.api.MessageSubscriber;
 import rina.ribdaemon.api.MessageSubscription;
@@ -48,7 +49,7 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 	private MessageSubscription subscription = null;
 	
 	public FlowAllocatorImpl() throws Exception{
-		//Subscribe to create flow object requests and responses
+		//Subscribe to create flow and delete flow requests and responses
 		subscription = new MessageSubscription();
 		subscription.setObjClass("Flowobject");
 		subscription.setOpCode(Opcode.M_CREATE);
@@ -57,6 +58,16 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 		subscription = new MessageSubscription();
 		subscription.setObjClass("Flowobject");
 		subscription.setOpCode(Opcode.M_CREATE_R);
+		ipcProcess.getRibDaemon().subscribeToMessages(subscription, this);
+		
+		subscription = new MessageSubscription();
+		subscription.setObjClass("Flowobject");
+		subscription.setOpCode(Opcode.M_DELETE);
+		ipcProcess.getRibDaemon().subscribeToMessages(subscription, this);
+		
+		subscription = new MessageSubscription();
+		subscription.setObjClass("Flowobject");
+		subscription.setOpCode(Opcode.M_DELETE_R);
 		ipcProcess.getRibDaemon().subscribeToMessages(subscription, this);
 	}
 	
@@ -70,6 +81,58 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 
 	public void setDataTransferAEFactory(DataTransferAEFactory dataTransferAEFactory) {
 		this.dataTransferAEFactory = dataTransferAEFactory;
+	}
+	
+	/**
+	 * Invoked by the RIB Daemon when it has a CDAP message for the flow allocator
+	 */
+	public void messageReceived(CDAPMessage cdapMessage) {
+		switch (cdapMessage.getOpCode()){
+		case M_CREATE:
+			//TODO received a create flow request from another IPC process, we have to process it
+			//and deliver an M_CREATE_R
+			createFlowRequestReceived(cdapMessage);
+			break;
+		case M_CREATE_R:
+			//TODO received a create flow object response from another IPC process, we have to process it
+			//and deliver and call the applicationProcess deliverAllocateResponse
+			createFlowResponseReceived(cdapMessage);
+			break;
+		case M_DELETE:
+			//TODO received a delete flow request from another IPC process, we have to process it
+			//and deliver an M_DELETE_R
+			break;
+		case M_DELETE_R:
+			//TODO received a delete flow response from another IPC process, we have to process it 
+			//and call the applicationProcess deliverDeallocate
+			break;
+		default:
+			//TODO Error, we should not have received this message, just log it
+			break;
+		}
+	}
+	
+	/**
+	 * When an Flow Allocator receives a Create_Request PDU for a Flow object, it consults its local Directory to see if it has an entry.
+	 * If there is an entry and the address is this IPC Process, it creates an FAI and passes the Create_request to it.If there is an 
+	 * entry and the address is not this IPC Process, it forwards the Create_Request to the IPC Process designated by the address.
+	 * @param cdapMessage
+	 */
+	private void createFlowRequestReceived(CDAPMessage cdapMessage){
+		//TODO
+	}
+	
+	/**
+	 * 
+	 * @param cdapMessage
+	 */
+	private void createFlowResponseReceived(CDAPMessage cdapMessage){
+		//TODO
+	}
+	
+	public void submitAllocateRequest(AllocateRequest allocateRequest, APService applicationProcess, int portId) throws IPCException{
+		// TODO Auto-generated method stub
+		
 	}
 
 	public void submitAllocateRequest(AllocateRequest allocateRequest) {
@@ -216,35 +279,6 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 	{
 
 	}
-
-	//	
-	//	public static void validateQoScube(QoSCube cube) throws Exception{
-	//		Map<String, Object> qos_cube = cube.getCube();
-	//		//TODO add check
-	//	}
-
-
-	public void forwardDeAllocateRequest(int portId) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void messageReceived(CDAPMessage arg0) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void submitAllocateRequest(AllocateRequest arg0, APService arg1) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void submitAllocateRequest(AllocateRequest arg0, APService arg1,
-			int arg2) {
-		// TODO Auto-generated method stub
-		
-	}
-
 
 
 }

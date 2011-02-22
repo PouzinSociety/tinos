@@ -10,6 +10,7 @@ import rina.flowallocator.api.FlowAllocator;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
 import rina.ipcservice.api.APService;
 import rina.ribdaemon.api.RIBDaemon;
@@ -129,7 +130,7 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 	 * @param allocateRequest
 	 * @param applicationProcess
 	 */
-	public synchronized void submitAllocateRequest(AllocateRequest allocateRequest, APService applicationProcess) {
+	public synchronized void submitAllocateRequest(AllocateRequest allocateRequest, APService applicationProcess) throws IPCException{
 		int portId = choosePortId();
 		applicationProcessesWithFlows.put(new Integer(portId), applicationProcess);
 		flowAllocator.submitAllocateRequest(allocateRequest, applicationProcess, portId);

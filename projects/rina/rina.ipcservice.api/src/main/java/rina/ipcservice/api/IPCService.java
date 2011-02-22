@@ -12,9 +12,10 @@ public interface IPCService {
 	 * IPC resources with the destination application.
 	 * @param request the characteristics of the requested flow
 	 * @param apService the application process, required to deliver the response as a callback
-	 * @return
+	 * @throw IPCException if the allocate request is not well formed or there are 
+	 * no resources to honour the request
 	 */
-	public void submitAllocateRequest(AllocateRequest request, APService apService) ;
+	public void submitAllocateRequest(AllocateRequest request, APService apService) throws IPCException;
 	
 	/**
 	 * This primitive is invoked by the Application Process when in the Transfer state to 
