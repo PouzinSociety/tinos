@@ -31,6 +31,8 @@ public class CDAPSessionFactoryImpl implements CDAPSessionFactory{
 		cdapSession.setWireMessageProvider(wireMessageProviderFactory.createWireMessageProvider());
 		CDAPSessionDescriptor descriptor = new CDAPSessionDescriptor();
 		descriptor.setSessionID(UUID.randomUUID().toString());
+		cdapSession.setSessionDescriptor(descriptor);
+		cdapSessions.put(descriptor.getSessionID(), cdapSession);
 		return cdapSession;
 	}
 	
