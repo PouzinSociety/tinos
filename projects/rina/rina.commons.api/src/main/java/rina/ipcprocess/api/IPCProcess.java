@@ -57,4 +57,10 @@ public interface IPCProcess {
 	 * @param portId
 	 */
 	public void deliverSDUsToApplicationProcess(List<byte[]> sdus, int portId);
+	
+	/**
+	 * Call the applicationProcess deallocate.deliver operation
+	 * @param portId
+	 */
+	public void deliverDeallocateRequestToApplicationProcess(int portId);
 }

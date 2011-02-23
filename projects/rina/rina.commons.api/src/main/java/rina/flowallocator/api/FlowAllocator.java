@@ -24,4 +24,17 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * to honour the request
 	 */
 	public void submitAllocateRequest(AllocateRequest allocateRequest, int portId) throws IPCException;
+	
+	/**
+	 * Forward the allocate response to the Flow Allocator Instance.
+	 * @param portId the portId associated to the allocate response
+	 * @param success successful or unsucessful allocate request
+	 */
+	public void submitAllocateResponse(int portId, boolean success);
+	
+	/**
+	 * Forward the deallocate request to the Flow Allocator Instance.
+	 * @param portId
+	 */
+	public void submitDeallocate(int portId);
 }

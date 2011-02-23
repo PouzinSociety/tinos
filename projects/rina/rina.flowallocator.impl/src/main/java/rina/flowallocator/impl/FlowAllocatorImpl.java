@@ -121,25 +121,28 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 	public void messageReceived(CDAPMessage cdapMessage) {
 		switch (cdapMessage.getOpCode()){
 		case M_CREATE:
-			//TODO received a create flow request from another IPC process, we have to process it
+			//received a create flow request from another IPC process, we have to process it
 			//and deliver an M_CREATE_R
-			createFlowRequestReceived(cdapMessage);
+			createFlowRequestMessageReceived(cdapMessage);
 			break;
 		case M_CREATE_R:
-			//TODO received a create flow object response from another IPC process, we have to process it
+			//received a create flow object response from another IPC process, we have to process it
 			//and deliver and call the applicationProcess deliverAllocateResponse
-			createFlowResponseReceived(cdapMessage);
+			createFlowResponseMessageReceived(cdapMessage);
 			break;
 		case M_DELETE:
-			//TODO received a delete flow request from another IPC process, we have to process it
+			//received a delete flow request from another IPC process, we have to process it
 			//and deliver an M_DELETE_R
+			deleteFlowRequestMessageReceived(cdapMessage);
 			break;
 		case M_DELETE_R:
-			//TODO received a delete flow response from another IPC process, we have to process it 
+			//received a delete flow response from another IPC process, we have to process it 
 			//and call the applicationProcess deliverDeallocate
+			deleteFlowResponseMessageReceived(cdapMessage);
 			break;
 		default:
-			//TODO Error, we should not have received this message, just log it
+			//Error, we should not have received this message, just log it
+			log.error("Received a message that was not for me; "+cdapMessage.toString());
 			break;
 		}
 	}
@@ -150,28 +153,93 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 	 * entry and the address is not this IPC Process, it forwards the Create_Request to the IPC Process designated by the address.
 	 * @param cdapMessage
 	 */
-	private void createFlowRequestReceived(CDAPMessage cdapMessage){
-		//TODO
+	private void createFlowRequestMessageReceived(CDAPMessage cdapMessage){
+		//TODO Check in the directory if the destination application process is registered to this IPC process
+		
+		//TODO if there is an entry and the address is not this IPC process, forward the CDAP message to that address
+		// increment the hop count of the Flow object
+		
+		//TODO if there is an entry and the address is this IPC Process, create a FAI, extract the Flow object from the CDAP message and
+		//call the FAI
+		
+		//TODO if there is not an entry, search the Directory Forwarding table to see to what IPC process it has to be forwarded
+		//and forward the CDAP message to it. Increment the hop count of the Flow object
 	}
 	
 	/**
-	 * 
+	 * When a Create_Response PDU is received the InvokeID is used to deliver to the appropriate FAI.
+	 * If the response was negative remove the flow allocator instance from the list of active
+	 * flow allocator instances
 	 * @param cdapMessage
 	 */
-	private void createFlowResponseReceived(CDAPMessage cdapMessage){
-		//TODO
+	private void createFlowResponseMessageReceived(CDAPMessage cdapMessage){
+		//TODO implement this
+	}
+	
+	/**
+	 * Forward to the FAI. When it completes, remove the flow allocator instance from the list of active
+	 * flow allocator instances
+	 * @param cdapMessage
+	 */
+	private void deleteFlowRequestMessageReceived(CDAPMessage cdapMessage){
+		//TODO implement this
+	}
+	
+	/**
+	 * Forward to the FAI.When it completes, remove the flow allocator instance from the list of active
+	 * flow allocator instances.
+	 * @param cdapMessage
+	 */
+	private void deleteFlowResponseMessageReceived(CDAPMessage cdapMessage){
+		//TODO implement this
 	}
 	
 	/**
 	 * Validate the request, create a Flow Allocator Instance and forward it the request for further processing
+	 * @param allocateRequest
+	 * @param portId
+	 * @throws IPCException
 	 */
 	public void submitAllocateRequest(AllocateRequest allocateRequest, int portId) throws IPCException{
 		allocateRequestValidator.validateAllocateRequest(allocateRequest);
 		
-		FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.ipcProcess);
+		FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.ipcProcess, portId);
 		flowAllocatorInstance.submitAllocateRequest(allocateRequest, portId);
 		flowAllocatorInstances.put(new Integer(portId), flowAllocatorInstance);
 	}
 
+	/**
+	 * Forward the call to the right FlowAllocator Instance. If the application process 
+	 * rejected the flow request, remove the flow allocator instance from the list of 
+	 * active flow allocator instances
+	 * @param portId
+	 * @param success
+	 */
+	public void submitAllocateResponse(int portId, boolean success) {
+		FlowAllocatorInstance flowAllocatorInstance = flowAllocatorInstances.get(portId);
+		if (flowAllocatorInstance == null){
+			log.error("Could not find the Flow Allocator Instance associated to the portId "+portId);
+			return;
+		}
+		
+		flowAllocatorInstance.submitAllocateResponse(portId, success);
+		if (!success){
+			flowAllocatorInstances.remove(portId);
+		}
+	}
 
+	/**
+	 * Forward the deallocate request to the Flow Allocator Instance.
+	 * @param portId
+	 */
+	public void submitDeallocate(int portId) {
+		FlowAllocatorInstance flowAllocatorInstance = flowAllocatorInstances.get(portId);
+		if (flowAllocatorInstance == null){
+			log.error("Could not find the Flow Allocator Instance associated to the portId "+portId);
+			return;
+		}
+		
+		flowAllocatorInstance.submitDeallocate(portId);
+	}
+	
 }

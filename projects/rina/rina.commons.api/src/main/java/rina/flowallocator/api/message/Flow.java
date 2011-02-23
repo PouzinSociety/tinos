@@ -50,7 +50,7 @@ public class Flow {
 	/**
 	 * All the possible flowIds of this flow
 	 */
-	private ConnectionId[] flowIds = null;
+	private List<ConnectionId> flowIds = null;
 	
 	/**
 	 * The index of the current flowId
@@ -87,12 +87,12 @@ public class Flow {
 	/**
 	 * Maximum number of retries to create the flow before giving up.
 	 */
-	private Unsigned maxCreateFlowRetries = null;
+	private int maxCreateFlowRetries = 0;
 	
 	/**
 	 * The current number of retries
 	 */
-	private Unsigned createFlowRetries = null;
+	private int createFlowRetries = 0;
 	
 	/** 
 	 * While the search rules that generate the forwarding table should allow for a 
@@ -149,11 +149,11 @@ public class Flow {
 		this.destinationAddress = destinationAddress;
 	}
 
-	public ConnectionId[] getFlowIds() {
+	public List<ConnectionId> getFlowIds() {
 		return flowIds;
 	}
 
-	public void setFlowIds(ConnectionId[] flowIds) {
+	public void setFlowIds(List<ConnectionId> flowIds) {
 		this.flowIds = flowIds;
 	}
 
@@ -205,19 +205,19 @@ public class Flow {
 		this.accessControl = accessControl;
 	}
 
-	public Unsigned getMaxCreateFlowRetries() {
+	public int getMaxCreateFlowRetries() {
 		return maxCreateFlowRetries;
 	}
 
-	public void setMaxCreateFlowRetries(Unsigned maxCreateFlowRetries) {
+	public void setMaxCreateFlowRetries(int maxCreateFlowRetries) {
 		this.maxCreateFlowRetries = maxCreateFlowRetries;
 	}
 
-	public Unsigned getCreateFlowRetries() {
+	public int getCreateFlowRetries() {
 		return createFlowRetries;
 	}
 
-	public void setCreateFlowRetries(Unsigned createFlowRetries) {
+	public void setCreateFlowRetries(int createFlowRetries) {
 		this.createFlowRetries = createFlowRetries;
 	}
 

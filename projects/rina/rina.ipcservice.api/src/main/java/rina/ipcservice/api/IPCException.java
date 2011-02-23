@@ -11,6 +11,9 @@ public class IPCException extends Exception{
 	
 	/** Error codes **/
 	public static final int MALFORMED_ALLOCATE_REQUEST = 1;
+	public static final int PORTID_NOT_IN_ALLOCATION_PENDING_STATE = 2;
+	public static final int PORTID_NOT_IN_TRANSFER_STATE = 3;
+	public static final int PORTID_NOT_IN_DEALLOCATION_PENDING_STATE = 4;
 	
 	private int errorCode = 0;
 	
