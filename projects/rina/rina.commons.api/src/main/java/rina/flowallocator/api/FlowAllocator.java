@@ -1,7 +1,6 @@
 package rina.flowallocator.api;
 
 import rina.ipcprocess.api.IPCProcessComponent;
-import rina.ipcservice.api.APService;
 import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.IPCException;
 
@@ -20,10 +19,9 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * with a status of pending, or whether a response is withheld until an Allocate_Response can be delivered 
 	 * with a status of success or failure.
 	 * @param allocateRequest the characteristics of the flow to be allocated.
-	 * @param applicationProcess the requesting application process
 	 * @param portId the port id that will be allocated to this flow
 	 * @throws IPCException if the request is not well formed or there are not enough resources
 	 * to honour the request
 	 */
-	public void submitAllocateRequest(AllocateRequest allocateRequest, APService applicationProcess, int portId) throws IPCException;
+	public void submitAllocateRequest(AllocateRequest allocateRequest, int portId) throws IPCException;
 }

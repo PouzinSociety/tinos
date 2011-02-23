@@ -1,25 +1,31 @@
 package rina.flowallocator.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import rina.ipcprocess.api.IPCProcess;
-import rina.ipcservice.api.APService;
 import rina.ipcservice.api.AllocateRequest;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
-import rina.ipcservice.api.IPCService;
 import rina.ribdaemon.api.MessageSubscriber;
 import rina.ribdaemon.api.MessageSubscription;
-import rina.ribdaemon.api.RIBDaemon;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.efcp.api.DataTransferAEFactory;
 import rina.flowallocator.api.FlowAllocator;
-import rina.flowallocator.impl.FlowAllocatorInstance;
+import rina.flowallocator.api.FlowAllocatorInstance;
+import rina.flowallocator.impl.FlowAllocatorInstanceImpl;
+import rina.flowallocator.impl.validation.AllocateRequestValidator;
 
 /** 
  * Implements the Flow Allocator
  */
 
 public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
+	
+	private static final Log log = LogFactory.getLog(FlowAllocatorImpl.class);
 
 	/**
 	 * A pointer to the IPC Process
@@ -33,42 +39,68 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 	private DataTransferAEFactory dataTransferAEFactory = null;
 
 	/**
-	 * A pointer to the flow allocator instance factory, which creates 
-	 * and manages flow allocator instances
+	 * Flow allocator instances, each one associated to a port_id
 	 */
-	private FlowAllocatorInstanceFactory faiFactory = null;
-
-	private ApplicationProcessNamingInfo requestedAPinfo = null;
-	private int portId = 0;
-	//private QoSCube cube = null;
-	private boolean result = false;
-	private int FAid = 0;
-	private FlowAllocatorInstance FAI = null;
-	private boolean validAllocateRequest = false;
-	private boolean validApplicationProcessNamingInfo = false;
-	private MessageSubscription subscription = null;
+	private Map<Integer, FlowAllocatorInstance> flowAllocatorInstances = null;
 	
-	public FlowAllocatorImpl() throws Exception{
-		//Subscribe to create flow and delete flow requests and responses
-		subscription = new MessageSubscription();
+	/**
+	 * Validates allocate requests
+	 */
+	private AllocateRequestValidator allocateRequestValidator = null;
+	
+	public FlowAllocatorImpl(){
+		allocateRequestValidator = new AllocateRequestValidator();
+		flowAllocatorInstances = new HashMap<Integer, FlowAllocatorInstance>();
+		subscribeToFlowMessages();
+		subscribeToEvents();
+	}
+	
+	/**
+	 * Subscribe to create flow and delete flow requests and responses
+	 */
+	private void subscribeToFlowMessages(){
+		MessageSubscription subscription = new MessageSubscription();
 		subscription.setObjClass("Flowobject");
 		subscription.setOpCode(Opcode.M_CREATE);
-		ipcProcess.getRibDaemon().subscribeToMessages(subscription, this);
+		try{
+			ipcProcess.getRibDaemon().subscribeToMessages(subscription, this);
+		}catch(Exception ex){
+			log.warn("Problems subscribing to Create Flow object request messages. "+ex.getMessage());
+		}
 		
 		subscription = new MessageSubscription();
 		subscription.setObjClass("Flowobject");
 		subscription.setOpCode(Opcode.M_CREATE_R);
-		ipcProcess.getRibDaemon().subscribeToMessages(subscription, this);
+		try{
+			ipcProcess.getRibDaemon().subscribeToMessages(subscription, this);
+		}catch(Exception ex){
+			log.warn("Problems subscribing to Create Flow object response messages. "+ex.getMessage());
+		}
 		
 		subscription = new MessageSubscription();
 		subscription.setObjClass("Flowobject");
 		subscription.setOpCode(Opcode.M_DELETE);
-		ipcProcess.getRibDaemon().subscribeToMessages(subscription, this);
+		try{
+			ipcProcess.getRibDaemon().subscribeToMessages(subscription, this);
+		}catch(Exception ex){
+			log.warn("Problems subscribing to Delete Flow object request messages. "+ex.getMessage());
+		}
 		
 		subscription = new MessageSubscription();
 		subscription.setObjClass("Flowobject");
 		subscription.setOpCode(Opcode.M_DELETE_R);
-		ipcProcess.getRibDaemon().subscribeToMessages(subscription, this);
+		try{
+			ipcProcess.getRibDaemon().subscribeToMessages(subscription, this);
+		}catch(Exception ex){
+			log.warn("Problems subscribing to Delete Flow object response messages. "+ex.getMessage());
+		}
+	}
+	
+	/**
+	 * subscribe to SequenceNumberRollOverThreshold Events and any other required events
+	 */
+	private void subscribeToEvents(){
+		//TODO implement this
 	}
 	
 	public void setIPCProcess(IPCProcess ipcProcess) {
@@ -130,154 +162,15 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 		//TODO
 	}
 	
-	public void submitAllocateRequest(AllocateRequest allocateRequest, APService applicationProcess, int portId) throws IPCException{
-		// TODO Auto-generated method stub
+	/**
+	 * Validate the request, create a Flow Allocator Instance and forward it the request for further processing
+	 */
+	public void submitAllocateRequest(AllocateRequest allocateRequest, int portId) throws IPCException{
+		allocateRequestValidator.validateAllocateRequest(allocateRequest);
 		
-	}
-
-	public void submitAllocateRequest(AllocateRequest allocateRequest) {
-		try {
-			validateRequest(allocateRequest);
-
-			allocateRequest.setPort_id(assignPortId());
-			FAI = faiFactory.createFlowAllocatorInstance(allocateRequest);
-			FAI.forwardAllocateRequest(allocateRequest);
-			
-			//subscribeToMessages(subscription, subscriber);
-
-			// TODO check AllocateNotifyPolicy to see if you should return AllocateResponse 
-			// if(AllocateNotifyPolicy)
-			// deliverAllocateResponse(request.getRequestedAPinfo(), request.getPort_id(), true, "");
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		//		else
-		//			deliverAllocateResponse(request.getRequestedAPinfo(), request.getPort_id(), false, "The format of request was not valid");
-	}
-
-	/**
-	 * 
-	 * Assigns a port-id for the specific AllocateRequest
-	 */
-	private int assignPortId() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	public void submitAllocateResponse(int portId, boolean result) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void submitDeallocate(int portId) {
-		// TODO Auto-generated method stub
-
-	}
-
-
-	public void submitStatus(int portId) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void submitTransfer(int portId, byte[] sdu, boolean result) {
-		// TODO Auto-generated method stub
-
-	}
-
-	/**
-	 * Validates an AllocateRequest: 
-	 * 		- ApplicationProcessNamingInfo requestedAPinfo
-	 * 		- int port_id
-	 * 		- QoSCube cube
-	 * 		- boolean result
-	 * @param request
-	 * @return yes if valid, no otherwise
-	 * @throws Exception 
-	 */
-	public static void validateRequest(AllocateRequest request) throws Exception{
-		validateApplicationProcessNamingInfo(request.getRequestedAPinfo());
-		//validateQoScube(request.getCube());
-
-	}
-
-
-	public boolean submitTransfer(int portId, byte[] sdu) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-
-	public void register(
-			ApplicationProcessNamingInfo applicationProcessNamingInfo) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void unregister(
-			ApplicationProcessNamingInfo applicationProcessNamingInfo) {
-		// TODO Auto-generated method stub
-
-	}
-
-
-	/** 
-	 * Validates the AP naming info (applicationProcessName, applicationProcessInstance, applicationEntityName and applicationEntityInstance)
-	 * @param APnamingInfo
-	 * @throws Exception
-	 */
-	public static void validateApplicationProcessNamingInfo(ApplicationProcessNamingInfo APnamingInfo) throws Exception{
-		validateApplicationProcessName(APnamingInfo.getApplicationProcessName());
-		validateApplicationProcessInstance(APnamingInfo.getApplicationProcessInstance());
-		validateApplicationEntityName(APnamingInfo.getApplicationEntityName());
-		validateApplicationEntityInstance(APnamingInfo.getApplicationEntityInstance());
-	}
-
-	/**
-	 * Validates the applicationProcessName
-	 * @param applicationProcessName
-	 * @throws Exception
-	 */
-	private static void validateApplicationProcessName(String applicationProcessName) throws Exception
-	{
-		if (applicationProcessName.equals(null))
-			throw new Exception("Application process name is empty");
-	}
-
-
-	/**
-	 * Validates the applicationProcessInstance
-	 * @param applicationProcessInstance
-	 * @throws Exception
-	 */
-	private static void validateApplicationProcessInstance(String applicationProcessInstance) throws Exception
-	{
-
-	}
-
-
-
-	/**
-	 * Validates the applicationEntityName
-	 * @param ApplicationEntityName
-	 * @throws Exception
-	 */
-	private static void validateApplicationEntityName(String ApplicationEntityName) throws Exception
-	{
-
-	}
-
-
-
-	/**
-	 * Validates the applicationEntityInstance
-	 * @param applicationEntityInstance
-	 * @throws Exception
-	 */
-	private static void validateApplicationEntityInstance(String applicationEntityInstance) throws Exception
-	{
-
+		FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.ipcProcess);
+		flowAllocatorInstance.submitAllocateRequest(allocateRequest, portId);
+		flowAllocatorInstances.put(new Integer(portId), flowAllocatorInstance);
 	}
 
 

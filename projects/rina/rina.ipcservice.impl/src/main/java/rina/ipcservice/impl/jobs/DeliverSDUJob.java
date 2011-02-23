@@ -1,4 +1,4 @@
-package rina.ipcservice.impl;
+package rina.ipcservice.impl.jobs;
 
 import java.util.List;
 
@@ -9,19 +9,18 @@ import rina.ipcservice.api.APService;
  * @author eduardgrasa
  *
  */
-public class DeliverSDUThread extends Thread{
+public class DeliverSDUJob implements Runnable{
 	
 	private APService applicationProcess = null;
 	private List<byte[]> sdus = null;
 	private int portId = 0;
 	
-	public DeliverSDUThread(APService applicationProcess, List<byte[]> sdus, int portId){
+	public DeliverSDUJob(APService applicationProcess, List<byte[]> sdus, int portId){
 		this.applicationProcess = applicationProcess;
 		this.sdus = sdus;
 		this.portId = portId;
 	}
 	
-	@Override
 	public void run(){
 		for (int i=0; i<sdus.size(); i++){
 			applicationProcess.deliverTransfer(portId, sdus.get(i), true);

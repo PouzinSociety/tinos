@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import rina.efcp.api.DataTransferAE;
 import rina.flowallocator.api.FlowAllocator;
@@ -13,6 +15,8 @@ import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
 import rina.ipcservice.api.APService;
+import rina.ipcservice.impl.jobs.DeliverAllocateResponseJob;
+import rina.ipcservice.impl.jobs.DeliverSDUJob;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.rmt.api.RMT;
 
@@ -25,6 +29,11 @@ import rina.rmt.api.RMT;
  *
  */
 public class IPCProcessImpl implements IPCService, IPCProcess{
+	
+	/**
+	 * The maximum number of worker threads in the IPC Process thread pool
+	 */
+	private static int MAXWORKERTHREADS = 5;
 	
 	/**
 	 * Stores the applications that have a port Id allocated
@@ -56,7 +65,13 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 	 */
 	private ApplicationProcessNamingInfo namingInfo = null;
 	
+	/**
+	 * The thread pool implementation
+	 */
+	private ExecutorService executorService = null;
+	
 	public IPCProcessImpl(ApplicationProcessNamingInfo namingInfo){
+		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
 		this.applicationProcessesWithFlows = new HashMap<Integer, APService>();
 		this.namingInfo = namingInfo;
 	}
@@ -117,8 +132,7 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 			return;
 		}
 		
-		DeliverSDUThread thread = new DeliverSDUThread(applicationProcess, sdus, portId);
-		thread.start();
+		executorService.execute(new DeliverSDUJob(applicationProcess, sdus, portId));
 	}
 
 	public Map<Integer, APService> getApplicationProcessesWithFlows() {
@@ -130,10 +144,18 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 	 * @param allocateRequest
 	 * @param applicationProcess
 	 */
-	public synchronized void submitAllocateRequest(AllocateRequest allocateRequest, APService applicationProcess) throws IPCException{
+	public synchronized void submitAllocateRequest(AllocateRequest allocateRequest, APService applicationProcess){
 		int portId = choosePortId();
 		applicationProcessesWithFlows.put(new Integer(portId), applicationProcess);
-		flowAllocator.submitAllocateRequest(allocateRequest, applicationProcess, portId);
+		try{
+			flowAllocator.submitAllocateRequest(allocateRequest, portId);
+		}catch(IPCException ex){
+			//Something in the validation request was not valid or there are not enough 
+			//resources to honour the request. Notify the application process
+			applicationProcessesWithFlows.remove(new Integer(portId));
+			executorService.execute(new DeliverAllocateResponseJob(
+					applicationProcess, allocateRequest.getRequestedAPinfo(), -1, ex.getErrorCode(), ex.getMessage()));
+		}
 	}
 	
 	/**
@@ -175,5 +197,9 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 	
 	public synchronized void register(ApplicationProcessNamingInfo arg0) {
 		// TODO delegate to RIBDaemon
+	}
+	
+	public void destroy(){
+		executorService.shutdown();
 	}
 }

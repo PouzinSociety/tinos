@@ -69,4 +69,9 @@ public class FakeIPCProcess implements IPCProcess{
 		this.rmt = rmt;
 	}
 
+	public void destroy() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

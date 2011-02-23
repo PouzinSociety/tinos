@@ -10,6 +10,7 @@ Export-Package: rina.cdap.api;version="1.0.0",
  rina.delimiting.api;version="1.0.0",
  rina.efcp.api;version="1.0.0",
  rina.flowallocator.api;version="1.0.0",
+ rina.flowallocator.api.message;version="1.0.0",
  rina.ipcprocess.api;version="1.0.0",
  rina.ribdaemon.api;version="1.0.0",
  rina.rmt.api;version="1.0.0"

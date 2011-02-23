@@ -9,7 +9,21 @@ public class IPCException extends Exception{
 
 	private static final long serialVersionUID = -4765335465449082765L;
 	
+	/** Error codes **/
+	public static final int MALFORMED_ALLOCATE_REQUEST = 1;
+	
 	private int errorCode = 0;
+	
+	public IPCException(int errorCode){
+		super();
+		this.errorCode = errorCode;
+	}
+	
+	public IPCException(int errorCode, String message){
+		super(message);
+		this.errorCode = errorCode;
+	
+	}
 
 	public int getErrorCode() {
 		return errorCode;
