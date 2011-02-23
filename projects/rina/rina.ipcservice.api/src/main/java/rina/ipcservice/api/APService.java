@@ -10,10 +10,11 @@ public interface APService {
 	 * This primitive is invoked by the IPC process to the requested Application Process
 	 * to indicate the success or failure of the request associated with this port-id. 
 	 * @param requestedAPinfo
-	 * @param port_id
-	 * @param result
+	 * @param port_id -1 if error, portId otherwise
+	 * @param result errorCode if result > 0, ok otherwise
+	 * @param resultReason null if no error, error description otherwise
 	 */
-	public void deliverAllocateResponse(ApplicationProcessNamingInfo requestedAPinfo, int port_id, boolean result, String resultReason) ;
+	public void deliverAllocateResponse(ApplicationProcessNamingInfo requestedAPinfo, int port_id, int result, String resultReason) ;
 
 	/**
 	 * Invoked when in the Transfer state to deliver an SDU on this port-id

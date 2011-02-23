@@ -45,9 +45,22 @@ public interface IPCProcess {
 	public void setRmt(RMT rmt);
 	
 	/**
+	 * Lifecicle event, invoked to tell the IPC process it is about to be destroyed.
+	 * The IPC Process implementation must do any necessary cleanup inside this 
+	 * operation.
+	 */
+	public void destroy();
+	
+	/**
 	 * Deliver a set of sdus to the application process bound to portId
 	 * @param sdus
 	 * @param portId
 	 */
 	public void deliverSDUsToApplicationProcess(List<byte[]> sdus, int portId);
+	
+	/**
+	 * Call the applicationProcess deallocate.deliver operation
+	 * @param portId
+	 */
+	public void deliverDeallocateRequestToApplicationProcess(int portId);
 }

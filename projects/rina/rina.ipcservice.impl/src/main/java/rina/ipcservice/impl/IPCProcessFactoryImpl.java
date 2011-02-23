@@ -72,10 +72,10 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 
 	public void destroyIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
 		IPCProcess ipcProcess = ipcProcesses.remove(ipcProcessNamingInfo);
-		
 		flowAllocatorFactory.destroyFlowAllocator(ipcProcess.getIPCProcessNamingInfo());
 		ribDaemonFactory.destroyRIBDaemon(ipcProcess.getIPCProcessNamingInfo());
 		rmtFactory.destroyRMT(ipcProcess.getIPCProcessNamingInfo());
+		ipcProcess.destroy();
 	}
 
 	public void destroyIPCProcess(IPCProcess ipcProcess) {

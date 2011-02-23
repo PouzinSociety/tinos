@@ -24,14 +24,14 @@ public interface IPCService {
 	 * @param sdu
 	 * @return result
 	 */
-	public boolean submitTransfer(int port_id, byte[] sdu);
+	public boolean submitTransfer(int port_id, byte[] sdu) throws IPCException;
 	
 	/**
 	 * This primitive is invoked by the Application Process in any state to deallocate the 
 	 * resources allocated to this instance. 
 	 * @param port_id
 	 */
-	public void submitDeallocate(int port_id);
+	public void submitDeallocate(int port_id) throws IPCException;
 	
 	/**
 	 * This primitive is invoked at any time by the Application any time it wishes to 
@@ -46,7 +46,7 @@ public interface IPCService {
 	 * @param port_id
 	 * @param result
 	 */
-	public void submitAllocateResponse(int port_id, boolean result) ;
+	public void submitAllocateResponse(int portId, boolean result) throws IPCException;
 	
 	/**
 	 * Used by an application process to specify that it is available through this IPC process

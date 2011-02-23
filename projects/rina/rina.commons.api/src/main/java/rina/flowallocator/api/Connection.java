@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 
+import rina.flowallocator.api.message.Flow;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QoSParameters;
 import rina.utils.types.Unsigned;
@@ -112,6 +113,25 @@ public class Connection {
 	 * The retries to create a flow
 	 */
 	private int craeteFlowRetries = 0;
+	
+	public Connection(){
+	}
+	
+	public Connection(Flow flow){
+		this.setAccessControl(flow.getAccessControl());
+		this.setConnectionIds(flow.getFlowIds());
+		this.setCraeteFlowRetries(flow.getCreateFlowRetries());
+		this.setCurrentConnectionId(connectionIds.get(flow.getCurrentFlowId()));
+		this.setDestinationAddress(flow.getDestinationAddress());
+		this.setDestinationNamingInfo(flow.getDestinationNamingInfo());
+		this.setDestinationPortId(flow.getDestinationPortId());
+		this.setPolicies(flow.getPolicies());
+		this.setPolicyParameters(flow.getPolicyParameters());
+		this.setQosParameters(flow.getQosParameters());
+		this.setSourceAddress(flow.getSourceAddress());
+		this.setSourceNamingInfo(flow.getSourceNamingInfo());
+		this.setSourcePortId(flow.getSourcePortId());
+	}
 
 	public ApplicationProcessNamingInfo getSourceNamingInfo() {
 		return sourceNamingInfo;
