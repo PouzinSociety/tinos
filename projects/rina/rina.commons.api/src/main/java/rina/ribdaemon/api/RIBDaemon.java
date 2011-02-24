@@ -19,7 +19,7 @@ public interface RIBDaemon extends IPCProcessComponent{
 	 * have to match the requested object(s)
 	 * @return null if no object matching the call arguments can be found, one or more objects otherwise
 	 */
-	public Object read(String objectClass, long objectInstance, String objectName, Object template);
+	public Object read(String objectClass, long objectInstance, String objectName, Object template) throws RIBDaemonException;
 	
 	/**
 	 * Store an object to the RIB. This may cause a new object to be created in the RIB, or an existing object to be updated.
@@ -57,7 +57,7 @@ public interface RIBDaemon extends IPCProcessComponent{
 	 * @param messageSubscriber
 	 * @throws Exception if there's something wrong with the messageSubscription or messageSubscriber is null
 	 */
-	public void subscribeToMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber) throws Exception;
+	public void subscribeToMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber) throws RIBDaemonException;
 	
 	/**
 	 * MessageSubscribers will stop being called when CDAP that comply with the 
@@ -67,7 +67,7 @@ public interface RIBDaemon extends IPCProcessComponent{
 	 * @throws Exception if there's something wrong with the messageSubscription or messageSubscriber is null, or the 
 	 * messageSubscription does not exist
 	 */
-	public void unsubscribeFromMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber) throws Exception;
+	public void unsubscribeFromMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber) throws RIBDaemonException;
 	
 	/**
 	 * Send an information update, consisting on a set of CDAP messages, using the updateStrategy update strategy

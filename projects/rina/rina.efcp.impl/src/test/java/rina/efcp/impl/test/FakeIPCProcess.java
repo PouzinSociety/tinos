@@ -74,4 +74,14 @@ public class FakeIPCProcess implements IPCProcess{
 		
 	}
 
+	public void deliverDeallocateRequestToApplicationProcess(int arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public byte[] getIPCProcessAddress() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

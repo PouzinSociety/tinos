@@ -5,6 +5,7 @@ import java.util.List;
 
 import rina.efcp.api.DataTransferAEInstance;
 import rina.flowallocator.api.Connection;
+import rina.flowallocator.api.Directory;
 import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.flowallocator.api.message.Flow;
 import rina.flowallocator.impl.policies.NewFlowRequestPolicy;
@@ -51,9 +52,15 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance{
 	 */
 	private DataTransferAEInstance dataTransferAEInstance = null;
 	
-	public FlowAllocatorInstanceImpl(IPCProcess ipcProcess, int portId){
+	/**
+	 * The directory
+	 */
+	private Directory directory = null;
+	
+	public FlowAllocatorInstanceImpl(IPCProcess ipcProcess, int portId, Directory directory){
 		this.ipcProcess = ipcProcess;
 		this.portId = portId;
+		this.directory = directory;
 		connections = new ArrayList<Connection>();
 		//TODO initialize the newFlowRequestPolicy
 	}
@@ -70,9 +77,12 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance{
 		Flow flow = newFlowRequestPolicy.generateFlowObject(allocateRequest, portId);
 		createDataTransferAEInstance(flow);
 		
-		//TODO check directory to see to what IPC process the CDAP M_CREATE request has to be delivered
-		//TODO if the directory doesn't contain a mapping for the destination application process, 
-		//TODO check the directory forwarding table
+		//Check directory to see to what IPC process the CDAP M_CREATE request has to be delivered
+		byte[] address = directory.getAddress(allocateRequest.getRequestedAPinfo());
+		if (address == null){
+			//TODO The directory doesn't contain a mapping for the destination application process, 
+			// check the directory forwarding table
+		}
 		
 		//TODO once the destination IPC process is known, create the CDAP message
 		//TODO Now create the EFCP PDU and pass it to the appropriated EFCP instance

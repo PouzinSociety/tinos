@@ -75,6 +75,8 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 	 */
 	private ApplicationProcessNamingInfo namingInfo = null;
 	
+	private byte[] address = null;
+	
 	/**
 	 * The thread pool implementation
 	 */
@@ -85,6 +87,10 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 		this.allocationPendingApplicationProcesses = new HashMap<Integer, APService>();
 		this.transferApplicationProcesses = new HashMap<Integer, APService>();
 		this.namingInfo = namingInfo;
+	}
+	
+	public byte[] getIPCProcessAddress(){
+		return address;
 	}
 
 	public ApplicationProcessNamingInfo getIPCProcessNamingInfo() {
@@ -242,12 +248,20 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 		return false;
 	}
 
-	public synchronized void unregister(ApplicationProcessNamingInfo arg0) {
-		// TODO Delegate to RIB Daemon
+	/**
+	 * An application says it is no longer available through this DIF
+	 */
+	public synchronized void unregister(ApplicationProcessNamingInfo apNamingInfo) {
+		flowAllocator.getDirectory().removeEntry(apNamingInfo);
+		//TODO tell the RIB Daemon to disseminate this
 	}
 	
-	public synchronized void register(ApplicationProcessNamingInfo arg0) {
-		// TODO delegate to RIBDaemon
+	/**
+	 * An application process says it is available through this DIF
+	 */
+	public synchronized void register(ApplicationProcessNamingInfo apNamingInfo) {
+		flowAllocator.getDirectory().addEntry(apNamingInfo, address);
+		//TODO tell the RIB Daemon to disseminate this
 	}
 	
 	public void destroy(){

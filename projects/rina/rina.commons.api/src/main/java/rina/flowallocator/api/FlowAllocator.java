@@ -37,4 +37,10 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * @param portId
 	 */
 	public void submitDeallocate(int portId);
+	
+	/**
+	 * Returns the directory
+	 * @return
+	 */
+	public Directory getDirectory();
 }

@@ -8,12 +8,13 @@ import org.apache.commons.logging.LogFactory;
 
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.AllocateRequest;
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 import rina.ribdaemon.api.MessageSubscriber;
 import rina.ribdaemon.api.MessageSubscription;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Opcode;
-import rina.efcp.api.DataTransferAEFactory;
+import rina.flowallocator.api.Directory;
 import rina.flowallocator.api.FlowAllocator;
 import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.flowallocator.impl.FlowAllocatorInstanceImpl;
@@ -22,7 +23,6 @@ import rina.flowallocator.impl.validation.AllocateRequestValidator;
 /** 
  * Implements the Flow Allocator
  */
-
 public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 	
 	private static final Log log = LogFactory.getLog(FlowAllocatorImpl.class);
@@ -31,12 +31,6 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 	 * A pointer to the IPC Process
 	 */
 	private IPCProcess ipcProcess = null;
-
-	/**
-	 * A pointer to the Data Transfer Application Entity Factory, so that 
-	 * the Flow Allocator can create Data Transfer AE Instances
-	 */
-	private DataTransferAEFactory dataTransferAEFactory = null;
 
 	/**
 	 * Flow allocator instances, each one associated to a port_id
@@ -48,9 +42,16 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 	 */
 	private AllocateRequestValidator allocateRequestValidator = null;
 	
+	/**
+	 * The directory. It will be in another place probably (RIB Daemon),
+	 * but meanwhile it is here.
+	 */
+	private Directory directory = null;
+	
 	public FlowAllocatorImpl(){
 		allocateRequestValidator = new AllocateRequestValidator();
 		flowAllocatorInstances = new HashMap<Integer, FlowAllocatorInstance>();
+		directory = new DirectoryImpl();
 		subscribeToFlowMessages();
 		subscribeToEvents();
 	}
@@ -106,13 +107,9 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 	public void setIPCProcess(IPCProcess ipcProcess) {
 		this.ipcProcess = ipcProcess;
 	}
-
-	public DataTransferAEFactory getDataTransferAEFactory() {
-		return dataTransferAEFactory;
-	}
-
-	public void setDataTransferAEFactory(DataTransferAEFactory dataTransferAEFactory) {
-		this.dataTransferAEFactory = dataTransferAEFactory;
+	
+	public Directory getDirectory(){
+		return directory;
 	}
 	
 	/**
@@ -154,16 +151,21 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 	 * @param cdapMessage
 	 */
 	private void createFlowRequestMessageReceived(CDAPMessage cdapMessage){
-		//TODO Check in the directory if the destination application process is registered to this IPC process
+		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(
+				cdapMessage.getDestApName(), cdapMessage.getDestApInst(), cdapMessage.getDestAEName(), cdapMessage.getDestAEInst());
+		byte[] address = directory.getAddress(apNamingInfo);
 		
-		//TODO if there is an entry and the address is not this IPC process, forward the CDAP message to that address
-		// increment the hop count of the Flow object
-		
-		//TODO if there is an entry and the address is this IPC Process, create a FAI, extract the Flow object from the CDAP message and
-		//call the FAI
-		
-		//TODO if there is not an entry, search the Directory Forwarding table to see to what IPC process it has to be forwarded
-		//and forward the CDAP message to it. Increment the hop count of the Flow object
+		if (address == null){
+			//TODO there is not an entry, search the Directory Forwarding table to see to what IPC process it has to be forwarded
+			//and forward the CDAP message to it. Increment the hop count of the Flow object
+		}else{
+			if (address.equals(ipcProcess.getIPCProcessAddress())){
+				//TODO there is an entry and the address is this IPC Process, create a FAI, extract the Flow object from the CDAP message and
+				//call the FAI
+			}else{
+				//TODO The address is not this IPC process, forward the CDAP message to that address increment the hop count of the Flow object
+			}
+		}
 	}
 	
 	/**
@@ -203,7 +205,7 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 	public void submitAllocateRequest(AllocateRequest allocateRequest, int portId) throws IPCException{
 		allocateRequestValidator.validateAllocateRequest(allocateRequest);
 		
-		FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.ipcProcess, portId);
+		FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.ipcProcess, portId, directory);
 		flowAllocatorInstance.submitAllocateRequest(allocateRequest, portId);
 		flowAllocatorInstances.put(new Integer(portId), flowAllocatorInstance);
 	}

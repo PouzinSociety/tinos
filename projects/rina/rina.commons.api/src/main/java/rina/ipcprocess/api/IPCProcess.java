@@ -23,6 +23,12 @@ public interface IPCProcess {
 	public ApplicationProcessNamingInfo getIPCProcessNamingInfo();
 	
 	/**
+	 * The address of this IPC Process
+	 * @return
+	 */
+	public byte[] getIPCProcessAddress();
+	
+	/**
 	 * Set the naming information associated to this IPC process
 	 * @return
 	 */
