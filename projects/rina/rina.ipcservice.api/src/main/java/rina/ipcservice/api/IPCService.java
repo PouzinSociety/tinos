@@ -22,9 +22,9 @@ public interface IPCService {
 	 * send an SDU on the specified port-id.
 	 * @param port_id
 	 * @param sdu
-	 * @return result
+	 * @throws IPCException
 	 */
-	public boolean submitTransfer(int port_id, byte[] sdu) throws IPCException;
+	public void submitTransfer(int port_id, byte[] sdu) throws IPCException;
 	
 	/**
 	 * This primitive is invoked by the Application Process in any state to deallocate the 

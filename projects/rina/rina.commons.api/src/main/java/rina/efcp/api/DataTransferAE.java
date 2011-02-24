@@ -28,4 +28,11 @@ public interface DataTransferAE extends IPCProcessComponent {
 	 * @param connection
 	 */
 	public DataTransferAEInstance getDataTransferAEInstance(Connection connection);
+	
+	/**
+	 * Get the instance of the data transfer AE associated to this port Id
+	 * @param portId
+	 * @return
+	 */
+	public DataTransferAEInstance getDataTransferAEInstance(int portId);
 }

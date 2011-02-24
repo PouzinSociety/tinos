@@ -1,6 +1,7 @@
 package rina.efcp.impl;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import rina.efcp.api.DataTransferAE;
@@ -64,6 +65,24 @@ public class DataTransferAEImpl implements DataTransferAE{
 	public DataTransferAEInstance getDataTransferAEInstance(Connection connection) {
 		return dataTransferAEInstances.get(connection);
 		
+	}
+
+	/**
+	 * Return the dataTransferAEInstance currently associated to a portId
+	 * @param portId
+	 */
+	public DataTransferAEInstance getDataTransferAEInstance(int portId) {
+		Iterator<Connection> iterator = dataTransferAEInstances.keySet().iterator();
+		Connection connection = null;
+		
+		while(iterator.hasNext()){
+			connection = iterator.next();
+			if (connection.getSourcePortId().getValue() == portId){
+				return dataTransferAEInstances.get(connection);
+			}
+		}
+		
+		return null;
 	}
 
 }

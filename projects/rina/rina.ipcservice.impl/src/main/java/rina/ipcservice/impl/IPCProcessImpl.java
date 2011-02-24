@@ -1,5 +1,6 @@
 package rina.ipcservice.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.efcp.api.DataTransferAE;
+import rina.efcp.api.DataTransferAEInstance;
 import rina.flowallocator.api.FlowAllocator;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.AllocateRequest;
@@ -243,9 +245,17 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 		// TODO Auto-generated method stub
 	}
 
-	public synchronized  boolean submitTransfer(int portId, byte[] sdu) {
-		// TODO Auto-generated method stub
-		return false;
+	public synchronized  void submitTransfer(int portId, byte[] sdu) throws IPCException{
+		Integer key = new Integer(portId);
+		
+		if (!transferApplicationProcesses.keySet().contains(key)){
+			throw new IPCException(IPCException.PORTID_NOT_IN_TRANSFER_STATE);
+		}
+		
+		List<byte[]> sdus = new ArrayList<byte[]>();
+		sdus.add(sdu);
+		DataTransferAEInstance dataTransferAEInstance = dataTransferAE.getDataTransferAEInstance(portId);
+		dataTransferAEInstance.sdusDelivered(sdus);
 	}
 
 	/**
