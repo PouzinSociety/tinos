@@ -3,9 +3,12 @@ package rina.flowallocator.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import rina.efcp.api.DataTransferAEInstance;
 import rina.flowallocator.api.Connection;
-import rina.flowallocator.api.Directory;
+import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.flowallocator.api.message.Flow;
 import rina.flowallocator.impl.policies.NewFlowRequestPolicy;
@@ -20,6 +23,8 @@ import rina.ipcservice.api.IPCException;
  *
  */
 public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance{
+	
+	private static final Log log = LogFactory.getLog(FlowAllocatorInstanceImpl.class);
 	
 	/**
 	 * The portId associated to this Flow allocator instance
@@ -53,14 +58,14 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance{
 	private DataTransferAEInstance dataTransferAEInstance = null;
 	
 	/**
-	 * The directory
+	 * The directory forwarding table
 	 */
-	private Directory directory = null;
+	private DirectoryForwardingTable directoryForwardingTable = null;
 	
-	public FlowAllocatorInstanceImpl(IPCProcess ipcProcess, int portId, Directory directory){
+	public FlowAllocatorInstanceImpl(IPCProcess ipcProcess, int portId, DirectoryForwardingTable directoryForwardingTable){
 		this.ipcProcess = ipcProcess;
 		this.portId = portId;
-		this.directory = directory;
+		this.directoryForwardingTable = directoryForwardingTable;
 		connections = new ArrayList<Connection>();
 		//TODO initialize the newFlowRequestPolicy
 	}
@@ -78,10 +83,10 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance{
 		createDataTransferAEInstance(flow);
 		
 		//Check directory to see to what IPC process the CDAP M_CREATE request has to be delivered
-		byte[] address = directory.getAddress(allocateRequest.getRequestedAPinfo());
+		byte[] address = directoryForwardingTable.getAddress(allocateRequest.getRequestedAPinfo());
 		if (address == null){
-			//TODO The directory doesn't contain a mapping for the destination application process, 
-			// check the directory forwarding table
+			//error, the table should have at least returned a default IPC process address to continue looking for the application process
+			log.error("The directory forwarding table returned no entries when looking up " + allocateRequest.getRequestedAPinfo().toString());
 		}
 		
 		//TODO once the destination IPC process is known, create the CDAP message

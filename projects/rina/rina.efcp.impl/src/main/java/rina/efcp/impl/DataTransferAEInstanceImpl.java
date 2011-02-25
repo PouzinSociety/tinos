@@ -252,7 +252,7 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 		//Iterate over posted PDUs and give them to the RMT
 		for (int i=0; i<postablePDUs.size(); i++){
 			//TODO add the stuff if DTCP is present and there is retransmission control
-			ipcProcess.getRmt().send(postablePDUs.get(i).getSerializedPDU());
+			ipcProcess.getRmt().sendEFCPPDU(postablePDUs.get(i).getSerializedPDU());
 		}
 		
 	}

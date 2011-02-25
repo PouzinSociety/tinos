@@ -2,6 +2,7 @@ package rina.efcp.impl.test;
 
 import rina.efcp.api.EFCPConstants;
 import rina.ipcprocess.api.IPCProcess;
+import rina.ipcservice.api.IPCException;
 import rina.rmt.api.RMT;
 
 /**
@@ -17,7 +18,7 @@ public class FakeRMT implements RMT{
 	 */
 	private byte[] pdu = null;
 	
-	public void send(byte[] pdu) {
+	public void sendEFCPPDU(byte[] pdu) {
 		System.out.println("Send the following PDU, of "+pdu.length+" bytes:");
 		this.pdu = pdu;
 		String toPrint = "";
@@ -102,6 +103,11 @@ public class FakeRMT implements RMT{
 	}
 
 	public void setIPCProcess(IPCProcess arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void sendCDAPMessage(byte[] arg0, byte[] arg1) throws IPCException {
 		// TODO Auto-generated method stub
 		
 	}

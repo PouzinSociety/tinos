@@ -42,5 +42,5 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * Returns the directory
 	 * @return
 	 */
-	public Directory getDirectory();
+	public DirectoryForwardingTable getDirectoryForwardingTable();
 }

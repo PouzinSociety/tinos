@@ -262,7 +262,7 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 	 * An application says it is no longer available through this DIF
 	 */
 	public synchronized void unregister(ApplicationProcessNamingInfo apNamingInfo) {
-		flowAllocator.getDirectory().removeEntry(apNamingInfo);
+		flowAllocator.getDirectoryForwardingTable().removeEntry(apNamingInfo);
 		//TODO tell the RIB Daemon to disseminate this
 	}
 	
@@ -270,7 +270,7 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 	 * An application process says it is available through this DIF
 	 */
 	public synchronized void register(ApplicationProcessNamingInfo apNamingInfo) {
-		flowAllocator.getDirectory().addEntry(apNamingInfo, address);
+		flowAllocator.getDirectoryForwardingTable().addEntry(apNamingInfo, address);
 		//TODO tell the RIB Daemon to disseminate this
 	}
 	

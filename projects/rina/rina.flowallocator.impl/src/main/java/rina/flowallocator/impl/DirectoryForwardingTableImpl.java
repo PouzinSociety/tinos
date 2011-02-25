@@ -6,33 +6,41 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import rina.flowallocator.api.Directory;
+import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.message.DirectoryEntry;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 /**
- * The directory. Maps application process names to IPC process addresses
+ * The DirectoryForwardingTable. Tells what is the next place (IPC Process Address) where 
+ * an Application Process Name should be searched
  * @author eduardgrasa
  *
  */
-public class DirectoryImpl implements Directory{
+public class DirectoryForwardingTableImpl implements DirectoryForwardingTable{
 	
 	/**
 	 * Look for expired entries every 5 minutes
 	 */
-	private static long DIRECTORY_TIMER_TASK_FREQUENCY = 50*60*1000;
+	private static long DIRECTORY_TIMER_TASK_FREQUENCY = 5*60*1000;
 	
 	/**
 	 * Set the lifetime of a directory entry to 1 day
 	 */
-	private static long DIRECTORY_ENTRY_LIFETIME = 24*60*1000;
+	private static long DIRECTORY_ENTRY_LIFETIME = 24*60*60*1000;
 	
 	/**
 	 * The actual directory data structure
 	 */
 	private List<DirectoryEntry> directory = null;
 	
-	public DirectoryImpl(){
+	/**
+	 * The default IPC process where the requests will be forwarded 
+	 * in case that the ApplicationProcessName looked up is reachable 
+	 * through this IPC process
+	 */
+	private byte[] defaultIPCProcessAddress = null;
+	
+	public DirectoryForwardingTableImpl(){
 		directory = new ArrayList<DirectoryEntry>();
 		
 		Timer timer = new Timer();
@@ -68,7 +76,7 @@ public class DirectoryImpl implements Directory{
 			}
 		}
 		
-		return null;
+		return defaultIPCProcessAddress;
 	}
 	
 	/**
@@ -143,6 +151,16 @@ public class DirectoryImpl implements Directory{
 		for(int i=0; i<entriesToRemove.size(); i++){
 			directory.remove(entriesToRemove.get(i));
 		}
+	}
+	
+	/**
+	 * Set the default IPC process where the requests will be forwarded 
+	 * in case that the ApplicationProcessName looked up is not in the 
+	 * table
+	 * @param address
+	 */
+	public void setDefaultIPCProcess(byte[] address){
+		this.defaultIPCProcessAddress = address;
 	}
 
 }

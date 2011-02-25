@@ -14,9 +14,11 @@ import rina.ribdaemon.api.MessageSubscriber;
 import rina.ribdaemon.api.MessageSubscription;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Opcode;
-import rina.flowallocator.api.Directory;
+import rina.cdap.api.message.ObjectValue;
+import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.FlowAllocator;
 import rina.flowallocator.api.FlowAllocatorInstance;
+import rina.flowallocator.api.message.Flow;
 import rina.flowallocator.impl.FlowAllocatorInstanceImpl;
 import rina.flowallocator.impl.validation.AllocateRequestValidator;
 
@@ -43,15 +45,15 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 	private AllocateRequestValidator allocateRequestValidator = null;
 	
 	/**
-	 * The directory. It will be in another place probably (RIB Daemon),
+	 * The directory forwarding table. It will be in another place maybe (RIB Daemon),
 	 * but meanwhile it is here.
 	 */
-	private Directory directory = null;
+	private DirectoryForwardingTable directoryForwardingTable = null;
 	
 	public FlowAllocatorImpl(){
 		allocateRequestValidator = new AllocateRequestValidator();
 		flowAllocatorInstances = new HashMap<Integer, FlowAllocatorInstance>();
-		directory = new DirectoryImpl();
+		directoryForwardingTable = new DirectoryForwardingTableImpl();
 		subscribeToFlowMessages();
 		subscribeToEvents();
 	}
@@ -108,8 +110,8 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 		this.ipcProcess = ipcProcess;
 	}
 	
-	public Directory getDirectory(){
-		return directory;
+	public DirectoryForwardingTable getDirectoryForwardingTable(){
+		return directoryForwardingTable;
 	}
 	
 	/**
@@ -153,17 +155,26 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 	private void createFlowRequestMessageReceived(CDAPMessage cdapMessage){
 		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(
 				cdapMessage.getDestApName(), cdapMessage.getDestApInst(), cdapMessage.getDestAEName(), cdapMessage.getDestAEInst());
-		byte[] address = directory.getAddress(apNamingInfo);
+		byte[] address = directoryForwardingTable.getAddress(apNamingInfo);
 		
 		if (address == null){
-			//TODO there is not an entry, search the Directory Forwarding table to see to what IPC process it has to be forwarded
-			//and forward the CDAP message to it. Increment the hop count of the Flow object
+			//error, the table should have at least returned a default IPC process address to continue looking for the application process
+			log.error("The directory forwarding table returned no entries when looking up " + apNamingInfo.toString());
 		}else{
 			if (address.equals(ipcProcess.getIPCProcessAddress())){
 				//TODO there is an entry and the address is this IPC Process, create a FAI, extract the Flow object from the CDAP message and
 				//call the FAI
 			}else{
-				//TODO The address is not this IPC process, forward the CDAP message to that address increment the hop count of the Flow object
+				//The address is not this IPC process, forward the CDAP message to that address increment the hop count of the Flow object
+				//extract the flow object from the CDAP message
+				Flow flow = new Flow(); // TODO Someutil.cdapMessage.getObjValue().getByteval();
+				flow.getHopCount().increment();
+				ObjectValue objectValue = new ObjectValue();
+				//TODO objectValue.setByteval(Someutil.serializeFlowObject(flow));
+				cdapMessage.setObjValue(objectValue);
+				//TODO serialize the cdap message
+				byte[] serializedCDAPMesasge = null; //TODO someUtil.serializeCDAPMEssage(cdapMEssage);
+				ipcProcess.getRmt().sendCDAPMessage(address, serializedCDAPMesasge);
 			}
 		}
 	}
@@ -205,7 +216,7 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 	public void submitAllocateRequest(AllocateRequest allocateRequest, int portId) throws IPCException{
 		allocateRequestValidator.validateAllocateRequest(allocateRequest);
 		
-		FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.ipcProcess, portId, directory);
+		FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.ipcProcess, portId, directoryForwardingTable);
 		flowAllocatorInstance.submitAllocateRequest(allocateRequest, portId);
 		flowAllocatorInstances.put(new Integer(portId), flowAllocatorInstance);
 	}

@@ -7,7 +7,7 @@ import rina.ipcservice.api.ApplicationProcessNamingInfo;
  * @author eduardgrasa
  *
  */
-public interface Directory {
+public interface DirectoryForwardingTable {
 	
 	/**
 	 * Returns the address of the IPC process where the application process is, or 
@@ -37,4 +37,12 @@ public interface Directory {
 	 * @param address
 	 */
 	public void removeEntry(byte[] address);
+	
+	/**
+	 * Set the default IPC process where the requests will be forwarded 
+	 * in case that the ApplicationProcessName looked up is not in the 
+	 * table
+	 * @param address
+	 */
+	public void setDefaultIPCProcess(byte[] address);
 }
