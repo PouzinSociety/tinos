@@ -3,6 +3,7 @@ package rina.ipcservice.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import rina.cdap.api.CDAPSessionFactory;
 import rina.efcp.api.DataTransferAEFactory;
 import rina.flowallocator.api.FlowAllocatorFactory;
 import rina.ipcprocess.api.IPCProcess;
@@ -38,6 +39,11 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	 */
 	private DataTransferAEFactory dataTransferAEFactory = null;
 	
+	/**
+	 * Factory of CDAP sessions
+	 */
+	private CDAPSessionFactory cdapSessionFactory = null;
+	
 	public IPCProcessFactoryImpl(){
 		ipcProcesses = new HashMap<ApplicationProcessNamingInfo, IPCProcess>();
 	}
@@ -57,6 +63,10 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	public void setDataTransferAEFactory(DataTransferAEFactory dataTransferAEFactory) {
 		this.dataTransferAEFactory = dataTransferAEFactory;
 	}
+	
+	public void setCDAPSessionFactory(CDAPSessionFactory cdapSessionFactory){
+		this.cdapSessionFactory = cdapSessionFactory;
+	}
 
 	public IPCProcess createIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
 		IPCProcess ipcProcess = new IPCProcessImpl(ipcProcessNamingInfo);
@@ -65,6 +75,7 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		ipcProcess.setDataTransferAE(dataTransferAEFactory.createDataTransferAE(ipcProcessNamingInfo));
 		ipcProcess.setRibDaemon(ribDaemonFactory.createRIBDaemon(ipcProcessNamingInfo));
 		ipcProcess.setRmt(rmtFactory.createRMT(ipcProcessNamingInfo));
+		ipcProcess.setCDAPSessionFactory(cdapSessionFactory);
 		
 		ipcProcesses.put(ipcProcessNamingInfo, ipcProcess);
 		return ipcProcess;

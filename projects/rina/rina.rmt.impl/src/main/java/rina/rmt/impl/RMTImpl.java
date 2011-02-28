@@ -37,7 +37,7 @@ public class RMTImpl implements RMT{
 	 * @param cdapMessage
 	 * @throws IPCException
 	 */
-	public synchronized void sendCDAPMessage(byte[] address, byte[] cdapMessage) throws IPCException {
+	public synchronized void sendCDAPMessage(byte[] address, byte[] cdapMessage) {
 		// TODO Auto-generated method stub
 	}
 

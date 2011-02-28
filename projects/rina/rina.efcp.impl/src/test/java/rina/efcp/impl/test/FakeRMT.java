@@ -107,7 +107,7 @@ public class FakeRMT implements RMT{
 		
 	}
 
-	public void sendCDAPMessage(byte[] arg0, byte[] arg1) throws IPCException {
+	public void sendCDAPMessage(byte[] arg0, byte[] arg1) {
 		// TODO Auto-generated method stub
 		
 	}

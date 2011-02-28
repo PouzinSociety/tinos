@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.cdap.api.CDAPSessionFactory;
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.DataTransferAEInstance;
 import rina.flowallocator.api.FlowAllocator;
@@ -71,6 +72,11 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 	 * The instance of the RMT
 	 */
 	private RMT rmt = null;
+	
+	/**
+	 * The instance of the CDAP session factory
+	 */
+	private CDAPSessionFactory cdapSessionFactory = null;
 	
 	/**
 	 * The naming information of this IPC process
@@ -138,6 +144,14 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 		rmt.setIPCProcess(this);
 	}
 	
+	public CDAPSessionFactory getCDAPSessionFactory() {
+		return cdapSessionFactory;
+	}
+
+	public void setCDAPSessionFactory(CDAPSessionFactory cdapSessionFactory) {
+		this.cdapSessionFactory = cdapSessionFactory;
+	}
+
 	public synchronized void deliverSDUsToApplicationProcess(List<byte[]> sdus, int portId) {
 		APService applicationProcess = transferApplicationProcesses.get(new Integer(portId));
 		

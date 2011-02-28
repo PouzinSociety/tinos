@@ -2,6 +2,7 @@ package rina.ipcprocess.api;
 
 import java.util.List;
 
+import rina.cdap.api.CDAPSessionFactory;
 import rina.efcp.api.DataTransferAE;
 import rina.flowallocator.api.FlowAllocator;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
@@ -49,6 +50,10 @@ public interface IPCProcess {
 	public RMT getRmt();
 	
 	public void setRmt(RMT rmt);
+	
+	public CDAPSessionFactory getCDAPSessionFactory();
+	
+	public void setCDAPSessionFactory(CDAPSessionFactory cdapSessionFactory);
 	
 	/**
 	 * Lifecicle event, invoked to tell the IPC process it is about to be destroyed.

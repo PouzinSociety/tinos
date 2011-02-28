@@ -2,6 +2,7 @@ package rina.efcp.impl.test;
 
 import java.util.List;
 
+import rina.cdap.api.CDAPSessionFactory;
 import rina.efcp.api.DataTransferAE;
 import rina.flowallocator.api.FlowAllocator;
 import rina.ipcprocess.api.IPCProcess;
@@ -82,6 +83,16 @@ public class FakeIPCProcess implements IPCProcess{
 	public byte[] getIPCProcessAddress() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public CDAPSessionFactory getCDAPSessionFactory() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setCDAPSessionFactory(CDAPSessionFactory arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

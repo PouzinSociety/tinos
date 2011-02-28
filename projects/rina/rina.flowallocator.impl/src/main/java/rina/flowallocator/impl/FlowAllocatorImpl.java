@@ -12,6 +12,7 @@ import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 import rina.ribdaemon.api.MessageSubscriber;
 import rina.ribdaemon.api.MessageSubscription;
+import rina.cdap.api.CDAPException;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.cdap.api.message.ObjectValue;
@@ -172,8 +173,13 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 				ObjectValue objectValue = new ObjectValue();
 				//TODO objectValue.setByteval(Someutil.serializeFlowObject(flow));
 				cdapMessage.setObjValue(objectValue);
-				//TODO serialize the cdap message
-				byte[] serializedCDAPMesasge = null; //TODO someUtil.serializeCDAPMEssage(cdapMEssage);
+				byte[] serializedCDAPMesasge = null;
+				try{
+					serializedCDAPMesasge = ipcProcess.getCDAPSessionFactory().serializeCDAPMessage(cdapMessage);
+				}catch(CDAPException ex){
+					log.error("Problems serializing CDAP message to be forwarded: " +ex.getMessage() + 
+					". As a consequence, the CDAP message won't be forwarded");
+				}
 				ipcProcess.getRmt().sendCDAPMessage(address, serializedCDAPMesasge);
 			}
 		}
