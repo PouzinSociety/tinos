@@ -1,0 +1,6 @@
+# vi temporary files
+*~
+# target directory
+target/
+.classpath
+.project
