@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plan name="rina.deploy.configManager.plan" version="1.0.0" scoped="true" atomic="true"
+        xmlns="http://www.springsource.org/schema/dm-server/plan"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springsource.org/schema/dm-server/plan 
+                            http://www.springsource.org/schema/dm-server/plan/springsource-dm-server-plan.xsd">
+
+	<artifact type="bundle" name="org.pouzinsociety.bootstrap.api" version="[1, 2)"/>
+	<artifact type="bundle" name="org.pouzinsociety.config.dao" version="[1, 2)"/>
+	<artifact type="bundle" name="org.pouzinsociety.transport.im" version="[1, 2)"/>
+	<artifact type="bundle" name="org.pouzinsociety.transport.im.configmanager" version="[1, 2)">
+		<property name="header:Configuration-Assignment" value="NameAssigned"/>
+		<property name="header:Configuration-File" value="rina.graphml"/>
+	</artifact>
+</plan>

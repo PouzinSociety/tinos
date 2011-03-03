@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns
+		http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+<graph id="scenario1" edgedefault="undirected">
+		<!-- Data Schema -->
+		<key id="name" for="node" attr.name="name" attr.type="string">
+			<desc>NodeX</desc>
+		</key>
+		<key id="domain" for="node" attr.name="domain" attr.type="string">
+			<desc>NetworkX</desc>
+		</key>
+		<key id="interfaces" for="node" attr.name="interfaces" attr.type="string">
+			<desc>Interface Configuration</desc>
+		</key>
+		<key id="routes" for="node" attr.name="routes" attr.type="string">
+				<desc>IPv4 Route Configuration</desc>
+				<!--
+				   - Default Route for this topology
+				   - You can override at the node level by adding the key and value
+				-->
+				<default>
+				<![CDATA[
+				<routes>
+						<route target="10.0.0.0" netmask="255.255.255.0" device="im0" />
+				</routes>
+				]]>
+				</default>
+		</key>
+		<key id="hosts" for="node" attr.name="hosts" attr.type="string">
+				<desc>Hosts File - IPv4 Name Resolution</desc>
+				<!--
+				   - Default host file for all these nodes
+				   - You can override at the node level by adding the key and value
+				-->
+				<default>
+				<![CDATA[
+				<hosts>
+						<host name="node1" ipAddress="10.0.0.1" />
+						<host name="node2" ipAddress="10.0.0.2" />
+						<host name="node3" ipAddress="10.0.0.3" />
+						<host name="node4" ipAddress="10.0.0.4" />
+						<host name="node5" ipAddress="10.0.0.5" />
+						<host name="node6" ipAddress="10.0.0.6" />
+				</hosts>
+				]]>
+				</default>
+		</key>
+
+<!-- nodeForward -->
+<node id="nodeForward">
+		<data key="name">nodeForward</data>
+		<data key="domain">networkA</data>
+		<data key="routes">
+				<![CDATA[
+				<routes>
+						<route target="10.0.0.0" netmask="255.255.255.0" device="im0" />
+						<route target="10.0.1.0" netmask="255.255.255.0" device="im1" />
+				</routes>
+				]]>
+		</data>
+		<data key="interfaces">
+				<![CDATA[
+				<interfaces>
+						<interface node="nodeForward" device="im0"
+								ethernetAddress="DE-AD-BE-EF-00-01"
+								im_server="localhost"
+								im_port="5222"
+								im_buddyId="networka-user1"
+								im_buddyPassword="networka"
+								im_chatroom="networka@conference.localhost"
+								ip_address="10.0.0.1"
+								ip_netmask="255.255.255.0"
+								/>
+						<interface node="nodeForward" device="im1"
+								ethernetAddress="DE-AD-BE-EF-00-02"
+								im_server="localhost"
+								im_port="5222"
+								im_buddyId="networkb-user1"
+								im_buddyPassword="networkb"
+								im_chatroom="networkb@conference.localhost"
+								ip_address="10.0.1.1"
+								ip_netmask="255.255.255.0"
+								/>
+				</interfaces>
+				]]>
+		</data>
+</node>
+<!-- nodeA -->
+<node id="nodeA">
+		<data key="name">nodeA</data>
+		<data key="domain">networkA</data>
+		<data key="interfaces">
+				<![CDATA[
+				<interfaces>
+						<interface node="nodeA" device="im0"
+								ethernetAddress="DE-AD-BE-EF-00-02"
+								im_server="localhost"
+								im_port="5222"
+								im_buddyId="networka-user2"
+								im_buddyPassword="networka"
+								im_chatroom="networka@conference.localhost"
+								ip_address="10.0.0.2"
+								ip_netmask="255.255.255.0"
+								/>
+				</interfaces>
+				]]>
+		</data>
+</node>
+
+<!-- nodeB -->
+<node id="nodeB">
+		<data key="name">nodeB</data>
+		<data key="domain">networkA</data>
+		<data key="interfaces">
+				<![CDATA[
+				<interfaces>
+						<interface node="nodeB" device="im0"
+								ethernetAddress="DE-AD-BE-EF-00-03"
+								im_server="localhost"
+								im_port="5222"
+								im_buddyId="networka-user3"
+								im_buddyPassword="networka"
+								im_chatroom="networka@conference.localhost"
+								ip_address="10.0.0.3"
+								ip_netmask="255.255.255.0"
+								/>
+				</interfaces>
+				]]>
+		</data>
+</node>
+
+<!-- nodeC -->
+<node id="nodeC">
+		<data key="name">nodeC</data>
+		<data key="domain">networkB</data>
+		<data key="interfaces">
+				<![CDATA[
+				<interfaces>
+						<interface node="nodeC" device="im0"
+								ethernetAddress="DE-AD-BE-EF-00-04"
+								im_server="localhost"
+								im_port="5222"
+								im_buddyId="networkb-user2"
+								im_buddyPassword="networkb"
+								im_chatroom="networka@conference.localhost"
+								ip_address="10.0.1.2"
+								ip_netmask="255.255.255.0"
+								/>
+				</interfaces>
+				]]>
+		</data>
+</node>
+<edge id="0" source="nodeA" target="nodeB"/>
+<edge id="1" source="nodeA" target="nodeForward"/>
+<edge id="2" source="nodeForward" target="nodeC"/>
+
+</graph>
+</graphml>
+

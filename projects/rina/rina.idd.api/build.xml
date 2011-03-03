@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="rina.idd.api" xmlns:ivy="antlib:org.apache.ivy.ant">
+	<property environment="env"/>
+	<property name="disable.bundlor" value="true"/>
+	<property file="${env.TINOS_HOME}/projects/build.properties"/>
+	<property file="${env.TINOS_HOME}/projects/build.versions"/>
+	<import file="${env.TINOS_HOME}/projects/spring-build/tinos/package-bundle.xml"/>
+	<import file="${env.TINOS_HOME}/projects/spring-build/standard/default.xml"/>
+</project>
