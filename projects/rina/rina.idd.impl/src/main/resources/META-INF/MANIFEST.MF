@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: impl Bundle
+Bundle-SymbolicName: rina.idd.impl
+Bundle-Version: 1.0.0
+Bundle-Vendor: Pouzin Society
+Export-Package: rina.idd.impl;version="1.0.0"
+Import-Package: org.apache.commons.logging;version="[1.1.1,1.1.1]"
+Import-Bundle: com.springsource.org.apache.commons.logging;version="[1.1.1, 1.1.1]"
+
