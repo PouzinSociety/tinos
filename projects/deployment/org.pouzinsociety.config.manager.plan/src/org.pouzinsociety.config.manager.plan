@@ -8,5 +8,6 @@
 	<artifact type="bundle" name="org.pouzinsociety.bootstrap.api" version="[1, 2)"/>
 	<artifact type="bundle" name="org.pouzinsociety.config.dao" version="[1, 2)"/>
 	<artifact type="bundle" name="org.pouzinsociety.transport.im" version="[1, 2)"/>
-	<artifact type="bundle" name="org.pouzinsociety.transport.im.configmanager" version="[1, 2)"/>
+<!-- Only move to 1.0.1 upwards if your ready to use graphml based configuration -->
+	<artifact type="bundle" name="org.pouzinsociety.transport.im.configmanager" version="1.0.0"/>
 </plan>

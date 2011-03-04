@@ -18,18 +18,23 @@
 	<dependencies>
 <!-- OSGI -->
 		<dependency org="org.eclipse.osgi" name="org.eclipse.osgi"
-			 rev="${org.eclipse.osgi}" conf="compile->runtime" />
+			 rev="${org.eclipse.osgi}" />
                 <dependency org="org.springframework.osgi" name="org.springframework.osgi.core"
-			 rev="${org.springframework.osgi}" conf="compile->runtime" />
+			 rev="${org.springframework.osgi}" />
 <!-- DAO -->
-		<dependency org="org.pouzinsociety.config" name="org.pouzinsociety.config.dao" rev="1.0.0" conf="compile->runtime"/>
+		<dependency org="org.pouzinsociety.config" name="org.pouzinsociety.config.dao" rev="1.0.0"/>
+
+		<dependency org="org.prefuse" name="org.prefuse.beta" rev="1.0.0"/>
 <!-- Transport -->
-		<dependency org="org.pouzinsociety.transport" name="org.pouzinsociety.transport.im" rev="1.0.0" conf="compile->runtime"/>
+		<dependency org="org.pouzinsociety.transport" name="org.pouzinsociety.transport.im" rev="1.0.0"/>
 <!-- BootStrap -->
-		<dependency org="org.pouzinsociety.bootstrap" name="org.pouzinsociety.bootstrap.api" rev="1.0.0" conf="compile->runtime"/>
+		<dependency org="org.pouzinsociety.bootstrap" name="org.pouzinsociety.bootstrap.api" rev="1.0.0"/>
 <!-- SMACK -->
-		<dependency org="org.jivesoftware" name="org.jivesoftware.smack" rev="${org.jivesoftware.smack}" conf="provided->runtime"/>
-		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" conf="dm-server-provided->runtime" />
+		<dependency org="org.jivesoftware" name="org.jivesoftware.smack" rev="${org.jivesoftware.smack}" />
+		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" />
+<!-- Tests -->
+		<dependency org="org.antlr" name="com.springsource.antlr" rev="${org.antlr}" conf="test->runtime" />
+		<dependency org="org.junit" name="com.springsource.org.junit" rev="${org.junit}" conf="test->runtime" />
 	</dependencies>
 
 </ivy-module>
