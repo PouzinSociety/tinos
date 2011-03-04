@@ -1,13 +1,14 @@
 Manifest-Version: 1.0
-Bundle-Version: 1.0
+Bundle-Version: 1.0.1
 Bundle-Name: org.pouzinsociety.transport.im.configmanager Bundle
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.pouzinsociety.transport.im.configmanager
 Import-Bundle: org.jivesoftware.smack;version="[3.1.0,3.1.0]",
  org.pouzinsociety.bootstrap.api;version="[1, 2)",
  org.pouzinsociety.transport.im;version="[1, 2)",
- org.pouzinsociety.config.dao;version="[1, 2)"
-Export-Package: org.pouzinsociety.transport.im.configmanager;version="1.0.0";
+ org.pouzinsociety.config.dao;version="[1, 2)",
+ org.prefuse.beta;version="[1,2)"
+Export-Package: org.pouzinsociety.transport.im.configmanager;version="1.0.1";
   uses:="org.apache.commons.logging,
    org.jivesoftware.smack,
    org.pouzinsociety.transport.im,
@@ -19,5 +20,7 @@ Import-Package: org.apache.commons.logging;version="[1.1.1,1.1.1]",
  org.osgi.framework,
  org.pouzinsociety.config.dao;version="[1.0.0,1.0.0]",
  org.pouzinsociety.transport.im;version="[1.0.0,1.0.0]",
- org.springframework.osgi.context;version="[1.2.1,1.2.1]"
+ org.springframework.osgi.context;version="[1.2.1,1.2.1]",
+ prefuse.data;version="[1.0.0,1.0.0]"
 Configuration-Assignment: dynamic
+Configuration-File: /tmp/config.graphml

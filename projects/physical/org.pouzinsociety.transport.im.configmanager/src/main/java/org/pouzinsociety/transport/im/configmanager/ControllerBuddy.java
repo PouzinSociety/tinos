@@ -27,6 +27,7 @@ package org.pouzinsociety.transport.im.configmanager;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -41,26 +42,35 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 import org.pouzinsociety.bootstrap.api.BootstrapConstants;
 import org.pouzinsociety.bootstrap.api.BootstrapEvent;
-import org.pouzinsociety.config.dao.EthernetOverIMDao;
-import org.pouzinsociety.config.dao.HostEntryDao;
 import org.pouzinsociety.config.dao.IMDao;
-import org.pouzinsociety.config.dao.RouteDao;
 import org.pouzinsociety.transport.im.ConnectionImpl;
+import prefuse.data.Graph;
+import prefuse.data.Table;
+import prefuse.data.Tuple;
+import prefuse.data.io.GraphMLReader;
 
 
 public class ControllerBuddy implements PacketListener, BundleContextAware {
 	Log log = LogFactory.getLog(ControllerBuddy.class);
-	String CONFIGURATION_MODE_SPECIFIER = "Configuration-Assignment";
-	String DYNAMIC_MODE = "dynamic";
+	final String CONFIGURATION_MODE_SPECIFIER = "Configuration-Assignment";
+	final String DYNAMIC_MODE = "dynamic";
+	final String CONFIGURATION_FILE_SPECIFIER = "Configuration-File";
+	final String CONFIGURATION_MAPPING_KEY = "name";
+
 	private BundleContext bundleContext;
 	boolean configurationModeDynamic = true;
+	boolean configurationLoaded = false;
 	IMDao imConnectionDetails;
 	ConnectionImpl medium;
 
-	// Config Data for Nodes
+	// Name Mapping to Configuration Nodes (Name Assigned)
+	HashMap<String, HashMap<String, String>> nodeNameMap = new HashMap<String, HashMap<String,String>>();
+	// Array of Configuration Nodes (Dynamic Mode) - Names for the entries in the nodeNameMap
+	List<String> nodeArray = new ArrayList<String>();
+	// Assigned Nodes ("requester", nodeArray Idx)
 	HashMap<String,Integer> nodeNames = new HashMap<String,Integer>();
-	HashMap<String,Integer> configNameToNode = new HashMap<String,Integer>();
-	List<NodeConfigDao> nodes;
+	
+
 	int indexCounter = 0;
 
 	public void setBundleContext(BundleContext bundleContext) {
@@ -68,43 +78,70 @@ public class ControllerBuddy implements PacketListener, BundleContextAware {
 		Bundle bundle = this.bundleContext.getBundle();
 		try {
 			String requestOpMode =
-			    (String)bundle.getHeaders().get(CONFIGURATION_MODE_SPECIFIER);
-				if (requestOpMode != null) {
-					if (!requestOpMode.isEmpty()) {
-						configurationModeDynamic =
-							requestOpMode.equals(DYNAMIC_MODE);
-					}
+				(String)bundle.getHeaders().get(CONFIGURATION_MODE_SPECIFIER);
+			if (requestOpMode != null) {
+				if (!requestOpMode.isEmpty()) {
+					configurationModeDynamic =
+						requestOpMode.equals(DYNAMIC_MODE);
 				}
+			}
 		} catch (Exception e) {
-				configurationModeDynamic = true;
-				log.error("Cannot determine configuration mode - default dynamic");
-				log.error(e);
-				
+			configurationModeDynamic = true;
+			log.error("Cannot determine configuration mode - default dynamic");
+			log.error(e);
+
 		}
+
+		try {
+			String configurationFileLocation =
+				(String)bundle.getHeaders().get(CONFIGURATION_FILE_SPECIFIER);
+			loadConfiguration(configurationFileLocation);
+			configurationLoaded = true;
+		} catch (Exception e) {
+			configurationLoaded= false;
+			log.error("Cannot load configuration file");
+			log.error(e);
+		}
+		
 		log.info("ConfigurationMode : " + 
-			((configurationModeDynamic == true) ? "Dynamic" : "NameAssigned"));
+				((configurationModeDynamic == true) ? "Dynamic" : "NameAssigned"));
 	}
 
-
-
-
-	public void setNodes(List<NodeConfigDao> nodes) {
-		this.nodes = nodes;
-		// preload the configNamesToNode HashMap.
-		for (int i = 0; i < nodes.size(); i++) {
-/**
- * TODO
- * This is ugly until the rewrite of the configuration loading
- *
- */
-			NodeConfigDao node = nodes.get(i);
-			// Have to dig into the interfaces to get a node name
-			List<EthernetOverIMDao> ifaces = node.getInterfaces();
-			// Assume at least one interface - after all it is networking
-			EthernetOverIMDao dao = ifaces.get(0);
-			configNameToNode.put(dao.getNode_name(), Integer.valueOf(i));
-			log.info("configNameToNode(Node : " + dao.getNode_name() + ", Index : " + i +")");
+	public void loadConfiguration(String configFileLocation) throws Exception {
+		Graph configGraph;
+		log.info("Loading Configuration File : " + configFileLocation);
+		try {
+			configGraph = new GraphMLReader().readGraph(configFileLocation);
+		} catch(Exception e) {
+			log.error("Exception : " + e.getMessage());
+			log.error("Unable to load configuration : " + configFileLocation);
+			throw e;
 		}
+		log.info("Configuration Graph : Nodes (" + configGraph.getNodeCount() +
+				"), Edges(" + configGraph.getEdgeCount() + ")");
+		
+		HashMap<String, String> node;
+		Table t = configGraph.getNodeTable();		
+		int rowCount = t.getRowCount();
+		Tuple row;
+		for (int idx = 0; idx < rowCount; idx++) {
+			row = t.getTuple(idx);
+			int columnCount = row.getColumnCount();
+			node = new HashMap<String, String>();
+			for (int i = 0; i < columnCount; ++i)
+				node.put(row.getColumnName(i).toLowerCase(), (String)row.get(i));	
+			if (node.containsKey(CONFIGURATION_MAPPING_KEY)) {
+					String mappingValue = node.get(CONFIGURATION_MAPPING_KEY);
+					if (mappingValue == null)
+						continue;
+					if (mappingValue.isEmpty())
+						continue;
+					nodeNameMap.put(node.get(CONFIGURATION_MAPPING_KEY), node);
+					nodeArray.add(node.get(CONFIGURATION_MAPPING_KEY));
+			}
+		}
+		log.info("Configuration Loaded: ConfigNodes (" + nodeArray.size() + ")");
+		log.info("NodeNames : " + nodeNameMap.keySet().toString());
 	}
 
 	public ControllerBuddy(IMDao imConfig) throws Exception {
@@ -148,57 +185,72 @@ public class ControllerBuddy implements PacketListener, BundleContextAware {
 
 	private void processBootstrapEvent(BootstrapEvent event) {
 		log.info("processBootstrapEvent: (" + event.getEventId() + ")");
+		
+		if (configurationLoaded == false) {
+			log.error("Cannot process incoming request: No Configuration Loaded");
+			return;
+		}
+		
+		
 		if (event.getEventId() == BootstrapConstants.CONFIG_REQUEST) {
-
-			NodeConfigDao node = null;
+			
 			// Requesting Node
 			String requester = event.getKeyValue("src");
 			// Node Name ?
-			String nodeName = event.getKeyValue("node");
+			String requestedConfigName = event.getKeyValue("node");
+			String configName = null;
 			// Has this requester already got a configuration ?
 			Integer index = nodeNames.get(requester);
+			HashMap<String,String> node = null;
 			if (index == null) {
-				// Nope - then hand over the next one
+				// Nope - then lets find a configuration for this request.
 				synchronized (this) {
-				if (configurationModeDynamic == true) {
-					if (nodeName != null) 
-						log.info("Configuration Name specified ignored in Dynamic Mode");
-					if (indexCounter < nodes.size()) {
-						node = nodes.get(indexCounter);
-						nodeNames.put(requester, Integer.valueOf(indexCounter));
-						indexCounter++;
-					}
-				} else { // Assign by requested node-name
-					if (nodeName == null) {
-					log.error("In NameAssigned configuration request mode - no node" +
-						" name specified by requester : " + requester);
-					} else {
-					if (nodeName.isEmpty()) {
-					log.error("In NameAssigned configuration request mode - no node" +
-						" name specified by requester : " + requester);
-					} else {
-						log.info("Configuration Request for NodeName : " + nodeName);
-						Integer idx = configNameToNode.get(nodeName);
-						if (idx != null) {
-							log.info("Idx: " + idx + " for node : " + nodeName);
-							node = nodes.get(idx);
-							nodeNames.put(requester, idx);
+					if (configurationModeDynamic == true) {
+						if (requestedConfigName != null) 
+							log.info("Configuration Name specified is ignored in Dynamic Mode");
+						if (indexCounter < nodeArray.size()) {
+							configName = nodeArray.get(indexCounter);
+							nodeNames.put(requester, Integer.valueOf(indexCounter));
+							indexCounter++;
+						}
+					} else { // Assign by requested node-name
+						if (requestedConfigName == null) {
+							log.error("In NameAssigned configuration request mode - no node" +
+									" name specified by requester : " + requester);
 						} else {
-							log.info("No Configuration for NodeName : " + nodeName);
+							if (requestedConfigName.isEmpty()) {
+								log.error("In NameAssigned configuration request mode - no node" +
+										" name specified by requester : " + requester);
+							} else {
+								log.info("Configuration Request for NodeName : " + requestedConfigName);
+								if (nodeNameMap.containsKey(requestedConfigName) == false) {
+									log.error("NameAssigned configuration request mode - no configuration node" +
+											" for the name (" + requestedConfigName + ") specified by requester : " +
+											requester);
+								} else {
+									configName = requestedConfigName;
+									Integer idx = nodeArray.indexOf(configName);
+									if (nodeNames.containsValue(idx) == true) {
+										log.warn("!!WARNING!! - NameAssigned Mode : Configuration already assigned to another requester," +
+												" you might not want this");
+									}
+									nodeNames.put(requester, idx);
+								}
+								
+							}
 						}
 					}
-
-					}
-				}
-
 				}
 			} else {
 				// Yes, then send the same again
-				node = nodes.get(index);
+				configName = nodeArray.get(index);
 			}
+			
+			if (configName != null)
+				node = nodeNameMap.get(configName);
 
 			if (node == null) {
-				log.error("No Configuration available");
+				log.error("No Configuration available for this request.");
 				return;
 			}
 
@@ -207,9 +259,8 @@ public class ControllerBuddy implements PacketListener, BundleContextAware {
 			response.setKeyValue("src", imConnectionDetails.getIm_resourceId());
 			response.setKeyValue("dest", requester);
 			response.setKeyValue("LocalTime", getDateTime());
-			response.setKeyValue("interfaces", EthernetOverIMDao.toXML(node.interfaces));
-			response.setKeyValue("routes", RouteDao.toXML(node.routes));
-			response.setKeyValue("hosts", HostEntryDao.toXML(node.hosts));
+			for (String key : node.keySet())
+				response.setKeyValue(key, node.get(key));
 			sendBootstrapEvent(response);
 		}
 
@@ -222,7 +273,7 @@ public class ControllerBuddy implements PacketListener, BundleContextAware {
 		StringBuffer buf = new StringBuffer();
 		buf.append("Body: " + message.getBody() + "\n");
 		for (String key : event.keySet()) {
-			buf.append("Key(" + key + ")\nValue( " + event.getKeyValue(key) + ")\n");
+			buf.append("Key(" + key + ")\nValue(" + event.getKeyValue(key) + ")\n");
 			message.setProperty(key, event.getKeyValue(key));
 		}
 		log.info("Sending Configuration : \n" + buf.toString());
