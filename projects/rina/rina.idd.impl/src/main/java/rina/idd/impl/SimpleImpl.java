@@ -18,6 +18,9 @@ public class SimpleImpl implements Runnable, BootStrapCompleteAPI, IDDProvider {
 	List<String> forwardingTable = new ArrayList<String>();
 	
 
+	/**
+	 * Need to fix up the bootstrap process a little more
+ 	 */
 	public void bootstrapComplete(Object arg0) throws BootstrapException {
 		log.info("IDD BootStrapping..");
 		String jsonConfig = (String)arg0;

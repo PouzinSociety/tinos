@@ -18,6 +18,7 @@
 	<dependencies>
 		<dependency org="org.pouzinsociety.bootstrap" name="org.pouzinsociety.bootstrap.api" rev="1.0.0"/>
 		<dependency org="org.pouzinsociety.config" name="org.pouzinsociety.config.dao" rev="1.0.0"/>
+		<dependency org="org.prefuse" name="org.prefuse.beta" rev="1.0.0"/>
 		<dependency org="org.pouzinsociety.transport" name="org.pouzinsociety.transport.im" rev="1.0.0"/>
 		<dependency org="org.pouzinsociety.transport" name="org.pouzinsociety.transport.im.configmanager" rev="1.0.0"/>
 	</dependencies>

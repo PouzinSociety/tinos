@@ -8,8 +8,9 @@
 	<artifact type="bundle" name="org.pouzinsociety.bootstrap.api" version="[1, 2)"/>
 	<artifact type="bundle" name="org.pouzinsociety.config.dao" version="[1, 2)"/>
 	<artifact type="bundle" name="org.pouzinsociety.transport.im" version="[1, 2)"/>
+	<artifact type="bundle" name="org.prefuse.beta" version="[1, 2)"/>
 	<artifact type="bundle" name="org.pouzinsociety.transport.im.configmanager" version="[1, 2)">
 		<property name="header:Configuration-Assignment" value="NameAssigned"/>
-		<property name="header:Configuration-File" value="rina.graphml"/>
+		<property name="header:Configuration-File" value="/tmp/rina.graphml"/>
 	</artifact>
 </plan>
