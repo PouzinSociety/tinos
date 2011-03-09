@@ -5,4 +5,3 @@ Bundle-SymbolicName: rina.utils.serialization
 Bundle-Version: 1.0.0
 Bundle-Vendor: i2CAT
 Import-Package: rina.flowallocator.api;version="1.0.0"
-Export-Package: rina.utils.serialization;version="1.0.0"

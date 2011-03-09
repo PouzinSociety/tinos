@@ -5,13 +5,6 @@
 			http://www.springframework.org/schema/beans
 			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-	<bean name="ipcProcessFactoryImpl" class="rina.ipcservice.impl.IPCProcessFactoryImpl">
-		<property name="rmtFactory" ref="rmtFactoryService" />
-		<property name="flowAllocatorFactory" ref="flowAllocatorFactoryService" />
-		<property name="ribDaemonFactory" ref="ribDaemonFactoryService" />
-		<property name="dataTransferAEFactory" ref="dataTransferAEFactoryService" />
-		<property name="CDAPSessionFactory" ref="cdapSessionFactoryService" />
-		<property name="serializationFactory" ref="serializationFactoryService" />
-	</bean>
+	<bean name="serializationFactoryImpl" class="rina.utils.serialization.googleprotobuf.GPBSerializationFactory"/>
 
 </beans>
