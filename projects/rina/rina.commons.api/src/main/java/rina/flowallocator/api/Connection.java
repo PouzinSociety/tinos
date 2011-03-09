@@ -107,7 +107,7 @@ public class Connection {
 	/**
 	 * TBD, may not be a string.
 	 */
-	private String accessControl = null;
+	private byte[] accessControl = null;
 	
 	/**
 	 * The retries to create a flow
@@ -253,11 +253,11 @@ public class Connection {
 		this.state = state;
 	}
 
-	public String getAccessControl() {
+	public byte[] getAccessControl() {
 		return accessControl;
 	}
 
-	public void setAccessControl(String accessControl) {
+	public void setAccessControl(byte[] accessControl) {
 		this.accessControl = accessControl;
 	}
 

@@ -8,6 +8,7 @@ import rina.flowallocator.api.FlowAllocator;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.rmt.api.RMT;
+import rina.serialization.api.Serializer;
 
 /**
  * Represents an IPC Process. Holds together the different components of the IPC 
@@ -54,6 +55,10 @@ public interface IPCProcess {
 	public CDAPSessionFactory getCDAPSessionFactory();
 	
 	public void setCDAPSessionFactory(CDAPSessionFactory cdapSessionFactory);
+	
+	public Serializer getSerializer();
+	
+	public void setSerializer(Serializer serializer);
 	
 	/**
 	 * Lifecicle event, invoked to tell the IPC process it is about to be destroyed.

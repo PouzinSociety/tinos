@@ -25,6 +25,7 @@ import rina.ipcservice.impl.jobs.DeliverDeallocateJob;
 import rina.ipcservice.impl.jobs.DeliverSDUJob;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.rmt.api.RMT;
+import rina.serialization.api.Serializer;
 
 /**
  * Point of entry to the IPC process for the application process. It is in charge 
@@ -77,6 +78,12 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 	 * The instance of the CDAP session factory
 	 */
 	private CDAPSessionFactory cdapSessionFactory = null;
+	
+	/**
+	 * The serializer to serialize/deserialize objects
+	 * exchanged through CDAP
+	 */
+	private Serializer serializer = null;
 	
 	/**
 	 * The naming information of this IPC process
@@ -150,6 +157,14 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 
 	public void setCDAPSessionFactory(CDAPSessionFactory cdapSessionFactory) {
 		this.cdapSessionFactory = cdapSessionFactory;
+	}
+	
+	public Serializer getSerializer(){
+		return serializer;
+	}
+	
+	public void setSerializer(Serializer serializer){
+		this.serializer = serializer;
 	}
 
 	public synchronized void deliverSDUsToApplicationProcess(List<byte[]> sdus, int portId) {

@@ -9,6 +9,7 @@ import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.rmt.api.RMT;
+import rina.serialization.api.Serializer;
 
 public class FakeIPCProcess implements IPCProcess{
 	
@@ -91,6 +92,16 @@ public class FakeIPCProcess implements IPCProcess{
 	}
 
 	public void setCDAPSessionFactory(CDAPSessionFactory arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Serializer getSerializer() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setSerializer(Serializer arg0) {
 		// TODO Auto-generated method stub
 		
 	}

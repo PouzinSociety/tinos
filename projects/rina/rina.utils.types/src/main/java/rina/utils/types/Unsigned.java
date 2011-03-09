@@ -177,12 +177,39 @@ public class Unsigned {
 	}
 	
 	/**
+	 * Substracts "toSubstract" to the current unsigned
+	 * @param toSubstract
+	 * @throws UnsignedException
+	 */
+	public void subscract(Unsigned toSubstract) throws UnsignedException{
+		if (this.numberOfBytes != toSubstract.getNumberOfBytes()){
+			throw new UnsignedException(ErrorCodes.UnsupportedNumberOfBytes);
+		}
+		
+		long aux = this.value - toSubstract.getValue();
+		if (aux < 0){
+			this.value = this.maxValue - aux;
+		}else{
+			this.value = aux;
+		}
+	}
+	
+	/**
 	 * Increment the value of this unsigned int by one
 	 */
 	public void increment(){
 		Unsigned one = new Unsigned(this.numberOfBytes);
 		one.setValue(1);
 		this.add(one);
+	}
+	
+	/**
+	 * Decrement the value of this unsigned int by one
+	 */
+	public void decrement(){
+		Unsigned one = new Unsigned(this.numberOfBytes);
+		one.setValue(1);
+		this.subscract(one);
 	}
 	
 	/**

@@ -168,15 +168,38 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 			}else{
 				//The address is not this IPC process, forward the CDAP message to that address increment the hop count of the Flow object
 				//extract the flow object from the CDAP message
-				Flow flow = new Flow(); // TODO Someutil.cdapMessage.getObjValue().getByteval();
-				flow.getHopCount().increment();
+				Flow flow = null;
+				
+				try{
+					flow = (Flow) ipcProcess.getSerializer().deserialize(cdapMessage.getObjValue().getByteval(), Flow.class.toString());
+				}catch (Exception ex){
+					//Error that has to be fixed, we cannot continue, log it and return
+					log.error("Fatal error when deserializing a Flow object. " +ex.getMessage());
+					return;
+				}
+				
+				flow.setHopCount(flow.getHopCount() - 1);
+				if (flow.getHopCount()  == 0){
+					//TODO send negative create Flow response CDAP message to the source IPC process, specifying that the application process
+					//could not be found before the hop count expired
+				}
+				
 				ObjectValue objectValue = new ObjectValue();
-				//TODO objectValue.setByteval(Someutil.serializeFlowObject(flow));
+				
+				try{
+					objectValue.setByteval(ipcProcess.getSerializer().serialize(flow));
+				}catch(Exception ex){
+					//Error that has to be fixed, we cannot continue, log it and return
+					log.error("Fatal error when serializing a Flow object. " +ex.getMessage());
+					return;
+				}
+
 				cdapMessage.setObjValue(objectValue);
 				byte[] serializedCDAPMesasge = null;
 				try{
 					serializedCDAPMesasge = ipcProcess.getCDAPSessionFactory().serializeCDAPMessage(cdapMessage);
 				}catch(CDAPException ex){
+					//Error that has to be fixed, we cannot continue, log it and return
 					log.error("Problems serializing CDAP message to be forwarded: " +ex.getMessage() + 
 					". As a consequence, the CDAP message won't be forwarded");
 				}

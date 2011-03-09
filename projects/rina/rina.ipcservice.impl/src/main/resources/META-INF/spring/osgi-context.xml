@@ -13,6 +13,7 @@
     <osgi:reference id="rmtFactoryService" interface="rina.rmt.api.RMTFactory"/>
     <osgi:reference id="dataTransferAEFactoryService" interface="rina.efcp.api.DataTransferAEFactory"/>
     <osgi:reference id="cdapSessionFactoryService" interface="rina.cdap.api.CDAPSessionFactory"/>
+    <osgi:reference id="serializationFactoryService" interface="rina.serialization.api.SerializationFactory"/>
           
     <!--  Export the IPCProcessFactoryImpl to the OSGi registry-->
     <osgi:service id="ipcProcessFactory" ref="ipcProcessFactoryImpl">
