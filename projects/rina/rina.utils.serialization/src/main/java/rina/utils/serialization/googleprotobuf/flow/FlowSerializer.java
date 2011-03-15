@@ -111,14 +111,24 @@ public class FlowSerializer implements Serializer{
 		
 		Flow flow = (Flow) object;
 		
+		List<connectionId_t> connectionIds = getConnectionIdTypes(flow.getFlowIds());
+		List<qosParameter_t> qosParametersList = getQosParametersTypes(flow.getQosParameters());
+		List<String> flowPolicies = flow.getPolicies();
+		if (flowPolicies == null){
+			flowPolicies = new ArrayList<String>();
+		}
+		
 		FlowMessage.Flow gpbFlow = FlowMessage.Flow.newBuilder().
 										setAccessControl(GPBUtils.getByteString(flow.getAccessControl())).
 										setCreateFlowRetries(flow.getCreateFlowRetries()).
 										setCurrentConnectionId(flow.getCurrentFlowId()).
+										addAllConnectionIds(connectionIds).
 										setDestinationAddress(GPBUtils.getByteString(flow.getDestinationAddress())).
 										setDestinationNamingInfo(getApplicationProcessNamingInfoT(flow.getDestinationNamingInfo())).
 										setDestinationPortId(flow.getDestinationPortId().getValue()).
 										setHopCount(flow.getHopCount()).
+										addAllPolicies(flowPolicies).
+										addAllQosParameters(qosParametersList).
 										setMaxCreateFlowRetries(flow.getMaxCreateFlowRetries()).
 										setSourceAddress(GPBUtils.getByteString(flow.getSourceAddress())).
 										setSourceNamingInfo(getApplicationProcessNamingInfoT(flow.getSourceNamingInfo())).
@@ -126,9 +136,6 @@ public class FlowSerializer implements Serializer{
 										setState(GPBUtils.getByteString(new byte[]{flow.getStatus()})).
 										build();
 		
-		populateConnectionIdsList(gpbFlow.getConnectionIdsList(), flow.getFlowIds());
-		populatePoliciesList(gpbFlow.getPoliciesList(), flow.getPolicies());
-		populateQoSParametersList(gpbFlow.getQosParametersList(), flow.getQosParameters());
 		return gpbFlow.toByteArray();
 	}
 	
@@ -146,14 +153,18 @@ public class FlowSerializer implements Serializer{
 		return result;
 	}
 	
-	private void populateConnectionIdsList(List<connectionId_t> connectionIdTypes, List<ConnectionId> connectionIds){
+	private List<connectionId_t> getConnectionIdTypes(List<ConnectionId> connectionIds){
+		List<connectionId_t> result = new ArrayList<connectionId_t>();
+		
 		if (connectionIds == null){
-			return;
+			return result;
 		}
 		
 		for (int i=0; i<connectionIds.size(); i++){
-			connectionIdTypes.add(getConnectionIdType(connectionIds.get(i)));
+			result.add(getConnectionIdType(connectionIds.get(i)));
 		}
+		
+		return result;
 	}
 	
 	private connectionId_t getConnectionIdType(ConnectionId connectionId){
@@ -166,19 +177,11 @@ public class FlowSerializer implements Serializer{
 		return result;
 	}
 	
-	private void populatePoliciesList(List<String> policiesList, List<String> policiesList2){
-		if (policiesList2 == null){
-			return;
-		}
+	private List<qosParameter_t> getQosParametersTypes(QoSParameters qosParameters){
+		List<qosParameter_t> qosParametersList = new ArrayList<qosParameter_t>();
 		
-		for(int i=0; i<policiesList2.size(); i++){
-			policiesList.add(policiesList2.get(i));
-		}
-	}
-	
-	private void populateQoSParametersList(List<qosParameter_t> qosParametersList, QoSParameters qosParameters){
 		if (qosParameters == null || qosParameters.getCube() == null){
-			return;
+			return qosParametersList;
 		}
 		
 		Iterator<Entry<String, Object>> iterator = qosParameters.getCube().entrySet().iterator();
@@ -187,6 +190,8 @@ public class FlowSerializer implements Serializer{
 			entry = iterator.next();
 			qosParametersList.add(getQoSParameterT(entry));
 		}
+		
+		return qosParametersList;
 	}
 	
 	private qosParameter_t getQoSParameterT(Entry<String, Object> entry){

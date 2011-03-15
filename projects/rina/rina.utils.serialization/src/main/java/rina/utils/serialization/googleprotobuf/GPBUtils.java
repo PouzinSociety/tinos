@@ -20,7 +20,7 @@ public class GPBUtils {
 	
 	public static String getString(String string){
 		String result = null;
-		if (!string.endsWith("")){
+		if (!string.equals("")){
 			result = string;
 		}
 		
