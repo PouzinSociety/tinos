@@ -3,6 +3,7 @@ package rina.efcp.impl.test;
 import java.util.List;
 
 import rina.cdap.api.CDAPSessionFactory;
+import rina.delimiting.api.Delimiter;
 import rina.efcp.api.DataTransferAE;
 import rina.flowallocator.api.FlowAllocator;
 import rina.ipcprocess.api.IPCProcess;
@@ -102,6 +103,16 @@ public class FakeIPCProcess implements IPCProcess{
 	}
 
 	public void setSerializer(Serializer arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Delimiter getDelimiter() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setDelimiter(Delimiter arg0) {
 		// TODO Auto-generated method stub
 		
 	}

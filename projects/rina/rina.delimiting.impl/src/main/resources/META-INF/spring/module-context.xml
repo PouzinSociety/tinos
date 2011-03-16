@@ -5,6 +5,6 @@
 			http://www.springframework.org/schema/beans
 			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-	<bean name="serializationFactoryImpl" class="rina.utils.serialization.googleprotobuf.GPBSerializationFactory"/>
+	<bean name="delimiterFactoryImpl" class="rina.delimiting.impl.DelimiterFactoryImpl"/>
 
 </beans>

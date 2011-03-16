@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Custom types bundle
-Bundle-SymbolicName: rina.utils.types
+Bundle-Name: RINA Delimiting Implementation
+Bundle-SymbolicName: rina.delimiting.impl
 Bundle-Version: 1.0.0
 Bundle-Vendor: i2CAT
-Export-Package: rina.utils.types;version="1.0.0"
+Import-Package: rina.delimiting.api;version="1.0.0"

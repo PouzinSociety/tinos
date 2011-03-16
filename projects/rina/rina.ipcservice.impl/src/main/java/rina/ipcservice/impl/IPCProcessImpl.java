@@ -11,6 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.cdap.api.CDAPSessionFactory;
+import rina.delimiting.api.Delimiter;
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.DataTransferAEInstance;
 import rina.flowallocator.api.FlowAllocator;
@@ -84,6 +85,11 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 	 * exchanged through CDAP
 	 */
 	private Serializer serializer = null;
+	
+	/**
+	 * The delimiter to delimit the SDUs
+	 */
+	private Delimiter delimiter = null;
 	
 	/**
 	 * The naming information of this IPC process
@@ -165,6 +171,14 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 	
 	public void setSerializer(Serializer serializer){
 		this.serializer = serializer;
+	}
+
+	public Delimiter getDelimiter() {
+		return delimiter;
+	}
+
+	public void setDelimiter(Delimiter delimiter) {
+		this.delimiter = delimiter;
 	}
 
 	public synchronized void deliverSDUsToApplicationProcess(List<byte[]> sdus, int portId) {

@@ -3,6 +3,7 @@ package rina.ipcprocess.api;
 import java.util.List;
 
 import rina.cdap.api.CDAPSessionFactory;
+import rina.delimiting.api.Delimiter;
 import rina.efcp.api.DataTransferAE;
 import rina.flowallocator.api.FlowAllocator;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
@@ -59,6 +60,10 @@ public interface IPCProcess {
 	public Serializer getSerializer();
 	
 	public void setSerializer(Serializer serializer);
+	
+	public Delimiter getDelimiter();
+	
+	public void setDelimiter(Delimiter delimiter);
 	
 	/**
 	 * Lifecicle event, invoked to tell the IPC process it is about to be destroyed.

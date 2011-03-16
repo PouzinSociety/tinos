@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import rina.cdap.api.CDAPSessionFactory;
+import rina.delimiting.api.DelimiterFactory;
 import rina.efcp.api.DataTransferAEFactory;
 import rina.flowallocator.api.FlowAllocatorFactory;
 import rina.ipcprocess.api.IPCProcess;
@@ -50,6 +51,11 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	 */
 	private SerializationFactory serializationFactory = null;
 	
+	/**
+	 * Factory of delimiters
+	 */
+	private DelimiterFactory delimiterFactory = null;
+	
 	public IPCProcessFactoryImpl(){
 		ipcProcesses = new HashMap<ApplicationProcessNamingInfo, IPCProcess>();
 	}
@@ -78,6 +84,10 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		this.serializationFactory = serializationFactory;
 	}
 
+	public void setDelimiterFactory(DelimiterFactory delimiterFactory) {
+		this.delimiterFactory = delimiterFactory;
+	}
+
 	public IPCProcess createIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
 		IPCProcess ipcProcess = new IPCProcessImpl(ipcProcessNamingInfo);
 		
@@ -87,6 +97,7 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		ipcProcess.setRmt(rmtFactory.createRMT(ipcProcessNamingInfo));
 		ipcProcess.setCDAPSessionFactory(cdapSessionFactory);
 		ipcProcess.setSerializer(serializationFactory.createSerializerInstance());
+		ipcProcess.setDelimiter(delimiterFactory.createDelimiter(DelimiterFactory.DIF));
 		
 		ipcProcesses.put(ipcProcessNamingInfo, ipcProcess);
 		return ipcProcess;
