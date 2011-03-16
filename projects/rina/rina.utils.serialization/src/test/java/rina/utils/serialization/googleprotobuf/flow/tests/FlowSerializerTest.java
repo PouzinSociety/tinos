@@ -51,7 +51,7 @@ public class FlowSerializerTest {
 	public void testSerilalization() throws Exception{
 		byte[] serializedFlow = flowSerializer.serialize(flow);
 		for(int i=0; i<serializedFlow.length; i++){
-			System.out.print(serializedFlow[i] + ", ");
+			System.out.print(serializedFlow[i] + " ");
 		}
 		
 		Flow recoveredFlow = (Flow) flowSerializer.deserialize(serializedFlow, Flow.class.toString());
