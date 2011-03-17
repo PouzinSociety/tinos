@@ -99,11 +99,18 @@ public class DIFDelimiter implements Delimiter {
 		int index = 0;
 		List<byte[]> rawSdus = new ArrayList<byte[]>();
 		byte[] currentSdu = null;
+		byte[] candidateVarint = null;
 		int length = 0;
 		int bytes = 0;
 		
 		while(index < delimitedSdusArray.length -1){
-			length = readRawVarint32(index, delimitedSdusArray);
+			candidateVarint = new byte[]{delimitedSdusArray[index], delimitedSdusArray[index+1], 
+											delimitedSdusArray[index+2], delimitedSdusArray[index+3], 
+											delimitedSdusArray[index+4]};
+			length = readVarint32(candidateVarint);
+			if (length == -1){
+				return rawSdus;
+			}
 			bytes = getNumberOfBytes(length);
 			currentSdu = new byte[length];
 			for(int i=0; i<length; i++){
@@ -115,33 +122,66 @@ public class DIFDelimiter implements Delimiter {
 		
 		return rawSdus;
 	}
-
+	
 	/**
-	 * Read a raw Varint from the stream.  If larger than 32 bits, the interpretation 
-	 * of the number will be totally wrong
+	 * Assumes that "byteArray" starts with an encoded varint (encoding an integer of 32 bytes max), and returns the value 
+	 * of this varint. If the byteArray is still not a complete varint, doesn't start with a varint or it is encoding an 
+	 * integer of more than 4 bytes the function will return -1. 
+	 * @param byteArray
+	 * @return the value of the integer encoded as a varint, or -1 if there is not a valid encoded varint32, or -2 if 
+	 * this may be a complete varint32 but still more bytes are needed
 	 */
-	private int readRawVarint32(int index, byte[] delimitedSdusArray) {
-		byte tmp = delimitedSdusArray[index];
+	public int readVarint32(byte[] byteArray){
+		if (byteArray.length > 5){
+			return -1;
+		}
+		
+		byte tmp = byteArray[0];
 		if (tmp >= 0) {
 			return tmp;
 		}
 		int result = tmp & 0x7f;
-		if ((tmp = delimitedSdusArray[index+1]) >= 0) {
+		
+		if (byteArray.length == 1){
+			return -2;
+		}
+		
+		if ((tmp = byteArray[1]) >= 0) {
 			result |= tmp << 7;
 		} else {
 			result |= (tmp & 0x7f) << 7;
-			if ((tmp = delimitedSdusArray[index+2]) >= 0) {
+			
+			if (byteArray.length == 2){
+				return -2;
+			}
+			
+			if ((tmp = byteArray[2]) >= 0) {
 				result |= tmp << 14;
 			} else {
 				result |= (tmp & 0x7f) << 14;
-				if ((tmp = delimitedSdusArray[index+3]) >= 0) {
+				
+				if (byteArray.length == 3){
+					return -2;
+				}
+				
+				if ((tmp = byteArray[3]) >= 0) {
 					result |= tmp << 21;
 				} else {
 					result |= (tmp & 0x7f) << 21;
-					result |= (tmp = delimitedSdusArray[index+4]) << 28;
+					
+					if (byteArray.length == 4){
+						return -2;
+					}
+					
+					if ((tmp = byteArray[4]) >= 0) {
+						result |= tmp << 28;
+					}else{
+						result = -1;
+					}
 				}
 			}
 		}
+		
 		return result;
 	}
 	
