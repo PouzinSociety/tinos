@@ -20,6 +20,10 @@
 		<dependency org="com.google" name="com.google.protobuf" rev="2.3.0" conf="compile->runtime" />
 <!-- RINA Commons API -->
 		<dependency org="org.pouzinsociety.rina" name="rina.commons.api" rev="1.0.0"  conf="compile->runtime" />
+<!-- RINA IPC Service API -->
+		<dependency org="org.pouzinsociety.rina" name="rina.ipcservice.api" rev="1.0.0"  conf="compile->runtime" />
+<!-- RINA Utils Types -->
+		<dependency org="org.pouzinsociety.rina" name="rina.utils.types" rev="1.0.0"  conf="compile->runtime" />
 <!-- Tests -->
 		<dependency org="org.antlr" name="com.springsource.antlr" rev="${org.antlr}" conf="test->runtime" />
 		<dependency org="org.junit" name="com.springsource.org.junit" rev="${org.junit}" conf="test->runtime" />

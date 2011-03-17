@@ -10,12 +10,20 @@ import java.util.List;
 public interface Delimiter {
 	
 	/**
+	 * Takes a single rawSdu and produces a single delimited byte array, consisting in 
+	 * [length][sdu]
+	 * @param rawSdus
+	 * @return
+	 */
+	public byte[] getDelimitedSdu(byte[] rawSdu);
+	
+	/**
 	 * Takes a list of raw sdus and produces a single delimited byte array, consisting in 
 	 * the concatenation of the sdus followed by their encoded length: [length][sdu][length][sdu] ...
 	 * @param rawSdus
 	 * @return
 	 */
-	public byte[] getDilimitedSdus(List<byte[]> rawSdus);
+	public byte[] getDelimitedSdus(List<byte[]> rawSdus);
 	
 	/**
 	 * Takes a delimited byte array ([length][sdu][length][sdu] ..) and extracts the sdus

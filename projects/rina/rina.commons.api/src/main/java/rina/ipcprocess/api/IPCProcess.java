@@ -3,11 +3,13 @@ package rina.ipcprocess.api;
 import java.util.List;
 
 import rina.cdap.api.CDAPSessionFactory;
+import rina.delimiting.api.Delimiter;
 import rina.efcp.api.DataTransferAE;
 import rina.flowallocator.api.FlowAllocator;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.rmt.api.RMT;
+import rina.serialization.api.Serializer;
 
 /**
  * Represents an IPC Process. Holds together the different components of the IPC 
@@ -54,6 +56,14 @@ public interface IPCProcess {
 	public CDAPSessionFactory getCDAPSessionFactory();
 	
 	public void setCDAPSessionFactory(CDAPSessionFactory cdapSessionFactory);
+	
+	public Serializer getSerializer();
+	
+	public void setSerializer(Serializer serializer);
+	
+	public Delimiter getDelimiter();
+	
+	public void setDelimiter(Delimiter delimiter);
 	
 	/**
 	 * Lifecicle event, invoked to tell the IPC process it is about to be destroyed.

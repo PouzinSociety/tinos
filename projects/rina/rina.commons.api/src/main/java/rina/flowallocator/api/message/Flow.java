@@ -82,7 +82,7 @@ public class Flow {
 	/**
 	 * TODO this is just a placeHolder for this piece of data
 	 */
-	private String accessControl = null;
+	private byte[] accessControl = null;
 	
 	/**
 	 * Maximum number of retries to create the flow before giving up.
@@ -98,7 +98,7 @@ public class Flow {
 	 * While the search rules that generate the forwarding table should allow for a 
 	 * natural termination condition, it seems wise to have the means to enforce termination.
 	 */  
-	private Unsigned hopCount = null;
+	private int hopCount = 0;
 
 	public ApplicationProcessNamingInfo getSourceNamingInfo() {
 		return sourceNamingInfo;
@@ -197,11 +197,11 @@ public class Flow {
 		this.policyParameters = policyParameters;
 	}
 
-	public String getAccessControl() {
+	public byte[] getAccessControl() {
 		return accessControl;
 	}
 
-	public void setAccessControl(String accessControl) {
+	public void setAccessControl(byte[] accessControl) {
 		this.accessControl = accessControl;
 	}
 
@@ -221,11 +221,11 @@ public class Flow {
 		this.createFlowRetries = createFlowRetries;
 	}
 
-	public Unsigned getHopCount() {
+	public int getHopCount() {
 		return hopCount;
 	}
 
-	public void setHopCount(Unsigned hopCount) {
+	public void setHopCount(int hopCount) {
 		this.hopCount = hopCount;
 	}
 }

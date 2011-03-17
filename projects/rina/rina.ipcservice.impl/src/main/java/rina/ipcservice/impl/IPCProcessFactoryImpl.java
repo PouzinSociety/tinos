@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import rina.cdap.api.CDAPSessionFactory;
+import rina.delimiting.api.DelimiterFactory;
 import rina.efcp.api.DataTransferAEFactory;
 import rina.flowallocator.api.FlowAllocatorFactory;
 import rina.ipcprocess.api.IPCProcess;
@@ -11,6 +12,7 @@ import rina.ipcprocess.api.IPCProcessFactory;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBDaemonFactory;
 import rina.rmt.api.RMTFactory;
+import rina.serialization.api.SerializationFactory;
 
 public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	
@@ -44,6 +46,16 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	 */
 	private CDAPSessionFactory cdapSessionFactory = null;
 	
+	/**
+	 * Factory of serializers
+	 */
+	private SerializationFactory serializationFactory = null;
+	
+	/**
+	 * Factory of delimiters
+	 */
+	private DelimiterFactory delimiterFactory = null;
+	
 	public IPCProcessFactoryImpl(){
 		ipcProcesses = new HashMap<ApplicationProcessNamingInfo, IPCProcess>();
 	}
@@ -67,6 +79,14 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	public void setCDAPSessionFactory(CDAPSessionFactory cdapSessionFactory){
 		this.cdapSessionFactory = cdapSessionFactory;
 	}
+	
+	public void setSerializationFactory(SerializationFactory serializationFactory){
+		this.serializationFactory = serializationFactory;
+	}
+
+	public void setDelimiterFactory(DelimiterFactory delimiterFactory) {
+		this.delimiterFactory = delimiterFactory;
+	}
 
 	public IPCProcess createIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
 		IPCProcess ipcProcess = new IPCProcessImpl(ipcProcessNamingInfo);
@@ -76,6 +96,8 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		ipcProcess.setRibDaemon(ribDaemonFactory.createRIBDaemon(ipcProcessNamingInfo));
 		ipcProcess.setRmt(rmtFactory.createRMT(ipcProcessNamingInfo));
 		ipcProcess.setCDAPSessionFactory(cdapSessionFactory);
+		ipcProcess.setSerializer(serializationFactory.createSerializerInstance());
+		ipcProcess.setDelimiter(delimiterFactory.createDelimiter(DelimiterFactory.DIF));
 		
 		ipcProcesses.put(ipcProcessNamingInfo, ipcProcess);
 		return ipcProcess;
