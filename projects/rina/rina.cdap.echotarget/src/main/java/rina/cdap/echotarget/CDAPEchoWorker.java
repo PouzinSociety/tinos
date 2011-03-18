@@ -156,8 +156,7 @@ public class CDAPEchoWorker implements Runnable {
 	}
 	
 	private CDAPMessage getMConnectResponse(CDAPMessage cdapMessage) throws CDAPException{
-		return CDAPMessage.getOpenConnectionResponseMessage(cdapMessage.getAbsSyntax(), 
-				cdapMessage.getAuthMech(), cdapMessage.getAuthValue(), cdapMessage.getSrcAEInst(), cdapMessage.getSrcAEName(), 
+		return CDAPMessage.getOpenConnectionResponseMessage(cdapMessage.getAuthMech(), cdapMessage.getAuthValue(), cdapMessage.getSrcAEInst(), cdapMessage.getSrcAEName(), 
 				cdapMessage.getSrcApInst(), cdapMessage.getSrcApName(), 0, null, cdapMessage.getDestAEInst(), 
 				cdapMessage.getDestAEName(), cdapMessage.getDestApInst(), cdapMessage.getDestApName(), (int)cdapMessage.getVersion());
 	}

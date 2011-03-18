@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RINA CDAP Echo Target
+Bundle-SymbolicName: rina.cdap.echotarget
+Bundle-Version: 1.0.0
+Bundle-Vendor: Pouzin Society
+Import-Package: org.apache.commons.logging;version="1.1.1", rina.cdap.api;version="1.0.0", rina.cdap.api.message;version="1.0.0", rina.cdap.impl;version="1.0.0", rina.cdap.impl.googleprotobuf;version="1.0.0", rina.delimiting.api;version="1.0.0", rina.delimiting.impl;version="1.0.0"

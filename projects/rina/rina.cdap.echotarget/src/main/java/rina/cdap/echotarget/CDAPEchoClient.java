@@ -76,7 +76,7 @@ public class CDAPEchoClient {
 			clientSocket = new Socket(host, port);
 			
 			//1 Create an M_CONNECT message, delimit it and send it to the CDAP Echo Target
-			CDAPMessage message = CDAPMessage.getOpenConnectionRequestMessage(0, AuthTypes.AUTH_NONE, null, null, "mock", null, "B", "234", "mock", "123", "A", 0);
+			CDAPMessage message = CDAPMessage.getOpenConnectionRequestMessage(AuthTypes.AUTH_NONE, null, null, "mock", null, "B", "234", "mock", "123", "A", 0);
 			byte[] serializedCDAPMessage = cdapSession.serializeNextMessageToBeSent(message);
 			byte[] delimitedSdu = delimiter.getDelimitedSdu(serializedCDAPMessage);
 			clientSocket.getOutputStream().write(delimitedSdu);
@@ -183,11 +183,11 @@ public class CDAPEchoClient {
 			case M_RELEASE_R:
 				log.info("CDAP Session terminated. Client stopping");
 				end = true;
-				break;
+				return;
 			default:
 				log.info("Received a response message, it is not for me");
 				end = true;
-				break;
+				return;
 			}
 			
 			serializedCDAPMessageToBeSend = cdapSession.serializeNextMessageToBeSent(outgoingCDAPMessage);

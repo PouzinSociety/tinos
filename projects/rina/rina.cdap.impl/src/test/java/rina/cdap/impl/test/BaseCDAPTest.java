@@ -25,12 +25,12 @@ public abstract class BaseCDAPTest {
 		byte[] message = null;
 		CDAPMessage cdapMessage = null;
 		
-		cdapMessage = CDAPMessage.getOpenConnectionRequestMessage(0, AuthTypes.AUTH_NONE, null, null, "mock", null, "B", "234", "mock", "123", "A", 0);
+		cdapMessage = CDAPMessage.getOpenConnectionRequestMessage(AuthTypes.AUTH_NONE, null, null, "mock", null, "B", "234", "mock", "123", "A", 0);
 		message = sendingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 		
 		cdapMessage = receivingCDAPSession.messageReceived(message);
-		cdapMessage = CDAPMessage.getOpenConnectionResponseMessage(0, AuthTypes.AUTH_NONE, null, "234", "mock", "123", "A", 0, null, "899", "mock", "677", "B", 0);
+		cdapMessage = CDAPMessage.getOpenConnectionResponseMessage(AuthTypes.AUTH_NONE, null, "234", "mock", "123", "A", 0, null, "899", "mock", "677", "B", 0);
 		message = receivingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
 		receivingCDAPSession.messageSent(cdapMessage);
 		

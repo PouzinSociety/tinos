@@ -36,7 +36,7 @@ public class CDAPEchoServer {
 	
 	private static final Log log = LogFactory.getLog(CDAPEchoServer.class);
 	
-	private static final int DEFAULTPORT = 32767;
+	public static final int DEFAULTPORT = 32767;
 	
 	/**
 	 * The maximum number of worker threads in the CDAP Echo Server thread pool
@@ -119,15 +119,17 @@ public class CDAPEchoServer {
 	}
 	
 	/**
-	 * Creates and runs an instance of the CDAP Echo Server
-	 * @param args
+	 * Returns a new instance of a CDAP Echo server that will listen at port «port«
+	 * The server is not started yet, the 'run' operation has to be called (blocking)
+	 * @param port
+	 * @return
 	 */
-	public static void main(String args[]){
+	public static CDAPEchoServer getNewInstance(int port){
 		CDAPSessionFactoryImpl cdapSessionFactory = new CDAPSessionFactoryImpl();
 		WireMessageProviderFactory wmpFactory = new GoogleProtocolBufWireMessageProviderFactory();
 		cdapSessionFactory.setWireMessageProviderFactory(wmpFactory);
 		DelimiterFactory delimiterFactory = new DelimiterFactoryImpl();
-		CDAPEchoServer cdapEchoServer = new CDAPEchoServer(cdapSessionFactory, delimiterFactory, DEFAULTPORT);
-		cdapEchoServer.run();
+		CDAPEchoServer cdapEchoServer = new CDAPEchoServer(cdapSessionFactory, delimiterFactory, port);
+		return cdapEchoServer;
 	}
 }
