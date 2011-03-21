@@ -76,10 +76,11 @@ public class CDAPEchoClient {
 			clientSocket = new Socket(host, port);
 			
 			//1 Create an M_CONNECT message, delimit it and send it to the CDAP Echo Target
-			CDAPMessage message = CDAPMessage.getOpenConnectionRequestMessage(AuthTypes.AUTH_NONE, null, null, "mock", null, "B", "234", "mock", "123", "A", 0);
+			CDAPMessage message = CDAPMessage.getOpenConnectionRequestMessage(AuthTypes.AUTH_NONE, null, null, "mock", null, "B", 15, "234", "mock", "123", "A", 1);
 			byte[] serializedCDAPMessage = cdapSession.serializeNextMessageToBeSent(message);
 			byte[] delimitedSdu = delimiter.getDelimitedSdu(serializedCDAPMessage);
 			clientSocket.getOutputStream().write(delimitedSdu);
+			log.info("Sent SDU:" + printBytes(delimitedSdu));
 			cdapSession.messageSent(message);
 			serializedCDAPMessage = null;
 			
@@ -194,6 +195,7 @@ public class CDAPEchoClient {
 			log.info("Sending CDAP message: "+outgoingCDAPMessage.toString());
 			delimitedSdu = delimiter.getDelimitedSdu(serializedCDAPMessageToBeSend);
 			clientSocket.getOutputStream().write(delimitedSdu);
+			log.info("Sent SDU:" + printBytes(delimitedSdu));
 			cdapSession.messageSent(outgoingCDAPMessage);
 		} catch (CDAPException ex) {
 			// TODO Auto-generated catch block

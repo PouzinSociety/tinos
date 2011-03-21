@@ -40,7 +40,7 @@ public class CDAPMessageValidator{
 	}
 	
 	private static void validateAbsSyntax(CDAPMessage message) throws CDAPException{
-		if (message.getAbsSyntax() == -1){
+		if (message.getAbsSyntax() == 0){
 			if (message.getOpCode().equals(Opcode.M_CONNECT) || message.getOpCode().equals(Opcode.M_CONNECT_R)){
 				throw new CDAPException("AbsSyntax must be set for M_CONNECT and M_CONNECT_R messages");
 			}
@@ -117,10 +117,8 @@ public class CDAPMessageValidator{
 	}
 	
 	private static void validateInvokeID(CDAPMessage message) throws CDAPException{
-		if (message.getInvokeID() != 0){
-			if (message.getOpCode().equals(Opcode.M_CONNECT) || message.getOpCode().equals(Opcode.M_CONNECT_R)){
-				throw new CDAPException("The invoke id parameter cannot be set for M_CREATE and M_CREATE_R messages");
-			}
+		if (message.getInvokeID() == 0){
+			throw new CDAPException("The invoke id parameter must be set for all messages");
 		}
 	}
 	
@@ -133,9 +131,10 @@ public class CDAPMessageValidator{
 					&& !message.getOpCode().equals(Opcode.M_DELETE) && !message.getOpCode().equals(Opcode.M_DELETE_R)
 					&& !message.getOpCode().equals(Opcode.M_READ) && !message.getOpCode().equals(Opcode.M_READ_R)
 					&& !message.getOpCode().equals(Opcode.M_WRITE) && !message.getOpCode().equals(Opcode.M_WRITE_R) 
-					&& !message.getOpCode().equals(Opcode.M_START) && !message.getOpCode().equals(Opcode.M_STOP)){
+					&& !message.getOpCode().equals(Opcode.M_START) && !message.getOpCode().equals(Opcode.M_STOP)
+					&& !message.getOpCode().equals(Opcode.M_START_R) && !message.getOpCode().equals(Opcode.M_STOP_R)){
 				throw new CDAPException("The objClass parameter can only be set for M_CREATE, M_CREATE_R, M_DELETE, M_DELETE_R, " +
-				"M_READ, M_READ_R, M_WRITE, M_WRITE_R, M_START and M_STOP messages");
+				"M_READ, M_READ_R, M_WRITE, M_WRITE_R, M_START, M_STOP, M_START_R, M_STOP_R messages");
 			}
 		}
 	}
@@ -162,9 +161,10 @@ public class CDAPMessageValidator{
 					&& !message.getOpCode().equals(Opcode.M_DELETE) && !message.getOpCode().equals(Opcode.M_DELETE_R)
 					&& !message.getOpCode().equals(Opcode.M_READ) && !message.getOpCode().equals(Opcode.M_READ_R)
 					&& !message.getOpCode().equals(Opcode.M_WRITE) && !message.getOpCode().equals(Opcode.M_WRITE_R) 
-					&& !message.getOpCode().equals(Opcode.M_START) && !message.getOpCode().equals(Opcode.M_STOP)){
+					&& !message.getOpCode().equals(Opcode.M_START) && !message.getOpCode().equals(Opcode.M_STOP)
+					&& !message.getOpCode().equals(Opcode.M_START_R) && !message.getOpCode().equals(Opcode.M_STOP_R)){
 				throw new CDAPException("The objNa,e parameter can only be set for M_CREATE, M_CREATE_R, M_DELETE, M_DELETE_R, " +
-				"M_READ, M_READ_R, M_WRITE, M_WRITE_R, M_START and M_STOP messages");
+				"M_READ, M_READ_R, M_WRITE, M_WRITE_R, M_START, M_STOP, M_START_R and M_STOP_R messages");
 			}
 		}
 	}
@@ -172,7 +172,7 @@ public class CDAPMessageValidator{
 	private static void validateObjValue(CDAPMessage message) throws CDAPException{
 		if (message.getObjValue() == null){
 			if (message.getOpCode().equals(Opcode.M_READ_R) || message.getOpCode().equals(Opcode.M_WRITE)){
-				throw new CDAPException("The objValue parameter cannot be set for M_READ_R and M_WRITE messages");
+				throw new CDAPException("The objValue parameter must be set for M_READ_R and M_WRITE messages");
 			}
 		}else{
 			if (!message.getOpCode().equals(Opcode.M_CREATE) && !message.getOpCode().equals(Opcode.M_CREATE_R)
@@ -220,28 +220,22 @@ public class CDAPMessageValidator{
 	
 	private static void validateSrcAEInst(CDAPMessage message) throws CDAPException{
 		if (message.getSrcAEInst() != null){
-			if (!message.getOpCode().equals(Opcode.M_CONNECT) && !message.getOpCode().equals(Opcode.M_CONNECT_R) 
-					&& !message.getOpCode().equals(Opcode.M_RELEASE) && !message.getOpCode().equals(Opcode.M_RELEASE_R)){
-				throw new CDAPException("SrcAEInst can only be set for M_CONNECT, M_CONNECT_R, M_RELEASE and M_RELEASE_R messages");
-			}
-		}else{
-			if (message.getOpCode().equals(Opcode.M_RELEASE)){
-				throw new CDAPException("SrcAEInst must be set for M_RELEASE messages");
+			if (!message.getOpCode().equals(Opcode.M_CONNECT) && !message.getOpCode().equals(Opcode.M_CONNECT_R)){
+				throw new CDAPException("SrcAEInst can only be set for M_CONNECT and M_CONNECT_R messages");
 			}
 		}
 	}
 	
 	private static void validateSrcAEName(CDAPMessage message) throws CDAPException{
 		if (message.getSrcAEName() == null){
-			if (message.getOpCode().equals(Opcode.M_CONNECT) || message.getOpCode().equals(Opcode.M_RELEASE)){ 
-				throw new CDAPException("SrcAEName must be set for M_CONNECT and M_RELEASE messages");
+			if (message.getOpCode().equals(Opcode.M_CONNECT)){ 
+				throw new CDAPException("SrcAEName must be set for M_CONNECT");
 			}else if (message.getOpCode().equals(Opcode.M_CONNECT_R)){
 				//TODO not sure what to do
 			}
 		}else{
-			if (!message.getOpCode().equals(Opcode.M_CONNECT) && !message.getOpCode().equals(Opcode.M_CONNECT_R)
-					&& !message.getOpCode().equals(Opcode.M_RELEASE) && !message.getOpCode().equals(Opcode.M_RELEASE_R)){
-				throw new CDAPException("SrcAEName can only be set for M_CONNECT, M_CONNECT_R, M_RELEASE and M_RELEASE_R messages");
+			if (!message.getOpCode().equals(Opcode.M_CONNECT) && !message.getOpCode().equals(Opcode.M_CONNECT_R)){
+				throw new CDAPException("SrcAEName can only be set for M_CONNECT and M_CONNECT_R messages");
 			}
 		}
 	}
@@ -269,7 +263,7 @@ public class CDAPMessageValidator{
 	}
 	
 	private static void validateVersion(CDAPMessage message) throws CDAPException{
-		if (message.getVersion() == -1){
+		if (message.getVersion() == 0){
 			if (message.getOpCode().equals(Opcode.M_CONNECT) || message.getOpCode().equals(Opcode.M_CONNECT_R)){ 
 				throw new CDAPException("Version must be set for M_CONNECT and M_CONNECT_R messages");
 			}
