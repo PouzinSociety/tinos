@@ -76,13 +76,7 @@ public class CDAPMessageValidator{
 	}
 	
 	private static void validateDestAEName(CDAPMessage message) throws CDAPException{
-		if (message.getDestAEName() == null){
-			if (message.getOpCode().equals(Opcode.M_CONNECT)){ 
-				throw new CDAPException("DestAEName must be set for the M_CONNECT message");
-			}else if (message.getOpCode().equals(Opcode.M_CONNECT_R)){
-				//TODO not sure what to do
-			}
-		}else{
+		if (message.getDestAEName() != null){
 			if (!message.getOpCode().equals(Opcode.M_CONNECT) && !message.getOpCode().equals(Opcode.M_CONNECT_R)){
 				throw new CDAPException("DestAEName can only be set for M_CONNECT and M_CONNECT_R messages");
 			}

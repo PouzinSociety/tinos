@@ -31,7 +31,7 @@ public class CDAPEchoClient {
 	
 	private static final int DEFAULTPORT = 32767;
 	
-	private static final String DEFAULTHOST = "localhost";
+	private static final String DEFAULTHOST = "trianetworksystems.dyndns.org";
 	
 	/**
 	 * The cdap session
@@ -81,6 +81,7 @@ public class CDAPEchoClient {
 			byte[] delimitedSdu = delimiter.getDelimitedSdu(serializedCDAPMessage);
 			clientSocket.getOutputStream().write(delimitedSdu);
 			cdapSession.messageSent(message);
+			serializedCDAPMessage = null;
 			
 			//2 Enter the loop to wait for response messages, and continue the message exchange while possible
 			byte nextByte = 0;
@@ -157,7 +158,6 @@ public class CDAPEchoClient {
 		try {
 			incomingCDAPMessage = cdapSession.messageReceived(serializedCDAPMessage);
 			log.info("Received CDAP message: "+incomingCDAPMessage.toString());
-			//TODO
 			switch (incomingCDAPMessage.getOpCode()){
 			case M_CONNECT_R:
 				outgoingCDAPMessage = getMCreateMessage(incomingCDAPMessage);
@@ -253,7 +253,7 @@ public class CDAPEchoClient {
 	private String printBytes(byte[] message){
 		String result = "";
 		for(int i=0; i<message.length; i++){
-			result = result + message[i] + " ";
+			result = result + String.format("%02X", message[i]) + " ";
 		}
 		
 		return result;

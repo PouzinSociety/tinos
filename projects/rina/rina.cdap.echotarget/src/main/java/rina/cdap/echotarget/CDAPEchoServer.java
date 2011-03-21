@@ -105,7 +105,7 @@ public class CDAPEchoServer {
 			log.info("Waiting for incoming TCP connections on port "+port);
 			while(true){
 				Socket socket = serverSocket.accept();
-				log.info("Got a new request");
+				log.info("Got a new request from "+socket.getInetAddress().getHostAddress());
 				CDAPSession cdapSession = cdapSessionFactory.createCDAPSession();
 				Delimiter delimiter = delimiterFactory.createDelimiter(DelimiterFactory.DIF);
 				CDAPEchoWorker cdapEchoWorker = new CDAPEchoWorker(socket, cdapSession, delimiter);

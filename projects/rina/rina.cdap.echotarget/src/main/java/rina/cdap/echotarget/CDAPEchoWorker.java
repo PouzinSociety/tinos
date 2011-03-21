@@ -201,7 +201,7 @@ public class CDAPEchoWorker implements Runnable {
 	private String printBytes(byte[] message){
 		String result = "";
 		for(int i=0; i<message.length; i++){
-			result = result + message[i] + " ";
+			result = result + String.format("%02X", message[i]) + " ";
 		}
 		
 		return result;
