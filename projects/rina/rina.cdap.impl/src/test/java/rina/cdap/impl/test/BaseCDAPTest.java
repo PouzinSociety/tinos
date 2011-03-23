@@ -41,12 +41,12 @@ public abstract class BaseCDAPTest {
 		byte[] message = null;
 		CDAPMessage cdapMessage = null;
 		
-		cdapMessage = CDAPMessage.getReleaseConnectionRequestMessage(null, 1, "234", "mock");
+		cdapMessage = CDAPMessage.getReleaseConnectionRequestMessage(null, 1);
 		message = sendingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 		
 		cdapMessage = receivingCDAPSession.messageReceived(message);
-		cdapMessage = CDAPMessage.getReleaseConnectionResponseMessage(null, 1, 0, null, "899", "mock");
+		cdapMessage = CDAPMessage.getReleaseConnectionResponseMessage(null, 1, 0, null);
 		message = receivingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
 		receivingCDAPSession.messageSent(cdapMessage);
 		
@@ -57,7 +57,7 @@ public abstract class BaseCDAPTest {
 		byte[] message = null;
 		CDAPMessage cdapMessage = null;
 		
-		cdapMessage = CDAPMessage.getReleaseConnectionRequestMessage(null, 0, "234", "mock");
+		cdapMessage = CDAPMessage.getReleaseConnectionRequestMessage(null, 0);
 		message = sendingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 		

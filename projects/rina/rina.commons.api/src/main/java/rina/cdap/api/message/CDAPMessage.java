@@ -251,28 +251,23 @@ public class CDAPMessage implements Serializable{
 		return cdapMessage;
 	}
 	
-	public static CDAPMessage getReleaseConnectionRequestMessage(Flags flags, int invokeID, 
-			String srcAEInst, String srcAEName) throws CDAPException{
+	public static CDAPMessage getReleaseConnectionRequestMessage(Flags flags, int invokeID) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFlags(flags);
 		cdapMessage.setInvokeID(invokeID);
 		cdapMessage.setOpCode(Opcode.M_RELEASE);
-		cdapMessage.setSrcAEInst(srcAEInst);
-		cdapMessage.setSrcAEName(srcAEName);
 		CDAPMessageValidator.validate(cdapMessage);
 		return cdapMessage;
 	}
 	
 	public static CDAPMessage getReleaseConnectionResponseMessage(Flags flags, int invokeID,  
-			int result, String resultReason, String srcAEInst, String srcAEName) throws CDAPException{
+			int result, String resultReason) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFlags(flags);
 		cdapMessage.setInvokeID(invokeID);
 		cdapMessage.setOpCode(Opcode.M_RELEASE_R);
 		cdapMessage.setResult(result);
 		cdapMessage.setResultReason(resultReason);
-		cdapMessage.setSrcAEInst(srcAEInst);
-		cdapMessage.setSrcAEName(srcAEName);
 		CDAPMessageValidator.validate(cdapMessage);
 		return cdapMessage;
 	}

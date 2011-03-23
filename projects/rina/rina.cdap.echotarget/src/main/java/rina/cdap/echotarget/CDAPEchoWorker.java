@@ -188,7 +188,7 @@ public class CDAPEchoWorker implements Runnable {
 	}
 	
 	private CDAPMessage getMReleaseResponse(CDAPMessage cdapMessage) throws CDAPException{
-		return CDAPMessage.getReleaseConnectionResponseMessage(cdapMessage.getFlags(), cdapMessage.getInvokeID(), 0, "", null, null);
+		return CDAPMessage.getReleaseConnectionResponseMessage(cdapMessage.getFlags(), cdapMessage.getInvokeID(), 0, "");
 	}
 	
 	private CDAPMessage getMReadResponse(CDAPMessage cdapMessage) throws CDAPException{

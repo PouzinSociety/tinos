@@ -171,8 +171,11 @@ public class CDAPMessageValidator{
 	
 	private static void validateObjValue(CDAPMessage message) throws CDAPException{
 		if (message.getObjValue() == null){
-			if (message.getOpCode().equals(Opcode.M_READ_R) || message.getOpCode().equals(Opcode.M_WRITE)){
-				throw new CDAPException("The objValue parameter must be set for M_READ_R and M_WRITE messages");
+			if (message.getOpCode().equals(Opcode.M_WRITE)){
+				throw new CDAPException("The objValue parameter must be set for M_WRITE messages");
+			}
+			if (message.getOpCode().equals(Opcode.M_READ_R) && message.getResult() == 0){
+				throw new CDAPException("The objValue parameter must be set for M_READ_R messages, if the operation was successful");
 			}
 		}else{
 			if (!message.getOpCode().equals(Opcode.M_CREATE) && !message.getOpCode().equals(Opcode.M_CREATE_R)

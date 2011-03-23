@@ -80,6 +80,7 @@ public class CDAPEchoClient {
 			byte[] serializedCDAPMessage = cdapSession.serializeNextMessageToBeSent(message);
 			byte[] delimitedSdu = delimiter.getDelimitedSdu(serializedCDAPMessage);
 			clientSocket.getOutputStream().write(delimitedSdu);
+			log.info("Sent CDAP Message: "+ message.toString());
 			log.info("Sent SDU:" + printBytes(delimitedSdu));
 			cdapSession.messageSent(message);
 			serializedCDAPMessage = null;
@@ -240,7 +241,7 @@ public class CDAPEchoClient {
 	}
 	
 	private CDAPMessage getMReleaseMessage(CDAPMessage cdapMessage) throws CDAPException{
-		return CDAPMessage.getReleaseConnectionRequestMessage(null, 42, "234", "mock");
+		return CDAPMessage.getReleaseConnectionRequestMessage(null, 42);
 	}
 	
 	public static void main(String[] args){
