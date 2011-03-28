@@ -5,3 +5,4 @@ Bundle-SymbolicName: rina.delimiting.impl
 Bundle-Version: 1.0.0
 Bundle-Vendor: i2CAT
 Import-Package: rina.delimiting.api;version="1.0.0"
+Export-Package: rina.delimiting.impl;version="1.0.0"

@@ -30,6 +30,8 @@ import rina.cdap.api.CDAPMessageValidator;
 public class CDAPMessage implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
+	
+	private static final int ABSTRACT_SYNTAX_VERSION = 0x0073;
 
 	public enum Opcode {M_CONNECT, M_CONNECT_R, M_RELEASE, M_RELEASE_R, M_CREATE, M_CREATE_R, 
 		M_DELETE, M_DELETE_R, M_READ, M_READ_R, M_CANCELREAD, M_CANCELREAD_R, M_WRITE, 
@@ -43,7 +45,7 @@ public class CDAPMessage implements Serializable{
 	 * AbstractSyntaxID (int32), mandatory. The specific version of the 
 	 * CDAP protocol message declarations that the message conforms to 
 	 */
-	private int absSyntax = -1;
+	private int absSyntax = 0;
 	
 	/**
 	 * AuthenticationMechanismName (authtypes), optional, not validated by CDAP. 
@@ -194,17 +196,17 @@ public class CDAPMessage implements Serializable{
 	 * related behaviors that are subject to change over time. See text for details
 	 * of use.
 	 */
-	private long version = -1;
+	private long version = 0;
 	
 	public CDAPMessage(){
 	}
 	
-	public static CDAPMessage getOpenConnectionRequestMessage(int absSyntax, AuthTypes authMech, 
+	public static CDAPMessage getOpenConnectionRequestMessage(AuthTypes authMech, 
 			AuthValue authValue, String destAEInst, String destAEName, String destApInst,
-			String destApName, String srcAEInst, String srcAEName, String srcApInst,
+			String destApName, int invokeID, String srcAEInst, String srcAEName, String srcApInst,
 			String srcApName, int version) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
-		cdapMessage.setAbsSyntax(absSyntax);
+		cdapMessage.setAbsSyntax(ABSTRACT_SYNTAX_VERSION);
 		cdapMessage.setAuthMech(authMech);
 		cdapMessage.setAuthValue(authValue);
 		cdapMessage.setDestAEInst(destAEInst);
@@ -212,6 +214,7 @@ public class CDAPMessage implements Serializable{
 		cdapMessage.setDestApInst(destApInst);
 		cdapMessage.setDestApInst(destApInst);
 		cdapMessage.setDestApName(destApName);
+		cdapMessage.setInvokeID(invokeID);
 		cdapMessage.setOpCode(Opcode.M_CONNECT);
 		cdapMessage.setSrcAEInst(srcAEInst);
 		cdapMessage.setSrcAEName(srcAEName);
@@ -222,12 +225,12 @@ public class CDAPMessage implements Serializable{
 		return cdapMessage;
 	}
 	
-	public static CDAPMessage getOpenConnectionResponseMessage(int absSyntax, AuthTypes authMech, 
+	public static CDAPMessage getOpenConnectionResponseMessage(AuthTypes authMech, 
 			AuthValue authValue, String destAEInst, String destAEName, String destApInst,
-			String destApName, int result, String resultReason, String srcAEInst, String srcAEName, 
+			String destApName, int invokeID, int result, String resultReason, String srcAEInst, String srcAEName, 
 			String srcApInst, String srcApName, int version) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
-		cdapMessage.setAbsSyntax(absSyntax);
+		cdapMessage.setAbsSyntax(ABSTRACT_SYNTAX_VERSION);
 		cdapMessage.setAuthMech(authMech);
 		cdapMessage.setAuthValue(authValue);
 		cdapMessage.setDestAEInst(destAEInst);
@@ -235,6 +238,7 @@ public class CDAPMessage implements Serializable{
 		cdapMessage.setDestApInst(destApInst);
 		cdapMessage.setDestApInst(destApInst);
 		cdapMessage.setDestApName(destApName);
+		cdapMessage.setInvokeID(invokeID);
 		cdapMessage.setOpCode(Opcode.M_CONNECT_R);
 		cdapMessage.setResult(result);
 		cdapMessage.setResultReason(resultReason);
@@ -247,28 +251,23 @@ public class CDAPMessage implements Serializable{
 		return cdapMessage;
 	}
 	
-	public static CDAPMessage getReleaseConnectionRequestMessage(Flags flags, int invokeID, 
-			String srcAEInst, String srcAEName) throws CDAPException{
+	public static CDAPMessage getReleaseConnectionRequestMessage(Flags flags, int invokeID) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFlags(flags);
 		cdapMessage.setInvokeID(invokeID);
 		cdapMessage.setOpCode(Opcode.M_RELEASE);
-		cdapMessage.setSrcAEInst(srcAEInst);
-		cdapMessage.setSrcAEName(srcAEName);
 		CDAPMessageValidator.validate(cdapMessage);
 		return cdapMessage;
 	}
 	
 	public static CDAPMessage getReleaseConnectionResponseMessage(Flags flags, int invokeID,  
-			int result, String resultReason, String srcAEInst, String srcAEName) throws CDAPException{
+			int result, String resultReason) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFlags(flags);
 		cdapMessage.setInvokeID(invokeID);
 		cdapMessage.setOpCode(Opcode.M_RELEASE_R);
 		cdapMessage.setResult(result);
 		cdapMessage.setResultReason(resultReason);
-		cdapMessage.setSrcAEInst(srcAEInst);
-		cdapMessage.setSrcAEName(srcAEName);
 		CDAPMessageValidator.validate(cdapMessage);
 		return cdapMessage;
 	}

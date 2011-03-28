@@ -120,12 +120,15 @@ public class CDAPSessionImpl implements CDAPSession{
 			case M_READ_R:
 				checkIsConnected();
 				checkCanSendOrReceiveResponse(cdapMessage, Opcode.M_READ, true);
+				break;
 			case M_CANCELREAD:
 				checkIsConnected();
 				checkCanSendOrReceiveCancelReadRequest(cdapMessage, true);
+				break;
 			case M_CANCELREAD_R:
 				checkIsConnected();
 				checkCanSendOrReceiveCancelReadResponse(cdapMessage, true);
+				break;
 			default:
 				throw new CDAPException("Unrecognized operation code: "+cdapMessage.getOpCode().toString());	
 		}

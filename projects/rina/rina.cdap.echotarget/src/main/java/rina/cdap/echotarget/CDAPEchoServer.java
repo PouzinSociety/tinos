@@ -1,4 +1,4 @@
-package rina.cdap.impl.utils;
+package rina.cdap.echotarget;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -11,6 +11,12 @@ import org.apache.commons.logging.LogFactory;
 
 import rina.cdap.api.CDAPSession;
 import rina.cdap.api.CDAPSessionFactory;
+import rina.cdap.impl.CDAPSessionFactoryImpl;
+import rina.cdap.impl.WireMessageProviderFactory;
+import rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory;
+import rina.delimiting.api.Delimiter;
+import rina.delimiting.api.DelimiterFactory;
+import rina.delimiting.impl.DelimiterFactoryImpl;
 
 /**
  * CDAP echo target.  This is a very basic CDAP/GPB test process listening on an Internet port for a TCP connection.  
@@ -30,6 +36,8 @@ public class CDAPEchoServer {
 	
 	private static final Log log = LogFactory.getLog(CDAPEchoServer.class);
 	
+	public static final int DEFAULTPORT = 32767;
+	
 	/**
 	 * The maximum number of worker threads in the CDAP Echo Server thread pool
 	 */
@@ -39,6 +47,11 @@ public class CDAPEchoServer {
 	 * The factory to create/remove CDAP sessions
 	 */
 	private CDAPSessionFactory cdapSessionFactory = null;
+	
+	/**
+	 * The delimiter factory for the sessions
+	 */
+	private DelimiterFactory delimiterFactory = null;
 	
 	/**
 	 * The TCP port to listen for incoming connections
@@ -55,9 +68,10 @@ public class CDAPEchoServer {
 	 */
 	private ExecutorService executorService = null;
 	
-	public CDAPEchoServer(CDAPSessionFactory cdapSessionFactory, int port){
+	public CDAPEchoServer(CDAPSessionFactory cdapSessionFactory, DelimiterFactory delimiterFactory, int port){
 		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
 		this.cdapSessionFactory = cdapSessionFactory;
+		this.delimiterFactory = delimiterFactory;
 		this.port = port;
 	}
 
@@ -67,6 +81,14 @@ public class CDAPEchoServer {
 
 	public void setCdapSessionFactory(CDAPSessionFactory cdapSessionFactory) {
 		this.cdapSessionFactory = cdapSessionFactory;
+	}
+	
+	public DelimiterFactory getDelimiterFactory() {
+		return delimiterFactory;
+	}
+
+	public void setDelimiterFactory(DelimiterFactory delimiterFactory) {
+		this.delimiterFactory = delimiterFactory;
 	}
 
 	public int getPort() {
@@ -83,9 +105,10 @@ public class CDAPEchoServer {
 			log.info("Waiting for incoming TCP connections on port "+port);
 			while(true){
 				Socket socket = serverSocket.accept();
-				log.info("Got a new request");
+				log.info("Got a new request from "+socket.getInetAddress().getHostAddress());
 				CDAPSession cdapSession = cdapSessionFactory.createCDAPSession();
-				CDAPEchoWorker cdapEchoWorker = new CDAPEchoWorker(socket, cdapSession);
+				Delimiter delimiter = delimiterFactory.createDelimiter(DelimiterFactory.DIF);
+				CDAPEchoWorker cdapEchoWorker = new CDAPEchoWorker(socket, cdapSession, delimiter);
 				executorService.execute(cdapEchoWorker);
 			}
 		} catch (IOException e) {
@@ -93,5 +116,20 @@ public class CDAPEchoServer {
 			e.printStackTrace();
 			log.error(e.getMessage());
 		}
+	}
+	
+	/**
+	 * Returns a new instance of a CDAP Echo server that will listen at port «port«
+	 * The server is not started yet, the 'run' operation has to be called (blocking)
+	 * @param port
+	 * @return
+	 */
+	public static CDAPEchoServer getNewInstance(int port){
+		CDAPSessionFactoryImpl cdapSessionFactory = new CDAPSessionFactoryImpl();
+		WireMessageProviderFactory wmpFactory = new GoogleProtocolBufWireMessageProviderFactory();
+		cdapSessionFactory.setWireMessageProviderFactory(wmpFactory);
+		DelimiterFactory delimiterFactory = new DelimiterFactoryImpl();
+		CDAPEchoServer cdapEchoServer = new CDAPEchoServer(cdapSessionFactory, delimiterFactory, port);
+		return cdapEchoServer;
 	}
 }
