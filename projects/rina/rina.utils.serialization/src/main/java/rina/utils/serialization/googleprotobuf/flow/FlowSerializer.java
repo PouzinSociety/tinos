@@ -14,7 +14,8 @@ import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QoSParameters;
 import rina.serialization.api.Serializer;
 import rina.utils.serialization.googleprotobuf.GPBUtils;
-import rina.utils.serialization.googleprotobuf.flow.FlowMessage.applicationProcessNamingInfo_t;
+import rina.utils.serialization.googleprotobuf.apnaminginfo.ApplicationProcessNamingInfoMessage;
+import rina.utils.serialization.googleprotobuf.apnaminginfo.ApplicationProcessNamingInfoMessage.applicationProcessNamingInfo_t;
 import rina.utils.serialization.googleprotobuf.flow.FlowMessage.connectionId_t;
 import rina.utils.serialization.googleprotobuf.flow.FlowMessage.qosParameter_t;
 import rina.utils.types.Unsigned;
@@ -144,7 +145,7 @@ public class FlowSerializer implements Serializer{
 		String apInstance = GPBUtils.getGPBString(apNamingInfo.getApplicationProcessInstance());
 		String aeName = GPBUtils.getGPBString(apNamingInfo.getApplicationEntityName());
 		String aeInstance = GPBUtils.getGPBString(apNamingInfo.getApplicationEntityInstance());
-		applicationProcessNamingInfo_t result = FlowMessage.applicationProcessNamingInfo_t.newBuilder().
+		applicationProcessNamingInfo_t result = ApplicationProcessNamingInfoMessage.applicationProcessNamingInfo_t.newBuilder().
 													setApplicationProcessName(apName).
 													setApplicationProcessInstance(apInstance).
 													setApplicationEntityName(aeName).
