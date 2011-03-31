@@ -1,5 +1,5 @@
 package rina.messages;
-option java_package="rina.utils.serialization.googleprotobuf.policydescriptor";
+option java_package="rina.utils.serialization.googleprotobuf.policy";
 import "protofiles/CommonMessages.proto";
 
 message policyDescriptor_t{											//Describes a policy
