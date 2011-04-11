@@ -1,6 +1,6 @@
 package rina.efcp.impl;
 
-import rina.efcp.api.EFCPConstants;
+import rina.efcp.api.DataTransferConstants;
 import rina.flowallocator.api.Connection;
 import rina.utils.types.Unsigned;
 
@@ -26,12 +26,12 @@ public class DTAEIState {
 	/**
 	 * The maximum length of an SDU for this flow, in bytes
 	 */
-	private int maxFlowSDU = EFCPConstants.maxPDUSize;
+	private int maxFlowSDU = 0;
 	
 	/**
 	 * The maximum length of a PDU for this flow, in bytes
 	 */
-	private int maxFlowPDUSize = EFCPConstants.maxSDUSize;
+	private int maxFlowPDUSize = 0;
 	
 	/**
 	 * The initial sequence number for the PDUs of this flow. It is 
@@ -86,14 +86,16 @@ public class DTAEIState {
 	 */
 	private String closedWindowQueue = null;
 	
-	public DTAEIState(Connection connection){
+	public DTAEIState(Connection connection, DataTransferConstants dataTransferConstants){
 		this.connection = connection;
 		this.reasemblyQeueue = new ReassemblyQueue();
-		this.sequenceNumberRollOverThreshold = new Unsigned(EFCPConstants.SequenceNumberLength);
+		this.sequenceNumberRollOverThreshold = new Unsigned(dataTransferConstants.getSequenceNumberLength());
 		this.sequenceNumberRollOverThreshold.setMaxValue();	
-		this.initialSequenceNumber = new Unsigned(EFCPConstants.SequenceNumberLength, 0x00);
-		this.lastSequenceDelivered = new Unsigned(EFCPConstants.SequenceNumberLength, 0x00);
-		this.nextSequenceToSend = new Unsigned(EFCPConstants.SequenceNumberLength, 0x01);
+		this.initialSequenceNumber = new Unsigned(dataTransferConstants.getSequenceNumberLength(), 0x00);
+		this.lastSequenceDelivered = new Unsigned(dataTransferConstants.getSequenceNumberLength(), 0x00);
+		this.nextSequenceToSend = new Unsigned(dataTransferConstants.getSequenceNumberLength(), 0x01);
+		this.maxFlowSDU = dataTransferConstants.getMaxSDUSize();
+		this.maxFlowPDUSize = dataTransferConstants.getMaxPDUSize();
 	}
 
 	public Connection getConnection() {

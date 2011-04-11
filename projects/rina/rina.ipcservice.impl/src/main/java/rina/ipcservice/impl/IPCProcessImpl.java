@@ -137,6 +137,7 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 
 	public void setDataTransferAE(DataTransferAE dataTransferAE) {
 		this.dataTransferAE = dataTransferAE;
+		dataTransferAE.setIPCProcess(this);
 	}
 
 	public RIBDaemon getRibDaemon() {
@@ -171,6 +172,7 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 	
 	public void setSerializer(Serializer serializer){
 		this.serializer = serializer;
+		serializer.setIPCProcess(this);
 	}
 
 	public Delimiter getDelimiter() {

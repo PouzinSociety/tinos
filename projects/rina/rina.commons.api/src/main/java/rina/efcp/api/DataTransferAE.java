@@ -35,4 +35,16 @@ public interface DataTransferAE extends IPCProcessComponent {
 	 * @return
 	 */
 	public DataTransferAEInstance getDataTransferAEInstance(int portId);
+	
+	/**
+	 * Data Transfer constants associated to the DIF where the IPC process belongs
+	 * @return
+	 */
+	public DataTransferConstants getDataTransferConstants();
+	
+	/**
+	 * Data Transfer constants associated to the DIF where the IPC process belongs
+	 * @param dataTransferConstants
+	 */
+	public void setDataTransferConstants(DataTransferConstants dataTransferConstants);
 }

@@ -56,40 +56,68 @@ public final class DataTransferConstantsMessage {
     public boolean hasPortIdLength() { return hasPortIdLength; }
     public int getPortIdLength() { return portIdLength_; }
     
-    // optional uint32 qosidLength = 4;
-    public static final int QOSIDLENGTH_FIELD_NUMBER = 4;
+    // optional uint32 cepIdLength = 4;
+    public static final int CEPIDLENGTH_FIELD_NUMBER = 4;
+    private boolean hasCepIdLength;
+    private int cepIdLength_ = 0;
+    public boolean hasCepIdLength() { return hasCepIdLength; }
+    public int getCepIdLength() { return cepIdLength_; }
+    
+    // optional uint32 qosidLength = 5;
+    public static final int QOSIDLENGTH_FIELD_NUMBER = 5;
     private boolean hasQosidLength;
     private int qosidLength_ = 0;
     public boolean hasQosidLength() { return hasQosidLength; }
     public int getQosidLength() { return qosidLength_; }
     
-    // optional uint32 sequenceNumberLength = 5;
-    public static final int SEQUENCENUMBERLENGTH_FIELD_NUMBER = 5;
+    // optional uint32 sequenceNumberLength = 6;
+    public static final int SEQUENCENUMBERLENGTH_FIELD_NUMBER = 6;
     private boolean hasSequenceNumberLength;
     private int sequenceNumberLength_ = 0;
     public boolean hasSequenceNumberLength() { return hasSequenceNumberLength; }
     public int getSequenceNumberLength() { return sequenceNumberLength_; }
     
-    // optional uint32 lengthLength = 6;
-    public static final int LENGTHLENGTH_FIELD_NUMBER = 6;
+    // optional uint32 lengthLength = 7;
+    public static final int LENGTHLENGTH_FIELD_NUMBER = 7;
     private boolean hasLengthLength;
     private int lengthLength_ = 0;
     public boolean hasLengthLength() { return hasLengthLength; }
     public int getLengthLength() { return lengthLength_; }
     
-    // optional uint64 seqRolloverThreshold = 7;
-    public static final int SEQROLLOVERTHRESHOLD_FIELD_NUMBER = 7;
+    // optional uint64 seqRolloverThreshold = 8;
+    public static final int SEQROLLOVERTHRESHOLD_FIELD_NUMBER = 8;
     private boolean hasSeqRolloverThreshold;
     private long seqRolloverThreshold_ = 0L;
     public boolean hasSeqRolloverThreshold() { return hasSeqRolloverThreshold; }
     public long getSeqRolloverThreshold() { return seqRolloverThreshold_; }
     
-    // optional uint32 maxPDULifetime = 8;
-    public static final int MAXPDULIFETIME_FIELD_NUMBER = 8;
+    // optional uint32 maxPDULifetime = 9;
+    public static final int MAXPDULIFETIME_FIELD_NUMBER = 9;
     private boolean hasMaxPDULifetime;
     private int maxPDULifetime_ = 0;
     public boolean hasMaxPDULifetime() { return hasMaxPDULifetime; }
     public int getMaxPDULifetime() { return maxPDULifetime_; }
+    
+    // optional bool DIFConcatenation = 10;
+    public static final int DIFCONCATENATION_FIELD_NUMBER = 10;
+    private boolean hasDIFConcatenation;
+    private boolean dIFConcatenation_ = false;
+    public boolean hasDIFConcatenation() { return hasDIFConcatenation; }
+    public boolean getDIFConcatenation() { return dIFConcatenation_; }
+    
+    // optional bool DIFFragmentation = 11;
+    public static final int DIFFRAGMENTATION_FIELD_NUMBER = 11;
+    private boolean hasDIFFragmentation;
+    private boolean dIFFragmentation_ = false;
+    public boolean hasDIFFragmentation() { return hasDIFFragmentation; }
+    public boolean getDIFFragmentation() { return dIFFragmentation_; }
+    
+    // optional bool DIFIntegrity = 12;
+    public static final int DIFINTEGRITY_FIELD_NUMBER = 12;
+    private boolean hasDIFIntegrity;
+    private boolean dIFIntegrity_ = false;
+    public boolean hasDIFIntegrity() { return hasDIFIntegrity; }
+    public boolean getDIFIntegrity() { return dIFIntegrity_; }
     
     private void initFields() {
     }
@@ -109,20 +137,32 @@ public final class DataTransferConstantsMessage {
       if (hasPortIdLength()) {
         output.writeUInt32(3, getPortIdLength());
       }
+      if (hasCepIdLength()) {
+        output.writeUInt32(4, getCepIdLength());
+      }
       if (hasQosidLength()) {
-        output.writeUInt32(4, getQosidLength());
+        output.writeUInt32(5, getQosidLength());
       }
       if (hasSequenceNumberLength()) {
-        output.writeUInt32(5, getSequenceNumberLength());
+        output.writeUInt32(6, getSequenceNumberLength());
       }
       if (hasLengthLength()) {
-        output.writeUInt32(6, getLengthLength());
+        output.writeUInt32(7, getLengthLength());
       }
       if (hasSeqRolloverThreshold()) {
-        output.writeUInt64(7, getSeqRolloverThreshold());
+        output.writeUInt64(8, getSeqRolloverThreshold());
       }
       if (hasMaxPDULifetime()) {
-        output.writeUInt32(8, getMaxPDULifetime());
+        output.writeUInt32(9, getMaxPDULifetime());
+      }
+      if (hasDIFConcatenation()) {
+        output.writeBool(10, getDIFConcatenation());
+      }
+      if (hasDIFFragmentation()) {
+        output.writeBool(11, getDIFFragmentation());
+      }
+      if (hasDIFIntegrity()) {
+        output.writeBool(12, getDIFIntegrity());
       }
       getUnknownFields().writeTo(output);
     }
@@ -145,25 +185,41 @@ public final class DataTransferConstantsMessage {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(3, getPortIdLength());
       }
+      if (hasCepIdLength()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(4, getCepIdLength());
+      }
       if (hasQosidLength()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(4, getQosidLength());
+          .computeUInt32Size(5, getQosidLength());
       }
       if (hasSequenceNumberLength()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(5, getSequenceNumberLength());
+          .computeUInt32Size(6, getSequenceNumberLength());
       }
       if (hasLengthLength()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(6, getLengthLength());
+          .computeUInt32Size(7, getLengthLength());
       }
       if (hasSeqRolloverThreshold()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt64Size(7, getSeqRolloverThreshold());
+          .computeUInt64Size(8, getSeqRolloverThreshold());
       }
       if (hasMaxPDULifetime()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(8, getMaxPDULifetime());
+          .computeUInt32Size(9, getMaxPDULifetime());
+      }
+      if (hasDIFConcatenation()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(10, getDIFConcatenation());
+      }
+      if (hasDIFFragmentation()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(11, getDIFFragmentation());
+      }
+      if (hasDIFIntegrity()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(12, getDIFIntegrity());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -332,6 +388,9 @@ public final class DataTransferConstantsMessage {
         if (other.hasPortIdLength()) {
           setPortIdLength(other.getPortIdLength());
         }
+        if (other.hasCepIdLength()) {
+          setCepIdLength(other.getCepIdLength());
+        }
         if (other.hasQosidLength()) {
           setQosidLength(other.getQosidLength());
         }
@@ -346,6 +405,15 @@ public final class DataTransferConstantsMessage {
         }
         if (other.hasMaxPDULifetime()) {
           setMaxPDULifetime(other.getMaxPDULifetime());
+        }
+        if (other.hasDIFConcatenation()) {
+          setDIFConcatenation(other.getDIFConcatenation());
+        }
+        if (other.hasDIFFragmentation()) {
+          setDIFFragmentation(other.getDIFFragmentation());
+        }
+        if (other.hasDIFIntegrity()) {
+          setDIFIntegrity(other.getDIFIntegrity());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -385,23 +453,39 @@ public final class DataTransferConstantsMessage {
               break;
             }
             case 32: {
-              setQosidLength(input.readUInt32());
+              setCepIdLength(input.readUInt32());
               break;
             }
             case 40: {
-              setSequenceNumberLength(input.readUInt32());
+              setQosidLength(input.readUInt32());
               break;
             }
             case 48: {
-              setLengthLength(input.readUInt32());
+              setSequenceNumberLength(input.readUInt32());
               break;
             }
             case 56: {
-              setSeqRolloverThreshold(input.readUInt64());
+              setLengthLength(input.readUInt32());
               break;
             }
             case 64: {
+              setSeqRolloverThreshold(input.readUInt64());
+              break;
+            }
+            case 72: {
               setMaxPDULifetime(input.readUInt32());
+              break;
+            }
+            case 80: {
+              setDIFConcatenation(input.readBool());
+              break;
+            }
+            case 88: {
+              setDIFFragmentation(input.readBool());
+              break;
+            }
+            case 96: {
+              setDIFIntegrity(input.readBool());
               break;
             }
           }
@@ -463,7 +547,25 @@ public final class DataTransferConstantsMessage {
         return this;
       }
       
-      // optional uint32 qosidLength = 4;
+      // optional uint32 cepIdLength = 4;
+      public boolean hasCepIdLength() {
+        return result.hasCepIdLength();
+      }
+      public int getCepIdLength() {
+        return result.getCepIdLength();
+      }
+      public Builder setCepIdLength(int value) {
+        result.hasCepIdLength = true;
+        result.cepIdLength_ = value;
+        return this;
+      }
+      public Builder clearCepIdLength() {
+        result.hasCepIdLength = false;
+        result.cepIdLength_ = 0;
+        return this;
+      }
+      
+      // optional uint32 qosidLength = 5;
       public boolean hasQosidLength() {
         return result.hasQosidLength();
       }
@@ -481,7 +583,7 @@ public final class DataTransferConstantsMessage {
         return this;
       }
       
-      // optional uint32 sequenceNumberLength = 5;
+      // optional uint32 sequenceNumberLength = 6;
       public boolean hasSequenceNumberLength() {
         return result.hasSequenceNumberLength();
       }
@@ -499,7 +601,7 @@ public final class DataTransferConstantsMessage {
         return this;
       }
       
-      // optional uint32 lengthLength = 6;
+      // optional uint32 lengthLength = 7;
       public boolean hasLengthLength() {
         return result.hasLengthLength();
       }
@@ -517,7 +619,7 @@ public final class DataTransferConstantsMessage {
         return this;
       }
       
-      // optional uint64 seqRolloverThreshold = 7;
+      // optional uint64 seqRolloverThreshold = 8;
       public boolean hasSeqRolloverThreshold() {
         return result.hasSeqRolloverThreshold();
       }
@@ -535,7 +637,7 @@ public final class DataTransferConstantsMessage {
         return this;
       }
       
-      // optional uint32 maxPDULifetime = 8;
+      // optional uint32 maxPDULifetime = 9;
       public boolean hasMaxPDULifetime() {
         return result.hasMaxPDULifetime();
       }
@@ -550,6 +652,60 @@ public final class DataTransferConstantsMessage {
       public Builder clearMaxPDULifetime() {
         result.hasMaxPDULifetime = false;
         result.maxPDULifetime_ = 0;
+        return this;
+      }
+      
+      // optional bool DIFConcatenation = 10;
+      public boolean hasDIFConcatenation() {
+        return result.hasDIFConcatenation();
+      }
+      public boolean getDIFConcatenation() {
+        return result.getDIFConcatenation();
+      }
+      public Builder setDIFConcatenation(boolean value) {
+        result.hasDIFConcatenation = true;
+        result.dIFConcatenation_ = value;
+        return this;
+      }
+      public Builder clearDIFConcatenation() {
+        result.hasDIFConcatenation = false;
+        result.dIFConcatenation_ = false;
+        return this;
+      }
+      
+      // optional bool DIFFragmentation = 11;
+      public boolean hasDIFFragmentation() {
+        return result.hasDIFFragmentation();
+      }
+      public boolean getDIFFragmentation() {
+        return result.getDIFFragmentation();
+      }
+      public Builder setDIFFragmentation(boolean value) {
+        result.hasDIFFragmentation = true;
+        result.dIFFragmentation_ = value;
+        return this;
+      }
+      public Builder clearDIFFragmentation() {
+        result.hasDIFFragmentation = false;
+        result.dIFFragmentation_ = false;
+        return this;
+      }
+      
+      // optional bool DIFIntegrity = 12;
+      public boolean hasDIFIntegrity() {
+        return result.hasDIFIntegrity();
+      }
+      public boolean getDIFIntegrity() {
+        return result.getDIFIntegrity();
+      }
+      public Builder setDIFIntegrity(boolean value) {
+        result.hasDIFIntegrity = true;
+        result.dIFIntegrity_ = value;
+        return this;
+      }
+      public Builder clearDIFIntegrity() {
+        result.hasDIFIntegrity = false;
+        result.dIFIntegrity_ = false;
         return this;
       }
       
@@ -580,14 +736,17 @@ public final class DataTransferConstantsMessage {
   static {
     java.lang.String[] descriptorData = {
       "\n-protofiles/DataTransferConstantsMessag" +
-      "e.proto\022\rrina.messages\"\331\001\n\027dataTransferC" +
+      "e.proto\022\rrina.messages\"\270\002\n\027dataTransferC" +
       "onstants_t\022\022\n\nmaxPDUSize\030\001 \001(\r\022\025\n\raddres" +
-      "sLength\030\002 \001(\r\022\024\n\014portIdLength\030\003 \001(\r\022\023\n\013q" +
-      "osidLength\030\004 \001(\r\022\034\n\024sequenceNumberLength" +
-      "\030\005 \001(\r\022\024\n\014lengthLength\030\006 \001(\r\022\034\n\024seqRollo" +
-      "verThreshold\030\007 \001(\004\022\026\n\016maxPDULifetime\030\010 \001" +
-      "(\rB?\n=rina.utils.serialization.googlepro" +
-      "tobuf.datatransferconstants"
+      "sLength\030\002 \001(\r\022\024\n\014portIdLength\030\003 \001(\r\022\023\n\013c" +
+      "epIdLength\030\004 \001(\r\022\023\n\013qosidLength\030\005 \001(\r\022\034\n" +
+      "\024sequenceNumberLength\030\006 \001(\r\022\024\n\014lengthLen" +
+      "gth\030\007 \001(\r\022\034\n\024seqRolloverThreshold\030\010 \001(\004\022" +
+      "\026\n\016maxPDULifetime\030\t \001(\r\022\030\n\020DIFConcatenat" +
+      "ion\030\n \001(\010\022\030\n\020DIFFragmentation\030\013 \001(\010\022\024\n\014D" +
+      "IFIntegrity\030\014 \001(\010B?\n=rina.utils.serializ",
+      "ation.googleprotobuf.datatransferconstan" +
+      "ts"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -599,7 +758,7 @@ public final class DataTransferConstantsMessage {
           internal_static_rina_messages_dataTransferConstants_t_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rina_messages_dataTransferConstants_t_descriptor,
-              new java.lang.String[] { "MaxPDUSize", "AddressLength", "PortIdLength", "QosidLength", "SequenceNumberLength", "LengthLength", "SeqRolloverThreshold", "MaxPDULifetime", },
+              new java.lang.String[] { "MaxPDUSize", "AddressLength", "PortIdLength", "CepIdLength", "QosidLength", "SequenceNumberLength", "LengthLength", "SeqRolloverThreshold", "MaxPDULifetime", "DIFConcatenation", "DIFFragmentation", "DIFIntegrity", },
               rina.utils.serialization.googleprotobuf.datatransferconstants.DataTransferConstantsMessage.dataTransferConstants_t.class,
               rina.utils.serialization.googleprotobuf.datatransferconstants.DataTransferConstantsMessage.dataTransferConstants_t.Builder.class);
           return null;

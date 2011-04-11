@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import rina.efcp.api.EFCPConstants;
 import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.message.Flow;
+import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QoSParameters;
 import rina.serialization.api.Serializer;
@@ -26,6 +26,12 @@ import rina.utils.types.Unsigned;
  *
  */
 public class FlowSerializer implements Serializer{
+	
+	private IPCProcess ipcProcess = null;
+	
+	public void setIPCProcess(IPCProcess ipcProcess) {
+		this.ipcProcess = ipcProcess;
+	}
 
 	public Object deserialize(byte[] serializedObject, String objectClass) throws Exception {
 		if (objectClass == null || !(objectClass.equals(Flow.class.toString()))){
@@ -37,12 +43,14 @@ public class FlowSerializer implements Serializer{
 		byte[] accessControl = GPBUtils.getByteArray(gpbFlow.getAccessControl());
 		byte[] destinationAddress = GPBUtils.getByteArray(gpbFlow.getDestinationAddress());
 		ApplicationProcessNamingInfo destinationAPName = getApplicationProcessNamingInfo(gpbFlow.getDestinationNamingInfo());
-		Unsigned destinationPortId = new Unsigned(EFCPConstants.PortIdLength, gpbFlow.getDestinationPortId());
+		Unsigned destinationPortId = new Unsigned(ipcProcess.getDataTransferAE().getDataTransferConstants().getPortIdLength(), 
+											gpbFlow.getDestinationPortId());
 		List<ConnectionId> flowIds = getConnectionIds(gpbFlow.getConnectionIdsList());
 		QoSParameters qosParameters = getQoSParameters(gpbFlow.getQosParametersList());
 		byte[] sourceAddress = GPBUtils.getByteArray(gpbFlow.getSourceAddress());
 		ApplicationProcessNamingInfo sourceAPName = getApplicationProcessNamingInfo(gpbFlow.getSourceNamingInfo());
-		Unsigned sourcePortId = new Unsigned(EFCPConstants.PortIdLength, gpbFlow.getSourcePortId());
+		Unsigned sourcePortId = new Unsigned(ipcProcess.getDataTransferAE().getDataTransferConstants().getPortIdLength(), 
+				gpbFlow.getSourcePortId());
 		byte[] status = GPBUtils.getByteArray(gpbFlow.getState());
 		
 		Flow flow = new Flow();
@@ -89,9 +97,12 @@ public class FlowSerializer implements Serializer{
 	
 	private ConnectionId getConnectionId(connectionId_t connectionId){
 		ConnectionId result = new ConnectionId();
-		result.setDestinationCEPId(new Unsigned(EFCPConstants.CEPIdLength, connectionId.getDestinationCEPId()));
-		result.setQosId(new Unsigned(EFCPConstants.QoSidLength, connectionId.getQosId()));
-		result.setSourceCEPId(new Unsigned(EFCPConstants.CEPIdLength, connectionId.getSourceCEPId()));
+		result.setDestinationCEPId(new Unsigned(ipcProcess.getDataTransferAE().getDataTransferConstants().getCepIdLength(), 
+				connectionId.getDestinationCEPId()));
+		result.setQosId(new Unsigned(ipcProcess.getDataTransferAE().getDataTransferConstants().getQosIdLength(), 
+				connectionId.getQosId()));
+		result.setSourceCEPId(new Unsigned(ipcProcess.getDataTransferAE().getDataTransferConstants().getCepIdLength(), 
+				connectionId.getSourceCEPId()));
 		return result;
 	}
 	

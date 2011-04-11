@@ -16,7 +16,9 @@ public class GPBSerializationFactory implements SerializationFactory{
 
 	public Serializer createSerializerInstance() {
 		SerializerImpl serializer = new SerializerImpl();
-		serializer.setSerializer(Flow.class.toString(), new FlowSerializer());
+		
+		serializer.addSerializer(Flow.class.toString(), new FlowSerializer());
+		
 		return serializer;
 	}
 

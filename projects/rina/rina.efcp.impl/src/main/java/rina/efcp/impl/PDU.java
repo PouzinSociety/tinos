@@ -3,7 +3,7 @@ package rina.efcp.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import rina.efcp.api.EFCPConstants;
+import rina.efcp.api.DataTransferConstants;
 import rina.flowallocator.api.Connection;
 import rina.flowallocator.api.ConnectionId;
 import rina.utils.types.Unsigned;
@@ -64,10 +64,16 @@ public class PDU {
 	 */
 	private List<byte[]> userData = null;
 	
-	public PDU(Connection connection){
+	/**
+	 * The data transfer constants in this DIF
+	 */
+	private DataTransferConstants dataTransferConstants = null;
+	
+	public PDU(Connection connection, DataTransferConstants dataTransferConstants){
 		this.connectionId = connection.getCurrentConnectionId();
 		this.sourceAddress = connection.getSourceAddress();
 		this.destinationAddress = connection.getDestinationAddress();
+		this.dataTransferConstants = dataTransferConstants;
 		userData = new ArrayList<byte[]>();
 		version = new Unsigned(1);
 		version.setValue(0x01);
@@ -82,8 +88,9 @@ public class PDU {
 	 * @param pdu
 	 * @return
 	 */
-	public static PDU createPDUFromByteArray(byte[] buffer){
+	public static PDU createPDUFromByteArray(byte[] buffer, DataTransferConstants dataTransferConstants){
 		PDU pdu = new PDU();
+		pdu.setDataTransferConstants(dataTransferConstants);
 		ConnectionId connectionId = new ConnectionId();
 		Unsigned unsigned = null;
 		byte[] value = null;
@@ -95,25 +102,25 @@ public class PDU {
 		unsigned = new Unsigned(value);
 		pdu.setVersion(unsigned);
 		
-		value = new byte[EFCPConstants.addressLength];
+		value = new byte[dataTransferConstants.getAddressLength()];
 		index = readFieldFromPCI(value, index, buffer);
 		pdu.setSourceAddress(value);
 		
-		value = new byte[EFCPConstants.addressLength];
+		value = new byte[dataTransferConstants.getAddressLength()];
 		index = readFieldFromPCI(value, index, buffer);
 		pdu.setDestinationAddress(value);
 		
-		value = new byte[EFCPConstants.QoSidLength];
+		value = new byte[dataTransferConstants.getQosIdLength()];
 		index = readFieldFromPCI(value, index, buffer);
 		unsigned = new Unsigned(value);
 		connectionId.setQosId(unsigned);
 		
-		value = new byte[EFCPConstants.PortIdLength];
+		value = new byte[dataTransferConstants.getPortIdLength()];
 		index = readFieldFromPCI(value, index, buffer);
 		unsigned = new Unsigned(value);
 		connectionId.setSourceCEPId(unsigned);
 		
-		value = new byte[EFCPConstants.PortIdLength];
+		value = new byte[dataTransferConstants.getPortIdLength()];
 		index = readFieldFromPCI(value, index, buffer);
 		unsigned = new Unsigned(value);
 		connectionId.setDestinationCEPId(unsigned);
@@ -129,26 +136,30 @@ public class PDU {
 		unsigned = new Unsigned(value);
 		pdu.setFlags(unsigned);
 		
-		value = new byte[EFCPConstants.lengthLength];
+		value = new byte[dataTransferConstants.getLengthLength()];
 		index = readFieldFromPCI(value, index, buffer);
-		userDataLength = (int) new Unsigned(value).getValue() - EFCPConstants.pciLength;
+		userDataLength = (int) new Unsigned(value).getValue() - dataTransferConstants.getPciLength();
 		
-		value = new byte[EFCPConstants.SequenceNumberLength];
+		value = new byte[dataTransferConstants.getSequenceNumberLength()];
 		index = readFieldFromPCI(value, index, buffer);
 		unsigned = new Unsigned(value);
 		pdu.setSequenceNumber(unsigned);
 		
 		
-		if (pdu.getFlags().getValue() == EFCPConstants.completeFlag){
+		if (pdu.getFlags().getValue() == dataTransferConstants.getCompleteFlag()){
 			value = new byte[userDataLength];
 			index = readFieldFromPCI(value, index, buffer);
 			pdu.appendSDU(value);
-		}else if (pdu.getFlags().getValue() == EFCPConstants.multipleFlag){
+		}else if (pdu.getFlags().getValue() == dataTransferConstants.getMultipleFlag()){
 			//TODO to implement delimiting to handle the case
 			//of multiple SDUs within a PDU
 		}
 		
 		return pdu;
+	}
+	
+	public void setDataTransferConstants(DataTransferConstants dataTransferConstants){
+		this.dataTransferConstants = dataTransferConstants;
 	}
 	
 	/**
@@ -226,7 +237,7 @@ public class PDU {
 			length = length + userData.get(i).length;
 		}
 		
-		return EFCPConstants.pciLength + length;
+		return dataTransferConstants.getPciLength() + length;
 	}
 
 	public Unsigned getSequenceNumber() {
@@ -250,10 +261,10 @@ public class PDU {
 		//Set the flag accordingly
 		if (userData.size()==1){
 			//There's a single SDU in this PDU
-			this.flags.setValue(EFCPConstants.completeFlag);
+			this.flags.setValue(dataTransferConstants.getCompleteFlag());
 		}else if (userData.size() > 1){
 			//There are multiple SDUs in this PDU
-			this.flags.setValue(EFCPConstants.multipleFlag);
+			this.flags.setValue(dataTransferConstants.getMultipleFlag());
 		}
 	}
 	
@@ -263,8 +274,8 @@ public class PDU {
 	 * @return
 	 */
 	public byte[] getSerializedPDU(){
-		byte[] pci = new byte[EFCPConstants.pciLength];
-		Unsigned length = new Unsigned(EFCPConstants.lengthLength);
+		byte[] pci = new byte[dataTransferConstants.getPciLength()];
+		Unsigned length = new Unsigned(dataTransferConstants.getLengthLength());
 		length.setValue(this.getPduLength());
 		int index = 0;
 		

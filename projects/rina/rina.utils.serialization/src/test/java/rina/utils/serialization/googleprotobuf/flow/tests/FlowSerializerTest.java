@@ -7,9 +7,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import rina.efcp.api.EFCPConstants;
 import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.message.Flow;
+import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.utils.serialization.googleprotobuf.flow.FlowSerializer;
 import rina.utils.types.Unsigned;
@@ -23,28 +23,31 @@ public class FlowSerializerTest {
 	
 	private Flow flow = null;
 	private FlowSerializer flowSerializer = null;
+	private IPCProcess fakeIPCProcess = null;
 	
 	@Before
 	public void setup(){
+		fakeIPCProcess = new FakeIPCProcess();
 		flowSerializer = new FlowSerializer();
+		flowSerializer.setIPCProcess(fakeIPCProcess);
 		flow = new Flow();
 		flow.setAccessControl(new byte[]{0x01, 0x02, 0x03, 0x04});
 		flow.setCreateFlowRetries(2);
 		flow.setCurrentFlowId(0);
 		flow.setDestinationAddress(new byte[]{0x01, 0x00});
 		flow.setDestinationNamingInfo(new ApplicationProcessNamingInfo("b", null, null, null));
-		flow.setDestinationPortId(new Unsigned(EFCPConstants.PortIdLength, 8));
+		flow.setDestinationPortId(new Unsigned(fakeIPCProcess.getDataTransferAE().getDataTransferConstants().getPortIdLength(), 8));
 		flow.setHopCount(3);
 		List<ConnectionId> flowIds = new ArrayList<ConnectionId>();
 		ConnectionId connectionId = new ConnectionId();
-		connectionId.setDestinationCEPId(new Unsigned(EFCPConstants.CEPIdLength, 43));
-		connectionId.setSourceCEPId(new Unsigned(EFCPConstants.CEPIdLength, 55));
-		connectionId.setQosId(new Unsigned(EFCPConstants.QoSidLength, 1));
+		connectionId.setDestinationCEPId(new Unsigned(fakeIPCProcess.getDataTransferAE().getDataTransferConstants().getCepIdLength(), 43));
+		connectionId.setSourceCEPId(new Unsigned(fakeIPCProcess.getDataTransferAE().getDataTransferConstants().getCepIdLength(), 55));
+		connectionId.setQosId(new Unsigned(fakeIPCProcess.getDataTransferAE().getDataTransferConstants().getQosIdLength(), 1));
 		flowIds.add(connectionId);
 		flow.setFlowIds(flowIds);
 		flow.setSourceAddress(new byte[]{0x00, 0x01});
 		flow.setSourceNamingInfo(new ApplicationProcessNamingInfo("a", null, null, null));
-		flow.setSourcePortId(new Unsigned(EFCPConstants.PortIdLength, 5));
+		flow.setSourcePortId(new Unsigned(fakeIPCProcess.getDataTransferAE().getDataTransferConstants().getPortIdLength(), 5));
 	}
 	
 	@Test
