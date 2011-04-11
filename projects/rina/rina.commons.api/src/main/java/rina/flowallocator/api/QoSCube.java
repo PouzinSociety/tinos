@@ -13,21 +13,32 @@ public class QoSCube {
 	/**
 	 * Identifies the type of QoS-cube
 	 */
-	private int[] qosId = null;
+	private byte[] qosId = null;
 	
 	/**
-	 * It is expected that within a DIF, selecting a particular QoS-cube implies that a 
-	 * specific set of policies are necessary to achieve QoS. Therefore, the QoS-cube
-	 * contains a list of policies.
+	 * in bytes/s, a value of 0 indicates 'don't care'
 	 */
-	private List<String> policies = null;
+	private long averageBandwidth = 0;
 	
 	/**
-	 * Policies may contain parameters that control their behavior. The QoS cube should contain 
-	 * the default values for such parameters. A connection should contain the actual values 
-	 * for the policy parameters.
+	 * in bytes/s, a value of 0 indicates 'don't care'
 	 */
-	private Map<String, String> policyDefaultParameters = null;
+	private long averageSDUBandwidth = 0;
+	
+	/**
+	 * in ms, a value of 0 indicates 'don't care'
+	 */
+	private int peakBandwidthDuration = 0;
+	
+	/**
+	 * in ms, a value of 0 indicates 'don't care'
+	 */
+	private int peakSDUBandwidthDuration = 0;
+	
+	/**
+	 * a value of 0 indicates 'don`t care'
+	 */
+	private double undetectedBitErrorRate = 0;
 	
 	/**
 	 * True if partial SDUs can be delivered to the application. This was intended to provide a 
@@ -42,21 +53,126 @@ public class QoSCube {
 	private boolean partialDelivery = false;
 	
 	/**
-	 * True if SDUs must be delivered in order
+	 * Indicates if SDUs have to be delivered in order
 	 */
-	private boolean qosOrder = false;
+	private boolean order = false;
 	
 	/**
-	 * Maximum allowable gap in SDUs
+	 * Indicates the maximum gap allowed in SDUs, a gap of N SDUs is considered the same as all SDUs delivered. 
+	 * A value of -1 indicates 'Any'
 	 */
-	private int qosMaxGap = 0;
+	private int maxAllowableGapSdu = 0;
+	
+	/**
+	 * In milliseconds, indicates the maximum delay allowed in this flow. A value of 0 indicates don't care
+	 */
+	private int delay = 0;
+	
+	/**
+	 * In milliseconds, indicates indicates the maximum jitter allowed in this flow. A value of 0 indicates don't care
+	 */
+	private int jitter = 0;
+	
+	/**
+	 * It is expected that within a DIF, selecting a particular QoS-cube implies that a 
+	 * specific set of policies are necessary to achieve QoS. Therefore, the QoS-cube
+	 * contains a list of policies.
+	 */
+	private List<String> policies = null;
+	
+	/**
+	 * Policies may contain parameters that control their behavior. The QoS cube should contain 
+	 * the default values for such parameters. A connection should contain the actual values 
+	 * for the policy parameters.
+	 */
+	private Map<String, String> policyDefaultParameters = null;
 
-	public int[] getQosId() {
+	public byte[] getQosId() {
 		return qosId;
 	}
 
-	public void setQosId(int[] qosId) {
+	public void setQosId(byte[] qosId) {
 		this.qosId = qosId;
+	}
+
+	public long getAverageBandwidth() {
+		return averageBandwidth;
+	}
+
+	public void setAverageBandwidth(long averageBandwidth) {
+		this.averageBandwidth = averageBandwidth;
+	}
+
+	public long getAverageSDUBandwidth() {
+		return averageSDUBandwidth;
+	}
+
+	public void setAverageSDUBandwidth(long averageSDUBandwidth) {
+		this.averageSDUBandwidth = averageSDUBandwidth;
+	}
+
+	public int getPeakBandwidthDuration() {
+		return peakBandwidthDuration;
+	}
+
+	public void setPeakBandwidthDuration(int peakBandwidthDuration) {
+		this.peakBandwidthDuration = peakBandwidthDuration;
+	}
+
+	public int getPeakSDUBandwidthDuration() {
+		return peakSDUBandwidthDuration;
+	}
+
+	public void setPeakSDUBandwidthDuration(int peakSDUBandwidthDuration) {
+		this.peakSDUBandwidthDuration = peakSDUBandwidthDuration;
+	}
+
+	public double getUndetectedBitErrorRate() {
+		return undetectedBitErrorRate;
+	}
+
+	public void setUndetectedBitErrorRate(double undetectedBitErrorRate) {
+		this.undetectedBitErrorRate = undetectedBitErrorRate;
+	}
+
+	public boolean isPartialDelivery() {
+		return partialDelivery;
+	}
+
+	public void setPartialDelivery(boolean partialDelivery) {
+		this.partialDelivery = partialDelivery;
+	}
+
+	public boolean isOrder() {
+		return order;
+	}
+
+	public void setOrder(boolean order) {
+		this.order = order;
+	}
+
+	public int getMaxAllowableGapSdu() {
+		return maxAllowableGapSdu;
+	}
+
+	public void setMaxAllowableGapSdu(int maxAllowableGapSdu) {
+		this.maxAllowableGapSdu = maxAllowableGapSdu;
+	}
+
+	public int getDelay() {
+		return delay;
+	}
+
+	public void setDelay(int delay) {
+		this.delay = delay;
+	}
+
+	public int getJitter() {
+		return jitter;
+	}
+
+	public void setJitter(int jitter) {
+		this.jitter = jitter;
 	}
 
 	public List<String> getPolicies() {
@@ -74,29 +190,5 @@ public class QoSCube {
 	public void setPolicyDefaultParameters(
 			Map<String, String> policyDefaultParameters) {
 		this.policyDefaultParameters = policyDefaultParameters;
-	}
-
-	public boolean isPartialDelivery() {
-		return partialDelivery;
-	}
-
-	public void setPartialDelivery(boolean partialDelivery) {
-		this.partialDelivery = partialDelivery;
-	}
-
-	public boolean isQosOrder() {
-		return qosOrder;
-	}
-
-	public void setQosOrder(boolean qosOrder) {
-		this.qosOrder = qosOrder;
-	}
-
-	public int getQosMaxGap() {
-		return qosMaxGap;
-	}
-
-	public void setQosMaxGap(int qosMaxGap) {
-		this.qosMaxGap = qosMaxGap;
 	}
 }
