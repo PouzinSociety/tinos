@@ -2,6 +2,7 @@ package rina.utils.serialization.googleprotobuf.flow.tests;
 
 import java.util.List;
 
+import rina.applicationprocess.api.BaseApplicationProcess;
 import rina.cdap.api.CDAPSessionFactory;
 import rina.delimiting.api.Delimiter;
 import rina.efcp.api.DataTransferAE;
@@ -12,7 +13,7 @@ import rina.ribdaemon.api.RIBDaemon;
 import rina.rmt.api.RMT;
 import rina.serialization.api.Serializer;
 
-public class FakeIPCProcess implements IPCProcess{
+public class FakeIPCProcess extends BaseApplicationProcess implements IPCProcess{
 
 	private DataTransferAE fakeDataTransferAE = new FakeDataTransferAE();
 	
