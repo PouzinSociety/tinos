@@ -17,6 +17,9 @@ import rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory
 import rina.delimiting.api.Delimiter;
 import rina.delimiting.api.DelimiterFactory;
 import rina.delimiting.impl.DelimiterFactoryImpl;
+import rina.serialization.api.SerializationFactory;
+import rina.serialization.api.Serializer;
+import rina.utils.serialization.googleprotobuf.GPBSerializationFactory;
 
 /**
  * CDAP echo target.  This is a very basic CDAP/GPB test process listening on an Internet port for a TCP connection.  
@@ -32,11 +35,12 @@ import rina.delimiting.impl.DelimiterFactoryImpl;
  * @author eduardgrasa
  *
  */
-public class CDAPEchoServer {
+public class CDAPServer {
 	
-	private static final Log log = LogFactory.getLog(CDAPEchoServer.class);
+	private static final Log log = LogFactory.getLog(CDAPServer.class);
 	
-	public static final int DEFAULTPORT = 32767;
+	public static final int DEFAULT_ECHO_PORT = 32767;
+	public static final int DEFAULT_ENROLLMENT_PORT = 32768;
 	
 	/**
 	 * The maximum number of worker threads in the CDAP Echo Server thread pool
@@ -54,6 +58,11 @@ public class CDAPEchoServer {
 	private DelimiterFactory delimiterFactory = null;
 	
 	/**
+	 * The serialization factory user for sessions
+	 */
+	private SerializationFactory serializationFactory = null;
+	
+	/**
 	 * The TCP port to listen for incoming connections
 	 */
 	private int port = 0;
@@ -68,11 +77,18 @@ public class CDAPEchoServer {
 	 */
 	private ExecutorService executorService = null;
 	
-	public CDAPEchoServer(CDAPSessionFactory cdapSessionFactory, DelimiterFactory delimiterFactory, int port){
+	/**
+	 * The type of CDAP server (echo, enrollment, ...)
+	 */
+	private String type = null;
+	
+	public CDAPServer(CDAPSessionFactory cdapSessionFactory, DelimiterFactory delimiterFactory, SerializationFactory serializationFactory, int port, String type){
 		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
 		this.cdapSessionFactory = cdapSessionFactory;
 		this.delimiterFactory = delimiterFactory;
+		this.serializationFactory = serializationFactory;
 		this.port = port;
+		this.type = type;
 	}
 
 	public CDAPSessionFactory getCdapSessionFactory() {
@@ -108,8 +124,9 @@ public class CDAPEchoServer {
 				log.info("Got a new request from "+socket.getInetAddress().getHostAddress());
 				CDAPSession cdapSession = cdapSessionFactory.createCDAPSession();
 				Delimiter delimiter = delimiterFactory.createDelimiter(DelimiterFactory.DIF);
-				CDAPEchoWorker cdapEchoWorker = new CDAPEchoWorker(socket, cdapSession, delimiter);
-				executorService.execute(cdapEchoWorker);
+				Serializer serializer = serializationFactory.createSerializerInstance();
+				CDAPWorker cdapWorker = CDAPWorkerFactory.createCDAPWorker(type, socket, cdapSession, delimiter, serializer);
+				executorService.execute(cdapWorker);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -124,12 +141,13 @@ public class CDAPEchoServer {
 	 * @param port
 	 * @return
 	 */
-	public static CDAPEchoServer getNewInstance(int port){
+	public static CDAPServer getNewInstance(int port, String type){
 		CDAPSessionFactoryImpl cdapSessionFactory = new CDAPSessionFactoryImpl();
 		WireMessageProviderFactory wmpFactory = new GoogleProtocolBufWireMessageProviderFactory();
 		cdapSessionFactory.setWireMessageProviderFactory(wmpFactory);
 		DelimiterFactory delimiterFactory = new DelimiterFactoryImpl();
-		CDAPEchoServer cdapEchoServer = new CDAPEchoServer(cdapSessionFactory, delimiterFactory, port);
+		SerializationFactory serializationFactory = new GPBSerializationFactory();
+		CDAPServer cdapEchoServer = new CDAPServer(cdapSessionFactory, delimiterFactory, serializationFactory, port, type);
 		return cdapEchoServer;
 	}
 }

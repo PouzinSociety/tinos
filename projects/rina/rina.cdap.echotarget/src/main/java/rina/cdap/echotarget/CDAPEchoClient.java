@@ -31,7 +31,7 @@ public class CDAPEchoClient {
 	
 	private static final int DEFAULTPORT = 32767;
 	
-	private static final String DEFAULTHOST = "trianetworksystems.dyndns.org";
+	private static final String DEFAULTHOST = "localhost";
 	
 	/**
 	 * The cdap session

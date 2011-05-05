@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
  * @author eduardgrasa
  *
  */
-public class EchoTargetSpringDMActivator {
+public class EnrollmentTargetSpringDMActivator {
 	
 	/**
 	 * The thread pool implementation
@@ -19,9 +19,9 @@ public class EchoTargetSpringDMActivator {
 	/**
 	 * Runs a CDAP echo server in a separate thread
 	 */
-	public EchoTargetSpringDMActivator(){
+	public EnrollmentTargetSpringDMActivator(){
 		this.executorService = Executors.newFixedThreadPool(2);
-		CDAPServer cdapEchoServer = CDAPServer.getNewInstance(CDAPServer.DEFAULT_ECHO_PORT, CDAPWorkerFactory.ECHO_WORKER);
+		CDAPServer cdapEchoServer = CDAPServer.getNewInstance(CDAPServer.DEFAULT_ENROLLMENT_PORT, CDAPWorkerFactory.ENROLLMENT_WORKER);
 		CDAPServerRunner cdapEchoServerRunner = new CDAPServerRunner(cdapEchoServer);
 		executorService.execute(cdapEchoServerRunner);
 	}
@@ -31,7 +31,7 @@ public class EchoTargetSpringDMActivator {
 	 * @param args
 	 */
 	public static void main(String args[]){
-		CDAPServer cdapEchoServer = CDAPServer.getNewInstance(CDAPServer.DEFAULT_ECHO_PORT, CDAPWorkerFactory.ECHO_WORKER);
+		CDAPServer cdapEchoServer = CDAPServer.getNewInstance(CDAPServer.DEFAULT_ENROLLMENT_PORT, CDAPWorkerFactory.ENROLLMENT_WORKER);
 		cdapEchoServer.run();
 	}
 

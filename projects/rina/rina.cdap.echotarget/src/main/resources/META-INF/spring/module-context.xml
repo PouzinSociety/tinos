@@ -4,4 +4,5 @@
 			http://www.springframework.org/schema/beans
 			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 	<bean name="echoTargetSpringDMActivator" class="rina.cdap.echotarget.EchoTargetSpringDMActivator"/>
+	<bean name="enrollmentTargetSpringDMActivator" class="rina.cdap.echotarget.EnrollmentTargetSpringDMActivator"/>
 </beans>

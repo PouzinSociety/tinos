@@ -11,89 +11,22 @@ import rina.cdap.api.CDAPSession;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
 import rina.delimiting.api.Delimiter;
+import rina.serialization.api.Serializer;
 
 /**
  * 
  * @author eduardgrasa
  *
  */
-public class CDAPEchoWorker implements Runnable {
+public class CDAPEchoWorker extends CDAPWorker {
 	
 	private static final Log log = LogFactory.getLog(CDAPEchoWorker.class);
 	
-	/**
-	 * The cdap session
-	 */
-	private CDAPSession cdapSession = null;
-	
-	/**
-	 * Used for delimiting the incoming and outgoing messages
-	 */
-	private Delimiter delimiter = null;
-	
-	private Socket socket = null;
-	
-	private boolean end = false;
-	
-	public CDAPEchoWorker(Socket socket, CDAPSession cdapSession, Delimiter delimiter){
-		this.socket = socket;
-		this.cdapSession = cdapSession;
-		this.delimiter = delimiter;
-	}
-
-	public void run() {
-		boolean lookingForSduLength = true;
-		int length = 0;
-		int index = 0;
-		byte[] lastSduLengthCandidate = new byte[0];
-		byte[] currentSduLengthCandidate = null;
-		byte[] serializedCDAPMessage = null;
-		byte nextByte = 0;
-		
-		while(!end){
-			//Delimit the byte array that contains a serialized CDAP message
-			try{
-				nextByte = (byte) socket.getInputStream().read();
-				if (lookingForSduLength){
-					currentSduLengthCandidate = new byte[lastSduLengthCandidate.length + 1];
-					for(int i=0; i<lastSduLengthCandidate.length; i++){
-						currentSduLengthCandidate[i] = lastSduLengthCandidate[i];
-					}
-					currentSduLengthCandidate[lastSduLengthCandidate.length] = nextByte;
-					length = delimiter.readVarint32(currentSduLengthCandidate);
-					if (length == -2){
-						lastSduLengthCandidate = currentSduLengthCandidate;
-					}else{
-						lastSduLengthCandidate = new byte[0];
-						if (length > 0){
-							log.info("Found a delimited CDAP message, of length " + length);
-							lookingForSduLength = false;
-						}
-					}
-				}else{
-					if (index < length){
-						if (serializedCDAPMessage == null){
-							serializedCDAPMessage = new byte[length];
-						}
-						serializedCDAPMessage[index] = nextByte;
-						index ++;
-						if (index == length){
-							processCDAPMessage(serializedCDAPMessage);
-							index = 0;
-							length = 0;
-							lookingForSduLength = true;
-							serializedCDAPMessage = null;
-						}
-					}
-				}
-			}catch(IOException ex){
-				ex.printStackTrace();
-				end = true;
-			}
-		}
+	public CDAPEchoWorker(Socket socket, CDAPSession cdapSession, Delimiter delimiter, Serializer serializer) {
+		super(socket, cdapSession, delimiter, serializer);
 	}
 	
-	private void processCDAPMessage(byte[] serializedCDAPMessage){
+	protected void processCDAPMessage(byte[] serializedCDAPMessage){
 		log.info("Processing serialized CDAP message. This is the serialized message: ");
 		log.info(printBytes(serializedCDAPMessage));
 		CDAPMessage incomingCDAPMessage = null;
@@ -196,14 +129,5 @@ public class CDAPEchoWorker implements Runnable {
 		objectValue.setStrval("Overwriting the value of the fake Flow message");
 		return CDAPMessage.getReadObjectResponseMessage(cdapMessage.getFlags(), cdapMessage.getInvokeID(), cdapMessage.getObjClass(), 
 							cdapMessage.getObjInst(), cdapMessage.getObjName(), objectValue, 0, "");
-	}
-	
-	private String printBytes(byte[] message){
-		String result = "";
-		for(int i=0; i<message.length; i++){
-			result = result + String.format("%02X", message[i]) + " ";
-		}
-		
-		return result;
 	}
 }
