@@ -3,6 +3,7 @@ package rina.cdap.echotarget;
 import java.net.Socket;
 
 import rina.cdap.api.CDAPSession;
+import rina.cdap.echotarget.enrollment.CDAPEnrollmentWorker;
 import rina.delimiting.api.Delimiter;
 import rina.serialization.api.Serializer;
 

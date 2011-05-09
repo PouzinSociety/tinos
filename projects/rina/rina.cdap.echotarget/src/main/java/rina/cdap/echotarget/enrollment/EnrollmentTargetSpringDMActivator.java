@@ -1,7 +1,11 @@
-package rina.cdap.echotarget;
+package rina.cdap.echotarget.enrollment;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import rina.cdap.echotarget.CDAPServer;
+import rina.cdap.echotarget.CDAPServerRunner;
+import rina.cdap.echotarget.CDAPWorkerFactory;
 
 /**
  * When the bundle is deployed in an OSGi container (such as the TINOS environment), this bundle 
