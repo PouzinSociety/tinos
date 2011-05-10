@@ -1,146 +1,35 @@
 package rina.cdap.echotarget;
 
 import java.io.IOException;
-import java.net.Socket;
-import java.net.UnknownHostException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.cdap.api.CDAPException;
-import rina.cdap.api.CDAPSession;
 import rina.cdap.api.CDAPSessionFactory;
 import rina.cdap.api.message.CDAPMessage;
-import rina.cdap.api.message.CDAPMessage.AuthTypes;
 import rina.cdap.api.message.ObjectValue;
 import rina.cdap.impl.CDAPSessionFactoryImpl;
 import rina.cdap.impl.WireMessageProviderFactory;
 import rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory;
-import rina.delimiting.api.Delimiter;
 import rina.delimiting.api.DelimiterFactory;
 import rina.delimiting.impl.DelimiterFactoryImpl;
+import rina.serialization.api.SerializationFactory;
 
 /**
  * Client of the CDAP Echo Server
  * @author eduardgrasa
  *
  */
-public class CDAPEchoClient {
+public class CDAPEchoClient extends CDAPClient{
 	
 	private static final Log log = LogFactory.getLog(CDAPEchoClient.class);
-	
 	private static final int DEFAULTPORT = 32767;
-	
 	private static final String DEFAULTHOST = "localhost";
 	
-	/**
-	 * The cdap session
-	 */
-	private CDAPSession cdapSession = null;
-	
-	/**
-	 * The delimiter for the sessions
-	 */
-	private Delimiter delimiter = null;
-	
-	/**
-	 * The TCP port where the CDAP Echo server is listening
-	 */
-	private int port = 0;
-	
-	/**
-	 * The host where the CDAP Echo Server is running
-	 */
-	private String host = null;
-	
-	/**
-	 * The socket to connect to the server
-	 */
-	private Socket clientSocket = null;
-	
-	/**
-	 * Tells when to stop listening the socket 
-	 * for incoming bytes
-	 */
-	private boolean end = false;
-	
-	public CDAPEchoClient(CDAPSessionFactory cdapSessionFactory, DelimiterFactory delimiterFactory, String host, int port){
-		this.cdapSession = cdapSessionFactory.createCDAPSession();
-		this.delimiter = delimiterFactory.createDelimiter(DelimiterFactory.DIF);
-		this.host = host;
-		this.port = port;
-	}
-	
-	public void run(){
-		try {
-			clientSocket = new Socket(host, port);
-			
-			//1 Create an M_CONNECT message, delimit it and send it to the CDAP Echo Target
-			CDAPMessage message = CDAPMessage.getOpenConnectionRequestMessage(AuthTypes.AUTH_NONE, null, null, "mock", null, "B", 15, "234", "mock", "123", "A", 1);
-			byte[] serializedCDAPMessage = cdapSession.serializeNextMessageToBeSent(message);
-			byte[] delimitedSdu = delimiter.getDelimitedSdu(serializedCDAPMessage);
-			clientSocket.getOutputStream().write(delimitedSdu);
-			log.info("Sent CDAP Message: "+ message.toString());
-			log.info("Sent SDU:" + printBytes(delimitedSdu));
-			cdapSession.messageSent(message);
-			serializedCDAPMessage = null;
-			
-			//2 Enter the loop to wait for response messages, and continue the message exchange while possible
-			byte nextByte = 0;
-			boolean lookingForSduLength = true;
-			byte[] lastSduLengthCandidate = new byte[0];
-			byte[] currentSduLengthCandidate = null;
-			int length = 0;
-			int index = 0;
-			while(!end){
-				try{
-					nextByte = (byte) clientSocket.getInputStream().read();
-					if (lookingForSduLength){
-						currentSduLengthCandidate = new byte[lastSduLengthCandidate.length + 1];
-						for(int i=0; i<lastSduLengthCandidate.length; i++){
-							currentSduLengthCandidate[i] = lastSduLengthCandidate[i];
-						}
-						currentSduLengthCandidate[lastSduLengthCandidate.length] = nextByte;
-						length = delimiter.readVarint32(currentSduLengthCandidate);
-						if (length == -2){
-							lastSduLengthCandidate = currentSduLengthCandidate;
-						}else{
-							lastSduLengthCandidate = new byte[0];
-							if (length > 0){
-								log.info("Found a delimited CDAP message, of length " + length);
-								lookingForSduLength = false;
-							}
-						}
-					}else{
-						if (index < length){
-							if (serializedCDAPMessage == null){
-								serializedCDAPMessage = new byte[length];
-							}
-							serializedCDAPMessage[index] = nextByte;
-							index ++;
-							if (index == length){
-								processCDAPMessage(serializedCDAPMessage);
-								index = 0;
-								length = 0;
-								lookingForSduLength = true;
-								serializedCDAPMessage = null;
-							}
-						}
-					}
-				}catch(IOException ex){
-					ex.printStackTrace();
-				}
-			}
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (CDAPException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public CDAPEchoClient(CDAPSessionFactory cdapSessionFactory, DelimiterFactory delimiterFactory, 
+			SerializationFactory serializationFactory, String host, int port){
+		super(cdapSessionFactory, delimiterFactory, serializationFactory, host, port);
 	}
 	
 	/**
@@ -149,13 +38,11 @@ public class CDAPEchoClient {
 	 * M_CANCELREAD_R, M_STOP, M_STOP_R, M_DELETE, M_DELETE_R, M_RELEASE, M_RELEASE_R
 	 * @param cdapMessage
 	 */
-	private void processCDAPMessage(byte[] serializedCDAPMessage){
+	protected void processCDAPMessage(byte[] serializedCDAPMessage){
 		log.info("Processing serialized CDAP message. This is the serialized message: ");
 		log.info(printBytes(serializedCDAPMessage));
 		CDAPMessage incomingCDAPMessage = null;
 		CDAPMessage outgoingCDAPMessage = null;
-		byte[] serializedCDAPMessageToBeSend = null;
-		byte[] delimitedSdu = null;
 		
 		try {
 			incomingCDAPMessage = cdapSession.messageReceived(serializedCDAPMessage);
@@ -192,12 +79,7 @@ public class CDAPEchoClient {
 				return;
 			}
 			
-			serializedCDAPMessageToBeSend = cdapSession.serializeNextMessageToBeSent(outgoingCDAPMessage);
-			log.info("Sending CDAP message: "+outgoingCDAPMessage.toString());
-			delimitedSdu = delimiter.getDelimitedSdu(serializedCDAPMessageToBeSend);
-			clientSocket.getOutputStream().write(delimitedSdu);
-			log.info("Sent SDU:" + printBytes(delimitedSdu));
-			cdapSession.messageSent(outgoingCDAPMessage);
+			sendCDAPMessage(outgoingCDAPMessage);
 		} catch (CDAPException ex) {
 			// TODO Auto-generated catch block
 			ex.printStackTrace();
@@ -249,17 +131,7 @@ public class CDAPEchoClient {
 		WireMessageProviderFactory wmpFactory = new GoogleProtocolBufWireMessageProviderFactory();
 		cdapSessionFactory.setWireMessageProviderFactory(wmpFactory);
 		DelimiterFactory delimiterFactory = new DelimiterFactoryImpl();
-		CDAPEchoClient cdapEchoClient = new CDAPEchoClient(cdapSessionFactory, delimiterFactory, DEFAULTHOST, DEFAULTPORT);
+		CDAPEchoClient cdapEchoClient = new CDAPEchoClient(cdapSessionFactory, delimiterFactory, null, DEFAULTHOST, DEFAULTPORT);
 		cdapEchoClient.run();
 	}
-	
-	private String printBytes(byte[] message){
-		String result = "";
-		for(int i=0; i<message.length; i++){
-			result = result + String.format("%02X", message[i]) + " ";
-		}
-		
-		return result;
-	}
-
 }

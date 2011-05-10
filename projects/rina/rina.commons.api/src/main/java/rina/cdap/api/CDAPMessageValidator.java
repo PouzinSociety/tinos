@@ -118,7 +118,14 @@ public class CDAPMessageValidator{
 	
 	private static void validateInvokeID(CDAPMessage message) throws CDAPException{
 		if (message.getInvokeID() == 0){
-			throw new CDAPException("The invoke id parameter must be set for all messages");
+			if (message.getOpCode().equals(Opcode.M_CONNECT) || message.getOpCode().equals(Opcode.M_CONNECT_R) || 
+					message.getOpCode().equals(Opcode.M_RELEASE_R)  || message.getOpCode().equals(Opcode.M_CREATE_R) ||
+					message.getOpCode().equals(Opcode.M_DELETE_R) || message.getOpCode().equals(Opcode.M_READ_R) || 
+					message.getOpCode().equals(Opcode.M_CANCELREAD) || message.getOpCode().equals(Opcode.M_CANCELREAD_R) || 
+					message.getOpCode().equals(Opcode.M_WRITE_R) || message.getOpCode().equals(Opcode.M_START_R) ||
+					message.getOpCode().equals(Opcode.M_STOP_R)){
+			throw new CDAPException("The invoke id parameter cannot be 0");
+			}
 		}
 	}
 	
@@ -173,9 +180,6 @@ public class CDAPMessageValidator{
 		if (message.getObjValue() == null){
 			if (message.getOpCode().equals(Opcode.M_WRITE)){
 				throw new CDAPException("The objValue parameter must be set for M_WRITE messages");
-			}
-			if (message.getOpCode().equals(Opcode.M_READ_R) && message.getResult() == 0){
-				throw new CDAPException("The objValue parameter must be set for M_READ_R messages, if the operation was successful");
 			}
 		}else{
 			if (!message.getOpCode().equals(Opcode.M_CREATE) && !message.getOpCode().equals(Opcode.M_CREATE_R)

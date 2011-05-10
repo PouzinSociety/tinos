@@ -267,9 +267,10 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		byte[] delimitedSdu = null;
 		
 		serializedCDAPMessageToBeSend = cdapSession.serializeNextMessageToBeSent(cdapMessage);
-		log.info("Replying with CDAP message: "+cdapMessage.toString());
 		delimitedSdu = delimiter.getDelimitedSdu(serializedCDAPMessageToBeSend);
 		socket.getOutputStream().write(delimitedSdu);
 		cdapSession.messageSent(cdapMessage);
+		log.info("Sent CDAP Message: "+ cdapMessage.toString());
+		log.info("Sent SDU:" + printBytes(delimitedSdu));
 	}
 }
