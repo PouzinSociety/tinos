@@ -25,7 +25,7 @@ public class CDAPEchoClient extends CDAPClient{
 	
 	private static final Log log = LogFactory.getLog(CDAPEchoClient.class);
 	private static final int DEFAULTPORT = 32767;
-	private static final String DEFAULTHOST = "localhost";
+	private static final String DEFAULTHOST = "84.88.41.36";
 	
 	public CDAPEchoClient(CDAPSessionFactory cdapSessionFactory, DelimiterFactory delimiterFactory, 
 			SerializationFactory serializationFactory, String host, int port){

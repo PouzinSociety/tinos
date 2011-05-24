@@ -13,4 +13,6 @@ Export-Package: rina.cdap.api;version="1.0.0",
  rina.flowallocator.api.message;version="1.0.0",
  rina.ipcprocess.api;version="1.0.0",
  rina.ribdaemon.api;version="1.0.0",
- rina.rmt.api;version="1.0.0"
+ rina.rmt.api;version="1.0.0",
+ rina.serialization.api;version="1.0.0",
+ rina.applicationprocess.api;version="1.0.0"
