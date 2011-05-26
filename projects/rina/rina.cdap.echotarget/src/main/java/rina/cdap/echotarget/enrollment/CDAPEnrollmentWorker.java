@@ -2,6 +2,8 @@ package rina.cdap.echotarget.enrollment;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -21,6 +23,10 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 
 	private static final Log log = LogFactory.getLog(CDAPEnrollmentWorker.class);
 	
+	private static final long TIME_TO_WAIT_FOR_READ_ADDRESS_RESPONSE = 5*1000;
+	private static final long TIME_TO_WAIT_FOR_READ_INITIALIZATION_DATA = 5*1000;
+	private static final long TIME_TO_WAIT_FOR_START_RESPONSE = 5*1000;
+	
 	private enum State {NULL, READ_ADDRESS, INITIALIZE_NEW_MEMBER, INITIALIZE_NEW_MEMBER_SEND_RESPONSE, 
 		WAITING_FOR_STARTUP, ENROLLED};
 		
@@ -35,10 +41,28 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 	 * The thread pool implementation
 	 */
 	private ExecutorService executorService = null;
+	
+	private Timer timer = null;
+	
+	/**
+	 * The timer to wait for read address response
+	 */
+	private TimerTask readAddressResponseTimer = null;
+	
+	/**
+	 * The timer to wait for a read initialization data request
+	 */
+	private TimerTask readInitializationDataTimer = null;
+	
+	/**
+	 * The timer to wait for a start response
+	 */
+	private TimerTask startResponseTimer = null;
 
 	public CDAPEnrollmentWorker(Socket socket, CDAPSession cdapSession, Delimiter delimiter, Serializer serializer) {
 		super(socket, cdapSession, delimiter, serializer);
 		this.executorService = Executors.newFixedThreadPool(2);
+		timer = new Timer();
 	}
 	
 	protected synchronized void setState(State state){
@@ -117,8 +141,10 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		outgoingCDAPMessage = CDAPMessage.getReadObjectRequestMessage(null, null, 14, 
 				"rina.messages.ApplicationProcessNameSynonym", 0, "daf.management.currentSynonym", 0);
 		
-		//TODO set timer (max time to wait before getting M_READ_R
-		
+		//set timer (max time to wait before getting M_READ_R)
+		readAddressResponseTimer = getDisconnectTimerTask();
+		timer.schedule(readAddressResponseTimer, TIME_TO_WAIT_FOR_READ_ADDRESS_RESPONSE);
+			
 		this.setState(State.READ_ADDRESS);
 		return outgoingCDAPMessage;
 	}
@@ -130,7 +156,9 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		boolean allocated = true;
 		boolean expired = true;
 		
-		//TODO cancel timer
+		//Cancel the timer
+		readAddressResponseTimer.cancel();
+		timer.purge();
 		
 		if (cdapMessage.getOpCode().equals(Opcode.M_RELEASE)){
 			this.setState(State.NULL);
@@ -159,8 +187,9 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		}
 		
 		if (address == null || (address  != null && allocated && expired)){
-			//TODO set timer
-			//TODO wait for READ
+			//Set timer and wait for READ
+			readInitializationDataTimer = getDisconnectTimerTask();
+			timer.schedule(readInitializationDataTimer, TIME_TO_WAIT_FOR_READ_INITIALIZATION_DATA);
 			this.setState(State.INITIALIZE_NEW_MEMBER);
 			return null;
 		}
@@ -176,6 +205,8 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 			outgoingCDAPMessage = CDAPMessage.getStartObjectRequestMessage(null, null, 25, 
 					"rina.messages.operationalStatus", null, 0, "dif.management.operationalStatus", 0);
 			this.setState(State.WAITING_FOR_STARTUP);
+			startResponseTimer = getDisconnectTimerTask();
+			timer.schedule(startResponseTimer, TIME_TO_WAIT_FOR_START_RESPONSE);
 			return outgoingCDAPMessage;
 		}
 		
@@ -183,7 +214,9 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 	}
 	
 	private CDAPMessage processInitializeNewMemberState(CDAPMessage cdapMessage) throws CDAPException{
-		//TODO cancel timer
+		//Cancel timer
+		readInitializationDataTimer.cancel();
+		timer.purge();
 		
 		if (!cdapMessage.getOpCode().equals(Opcode.M_READ) || cdapMessage.getObjName() == null || 
 				!cdapMessage.getObjName().equals("daf.management.enrollment")){
@@ -223,7 +256,9 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		
 		enrollmentInitializer = null;
 		
-		//TODO start timer
+		//start timer
+		startResponseTimer = getDisconnectTimerTask();
+		timer.schedule(startResponseTimer, TIME_TO_WAIT_FOR_START_RESPONSE);
 		
 		outgoingCDAPMessage = CDAPMessage.getStartObjectRequestMessage(null, null, 25, 
 				"rina.messages.operationalStatus", null, 0, "dif.management.operationalStatus", 0);
@@ -233,7 +268,9 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 	}
 	
 	private CDAPMessage processWaitingForStartupState(CDAPMessage cdapMessage) throws CDAPException{
-		//TODO Cancel timer
+		//Cancel timer
+		startResponseTimer.cancel();
+		timer.purge();
 		
 		if (!cdapMessage.getOpCode().equals(Opcode.M_START_R) || cdapMessage.getObjName() == null || 
 				!cdapMessage.getObjName().equals("dif.management.operationalStatus")){
@@ -272,5 +309,25 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		cdapSession.messageSent(cdapMessage);
 		log.info("Sent CDAP Message: "+ cdapMessage.toString());
 		log.info("Sent SDU:" + printBytes(delimitedSdu));
+	}
+	
+	/**
+	 * Returns a timer task that will disconnect the CDAP session when 
+	 * the timer task runs.
+	 * @return
+	 */
+	private TimerTask getDisconnectTimerTask(){
+		return new TimerTask(){
+			@Override
+			public void run() {
+				try{
+					CDAPMessage cdapMessage = CDAPMessage.getReleaseConnectionRequestMessage(null, 0);
+					sendCDAPMessage(cdapMessage);
+					setState(State.NULL);
+					end = true;;
+				}catch(Exception ex){
+					ex.printStackTrace();
+				}
+			}};
 	}
 }
