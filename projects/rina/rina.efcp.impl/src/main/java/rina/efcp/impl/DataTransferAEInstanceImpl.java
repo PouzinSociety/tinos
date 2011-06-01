@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Timer;
 
 import rina.efcp.api.DataTransferAEInstance;
-import rina.efcp.api.EFCPConstants;
+import rina.efcp.api.DataTransferConstants;
 import rina.flowallocator.api.Connection;
 import rina.ipcprocess.api.IPCProcess;
 import rina.utils.types.Unsigned;
@@ -22,8 +22,14 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 	 */
 	private IPCProcess ipcProcess = null;
 	
-	public DataTransferAEInstanceImpl(Connection connection){
-		stateVector = new DTAEIState(connection);
+	/**
+	 * The data transfer constants in this DIF
+	 */
+	private DataTransferConstants dataTransferConstants = null;
+	
+	public DataTransferAEInstanceImpl(Connection connection, DataTransferConstants dataTransferConstants){
+		this.dataTransferConstants = dataTransferConstants;
+		stateVector = new DTAEIState(connection, dataTransferConstants);
 	}
 
 	public void setIPCProcess(IPCProcess ipcProcess) {
@@ -38,7 +44,7 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 	 * @see DataTransferAEInstance.pduDelivered
 	 */
 	public void pduDelivered(byte[] pdu) {
-		PDU currentPDU = PDU.createPDUFromByteArray(pdu);
+		PDU currentPDU = PDU.createPDUFromByteArray(pdu, dataTransferConstants);
 		
 		if (pduAlreadyDelivered(currentPDU)){
 			return;
@@ -95,7 +101,7 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 	private void checkSequenceNumberRollover(PDU pdu){
 		//If we are encrypting, we can't let PDU sequence numbers roll over.
 		//***define exactly what the Flow Allocator needs to do
-		if (EFCPConstants.DIFIntegrity && 
+		if (dataTransferConstants.isDIFIntegrity() && 
 				pdu.getSequenceNumber().getValue() > stateVector.getSequenceNumberRollOverThreshold().getValue()){
 			//Security requires a new flow
 			//TODO requestFAICraeteNewConnection(connectionID)
@@ -125,7 +131,7 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 					//This is the next expected fragment, accept it
 					nextSequenceNumber.increment();
 					//If this is the last fragment, we have a complete SDU, assuming 0x01 means 
-					if (currentPDU.getFlags().getValue() == EFCPConstants.lastFragmentFlag){
+					if (currentPDU.getFlags().getValue() == dataTransferConstants.getLastFragmentFlag()){
 						reassembling = false;
 						if ((currentPDU.getSequenceNumber().getValue() - stateVector.getLastSequenceDelivered().getValue()) 
 								> stateVector.getConnection().getMaxGapAllowed()){
@@ -134,7 +140,7 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 							//TODO if application is ready to accept data pop PDUs from connection.reassemblyQueue
 							//on to complete SDUs up to and including this one
 						}
-					}else if (currentPDU.getFlags().getValue() != EFCPConstants.fragmentFlag){
+					}else if (currentPDU.getFlags().getValue() != dataTransferConstants.getFragmentFlag()){
 						//Sanity check, we have received a FIRST_FRAGMENT, this sequence in in order
 						//and is neither a FRAGMENT or a LAST_FRAGMENT
 						//TODO signal and/or log a protocol error
@@ -144,12 +150,12 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 					break;
 				}
 			}else{
-				if (currentPDU.getFlags().getValue() == EFCPConstants.firstFragmentFlag){
+				if (currentPDU.getFlags().getValue() == dataTransferConstants.getFirstFragmentFlag()){
 					//We have the first fragment of an SDU
 					reassembling = true;
 					nextSequenceNumber.increment();
-				}else if (currentPDU.getFlags().getValue() == EFCPConstants.completeFlag ||
-						currentPDU.getFlags().getValue() == EFCPConstants.multipleFlag){
+				}else if (currentPDU.getFlags().getValue() == dataTransferConstants.getCompleteFlag() ||
+						currentPDU.getFlags().getValue() == dataTransferConstants.getMultipleFlag()){
 					//TODO check the next conditional
 					if ((currentPDU.getSequenceNumber().getValue() - stateVector.getLastSequenceDelivered().getValue()) 
 							> stateVector.getConnection().getMaxGapAllowed()){
@@ -220,7 +226,7 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 				//We canceled it above, if we delivered SDUs
 				if (stateVector.getConnection().getSduGapTimer() == null){
 					Timer sduGapTimer = new Timer();
-					sduGapTimer.schedule(new SDUGapTimerTask(this), EFCPConstants.SDUGapTimerDelay);
+					sduGapTimer.schedule(new SDUGapTimerTask(this), dataTransferConstants.getSDUGapTimerDelay());
 					stateVector.getConnection().setSduGapTimer(sduGapTimer);
 				}
 			}
@@ -265,7 +271,8 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 	 */
 	private PDU processCurrentSDU(byte[] currentSDU, PDU currentPDU, List<PDU> generatedPDUs){
 		if (currentPDU != null){
-			if (EFCPConstants.DIFConcatenation && currentSDU.length < (stateVector.getMaxFlowPDUSize() - currentPDU.getPduLength())){
+			if (dataTransferConstants.isDIFConcatenation() && 
+					currentSDU.length < (stateVector.getMaxFlowPDUSize() - currentPDU.getPduLength())){
 				//There is room in the current PDU for this SDU
 				currentPDU.appendSDU(currentSDU);
 			}else{
@@ -276,7 +283,7 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 		}
 		
 		if (currentPDU == null){
-			if (currentSDU.length > (stateVector.getMaxFlowPDUSize() - EFCPConstants.pciLength)){
+			if (currentSDU.length > (stateVector.getMaxFlowPDUSize() - dataTransferConstants.getPciLength())){
 				//Fragmentation can roll over to the next flow in the connection, which must already be allocated
 				//TODO create complete PDUs including SDU protection, assigning PDU sequence numbers
 				//sequentially starting from StateVector.NextSequenceToSend
@@ -296,7 +303,7 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 	 * @return
 	 */
 	private PDU createNewPDU(byte[] sdu){
-		PDU pdu = new PDU(stateVector.getConnection());
+		PDU pdu = new PDU(stateVector.getConnection(), dataTransferConstants);
 		pdu.setSequenceNumber(stateVector.getNextSequenceToSend().clone());
 		pdu.appendSDU(sdu);
 		stateVector.getNextSequenceToSend().increment();

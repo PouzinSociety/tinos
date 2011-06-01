@@ -4,4 +4,5 @@ Bundle-Name: Serialization stills bundle
 Bundle-SymbolicName: rina.utils.serialization
 Bundle-Version: 1.0.0
 Bundle-Vendor: i2CAT
-Import-Package: rina.flowallocator.api;version="1.0.0"
+Import-Package: rina.flowallocator.api;version="1.0.0", rina.flowallocator.api.message;version="1.0.0", rina.serialization.api;version="1.0.0", rina.efcp.api;version="1.0.0", rina.ipcprocess.api;version="1.0.0", rina.applicationprocess.api;version="1.0.0", com.google.protobuf;version="2.3.0"
+Export-Package: rina.utils.serialization.googleprotobuf;version="1.0.0"

@@ -3,6 +3,7 @@ package rina.utils.serialization;
 import java.util.HashMap;
 import java.util.Map;
 
+import rina.ipcprocess.api.IPCProcess;
 import rina.serialization.api.Serializer;
 
 /**
@@ -16,8 +17,14 @@ public class SerializerImpl implements Serializer{
 	
 	private Map<String, Serializer> serializers = null;
 	
+	private IPCProcess ipcProcess = null;
+	
 	public SerializerImpl(){
 		serializers = new HashMap<String, Serializer>();
+	}
+	
+	public void setIPCProcess(IPCProcess ipcProcess) {
+		this.ipcProcess = ipcProcess;
 	}
 	
 	/**
@@ -25,7 +32,8 @@ public class SerializerImpl implements Serializer{
 	 * @param objectClass The object class
 	 * @param serializer
 	 */
-	public void setSerializer(String objectClass, Serializer serializer){
+	public void addSerializer(String objectClass, Serializer serializer){
+		serializer.setIPCProcess(ipcProcess);
 		serializers.put(objectClass, serializer);
 	}
 

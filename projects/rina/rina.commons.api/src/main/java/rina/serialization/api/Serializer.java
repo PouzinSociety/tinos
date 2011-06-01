@@ -1,11 +1,13 @@
 package rina.serialization.api;
 
+import rina.ipcprocess.api.IPCProcessComponent;
+
 /**
  * Serializes and Unserializes an object to/from bytes)
  * @author eduardgrasa
  *
  */
-public interface Serializer {
+public interface Serializer extends IPCProcessComponent{
 	
 	/**
 	 * Converts an object to a byte array, if this object is recognized by the serializer

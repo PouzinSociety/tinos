@@ -1,11 +1,6 @@
-package rina.utils.serialization.googleprotobuf.flow;
-
-message applicationProcessNamingInfo_t {	 // carries naming information of an application process
-	required string	applicationProcessName = 1;
-	optional string	applicationProcessInstance = 2;
-	optional string	applicationEntityName = 3;
-	optional string	applicationEntityInstance = 4;
-}
+package rina.messages;
+option java_package="rina.utils.serialization.googleprotobuf.flow";
+import "protofiles/ApplicationProcessNamingInfoMessage.proto";
 
 message connectionId_t {  //information to identify a connection
 	optional uint64 qosId = 1; 				//identifies the QoS cube under which this flow is classified
@@ -19,8 +14,8 @@ message qosParameter_t { 	//information to identify a QoS parameter
 }
 
 message Flow{  //Contains the information to setup a new flow
-	required applicationProcessNamingInfo_t sourceNamingInfo = 1;  			//The naming information of the source application process
-	required applicationProcessNamingInfo_t destinationNamingInfo = 2; 		//The naming information of the destination application process
+	required rina.messages.applicationProcessNamingInfo_t sourceNamingInfo = 1;  			//The naming information of the source application process
+	required rina.messages.applicationProcessNamingInfo_t destinationNamingInfo = 2; 		//The naming information of the destination application process
 	optional uint64 sourcePortId = 3; 										//The port id allocated to this flow by the source IPC process
 	optional uint64 destinationPortId = 4; 									//The port id allocated to this flow by the destination IPC process
 	optional bytes sourceAddress = 5; 										//The address of the source IPC process for this flow

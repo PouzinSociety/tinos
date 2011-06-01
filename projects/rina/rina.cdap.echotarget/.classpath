@@ -12,5 +12,6 @@
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/downloaded/org.junit/com.springsource.org.junit/4.4.0/com.springsource.org.junit-4.4.0.jar"/>
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.cdap.impl/1.0.0/rina.cdap.impl-1.0.0.jar"/>
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.delimiting.impl/1.0.0/rina.delimiting.impl-1.0.0.jar"/>
+	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.utils.serialization/1.0.0/rina.utils.serialization-1.0.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

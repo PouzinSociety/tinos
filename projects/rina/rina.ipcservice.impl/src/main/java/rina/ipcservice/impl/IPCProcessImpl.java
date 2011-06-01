@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.applicationprocess.api.BaseApplicationProcess;
 import rina.cdap.api.CDAPSessionFactory;
 import rina.delimiting.api.Delimiter;
 import rina.efcp.api.DataTransferAE;
@@ -36,7 +37,7 @@ import rina.serialization.api.Serializer;
  * @author eduardgrasa
  *
  */
-public class IPCProcessImpl implements IPCService, IPCProcess{
+public class IPCProcessImpl extends BaseApplicationProcess implements IPCService, IPCProcess{
 	
 	private static final Log log = LogFactory.getLog(IPCProcessImpl.class);
 	
@@ -92,34 +93,16 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 	private Delimiter delimiter = null;
 	
 	/**
-	 * The naming information of this IPC process
-	 */
-	private ApplicationProcessNamingInfo namingInfo = null;
-	
-	private byte[] address = null;
-	
-	/**
 	 * The thread pool implementation
 	 */
 	private ExecutorService executorService = null;
 	
-	public IPCProcessImpl(ApplicationProcessNamingInfo namingInfo){
+	public IPCProcessImpl(String applicationProcessName, String applicationProcessInstance){
 		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
 		this.allocationPendingApplicationProcesses = new HashMap<Integer, APService>();
 		this.transferApplicationProcesses = new HashMap<Integer, APService>();
-		this.namingInfo = namingInfo;
-	}
-	
-	public byte[] getIPCProcessAddress(){
-		return address;
-	}
-
-	public ApplicationProcessNamingInfo getIPCProcessNamingInfo() {
-		return namingInfo;
-	}
-
-	public void setIPCProcessNamingInfo(ApplicationProcessNamingInfo namingInfo) {
-		this.namingInfo = namingInfo;
+		this.setApplicationProcessName(applicationProcessName);
+		this.setApplicationProcessInstance(applicationProcessInstance);
 	}
 
 	public FlowAllocator getFlowAllocator() {
@@ -137,6 +120,7 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 
 	public void setDataTransferAE(DataTransferAE dataTransferAE) {
 		this.dataTransferAE = dataTransferAE;
+		dataTransferAE.setIPCProcess(this);
 	}
 
 	public RIBDaemon getRibDaemon() {
@@ -171,6 +155,7 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 	
 	public void setSerializer(Serializer serializer){
 		this.serializer = serializer;
+		serializer.setIPCProcess(this);
 	}
 
 	public Delimiter getDelimiter() {
@@ -313,7 +298,7 @@ public class IPCProcessImpl implements IPCService, IPCProcess{
 	 * An application process says it is available through this DIF
 	 */
 	public synchronized void register(ApplicationProcessNamingInfo apNamingInfo) {
-		flowAllocator.getDirectoryForwardingTable().addEntry(apNamingInfo, address);
+		flowAllocator.getDirectoryForwardingTable().addEntry(apNamingInfo, this.getCurrentSynonym());
 		//TODO tell the RIB Daemon to disseminate this
 	}
 	

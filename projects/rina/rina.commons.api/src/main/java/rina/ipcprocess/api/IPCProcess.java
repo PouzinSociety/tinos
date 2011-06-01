@@ -2,11 +2,11 @@ package rina.ipcprocess.api;
 
 import java.util.List;
 
+import rina.applicationprocess.api.ApplicationProcess;
 import rina.cdap.api.CDAPSessionFactory;
 import rina.delimiting.api.Delimiter;
 import rina.efcp.api.DataTransferAE;
 import rina.flowallocator.api.FlowAllocator;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.rmt.api.RMT;
 import rina.serialization.api.Serializer;
@@ -17,25 +17,7 @@ import rina.serialization.api.Serializer;
  * @author eduardgrasa
  *
  */
-public interface IPCProcess {
-
-	/**
-	 * Return the naming information associated to this IPC process
-	 * @return
-	 */
-	public ApplicationProcessNamingInfo getIPCProcessNamingInfo();
-	
-	/**
-	 * The address of this IPC Process
-	 * @return
-	 */
-	public byte[] getIPCProcessAddress();
-	
-	/**
-	 * Set the naming information associated to this IPC process
-	 * @return
-	 */
-	public void setIPCProcessNamingInfo(ApplicationProcessNamingInfo mamingInfo);
+public interface IPCProcess extends ApplicationProcess{
 	
 	public FlowAllocator getFlowAllocator();
 

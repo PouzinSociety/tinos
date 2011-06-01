@@ -1,8 +1,7 @@
 package rina.efcp.impl.test;
 
-import rina.efcp.api.EFCPConstants;
+import rina.efcp.api.DataTransferConstants;
 import rina.ipcprocess.api.IPCProcess;
-import rina.ipcservice.api.IPCException;
 import rina.rmt.api.RMT;
 
 /**
@@ -18,6 +17,8 @@ public class FakeRMT implements RMT{
 	 */
 	private byte[] pdu = null;
 	
+	private DataTransferConstants dataTransferConstants = new DataTransferConstants();
+	
 	public void sendEFCPPDU(byte[] pdu) {
 		System.out.println("Send the following PDU, of "+pdu.length+" bytes:");
 		this.pdu = pdu;
@@ -27,39 +28,39 @@ public class FakeRMT implements RMT{
 		index = index +1;
 		
 		toPrint = toPrint + "(Source Address)";
-		for(int i=index; i<index + EFCPConstants.addressLength; i++){
+		for(int i=index; i<index + dataTransferConstants.getAddressLength(); i++){
 			toPrint = toPrint + " " + String.format("0x%02X", pdu[i]);
 		}
 		toPrint = toPrint + "| ";
-		index = index + EFCPConstants.addressLength;
+		index = index + dataTransferConstants.getAddressLength();
 		
 		toPrint = toPrint + "(Destination Address)";
-		for(int i=index; i<index + EFCPConstants.addressLength; i++){
+		for(int i=index; i<index + dataTransferConstants.getAddressLength(); i++){
 			toPrint = toPrint + " " + String.format("0x%02X", pdu[i]);
 		}
 		toPrint = toPrint + "| ";
-		index = index + EFCPConstants.addressLength;
+		index = index + dataTransferConstants.getAddressLength();
 		
 		toPrint = toPrint + "(Qos Id)";
-		for(int i=index; i<index + EFCPConstants.QoSidLength; i++){
+		for(int i=index; i<index + dataTransferConstants.getQosIdLength(); i++){
 			toPrint = toPrint + " " + String.format("0x%02X", pdu[i]);
 		}
 		toPrint = toPrint + "| ";
-		index = index + EFCPConstants.QoSidLength;
+		index = index + dataTransferConstants.getQosIdLength();
 		
 		toPrint = toPrint + "(Source CEP Id)";
-		for(int i=index; i<index + EFCPConstants.CEPIdLength; i++){
+		for(int i=index; i<index + dataTransferConstants.getCepIdLength(); i++){
 			toPrint = toPrint + " " + String.format("0x%02X", pdu[i]);
 		}
 		toPrint = toPrint + "| ";
-		index = index + EFCPConstants.CEPIdLength;
+		index = index + dataTransferConstants.getCepIdLength();
 		
 		toPrint = toPrint + "(Destination CEP Id)";
-		for(int i=index; i<index + EFCPConstants.CEPIdLength; i++){
+		for(int i=index; i<index + dataTransferConstants.getCepIdLength(); i++){
 			toPrint = toPrint + " " + String.format("0x%02X", pdu[i]);
 		}
 		toPrint = toPrint + "| ";
-		index = index + EFCPConstants.CEPIdLength;
+		index = index + dataTransferConstants.getCepIdLength();
 		
 		toPrint = toPrint + "(PDU Type)";
 		for(int i=index; i<index + 1; i++){
@@ -76,18 +77,18 @@ public class FakeRMT implements RMT{
 		index = index + 1;
 		
 		toPrint = toPrint + "(Length)";
-		for(int i=index; i<index + EFCPConstants.lengthLength; i++){
+		for(int i=index; i<index + dataTransferConstants.getLengthLength(); i++){
 			toPrint = toPrint + " " + String.format("0x%02X", pdu[i]);
 		}
 		toPrint = toPrint + "| ";
-		index = index + EFCPConstants.lengthLength;
+		index = index + dataTransferConstants.getLengthLength();
 		
 		toPrint = toPrint + "(Seq number)";
-		for(int i=index; i<index + EFCPConstants.SequenceNumberLength; i++){
+		for(int i=index; i<index + dataTransferConstants.getSequenceNumberLength(); i++){
 			toPrint = toPrint + " " + String.format("0x%02X", pdu[i]);
 		}
 		toPrint = toPrint + "| ";
-		index = index + EFCPConstants.SequenceNumberLength;
+		index = index + dataTransferConstants.getSequenceNumberLength();
 		
 		toPrint = toPrint + "(User data)";
 		for(int i=index; i<pdu.length; i++){

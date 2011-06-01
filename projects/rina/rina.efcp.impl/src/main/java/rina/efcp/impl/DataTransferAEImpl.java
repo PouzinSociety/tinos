@@ -6,6 +6,7 @@ import java.util.Map;
 
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.DataTransferAEInstance;
+import rina.efcp.api.DataTransferConstants;
 import rina.flowallocator.api.Connection;
 import rina.ipcprocess.api.IPCProcess;
 
@@ -26,8 +27,22 @@ public class DataTransferAEImpl implements DataTransferAE{
 	 */
 	private Map<Connection, DataTransferAEInstance> dataTransferAEInstances = null;
 	
+	/**
+	 *  Data Transfer constants associated to the DIF where the IPC process belongs.
+	 *  Set when the IPC process joins a DIF.
+	 */
+	private DataTransferConstants dataTransferConstants = null;
+	
 	public DataTransferAEImpl(){
 		dataTransferAEInstances = new HashMap<Connection, DataTransferAEInstance>();
+	}
+	
+	public DataTransferConstants getDataTransferConstants(){
+		return dataTransferConstants;
+	}
+	
+	public void setDataTransferConstants(DataTransferConstants dataTransferConstants){
+		this.dataTransferConstants = dataTransferConstants;
 	}
 
 	public void setIPCProcess(IPCProcess ipcProcess) {
@@ -47,7 +62,7 @@ public class DataTransferAEImpl implements DataTransferAE{
 		if (dataTransferAEInstances.containsKey(connection)){
 			throw new RuntimeException("This connection already has a running data transfer AE instance attached");
 		}
-		DataTransferAEInstanceImpl dataTransferAEInstance = new DataTransferAEInstanceImpl(connection);
+		DataTransferAEInstanceImpl dataTransferAEInstance = new DataTransferAEInstanceImpl(connection, dataTransferConstants);
 		dataTransferAEInstance.setIPCProcess(ipcProcess);
 		dataTransferAEInstances.put(connection, dataTransferAEInstance);
 		

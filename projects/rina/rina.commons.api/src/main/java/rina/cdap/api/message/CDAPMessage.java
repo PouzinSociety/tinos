@@ -669,6 +669,7 @@ public class CDAPMessage implements Serializable{
 		result = result + "Flags: "+ this.getFlags() + "\n";
 		result = result + "Invoke id: "+ this.getInvokeID() + "\n";
 		result = result + "Object class: "+ this.getObjClass()+ "\n";
+		result = result + "Object name: "+ this.getObjName()+ "\n";
 		result = result + "Object instance: "+ this.getObjInst()+ "\n";
 		result = result + "Object value: "+ this.getObjValue()+ "\n";
 		result = result + "Result: "+ this.getResult()+ "\n";

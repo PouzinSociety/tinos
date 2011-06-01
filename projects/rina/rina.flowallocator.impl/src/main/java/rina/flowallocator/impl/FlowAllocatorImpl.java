@@ -162,7 +162,7 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 			//error, the table should have at least returned a default IPC process address to continue looking for the application process
 			log.error("The directory forwarding table returned no entries when looking up " + apNamingInfo.toString());
 		}else{
-			if (address.equals(ipcProcess.getIPCProcessAddress())){
+			if (address.equals(ipcProcess.getCurrentSynonym())){
 				//TODO there is an entry and the address is this IPC Process, create a FAI, extract the Flow object from the CDAP message and
 				//call the FAI
 			}else{

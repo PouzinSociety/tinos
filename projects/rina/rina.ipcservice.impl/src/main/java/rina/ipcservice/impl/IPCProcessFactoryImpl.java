@@ -89,7 +89,8 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	}
 
 	public IPCProcess createIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
-		IPCProcess ipcProcess = new IPCProcessImpl(ipcProcessNamingInfo);
+		IPCProcess ipcProcess = new IPCProcessImpl(ipcProcessNamingInfo.getApplicationProcessName(), 
+				ipcProcessNamingInfo.getApplicationProcessInstance());
 		
 		ipcProcess.setFlowAllocator(flowAllocatorFactory.createFlowAllocator(ipcProcessNamingInfo));
 		ipcProcess.setDataTransferAE(dataTransferAEFactory.createDataTransferAE(ipcProcessNamingInfo));
@@ -105,14 +106,17 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 
 	public void destroyIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
 		IPCProcess ipcProcess = ipcProcesses.remove(ipcProcessNamingInfo);
-		flowAllocatorFactory.destroyFlowAllocator(ipcProcess.getIPCProcessNamingInfo());
-		ribDaemonFactory.destroyRIBDaemon(ipcProcess.getIPCProcessNamingInfo());
-		rmtFactory.destroyRMT(ipcProcess.getIPCProcessNamingInfo());
+		
+		flowAllocatorFactory.destroyFlowAllocator(ipcProcessNamingInfo);
+		ribDaemonFactory.destroyRIBDaemon(ipcProcessNamingInfo);
+		rmtFactory.destroyRMT(ipcProcessNamingInfo);
 		ipcProcess.destroy();
 	}
 
 	public void destroyIPCProcess(IPCProcess ipcProcess) {
-		this.destroyIPCProcess(ipcProcess.getIPCProcessNamingInfo());
+		ApplicationProcessNamingInfo apNamingInfo = 
+			new ApplicationProcessNamingInfo(ipcProcess.getApplicationProcessName(), ipcProcess.getApplicationProcessInstance(), null, null);
+		this.destroyIPCProcess(apNamingInfo);
 	}
 
 	public IPCProcess getIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) {

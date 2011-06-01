@@ -21,8 +21,8 @@ public class EchoTargetSpringDMActivator {
 	 */
 	public EchoTargetSpringDMActivator(){
 		this.executorService = Executors.newFixedThreadPool(2);
-		CDAPEchoServer cdapEchoServer = CDAPEchoServer.getNewInstance(CDAPEchoServer.DEFAULTPORT);
-		CDAPEchoServerRunner cdapEchoServerRunner = new CDAPEchoServerRunner(cdapEchoServer);
+		CDAPServer cdapEchoServer = CDAPServer.getNewInstance(CDAPServer.DEFAULT_ECHO_PORT, CDAPWorkerFactory.ECHO_WORKER);
+		CDAPServerRunner cdapEchoServerRunner = new CDAPServerRunner(cdapEchoServer);
 		executorService.execute(cdapEchoServerRunner);
 	}
 	
@@ -31,7 +31,7 @@ public class EchoTargetSpringDMActivator {
 	 * @param args
 	 */
 	public static void main(String args[]){
-		CDAPEchoServer cdapEchoServer = CDAPEchoServer.getNewInstance(CDAPEchoServer.DEFAULTPORT);
+		CDAPServer cdapEchoServer = CDAPServer.getNewInstance(CDAPServer.DEFAULT_ECHO_PORT, CDAPWorkerFactory.ECHO_WORKER);
 		cdapEchoServer.run();
 	}
 

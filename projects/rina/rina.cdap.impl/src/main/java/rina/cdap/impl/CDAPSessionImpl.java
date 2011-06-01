@@ -328,7 +328,7 @@ public class CDAPSessionImpl implements CDAPSession{
 		boolean operationComplete = true;
 		if (opcode.equals(Opcode.M_READ)){
 			Flags flags = cdapMessage.getFlags();
-			if (flags.equals(Flags.F_RD_INCOMPLETE)){
+			if (flags != null && flags.equals(Flags.F_RD_INCOMPLETE)){
 					operationComplete = false;
 			}
 		}
