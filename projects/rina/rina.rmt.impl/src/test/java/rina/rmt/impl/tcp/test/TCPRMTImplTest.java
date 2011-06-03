@@ -1,12 +1,14 @@
 package rina.rmt.impl.tcp.test;
 
-import java.io.IOException;
 import java.net.Socket;
-import java.net.UnknownHostException;
+
+import junit.framework.Assert;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import rina.delimiting.api.Delimiter;
 import rina.ipcprocess.api.IPCProcess;
-import rina.ribdaemon.api.RIBDaemon;
 import rina.rmt.impl.tcp.TCPRMTImpl;
 
 public class TCPRMTImplTest {
@@ -15,6 +17,7 @@ public class TCPRMTImplTest {
 	private Delimiter delimiter = null;
 	private FakeRIBDaemon ribdaemon = null;
 	
+	@Before
 	public void setup(){
 		this.rmt = new TCPRMTImpl();
 		IPCProcess fakeIPCProcess = new FakeIPCProcess();
@@ -24,25 +27,23 @@ public class TCPRMTImplTest {
 		this.ribdaemon = (FakeRIBDaemon) fakeIPCProcess.getRibDaemon();
 	}
 	
-	public Delimiter getDelimiter(){
-		return delimiter;
-	}
-	
-	public static void main(String[] args){
-		TCPRMTImplTest test = new TCPRMTImplTest();
-		test.setup();
-		
-		try {
-			Socket clientSocket = new Socket("localhost", 32769);
-			byte[] delimitedSdu = test.getDelimiter().getDelimitedSdu("CDAP message coming".getBytes());
-			clientSocket.getOutputStream().write(delimitedSdu);
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	@Test
+	public void testConnectionFromRemoteProcess() throws Exception{
+		byte[] buffer = new byte[50];
+
+		Socket clientSocket = new Socket("localhost", 32769);
+		byte[] delimitedSdu = delimiter.getDelimitedSdu("CDAP message coming".getBytes());
+		clientSocket.getOutputStream().write(delimitedSdu);
+		try{
+			Thread.sleep(1000);
+		}catch(InterruptedException ex){
+			ex.printStackTrace();
 		}
+		clientSocket.getInputStream().read(buffer);
+		String reply = new String(buffer);
+		System.out.println(reply);
+		Assert.assertTrue(ribdaemon.isMessageReceived());
+		Assert.assertTrue(buffer[0]==27);
 	}
 
 }

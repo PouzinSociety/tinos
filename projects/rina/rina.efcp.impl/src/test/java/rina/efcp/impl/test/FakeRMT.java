@@ -2,6 +2,8 @@ package rina.efcp.impl.test;
 
 import rina.efcp.api.DataTransferConstants;
 import rina.ipcprocess.api.IPCProcess;
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.QoSParameters;
 import rina.rmt.api.RMT;
 
 /**
@@ -111,5 +113,11 @@ public class FakeRMT implements RMT{
 	public void sendCDAPMessage(byte[] arg0, byte[] arg1) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public int allocateFlow(ApplicationProcessNamingInfo arg0,
+			QoSParameters arg1) throws Exception {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

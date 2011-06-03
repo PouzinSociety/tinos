@@ -11,7 +11,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.ipcprocess.api.IPCProcess;
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
+import rina.ipcservice.api.QoSParameters;
 import rina.rmt.api.RMT;
 
 /**
@@ -63,6 +65,32 @@ public class TCPRMTImpl implements RMT{
 	public synchronized void sendEFCPPDU(byte[] pdu) {
 		//It will never be called by this implementation since DTP is not implemented yet and 
 		//each flow allocation triggers a new TCP connection
+	}
+	
+	/**
+	 * Cause the RMT to allocate a new flow through an N-1 DIF or the underlying
+	 * physical media
+	 * @param apNamingInfo the destination application process naming information 
+	 * @param qosparams the quality of service requested by the flow
+	 * @return int the portId allocated to the flow
+	 * @throws Exception if there was an issue allocating the flow
+	 */
+	public int allocateFlow(ApplicationProcessNamingInfo apNamingInfo, QoSParameters qosparams) throws Exception{
+		String host = apNamingInfo.getApplicationProcessName();
+		int port = RMTServer.DEFAULT_PORT;
+		
+		if (apNamingInfo.getApplicationProcessInstance() != null){
+			try{
+				port = Integer.parseInt(apNamingInfo.getApplicationProcessInstance());
+			}catch(NumberFormatException ex){
+				ex.printStackTrace();
+				port = RMTServer.DEFAULT_PORT;
+			}
+		}
+		
+		Socket socket = new Socket(host, port);
+		newConnectionAccepted(socket);
+		return socket.getPort();
 	}
 
 	/**

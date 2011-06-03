@@ -39,6 +39,8 @@
 <!-- Tests -->
 		<dependency org="org.antlr" name="com.springsource.antlr" rev="${org.antlr}" conf="test->runtime" />
 		<dependency org="org.junit" name="com.springsource.org.junit" rev="${org.junit}" conf="test->runtime" />
+		<!-- RINA Delimiting Impl -->
+		<dependency org="org.pouzinsociety.rina" name="rina.delimiting.impl" rev="1.0.0"  conf="test->runtime" />
 	</dependencies>
 
 </ivy-module>

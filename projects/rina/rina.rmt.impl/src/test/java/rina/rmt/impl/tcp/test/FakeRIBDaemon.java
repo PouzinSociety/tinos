@@ -17,6 +17,8 @@ public class FakeRIBDaemon implements RIBDaemon {
 
 	private IPCProcess ipcProcess = null;
 	
+	private boolean messageReceived = false;
+	
 	public void setIPCProcess(IPCProcess ipcProcess) {
 		this.ipcProcess = ipcProcess;
 	}
@@ -25,8 +27,13 @@ public class FakeRIBDaemon implements RIBDaemon {
 		log.info("Received message: " +printBytes(message));
 		String decodedMessage = new String(message);
 		log.info("Decoded message: "+decodedMessage);
+		messageReceived = true;
 		
 		ipcProcess.getRmt().sendCDAPMessage("127.0.0.1".getBytes(), "CDAP message is coming back".getBytes());
+	}
+	
+	public boolean isMessageReceived(){
+		return messageReceived;
 	}
 
 	public Object read(String arg0, long arg1, String arg2, Object arg3)
