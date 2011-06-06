@@ -11,7 +11,14 @@ import rina.delimiting.api.Delimiter;
 import rina.ipcprocess.api.IPCProcess;
 import rina.rmt.impl.tcp.TCPRMTImpl;
 
-public class TCPRMTImplTest {
+/**
+ * Test the RMT implementation on its "caller site": the RMT will 
+ * allocate a new flow to the test program, who pretends 
+ * to be a remote IPC process listening on a certain port
+ * @author eduardgrasa
+ *
+ */
+public class TCPRMTImplCallerTest {
 	
 	private TCPRMTImpl rmt = null;
 	private Delimiter delimiter = null;
@@ -19,7 +26,7 @@ public class TCPRMTImplTest {
 	
 	@Before
 	public void setup(){
-		this.rmt = new TCPRMTImpl();
+		this.rmt = new TCPRMTImpl(40001);
 		IPCProcess fakeIPCProcess = new FakeIPCProcess();
 		this.rmt.setIPCProcess(fakeIPCProcess);
 		fakeIPCProcess.setRmt(rmt);
@@ -31,7 +38,7 @@ public class TCPRMTImplTest {
 	public void testConnectionFromRemoteProcess() throws Exception{
 		byte[] buffer = new byte[50];
 
-		Socket clientSocket = new Socket("localhost", 32769);
+		Socket clientSocket = new Socket("localhost", 40001);
 		byte[] delimitedSdu = delimiter.getDelimitedSdu("CDAP message coming".getBytes());
 		clientSocket.getOutputStream().write(delimitedSdu);
 		try{

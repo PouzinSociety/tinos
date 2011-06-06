@@ -46,9 +46,13 @@ public class TCPRMTImpl implements RMT{
 	private RMTServer rmtServer = null;
 
 	public TCPRMTImpl(){
+		this(RMTServer.DEFAULT_PORT);
+	}
+	
+	public TCPRMTImpl(int port){
 		this.forwardingTable = new Hashtable<String, Socket>();
 		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
-		this.rmtServer = new RMTServer(this);
+		this.rmtServer = new RMTServer(this, port);
 		executorService.execute(rmtServer);
 	}
 	
