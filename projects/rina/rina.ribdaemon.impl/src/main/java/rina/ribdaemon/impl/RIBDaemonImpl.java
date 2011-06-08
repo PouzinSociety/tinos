@@ -5,6 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import rina.cdap.api.CDAPException;
+import rina.cdap.api.CDAPSessionFactory;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.MessageSubscriber;
@@ -20,6 +25,8 @@ import rina.ribdaemon.api.UpdateStrategy;
  */
 public class RIBDaemonImpl implements RIBDaemon{
 	
+	private static final Log log = LogFactory.getLog(RIBDaemonImpl.class);
+	
 	/** The IPCProcess where this RIB Daemon belongs **/
 	private IPCProcess ipcProcess = null;
 	
@@ -29,6 +36,9 @@ public class RIBDaemonImpl implements RIBDaemon{
 	/** A simple in memory store **/
 	private InMemoryStore store = null;
 	
+	/** Create, retrieve and delete CDAP sessions **/
+	private CDAPSessionFactory cdapSessionFactory = null;
+	
 	public RIBDaemonImpl(){
 		messageSubscribers = new HashMap<MessageSubscription, List<MessageSubscriber>>();
 		store = new InMemoryStore();
@@ -36,6 +46,10 @@ public class RIBDaemonImpl implements RIBDaemon{
 
 	public void setIPCProcess(IPCProcess ipcProcess) {
 		this.ipcProcess = ipcProcess;
+	}
+	
+	public void setCDAPSessionFactory(CDAPSessionFactory cdapSessionFactory){
+		this.cdapSessionFactory = cdapSessionFactory;
 	}
 
 	/**
@@ -46,8 +60,25 @@ public class RIBDaemonImpl implements RIBDaemon{
 	 * (after consulting an adequate forwarding table).
 	 * @param cdapMessage
 	 */
-	public void cdapMessageDelivered(byte[] cdapMessage) {
-		// TODO Auto-generated method stub
+	public void cdapMessageDelivered(byte[] encodedCDAPMessage){
+		//1 Deserialize the message
+		CDAPMessage cdapMessage = null;
+		
+		try{
+			cdapMessage = cdapSessionFactory.deserializeCDAPMessage(encodedCDAPMessage);
+		}catch(CDAPException ex){
+			log.error("Error decoding CDAP message: " + ex.getMessage());
+			ex.printStackTrace();
+			return;
+		}
+		
+		//2 Look for the CDAP session it belongs to and update the state machine
+		switch(cdapMessage.getOpCode()){
+		
+		}
+		
+		
+		//3 Process the message (send to subscribed people, maybe something else)
 	}
 
 	/**

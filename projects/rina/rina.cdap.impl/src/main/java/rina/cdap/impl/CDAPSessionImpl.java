@@ -137,21 +137,19 @@ public class CDAPSessionImpl implements CDAPSession{
 	}
 	
 	public void messageSent(CDAPMessage cdapMessage) throws CDAPException{
-		messageSentOrReceived(cdapMessage, null, true);
+		messageSentOrReceived(cdapMessage, true);
 	}
 	
 	public CDAPMessage messageReceived(byte[] message) throws CDAPException{
-		return messageSentOrReceived(null, message, false);
+		CDAPMessage cdapMessage = deserializeMessage(message);
+		return messageSentOrReceived(cdapMessage, false);
 	}
 	
-	private CDAPMessage messageSentOrReceived(CDAPMessage messageSent, byte[] messageReceived, boolean sent) throws CDAPException{
-		CDAPMessage cdapMessage = null;
-		if (sent){
-			cdapMessage = messageSent;
-		}else{
-			cdapMessage = deserializeMessage(messageReceived);
-		}
-
+	public CDAPMessage messageReceived(CDAPMessage cdapMessage) throws CDAPException {
+		return messageSentOrReceived(cdapMessage, false);
+	}
+	
+	private CDAPMessage messageSentOrReceived(CDAPMessage cdapMessage, boolean sent) throws CDAPException{
 		CDAPMessageValidator.validate(cdapMessage);
 
 		switch(cdapMessage.getOpCode()){

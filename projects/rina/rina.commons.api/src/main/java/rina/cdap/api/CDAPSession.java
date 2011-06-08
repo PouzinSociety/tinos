@@ -43,6 +43,14 @@ public interface CDAPSession {
 	public CDAPMessage messageReceived(byte[] cdapMessage) throws CDAPException;
 	
 	/**
+	 * Tell the CDAP state machine that we've received a message. The state of the CDAP state machine will be updated
+	 * @param cdapMessage
+	 * @return
+	 * @throws CDAPException if the message is bad formed or inconsistent with the protocol state machine
+	 */
+	public CDAPMessage messageReceived(CDAPMessage cdapMessage) throws CDAPException;
+	
+	/**
 	 * Getter for the sessionID
 	 * @return a String that identifies a CDAP session within an IPC process
 	 */

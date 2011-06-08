@@ -3,6 +3,7 @@ package rina.rmt.impl.tcp.test;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.cdap.api.CDAPSessionFactory;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.MessageSubscriber;
@@ -78,6 +79,11 @@ public class FakeRIBDaemon implements RIBDaemon {
 		}
 		
 		return result;
+	}
+
+	public void setCDAPSessionFactory(CDAPSessionFactory arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

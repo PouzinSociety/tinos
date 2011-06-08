@@ -10,6 +10,7 @@ import rina.ipcservice.api.QoSParameters;
  * @author eduardgrasa
  */
 public interface RMT extends IPCProcessComponent{
+	
 	/**
 	 * When the RMT receives an EFCP PDU via a send primitive, it inspects the destination 
 	 * address field and the connection-id field of the PDU. Using the FIB, it determines 
@@ -35,7 +36,7 @@ public interface RMT extends IPCProcessComponent{
 	 * @param apNamingInfo the destination application process naming information 
 	 * @param qosparams the quality of service requested by the flow
 	 * @return int the portId allocated to the flow
-	 * @throws IPCException if there was an issue allocating the flow
+	 * @throws Exception if there was an issue allocating the flow
 	 */
 	public int allocateFlow(ApplicationProcessNamingInfo apNamingInfo, QoSParameters qosparams) throws Exception;
 }
