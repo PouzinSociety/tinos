@@ -1,4 +1,4 @@
-package rina.rmt.impl;
+package rina.rmt.impl.tcp;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -7,18 +7,18 @@ import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.rmt.api.RMT;
 import rina.rmt.api.RMTFactory;
 
-public class RMTFactoryImpl implements RMTFactory{
+public class TCPRMTFactoryImpl implements RMTFactory{
 
 	private Map<ApplicationProcessNamingInfo, RMT> rmtRespository = null;
 	
-	public RMTFactoryImpl(){
+	public TCPRMTFactoryImpl(){
 		rmtRespository = new HashMap<ApplicationProcessNamingInfo, RMT>();
 	}
 	
 	public RMT createRMT(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
 		RMT rmt = null;
 		try {
-			rmt = new RMTImpl();
+			rmt = new TCPRMTImpl();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

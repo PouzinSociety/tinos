@@ -1,6 +1,8 @@
 package rina.rmt.api;
 
 import rina.ipcprocess.api.IPCProcessComponent;
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.QoSParameters;
 
 /**
  * Specifies the interface of the Relaying and Multiplexing task. Mediates the access to one or more (N-1) DIFs 
@@ -26,4 +28,14 @@ public interface RMT extends IPCProcessComponent{
 	 * @param cdapMessage
 	 */
 	public void sendCDAPMessage(byte[] address, byte[] cdapMessage);
+	
+	/**
+	 * Cause the RMT to allocate a new flow through an N-1 DIF or the underlying
+	 * physical media
+	 * @param apNamingInfo the destination application process naming information 
+	 * @param qosparams the quality of service requested by the flow
+	 * @return int the portId allocated to the flow
+	 * @throws IPCException if there was an issue allocating the flow
+	 */
+	public int allocateFlow(ApplicationProcessNamingInfo apNamingInfo, QoSParameters qosparams) throws Exception;
 }
