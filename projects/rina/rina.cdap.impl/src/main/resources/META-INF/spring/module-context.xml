@@ -5,7 +5,7 @@
 			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 	<bean name="wireMessageProviderFactory" class="rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory">
 	</bean>	
-	<bean name="cdapSessionFactoryBean" class="rina.cdap.impl.CDAPSessionFactoryImpl">
+	<bean name="cdapSessionManagerBean" class="rina.cdap.impl.CDAPSessionManagerImpl">
 		<property name="wireMessageProviderFactory" ref="wireMessageProviderFactory"/>
 	</bean>
 </beans>

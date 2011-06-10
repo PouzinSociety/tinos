@@ -110,7 +110,7 @@ public class FakeRMT implements RMT{
 		
 	}
 
-	public void sendCDAPMessage(byte[] arg0, byte[] arg1) {
+	public void sendCDAPMessage(int arg0, byte[] arg1) {
 		// TODO Auto-generated method stub
 		
 	}

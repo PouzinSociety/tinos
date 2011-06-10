@@ -45,7 +45,9 @@ public class TCPSocketReader implements Runnable{
 		byte[] serializedCDAPMessage = null;
 		byte nextByte = 0;
 		
-		log.info("Reading socket from remote interface: "+socket.getInetAddress().getHostAddress());
+		log.info("Reading socket from remote interface: "+socket.getInetAddress().getHostAddress() + "\n" 
+				+ "Local port_id: "+socket.getLocalPort() + "\n" 
+				+ "Remote port_id: "+socket.getPort());
 		
 		while(!end){
 			//Delimit the byte array that contains a serialized CDAP message
@@ -75,7 +77,7 @@ public class TCPSocketReader implements Runnable{
 						serializedCDAPMessage[index] = nextByte;
 						index ++;
 						if (index == length){
-							ribdaemon.cdapMessageDelivered(serializedCDAPMessage);
+							ribdaemon.cdapMessageDelivered(serializedCDAPMessage, socket.getLocalPort());
 							index = 0;
 							length = 0;
 							lookingForSduLength = true;

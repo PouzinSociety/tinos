@@ -25,10 +25,10 @@ public interface RMT extends IPCProcessComponent{
 	 * send CDAP messages to the nearest neighbors. The RMT will lookup the 'address' 
 	 * parameter in the forwarding table, and send the capMessage using the management flow 
 	 * that was established when this IPC process joined the DIF.
-	 * @param address
+	 * @param portId
 	 * @param cdapMessage
 	 */
-	public void sendCDAPMessage(byte[] address, byte[] cdapMessage);
+	public void sendCDAPMessage(int portId, byte[] cdapMessage);
 	
 	/**
 	 * Cause the RMT to allocate a new flow through an N-1 DIF or the underlying

@@ -24,7 +24,10 @@ import rina.rmt.api.RMT;
 public class TCPRMTImpl implements RMT{
 	private static final Log log = LogFactory.getLog(TCPRMTImpl.class);
 	
-	private Map<String, Socket> forwardingTable = null;
+	/**
+	 * Contains the open TCP flows to other IPC processes, indexed by portId
+	 */
+	private Map<Integer, Socket> flowTable = null;
 	
 	private IPCProcess ipcProcess = null;
 	
@@ -50,7 +53,7 @@ public class TCPRMTImpl implements RMT{
 	}
 	
 	public TCPRMTImpl(int port){
-		this.forwardingTable = new Hashtable<String, Socket>();
+		this.flowTable = new Hashtable<Integer, Socket>();
 		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
 		this.rmtServer = new RMTServer(this, port);
 		executorService.execute(rmtServer);
@@ -94,22 +97,21 @@ public class TCPRMTImpl implements RMT{
 		
 		Socket socket = new Socket(host, port);
 		newConnectionAccepted(socket);
-		return socket.getPort();
+		return socket.getLocalPort();
 	}
 
 	/**
-	 * Send a CDAP message to the IPC process address identified by the 'address' parameter. 
+	 * Send a CDAP message to other end of the flow identified by the "port id". 
 	 * This operation is invoked by the management tasks of the IPC process, usually to 
-	 * send CDAP messages to the nearest neighbors. The RMT will lookup the 'address' 
-	 * parameter in the forwarding table, and send the capMessage using the management flow 
+	 * send CDAP messages to the nearest neighbors. The RMT will lookup the 'portId' 
+	 * parameter in the flow table, and send the capMessage using the management flow 
 	 * that was established when this IPC process joined the DIF.
-	 * @param address
+	 * @param portId
 	 * @param cdapMessage
 	 * @throws IPCException
 	 */
-	public synchronized void sendCDAPMessage(byte[] address, byte[] cdapMessage) {
-		String socketAddress = new String(address);
-		Socket socket = forwardingTable.get(socketAddress);
+	public synchronized void sendCDAPMessage(int portId, byte[] cdapMessage) {
+		Socket socket = flowTable.get(new Integer(portId));
 		byte[] delimitedSdu = ipcProcess.getDelimiter().getDelimitedSdu(cdapMessage);
 		try{
 			socket.getOutputStream().write(delimitedSdu);
@@ -126,7 +128,7 @@ public class TCPRMTImpl implements RMT{
 	 * @param socket
 	 */
 	public void newConnectionAccepted(Socket socket){
-		forwardingTable.put(socket.getInetAddress().getHostAddress(), socket);
+		flowTable.put(new Integer(socket.getLocalPort()), socket);
 		TCPSocketReader tcpSocketReader = new TCPSocketReader(socket, ipcProcess.getRibDaemon(), ipcProcess.getDelimiter());
 		executorService.execute(tcpSocketReader);
 	}

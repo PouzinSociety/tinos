@@ -8,9 +8,9 @@
        http://www.springframework.org/schema/beans   
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 	<!--  Export -->
-    <osgi:service id="cdapSessionFactory" ref="cdapSessionFactoryBean">
+    <osgi:service id="cdapSessionManager" ref="cdapSessionManagerBean">
      	<osgi:interfaces>
- 			<value>rina.cdap.api.CDAPSessionFactory</value>
+ 			<value>rina.cdap.api.CDAPSessionManager</value>
  	</osgi:interfaces>
     </osgi:service>
 </beans>           

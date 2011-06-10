@@ -3,7 +3,7 @@ package rina.ipcprocess.api;
 import java.util.List;
 
 import rina.applicationprocess.api.ApplicationProcess;
-import rina.cdap.api.CDAPSessionFactory;
+import rina.cdap.api.CDAPSessionManager;
 import rina.delimiting.api.Delimiter;
 import rina.efcp.api.DataTransferAE;
 import rina.flowallocator.api.FlowAllocator;
@@ -35,9 +35,9 @@ public interface IPCProcess extends ApplicationProcess{
 	
 	public void setRmt(RMT rmt);
 	
-	public CDAPSessionFactory getCDAPSessionFactory();
+	public CDAPSessionManager getCDAPSessionFactory();
 	
-	public void setCDAPSessionFactory(CDAPSessionFactory cdapSessionFactory);
+	public void setCDAPSessionFactory(CDAPSessionManager cdapSessionFactory);
 	
 	public Serializer getSerializer();
 	

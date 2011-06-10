@@ -16,11 +16,17 @@ public class TestTCPServer implements Runnable{
 	private byte[] buffer = new byte[50];
 	private byte[] delimitedMessage = null;
 	private Delimiter delimiter = new DelimiterFactoryImpl().createDelimiter(DelimiterFactory.DIF);
+	private int pordId = 0;
+	
+	public int getPortId(){
+		return this.pordId;
+	}
 	
 	public void run() {
 		try{
 			ServerSocket serverSocket = new ServerSocket(40000);
 			Socket socket = serverSocket.accept();
+			this.pordId = socket.getLocalPort();
 			Thread.sleep(1000);
 			socket.getInputStream().read(buffer);
 			delimitedMessage = delimiter.getDelimitedSdu(buffer);

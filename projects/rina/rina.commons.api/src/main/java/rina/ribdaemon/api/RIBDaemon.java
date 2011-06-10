@@ -1,6 +1,6 @@
 package rina.ribdaemon.api;
 
-import rina.cdap.api.CDAPSessionFactory;
+import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcessComponent;
 
@@ -48,8 +48,9 @@ public interface RIBDaemon extends IPCProcessComponent{
 	 * entity within this IPC process, then the RMT may decide to rely the message to the right destination 
 	 * (after consulting an adequate forwarding table).
 	 * @param cdapMessage
+	 * @param the portId of the flow from where the CDAP message was obtained
 	 */
-	public void cdapMessageDelivered(byte[] cdapMessage);
+	public void cdapMessageDelivered(byte[] cdapMessage, int portId);
 	
 	/**
 	 * Interested MessageSubscribers will be called when CDAP that comply with the 
@@ -82,5 +83,5 @@ public interface RIBDaemon extends IPCProcessComponent{
 	 * Required to create, retrieve and store CDAP sessions
 	 * @param cdapSessionFactory
 	 */
-	public void setCDAPSessionFactory(CDAPSessionFactory cdapSessionFactory);
+	public void setCDAPSessionFactory(CDAPSessionManager cdapSessionFactory);
 }

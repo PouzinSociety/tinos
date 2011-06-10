@@ -62,9 +62,11 @@ public abstract class CDAPClient {
 	 */
 	protected boolean end = false;
 	
+	private CDAPSessionFactory cdapSessionFactory = null;
+	
 	public CDAPClient(CDAPSessionFactory cdapSessionFactory, DelimiterFactory delimiterFactory, 
 			SerializationFactory serializationFactory, String host, int port){
-		this.cdapSession = cdapSessionFactory.createCDAPSession();
+		this.cdapSessionFactory = cdapSessionFactory;
 		this.delimiter = delimiterFactory.createDelimiter(DelimiterFactory.DIF);
 		if (serializationFactory != null){
 			serializer = serializationFactory.createSerializerInstance();
@@ -75,7 +77,8 @@ public abstract class CDAPClient {
 	
 	public void run(){
 		try {
-			clientSocket = new Socket(host, port);
+			clientSocket = new Socket(host, port);	
+			this.cdapSession = cdapSessionFactory.createCDAPSession(clientSocket.getLocalPort());
 			
 			//1 Create an M_CONNECT message, delimit it and send it to the CDAP Echo Target
 			CDAPMessage message = CDAPMessage.getOpenConnectionRequestMessage(AuthTypes.AUTH_NONE, null, null, "mock", null, "B", 15, "234", "mock", "123", "A", 1);

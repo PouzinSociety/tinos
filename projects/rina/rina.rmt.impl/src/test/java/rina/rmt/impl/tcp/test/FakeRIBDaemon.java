@@ -24,13 +24,13 @@ public class FakeRIBDaemon implements RIBDaemon {
 		this.ipcProcess = ipcProcess;
 	}
 
-	public void cdapMessageDelivered(byte[] message) {
+	public void cdapMessageDelivered(byte[] message, int portId) {
 		log.info("Received message: " +printBytes(message));
 		String decodedMessage = new String(message);
 		log.info("Decoded message: "+decodedMessage);
 		messageReceived = true;
 		
-		ipcProcess.getRmt().sendCDAPMessage("127.0.0.1".getBytes(), "CDAP message is coming back".getBytes());
+		ipcProcess.getRmt().sendCDAPMessage(portId, "CDAP message is coming back".getBytes());
 	}
 	
 	public boolean isMessageReceived(){

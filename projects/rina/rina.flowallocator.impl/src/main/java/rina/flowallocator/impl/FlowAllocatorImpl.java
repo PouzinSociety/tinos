@@ -203,7 +203,7 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 					log.error("Problems serializing CDAP message to be forwarded: " +ex.getMessage() + 
 					". As a consequence, the CDAP message won't be forwarded");
 				}
-				ipcProcess.getRmt().sendCDAPMessage(address, serializedCDAPMesasge);
+				//TODO ipcProcess.getRmt().sendCDAPMessage(address, serializedCDAPMesasge);
 			}
 		}
 	}

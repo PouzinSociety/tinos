@@ -9,6 +9,7 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.CDAPMessageValidator;
 import rina.cdap.api.CDAPSession;
 import rina.cdap.api.CDAPSessionDescriptor;
+import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage.Flags;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 
@@ -38,7 +39,10 @@ public class CDAPSessionImpl implements CDAPSession{
 	
 	private CDAPSessionDescriptor sessionDescriptor = null;
 	
-	public CDAPSessionImpl(){
+	private CDAPSessionManager cdapSessionManager = null;
+	
+	public CDAPSessionImpl(CDAPSessionManager cdapSessionManager){
+		this.cdapSessionManager = cdapSessionManager;
 		pendingMessages = new HashMap<Integer, CDAPOperationState>();
 		this.cancelReadPendingMessages = new HashMap<Integer, CDAPOperationState>();
 		this.connectionStateMachine = new ConnectionStateMachine(this);
@@ -48,16 +52,17 @@ public class CDAPSessionImpl implements CDAPSession{
 		this.wireMessageProvider = wireMessageProvider;
 	}
 	
-	protected void resetConnection(){
+	protected void stopConnection(){
 		pendingMessages.clear();
 		cancelReadPendingMessages.clear();
+		cdapSessionManager.removeCDAPSession(this.getPortId());
 	}
 	
 	public boolean isConnected(){
 		return connectionStateMachine.isConnected();
 	}
 	
-	public byte[] serializeNextMessageToBeSent(CDAPMessage cdapMessage) throws CDAPException{
+	public byte[] encodeNextMessageToBeSent(CDAPMessage cdapMessage) throws CDAPException{
 		CDAPMessageValidator.validate(cdapMessage);
 
 		switch(cdapMessage.getOpCode()){
@@ -365,8 +370,8 @@ public class CDAPSessionImpl implements CDAPSession{
 		return sessionDescriptor;
 	}
 
-	public String getSessionId() {
-		return sessionDescriptor.getSessionID();
+	public int getPortId() {
+		return sessionDescriptor.getPortId();
 	}
 	
 	private void populateSessionDescriptor(CDAPMessage cdapMessage){

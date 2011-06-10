@@ -122,7 +122,7 @@ public class CDAPServer {
 			while(true){
 				Socket socket = serverSocket.accept();
 				log.info("Got a new request from "+socket.getInetAddress().getHostAddress());
-				CDAPSession cdapSession = cdapSessionFactory.createCDAPSession();
+				CDAPSession cdapSession = cdapSessionFactory.createCDAPSession(socket.getLocalPort());
 				Delimiter delimiter = delimiterFactory.createDelimiter(DelimiterFactory.DIF);
 				Serializer serializer = serializationFactory.createSerializerInstance();
 				CDAPWorker cdapWorker = CDAPWorkerFactory.createCDAPWorker(type, socket, cdapSession, delimiter, serializer);
