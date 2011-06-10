@@ -12,7 +12,7 @@
     <osgi:reference id="ribDaemonFactoryService" interface="rina.ribdaemon.api.RIBDaemonFactory"/>
     <osgi:reference id="rmtFactoryService" interface="rina.rmt.api.RMTFactory"/>
     <osgi:reference id="dataTransferAEFactoryService" interface="rina.efcp.api.DataTransferAEFactory"/>
-    <osgi:reference id="cdapSessionFactoryService" interface="rina.cdap.api.CDAPSessionFactory"/>
+    <osgi:reference id="cdapSessionManagerFactoryService" interface="rina.cdap.api.CDAPSessionManagerFactory"/>
     <osgi:reference id="serializationFactoryService" interface="rina.serialization.api.SerializationFactory"/>
     <osgi:reference id="delimiterFactoryService" interface="rina.serialization.api.DelimiterFactory" />
           

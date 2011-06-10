@@ -15,10 +15,6 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 
 public class CDAPSessionManagerImpl implements CDAPSessionManager{
-	
-	/**
-	 * Injected by Spring
-	 */
 	private WireMessageProviderFactory wireMessageProviderFactory = null;
 	
 	private Map<Integer, CDAPSession> cdapSessions = null;
@@ -32,7 +28,7 @@ public class CDAPSessionManagerImpl implements CDAPSessionManager{
 		cdapSessions = new HashMap<Integer, CDAPSession>();
 	}
 
-	private synchronized CDAPSession createCDAPSession(int portId) {
+	public synchronized CDAPSession createCDAPSession(int portId) {
 		CDAPSessionImpl cdapSession = new CDAPSessionImpl(this);
 		cdapSession.setWireMessageProvider(wireMessageProviderFactory.createWireMessageProvider());
 		CDAPSessionDescriptor descriptor = new CDAPSessionDescriptor();

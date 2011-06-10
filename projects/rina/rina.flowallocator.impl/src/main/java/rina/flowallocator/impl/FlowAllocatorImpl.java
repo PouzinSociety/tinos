@@ -197,7 +197,7 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 				cdapMessage.setObjValue(objectValue);
 				byte[] serializedCDAPMesasge = null;
 				try{
-					serializedCDAPMesasge = ipcProcess.getCDAPSessionFactory().serializeCDAPMessage(cdapMessage);
+					serializedCDAPMesasge = ipcProcess.getCDAPSessionManager().encodeCDAPMessage(cdapMessage);
 				}catch(CDAPException ex){
 					//Error that has to be fixed, we cannot continue, log it and return
 					log.error("Problems serializing CDAP message to be forwarded: " +ex.getMessage() + 

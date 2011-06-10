@@ -9,10 +9,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.cdap.api.CDAPException;
-import rina.cdap.api.CDAPSession;
-import rina.cdap.api.CDAPSessionFactory;
+import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
-import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.MessageSubscriber;
 import rina.ribdaemon.api.MessageSubscription;
@@ -39,7 +37,7 @@ public class RIBDaemonImpl implements RIBDaemon{
 	private InMemoryStore store = null;
 	
 	/** Create, retrieve and delete CDAP sessions **/
-	private CDAPSessionFactory cdapSessionFactory = null;
+	private CDAPSessionManager cdapSessionManager = null;
 	
 	public RIBDaemonImpl(){
 		messageSubscribers = new HashMap<MessageSubscription, List<MessageSubscriber>>();
@@ -50,8 +48,8 @@ public class RIBDaemonImpl implements RIBDaemon{
 		this.ipcProcess = ipcProcess;
 	}
 	
-	public void setCDAPSessionFactory(CDAPSessionFactory cdapSessionFactory){
-		this.cdapSessionFactory = cdapSessionFactory;
+	public void setCDAPSessionManager(CDAPSessionManager cdapSessionManager){
+		this.cdapSessionManager = cdapSessionManager;
 	}
 
 	/**
@@ -64,46 +62,17 @@ public class RIBDaemonImpl implements RIBDaemon{
 	 */
 	public void cdapMessageDelivered(byte[] encodedCDAPMessage, int portId){
 		CDAPMessage cdapMessage = null;
-		CDAPSession cdapSession = null;
 		
 		//1 Deserialize the message
 		try{
-			cdapMessage = cdapSessionFactory.deserializeCDAPMessage(encodedCDAPMessage);
+			cdapMessage = cdapSessionManager.messageReceived(encodedCDAPMessage, portId);
 		}catch(CDAPException ex){
 			log.error("Error decoding CDAP message: " + ex.getMessage());
 			ex.printStackTrace();
 			return;
 		}
 		
-		//2 Look for the CDAP session it belongs to and update the state machine
-		cdapSession = cdapSessionFactory.getCDAPSession(portId);
-		
-		switch(cdapMessage.getOpCode()){
-		case M_CONNECT:
-			if (cdapSession != null){
-				log.error("Cannot open a new CDAP session that is already connected on the port_id "+portId);
-			}else{
-				//TODO need to create a new CDAP session, but first I 
-				//have to see if I accept to do it? 
-				//If I have to do no authentication, I can assume that, as the
-				//flow was already setup, I already have permission to accept the 
-				//CDAP connection.
-			}
-			break;
-		case M_CONNECT_R:
-			if (cdapSession == null){
-				log.error("Cannot find an ongoing CDAP session for the portId "+portId);
-			}else{
-				
-			}
-			break;
-		case M_RELEASE:
-		case M_RELEASE_R:
-			default:
-		}
-		
-		
-		//3 Process the message (send to subscribed people, maybe something else)
+		//2 Process the message (send to subscribed people, maybe something else)
 	}
 
 	/**

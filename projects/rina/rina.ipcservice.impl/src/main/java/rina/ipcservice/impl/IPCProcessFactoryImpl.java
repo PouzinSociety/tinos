@@ -3,7 +3,7 @@ package rina.ipcservice.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import rina.cdap.api.CDAPSessionFactory;
+import rina.cdap.api.CDAPSessionManagerFactory;
 import rina.delimiting.api.DelimiterFactory;
 import rina.efcp.api.DataTransferAEFactory;
 import rina.flowallocator.api.FlowAllocatorFactory;
@@ -42,9 +42,9 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	private DataTransferAEFactory dataTransferAEFactory = null;
 	
 	/**
-	 * Factory of CDAP sessions
+	 * Factory of CDAP session managers
 	 */
-	private CDAPSessionFactory cdapSessionFactory = null;
+	private CDAPSessionManagerFactory cdapSessionManagerFactory = null;
 	
 	/**
 	 * Factory of serializers
@@ -76,8 +76,8 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		this.dataTransferAEFactory = dataTransferAEFactory;
 	}
 	
-	public void setCDAPSessionFactory(CDAPSessionFactory cdapSessionFactory){
-		this.cdapSessionFactory = cdapSessionFactory;
+	public void setCDAPSessionManagerFactory(CDAPSessionManagerFactory cdapSessionManagerFactory){
+		this.cdapSessionManagerFactory = cdapSessionManagerFactory;
 	}
 	
 	public void setSerializationFactory(SerializationFactory serializationFactory){
@@ -96,7 +96,7 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		ipcProcess.setDataTransferAE(dataTransferAEFactory.createDataTransferAE(ipcProcessNamingInfo));
 		ipcProcess.setRibDaemon(ribDaemonFactory.createRIBDaemon(ipcProcessNamingInfo));
 		ipcProcess.setRmt(rmtFactory.createRMT(ipcProcessNamingInfo));
-		ipcProcess.setCDAPSessionFactory(cdapSessionFactory);
+		ipcProcess.setCDAPSessionManager(cdapSessionManagerFactory.createCDAPSessionManager());
 		ipcProcess.setSerializer(serializationFactory.createSerializerInstance());
 		ipcProcess.setDelimiter(delimiterFactory.createDelimiter(DelimiterFactory.DIF));
 		

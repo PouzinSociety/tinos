@@ -35,9 +35,9 @@ public interface IPCProcess extends ApplicationProcess{
 	
 	public void setRmt(RMT rmt);
 	
-	public CDAPSessionManager getCDAPSessionFactory();
+	public CDAPSessionManager getCDAPSessionManager();
 	
-	public void setCDAPSessionFactory(CDAPSessionManager cdapSessionFactory);
+	public void setCDAPSessionManager(CDAPSessionManager cdapSessionManager);
 	
 	public Serializer getSerializer();
 	

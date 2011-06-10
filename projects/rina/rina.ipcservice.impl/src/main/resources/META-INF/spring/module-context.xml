@@ -10,7 +10,7 @@
 		<property name="flowAllocatorFactory" ref="flowAllocatorFactoryService" />
 		<property name="ribDaemonFactory" ref="ribDaemonFactoryService" />
 		<property name="dataTransferAEFactory" ref="dataTransferAEFactoryService" />
-		<property name="CDAPSessionFactory" ref="cdapSessionFactoryService" />
+		<property name="CDAPSessionManagerFactory" ref="cdapSessionManagerFactoryService" />
 		<property name="serializationFactory" ref="serializationFactoryService" />
 		<property name="delimiterFactory" ref="delimiterFactoryService" />
 	</bean>

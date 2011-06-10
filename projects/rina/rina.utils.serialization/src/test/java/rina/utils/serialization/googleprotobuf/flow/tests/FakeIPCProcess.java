@@ -3,7 +3,7 @@ package rina.utils.serialization.googleprotobuf.flow.tests;
 import java.util.List;
 
 import rina.applicationprocess.api.BaseApplicationProcess;
-import rina.cdap.api.CDAPSessionFactory;
+import rina.cdap.api.CDAPSessionManager;
 import rina.delimiting.api.Delimiter;
 import rina.efcp.api.DataTransferAE;
 import rina.flowallocator.api.FlowAllocator;
@@ -32,7 +32,7 @@ public class FakeIPCProcess extends BaseApplicationProcess implements IPCProcess
 		
 	}
 
-	public CDAPSessionFactory getCDAPSessionFactory() {
+	public CDAPSessionManager getCDAPSessionManager() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -76,7 +76,7 @@ public class FakeIPCProcess extends BaseApplicationProcess implements IPCProcess
 		return null;
 	}
 
-	public void setCDAPSessionFactory(CDAPSessionFactory arg0) {
+	public void setCDAPSessionManager(CDAPSessionManager arg0) {
 		// TODO Auto-generated method stub
 		
 	}

@@ -8,8 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.cdap.api.CDAPException;
-import rina.cdap.api.CDAPSession;
-import rina.cdap.api.CDAPSessionFactory;
+import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.AuthTypes;
 import rina.delimiting.api.Delimiter;
@@ -27,9 +26,9 @@ public abstract class CDAPClient {
 	private static final Log log = LogFactory.getLog(CDAPClient.class);
 	
 	/**
-	 * The cdap session
+	 * The cdap session manager
 	 */
-	protected CDAPSession cdapSession = null;
+	protected CDAPSessionManager cdapSessionManager = null;
 	
 	/**
 	 * The delimiter for the sessions
@@ -54,7 +53,7 @@ public abstract class CDAPClient {
 	/**
 	 * The socket to connect to the server
 	 */
-	private Socket clientSocket = null;
+	protected Socket clientSocket = null;
 	
 	/**
 	 * Tells when to stop listening the socket 
@@ -62,11 +61,9 @@ public abstract class CDAPClient {
 	 */
 	protected boolean end = false;
 	
-	private CDAPSessionFactory cdapSessionFactory = null;
-	
-	public CDAPClient(CDAPSessionFactory cdapSessionFactory, DelimiterFactory delimiterFactory, 
+	public CDAPClient(CDAPSessionManager cdapSessionManager, DelimiterFactory delimiterFactory, 
 			SerializationFactory serializationFactory, String host, int port){
-		this.cdapSessionFactory = cdapSessionFactory;
+		this.cdapSessionManager = cdapSessionManager;
 		this.delimiter = delimiterFactory.createDelimiter(DelimiterFactory.DIF);
 		if (serializationFactory != null){
 			serializer = serializationFactory.createSerializerInstance();
@@ -77,8 +74,7 @@ public abstract class CDAPClient {
 	
 	public void run(){
 		try {
-			clientSocket = new Socket(host, port);	
-			this.cdapSession = cdapSessionFactory.createCDAPSession(clientSocket.getLocalPort());
+			clientSocket = new Socket(host, port);
 			
 			//1 Create an M_CONNECT message, delimit it and send it to the CDAP Echo Target
 			CDAPMessage message = CDAPMessage.getOpenConnectionRequestMessage(AuthTypes.AUTH_NONE, null, null, "mock", null, "B", 15, "234", "mock", "123", "A", 1);
@@ -156,10 +152,10 @@ public abstract class CDAPClient {
 		byte[] serializedCDAPMessageToBeSend = null;
 		byte[] delimitedSdu = null;
 		
-		serializedCDAPMessageToBeSend = cdapSession.serializeNextMessageToBeSent(cdapMessage);
+		serializedCDAPMessageToBeSend = cdapSessionManager.encodeNextMessageToBeSent(cdapMessage, clientSocket.getLocalPort());
 		delimitedSdu = delimiter.getDelimitedSdu(serializedCDAPMessageToBeSend);
 		clientSocket.getOutputStream().write(delimitedSdu);
-		cdapSession.messageSent(cdapMessage);
+		cdapSessionManager.messageSent(cdapMessage, clientSocket.getLocalPort());
 		log.info("Sent CDAP Message: "+ cdapMessage.toString());
 		log.info("Sent SDU:" + printBytes(delimitedSdu));
 	}

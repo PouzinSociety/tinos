@@ -3,7 +3,7 @@ package rina.efcp.impl.test;
 import java.util.List;
 
 import rina.applicationprocess.api.BaseApplicationProcess;
-import rina.cdap.api.CDAPSessionFactory;
+import rina.cdap.api.CDAPSessionManager;
 import rina.delimiting.api.Delimiter;
 import rina.efcp.api.DataTransferAE;
 import rina.flowallocator.api.FlowAllocator;
@@ -88,12 +88,12 @@ public class FakeIPCProcess extends BaseApplicationProcess implements IPCProcess
 		return null;
 	}
 
-	public CDAPSessionFactory getCDAPSessionFactory() {
+	public CDAPSessionManager getCDAPSessionManager() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public void setCDAPSessionFactory(CDAPSessionFactory arg0) {
+	public void setCDAPSessionManager(CDAPSessionManager cdapSessionManager) {
 		// TODO Auto-generated method stub
 		
 	}

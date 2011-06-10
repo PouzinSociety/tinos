@@ -9,9 +9,8 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.cdap.api.CDAPSession;
-import rina.cdap.api.CDAPSessionFactory;
-import rina.cdap.impl.CDAPSessionFactoryImpl;
+import rina.cdap.api.CDAPSessionManager;
+import rina.cdap.impl.CDAPSessionManagerImpl;
 import rina.cdap.impl.WireMessageProviderFactory;
 import rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory;
 import rina.delimiting.api.Delimiter;
@@ -50,7 +49,7 @@ public class CDAPServer {
 	/**
 	 * The factory to create/remove CDAP sessions
 	 */
-	private CDAPSessionFactory cdapSessionFactory = null;
+	private CDAPSessionManager cdapSessionManager = null;
 	
 	/**
 	 * The delimiter factory for the sessions
@@ -82,21 +81,21 @@ public class CDAPServer {
 	 */
 	private String type = null;
 	
-	public CDAPServer(CDAPSessionFactory cdapSessionFactory, DelimiterFactory delimiterFactory, SerializationFactory serializationFactory, int port, String type){
+	public CDAPServer(CDAPSessionManager cdapSessionManager, DelimiterFactory delimiterFactory, SerializationFactory serializationFactory, int port, String type){
 		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
-		this.cdapSessionFactory = cdapSessionFactory;
+		this.cdapSessionManager = cdapSessionManager;
 		this.delimiterFactory = delimiterFactory;
 		this.serializationFactory = serializationFactory;
 		this.port = port;
 		this.type = type;
 	}
 
-	public CDAPSessionFactory getCdapSessionFactory() {
-		return cdapSessionFactory;
+	public CDAPSessionManager getCdapSessionManager() {
+		return cdapSessionManager;
 	}
 
-	public void setCdapSessionFactory(CDAPSessionFactory cdapSessionFactory) {
-		this.cdapSessionFactory = cdapSessionFactory;
+	public void setCdapSessionManager(CDAPSessionManager cdapSessionManager) {
+		this.cdapSessionManager = cdapSessionManager;
 	}
 	
 	public DelimiterFactory getDelimiterFactory() {
@@ -122,10 +121,9 @@ public class CDAPServer {
 			while(true){
 				Socket socket = serverSocket.accept();
 				log.info("Got a new request from "+socket.getInetAddress().getHostAddress());
-				CDAPSession cdapSession = cdapSessionFactory.createCDAPSession(socket.getLocalPort());
 				Delimiter delimiter = delimiterFactory.createDelimiter(DelimiterFactory.DIF);
 				Serializer serializer = serializationFactory.createSerializerInstance();
-				CDAPWorker cdapWorker = CDAPWorkerFactory.createCDAPWorker(type, socket, cdapSession, delimiter, serializer);
+				CDAPWorker cdapWorker = CDAPWorkerFactory.createCDAPWorker(type, socket, cdapSessionManager, delimiter, serializer);
 				executorService.execute(cdapWorker);
 			}
 		} catch (IOException e) {
@@ -142,12 +140,12 @@ public class CDAPServer {
 	 * @return
 	 */
 	public static CDAPServer getNewInstance(int port, String type){
-		CDAPSessionFactoryImpl cdapSessionFactory = new CDAPSessionFactoryImpl();
+		CDAPSessionManagerImpl cdapSessionManager = new CDAPSessionManagerImpl();
 		WireMessageProviderFactory wmpFactory = new GoogleProtocolBufWireMessageProviderFactory();
-		cdapSessionFactory.setWireMessageProviderFactory(wmpFactory);
+		cdapSessionManager.setWireMessageProviderFactory(wmpFactory);
 		DelimiterFactory delimiterFactory = new DelimiterFactoryImpl();
 		SerializationFactory serializationFactory = new GPBSerializationFactory();
-		CDAPServer cdapEchoServer = new CDAPServer(cdapSessionFactory, delimiterFactory, serializationFactory, port, type);
+		CDAPServer cdapEchoServer = new CDAPServer(cdapSessionManager, delimiterFactory, serializationFactory, port, type);
 		return cdapEchoServer;
 	}
 }

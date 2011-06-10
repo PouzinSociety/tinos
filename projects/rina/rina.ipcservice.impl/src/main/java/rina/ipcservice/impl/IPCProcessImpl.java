@@ -11,7 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.applicationprocess.api.BaseApplicationProcess;
-import rina.cdap.api.CDAPSessionFactory;
+import rina.cdap.api.CDAPSessionManager;
 import rina.delimiting.api.Delimiter;
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.DataTransferAEInstance;
@@ -77,9 +77,9 @@ public class IPCProcessImpl extends BaseApplicationProcess implements IPCService
 	private RMT rmt = null;
 	
 	/**
-	 * The instance of the CDAP session factory
+	 * The instance of the CDAP session manager
 	 */
-	private CDAPSessionFactory cdapSessionFactory = null;
+	private CDAPSessionManager cdapSessionManager = null;
 	
 	/**
 	 * The serializer to serialize/deserialize objects
@@ -141,12 +141,12 @@ public class IPCProcessImpl extends BaseApplicationProcess implements IPCService
 		rmt.setIPCProcess(this);
 	}
 	
-	public CDAPSessionFactory getCDAPSessionFactory() {
-		return cdapSessionFactory;
+	public CDAPSessionManager getCDAPSessionManager() {
+		return cdapSessionManager;
 	}
 
-	public void setCDAPSessionFactory(CDAPSessionFactory cdapSessionFactory) {
-		this.cdapSessionFactory = cdapSessionFactory;
+	public void setCDAPSessionManager(CDAPSessionManager cdapSessionManager) {
+		this.cdapSessionManager = cdapSessionManager;
 	}
 	
 	public Serializer getSerializer(){

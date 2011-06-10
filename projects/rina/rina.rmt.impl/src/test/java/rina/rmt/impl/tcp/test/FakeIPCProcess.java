@@ -5,7 +5,7 @@ import java.util.List;
 import rina.applicationprocess.api.ApplicationProcessException;
 import rina.applicationprocess.api.ApplicationProcessNameSynonym;
 import rina.applicationprocess.api.WhatevercastName;
-import rina.cdap.api.CDAPSessionFactory;
+import rina.cdap.api.CDAPSessionManager;
 import rina.delimiting.api.Delimiter;
 import rina.delimiting.api.DelimiterFactory;
 import rina.delimiting.impl.DelimiterFactoryImpl;
@@ -111,7 +111,7 @@ public class FakeIPCProcess implements IPCProcess {
 		
 	}
 
-	public CDAPSessionFactory getCDAPSessionFactory() {
+	public CDAPSessionManager getCDAPSessionManager() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -143,7 +143,7 @@ public class FakeIPCProcess implements IPCProcess {
 		return null;
 	}
 
-	public void setCDAPSessionFactory(CDAPSessionFactory arg0) {
+	public void setCDAPSessionManager(CDAPSessionManager arg0) {
 		// TODO Auto-generated method stub
 		
 	}

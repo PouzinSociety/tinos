@@ -83,5 +83,5 @@ public interface RIBDaemon extends IPCProcessComponent{
 	 * Required to create, retrieve and store CDAP sessions
 	 * @param cdapSessionFactory
 	 */
-	public void setCDAPSessionFactory(CDAPSessionManager cdapSessionFactory);
+	public void setCDAPSessionManager(CDAPSessionManager cdapSessionFactory);
 }
