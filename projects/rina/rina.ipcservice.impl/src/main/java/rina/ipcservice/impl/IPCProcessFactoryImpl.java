@@ -92,11 +92,12 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		IPCProcess ipcProcess = new IPCProcessImpl(ipcProcessNamingInfo.getApplicationProcessName(), 
 				ipcProcessNamingInfo.getApplicationProcessInstance());
 		
-		ipcProcess.setFlowAllocator(flowAllocatorFactory.createFlowAllocator(ipcProcessNamingInfo));
-		ipcProcess.setDataTransferAE(dataTransferAEFactory.createDataTransferAE(ipcProcessNamingInfo));
+		//ipcProcess.setFlowAllocator(flowAllocatorFactory.createFlowAllocator(ipcProcessNamingInfo));
+		//ipcProcess.setDataTransferAE(dataTransferAEFactory.createDataTransferAE(ipcProcessNamingInfo));
 		ipcProcess.setRibDaemon(ribDaemonFactory.createRIBDaemon(ipcProcessNamingInfo));
 		ipcProcess.setRmt(rmtFactory.createRMT(ipcProcessNamingInfo));
 		ipcProcess.setCDAPSessionManager(cdapSessionManagerFactory.createCDAPSessionManager());
+		ipcProcess.getRibDaemon().setCDAPSessionManager(ipcProcess.getCDAPSessionManager());
 		ipcProcess.setSerializer(serializationFactory.createSerializerInstance());
 		ipcProcess.setDelimiter(delimiterFactory.createDelimiter(DelimiterFactory.DIF));
 		

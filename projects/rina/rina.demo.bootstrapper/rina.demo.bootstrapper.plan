@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plan name="rina.demo.bootstrapper.plan" version="1.0.0" scoped="true" atomic="true"
+        xmlns="http://www.springsource.org/schema/dm-server/plan"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springsource.org/schema/dm-server/plan 
+                            http://www.springsource.org/schema/dm-server/plan/springsource-dm-server-plan.xsd">
+	<artifact type="bundle" name="com.google.protobuf" version="2.3.0"/>
+	<artifact type="bundle" name="rina.utils.types" version="[1, 2)"/>
+	<artifact type="bundle" name="rina.ipcservice.api" version="[1, 2)"/>
+	<artifact type="bundle" name="rina.commons.api" version="[1, 2)"/>
+	<artifact type="bundle" name="rina.cdap.impl" version="[1, 2)"/>
+	<artifact type="bundle" name="rina.delimiting.impl" version="[1, 2)"/>
+	<artifact type="bundle" name="rina.utils.serialization" version="[1, 2)"/>
+	<artifact type="bundle" name="rina.rmt.impl" version="[1, 2)"/>
+	<artifact type="bundle" name="rina.ribdaemon.impl" version="[1, 2)"/>
+	<artifact type="bundle" name="rina.ipcservice.impl" version="[1, 2)"/>
+	<artifact type="bundle" name="rina.demo.bootstrapper" version="[1, 2)"/>
+</plan>

@@ -8,13 +8,13 @@
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
           
      <!-- Import the factories for RMT, Flow allocator, RIB Daemon and Data Transfer AE from the OSGi registry -->
-    <osgi:reference id="flowAllocatorFactoryService" interface="rina.flowallocator.api.FlowAllocatorFactory"/>
+    <!-- <osgi:reference id="flowAllocatorFactoryService" interface="rina.flowallocator.api.FlowAllocatorFactory"/>-->
+    <!-- <osgi:reference id="dataTransferAEFactoryService" interface="rina.efcp.api.DataTransferAEFactory"/> -->
     <osgi:reference id="ribDaemonFactoryService" interface="rina.ribdaemon.api.RIBDaemonFactory"/>
     <osgi:reference id="rmtFactoryService" interface="rina.rmt.api.RMTFactory"/>
-    <osgi:reference id="dataTransferAEFactoryService" interface="rina.efcp.api.DataTransferAEFactory"/>
     <osgi:reference id="cdapSessionManagerFactoryService" interface="rina.cdap.api.CDAPSessionManagerFactory"/>
     <osgi:reference id="serializationFactoryService" interface="rina.serialization.api.SerializationFactory"/>
-    <osgi:reference id="delimiterFactoryService" interface="rina.serialization.api.DelimiterFactory" />
+    <osgi:reference id="delimiterFactoryService" interface="rina.delimiting.api.DelimiterFactory" />
           
     <!--  Export the IPCProcessFactoryImpl to the OSGi registry-->
     <osgi:service id="ipcProcessFactory" ref="ipcProcessFactoryImpl">
