@@ -10,7 +10,7 @@
 	<artifact type="bundle" name="rina.commons.api" version="[1, 2)"/>
 	<artifact type="bundle" name="rina.cdap.impl" version="[1, 2)"/>
 	<artifact type="bundle" name="rina.delimiting.impl" version="[1, 2)"/>
-	<artifact type="bundle" name="rina.utils.serialization" version="[1, 2)"/>
+	<artifact type="bundle" name="rina.encoding.impl" version="[1, 2)"/>
 	<artifact type="bundle" name="rina.rmt.impl" version="[1, 2)"/>
 	<artifact type="bundle" name="rina.ribdaemon.impl" version="[1, 2)"/>
 	<artifact type="bundle" name="rina.ipcservice.impl" version="[1, 2)"/>

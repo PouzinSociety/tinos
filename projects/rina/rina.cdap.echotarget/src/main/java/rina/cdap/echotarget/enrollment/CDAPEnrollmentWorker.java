@@ -17,7 +17,7 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.cdap.echotarget.CDAPWorker;
 import rina.delimiting.api.Delimiter;
-import rina.serialization.api.Serializer;
+import rina.encoding.api.Encoder;
 
 public class CDAPEnrollmentWorker extends CDAPWorker {
 
@@ -59,8 +59,8 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 	 */
 	private TimerTask startResponseTimer = null;
 
-	public CDAPEnrollmentWorker(Socket socket, CDAPSessionManager cdapSessionManager, Delimiter delimiter, Serializer serializer) {
-		super(socket, cdapSessionManager, delimiter, serializer);
+	public CDAPEnrollmentWorker(Socket socket, CDAPSessionManager cdapSessionManager, Delimiter delimiter, Encoder encoder) {
+		super(socket, cdapSessionManager, delimiter, encoder);
 		this.executorService = Executors.newFixedThreadPool(2);
 		timer = new Timer();
 	}
@@ -73,8 +73,8 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		return this.state;
 	}
 	
-	public Serializer getSerializer(){
-		return this.serializer;
+	public Encoder getEncoder(){
+		return this.encoder;
 	}
 
 	@Override
@@ -178,7 +178,7 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 			serializedAddress = cdapMessage.getObjValue().getByteval();
 			if (serializedAddress != null){
 				try {
-					address = (ApplicationProcessNameSynonym) serializer.deserialize(serializedAddress, ApplicationProcessNameSynonym.class.getName());
+					address = (ApplicationProcessNameSynonym) encoder.decode(serializedAddress, ApplicationProcessNameSynonym.class.getName());
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

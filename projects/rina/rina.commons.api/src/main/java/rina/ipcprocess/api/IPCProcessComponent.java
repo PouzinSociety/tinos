@@ -11,5 +11,11 @@ public interface IPCProcessComponent {
 	 * @param ipcProcess
 	 */
 	public void setIPCProcess(IPCProcess ipcProcess);
+	
+	/**
+	 * Return the name of this IPC Process Component
+	 * @return
+	 */
+	public String getName();
 
 }

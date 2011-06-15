@@ -11,7 +11,7 @@
 		<property name="ribDaemonFactory" ref="ribDaemonFactoryService" />
 		<!-- <property name="dataTransferAEFactory" ref="dataTransferAEFactoryService" /> -->
 		<property name="CDAPSessionManagerFactory" ref="cdapSessionManagerFactoryService" />
-		<property name="serializationFactory" ref="serializationFactoryService" />
+		<property name="encoderFactory" ref="encoderFactoryService" />
 		<property name="delimiterFactory" ref="delimiterFactoryService" />
 	</bean>
 

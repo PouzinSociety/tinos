@@ -13,7 +13,7 @@
     <osgi:reference id="ribDaemonFactoryService" interface="rina.ribdaemon.api.RIBDaemonFactory"/>
     <osgi:reference id="rmtFactoryService" interface="rina.rmt.api.RMTFactory"/>
     <osgi:reference id="cdapSessionManagerFactoryService" interface="rina.cdap.api.CDAPSessionManagerFactory"/>
-    <osgi:reference id="serializationFactoryService" interface="rina.serialization.api.SerializationFactory"/>
+    <osgi:reference id="encoderFactoryService" interface="rina.encoding.api.EncoderFactory"/>
     <osgi:reference id="delimiterFactoryService" interface="rina.delimiting.api.DelimiterFactory" />
           
     <!--  Export the IPCProcessFactoryImpl to the OSGi registry-->

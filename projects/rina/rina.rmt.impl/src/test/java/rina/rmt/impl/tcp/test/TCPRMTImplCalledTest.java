@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.rmt.impl.tcp.TCPRMTImpl;
 
 /**
@@ -30,9 +31,8 @@ public class TCPRMTImplCalledTest {
 	public void setup(){
 		this.rmt = new TCPRMTImpl();
 		IPCProcess fakeIPCProcess = new FakeIPCProcess();
-		this.rmt.setIPCProcess(fakeIPCProcess);
-		fakeIPCProcess.setRmt(rmt);
-		this.ribdaemon = (FakeRIBDaemon) fakeIPCProcess.getRibDaemon();
+		fakeIPCProcess.addIPCProcessComponent(rmt);
+		this.ribdaemon = (FakeRIBDaemon) fakeIPCProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		this.executorService = Executors.newFixedThreadPool(3);
 		remoteIPCProcess = new TestTCPServer();
 		executorService.execute(remoteIPCProcess);

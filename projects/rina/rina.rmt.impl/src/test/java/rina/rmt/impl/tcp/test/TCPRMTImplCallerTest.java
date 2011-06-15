@@ -7,8 +7,10 @@ import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import rina.delimiting.api.BaseDelimiter;
 import rina.delimiting.api.Delimiter;
 import rina.ipcprocess.api.IPCProcess;
+import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.rmt.impl.tcp.TCPRMTImpl;
 
 /**
@@ -29,9 +31,9 @@ public class TCPRMTImplCallerTest {
 		this.rmt = new TCPRMTImpl(40001);
 		IPCProcess fakeIPCProcess = new FakeIPCProcess();
 		this.rmt.setIPCProcess(fakeIPCProcess);
-		fakeIPCProcess.setRmt(rmt);
-		this.delimiter = fakeIPCProcess.getDelimiter();
-		this.ribdaemon = (FakeRIBDaemon) fakeIPCProcess.getRibDaemon();
+		fakeIPCProcess.addIPCProcessComponent(rmt);
+		this.delimiter = (Delimiter) fakeIPCProcess.getIPCProcessComponent(BaseDelimiter.getComponentName());
+		this.ribdaemon = (FakeRIBDaemon) fakeIPCProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 	}
 	
 	@Test

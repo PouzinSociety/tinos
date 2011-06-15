@@ -11,6 +11,7 @@ import rina.ribdaemon.api.MessageSubscription;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.UpdateStrategy;
+import rina.rmt.api.RMT;
 
 public class FakeRIBDaemon implements RIBDaemon {
 	
@@ -30,7 +31,8 @@ public class FakeRIBDaemon implements RIBDaemon {
 		log.info("Decoded message: "+decodedMessage);
 		messageReceived = true;
 		
-		ipcProcess.getRmt().sendCDAPMessage(portId, "CDAP message is coming back".getBytes());
+		RMT rmt = (RMT) ipcProcess.getIPCProcessComponent(RMT.class.getName());
+		rmt.sendCDAPMessage(portId, "CDAP message is coming back".getBytes());
 	}
 	
 	public boolean isMessageReceived(){
@@ -84,6 +86,10 @@ public class FakeRIBDaemon implements RIBDaemon {
 	public void setCDAPSessionManager(CDAPSessionManager arg0) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public String getName() {
+		return RIBDaemon.class.getName();
 	}
 
 }

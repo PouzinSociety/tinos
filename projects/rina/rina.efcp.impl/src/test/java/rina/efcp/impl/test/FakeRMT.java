@@ -120,4 +120,8 @@ public class FakeRMT implements RMT{
 		// TODO Auto-generated method stub
 		return 0;
 	}
+
+	public String getName() {
+		return RMT.class.getName();
+	}
 }

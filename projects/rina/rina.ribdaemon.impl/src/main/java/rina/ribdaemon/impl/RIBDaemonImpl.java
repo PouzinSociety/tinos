@@ -2,19 +2,19 @@ package rina.ribdaemon.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
-import rina.ipcprocess.api.IPCProcess;
+import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.MessageSubscriber;
 import rina.ribdaemon.api.MessageSubscription;
-import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.UpdateStrategy;
 
@@ -23,12 +23,9 @@ import rina.ribdaemon.api.UpdateStrategy;
  * @author eduardgrasa
  *
  */
-public class RIBDaemonImpl implements RIBDaemon{
+public class RIBDaemonImpl extends BaseRIBDaemon{
 	
 	private static final Log log = LogFactory.getLog(RIBDaemonImpl.class);
-	
-	/** The IPCProcess where this RIB Daemon belongs **/
-	private IPCProcess ipcProcess = null;
 	
 	/** All the message subscribers **/
 	private Map<MessageSubscription, List<MessageSubscriber>> messageSubscribers = null;
@@ -43,13 +40,13 @@ public class RIBDaemonImpl implements RIBDaemon{
 		messageSubscribers = new HashMap<MessageSubscription, List<MessageSubscriber>>();
 		store = new InMemoryStore();
 	}
-
-	public void setIPCProcess(IPCProcess ipcProcess) {
-		this.ipcProcess = ipcProcess;
-	}
 	
-	public void setCDAPSessionManager(CDAPSessionManager cdapSessionManager){
-		this.cdapSessionManager = cdapSessionManager;
+	private CDAPSessionManager getCDAPSessionManager(){
+		if (this.cdapSessionManager == null){
+			this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
+		}
+		
+		return this.cdapSessionManager;
 	}
 
 	/**
@@ -65,7 +62,7 @@ public class RIBDaemonImpl implements RIBDaemon{
 		
 		//1 Deserialize the message
 		try{
-			cdapMessage = cdapSessionManager.messageReceived(encodedCDAPMessage, portId);
+			cdapMessage = getCDAPSessionManager().messageReceived(encodedCDAPMessage, portId);
 		}catch(CDAPException ex){
 			log.error("Error decoding CDAP message: " + ex.getMessage());
 			ex.printStackTrace();
@@ -170,5 +167,4 @@ public class RIBDaemonImpl implements RIBDaemon{
 			messageSubscribers.remove(messageSubscription);
 		}
 	}
-
 }

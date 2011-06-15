@@ -11,7 +11,7 @@ import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
 import rina.delimiting.api.Delimiter;
-import rina.serialization.api.Serializer;
+import rina.encoding.api.Encoder;
 
 /**
  * 
@@ -22,8 +22,8 @@ public class CDAPEchoWorker extends CDAPWorker {
 	
 	private static final Log log = LogFactory.getLog(CDAPEchoWorker.class);
 	
-	public CDAPEchoWorker(Socket socket, CDAPSessionManager cdapSessionManager, Delimiter delimiter, Serializer serializer) {
-		super(socket, cdapSessionManager, delimiter, serializer);
+	public CDAPEchoWorker(Socket socket, CDAPSessionManager cdapSessionManager, Delimiter delimiter, Encoder encoder) {
+		super(socket, cdapSessionManager, delimiter, encoder);
 	}
 	
 	protected void processCDAPMessage(byte[] serializedCDAPMessage){

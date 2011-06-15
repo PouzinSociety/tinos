@@ -14,7 +14,7 @@ import rina.cdap.impl.WireMessageProviderFactory;
 import rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory;
 import rina.delimiting.api.DelimiterFactory;
 import rina.delimiting.impl.DelimiterFactoryImpl;
-import rina.serialization.api.SerializationFactory;
+import rina.encoding.api.EncoderFactory;
 
 /**
  * Client of the CDAP Echo Server
@@ -28,8 +28,8 @@ public class CDAPEchoClient extends CDAPClient{
 	private static final String DEFAULTHOST = "84.88.41.36";
 	
 	public CDAPEchoClient(CDAPSessionManager cdapSessionManager, DelimiterFactory delimiterFactory, 
-			SerializationFactory serializationFactory, String host, int port){
-		super(cdapSessionManager, delimiterFactory, serializationFactory, host, port);
+			EncoderFactory encoderFactory, String host, int port){
+		super(cdapSessionManager, delimiterFactory, encoderFactory, host, port);
 	}
 	
 	/**

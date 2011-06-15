@@ -25,7 +25,7 @@
 <!-- RINA Delimiting Impl-->
 		<dependency org="org.pouzinsociety.rina" name="rina.delimiting.impl" rev="1.0.0"  conf="compile->runtime" />
 <!-- RINA Utils Serialization-->
-		<dependency org="org.pouzinsociety.rina" name="rina.utils.serialization" rev="1.0.0"  conf="compile->runtime" />
+		<dependency org="org.pouzinsociety.rina" name="rina.encoding.impl" rev="1.0.0"  conf="compile->runtime" />
 <!-- Spring Framework -->
 		<dependency org="org.springframework" name="org.springframework.spring-library" rev="${org.springframework.spring}" conf="compile->compile" />
 <!-- Logging -->

@@ -1,7 +1,0 @@
-package rina.messages;
-option java_package="rina.utils.serialization.googleprotobuf.apnamesynonim";
-
-message applicationProcessNameSynonym_t{   //carries information of am application process name synonim 
-	optional string applicationProcessName = 1;
-	optional bytes synonymValue = 2;
-}

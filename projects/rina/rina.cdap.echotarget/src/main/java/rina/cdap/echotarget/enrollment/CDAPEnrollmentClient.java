@@ -16,8 +16,8 @@ import rina.cdap.impl.WireMessageProviderFactory;
 import rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory;
 import rina.delimiting.api.DelimiterFactory;
 import rina.delimiting.impl.DelimiterFactoryImpl;
-import rina.serialization.api.SerializationFactory;
-import rina.utils.serialization.googleprotobuf.GPBSerializationFactory;
+import rina.encoding.api.EncoderFactory;
+import rina.encoding.impl.googleprotobuf.GPBEncoderFactory;
 
 /**
  * Client of the CDAP Enrollment Server
@@ -36,8 +36,8 @@ public class CDAPEnrollmentClient extends CDAPClient{
 	private State state = State.NULL;
 	
 	public CDAPEnrollmentClient(CDAPSessionManager cdapSessionManager, DelimiterFactory delimiterFactory, 
-			SerializationFactory serializationFactory, String host, int port){
-		super(cdapSessionManager, delimiterFactory, serializationFactory, host, port);
+			EncoderFactory encoderFactory, String host, int port){
+		super(cdapSessionManager, delimiterFactory, encoderFactory, host, port);
 		
 		state = State.WAITING_CONNECTION;
 	}
@@ -172,8 +172,8 @@ public class CDAPEnrollmentClient extends CDAPClient{
 		WireMessageProviderFactory wmpFactory = new GoogleProtocolBufWireMessageProviderFactory();
 		cdapSessionManager.setWireMessageProviderFactory(wmpFactory);
 		DelimiterFactory delimiterFactory = new DelimiterFactoryImpl();
-		SerializationFactory serializationFactory = new GPBSerializationFactory();
-		CDAPEnrollmentClient cdapEchoClient = new CDAPEnrollmentClient(cdapSessionManager, delimiterFactory, serializationFactory, DEFAULTHOST, DEFAULTPORT);
+		EncoderFactory encoderFactory = new GPBEncoderFactory();
+		CDAPEnrollmentClient cdapEchoClient = new CDAPEnrollmentClient(cdapSessionManager, delimiterFactory, encoderFactory, DEFAULTHOST, DEFAULTPORT);
 		cdapEchoClient.run();
 	}
 }

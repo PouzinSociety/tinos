@@ -10,26 +10,27 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.ipcprocess.api.IPCProcess;
+import rina.delimiting.api.BaseDelimiter;
+import rina.delimiting.api.Delimiter;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.QoSParameters;
-import rina.rmt.api.RMT;
+import rina.ribdaemon.api.BaseRIBDaemon;
+import rina.ribdaemon.api.RIBDaemon;
+import rina.rmt.api.BaseRMT;
 
 /**
  * Specifies the interface of the Relaying and Multiplexing task. Mediates the access to one or more (N-1) DIFs 
  * or physical media
  * @author eduardgrasa
  */
-public class TCPRMTImpl implements RMT{
+public class TCPRMTImpl extends BaseRMT{
 	private static final Log log = LogFactory.getLog(TCPRMTImpl.class);
 	
 	/**
 	 * Contains the open TCP flows to other IPC processes, indexed by portId
 	 */
 	private Map<Integer, Socket> flowTable = null;
-	
-	private IPCProcess ipcProcess = null;
 	
 	/**
 	 * The thread pool implementation
@@ -57,10 +58,6 @@ public class TCPRMTImpl implements RMT{
 		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
 		this.rmtServer = new RMTServer(this, port);
 		executorService.execute(rmtServer);
-	}
-	
-	public void setIPCProcess(IPCProcess ipcProcess) {
-		this.ipcProcess = ipcProcess;
 	}
 
 	/**
@@ -112,7 +109,8 @@ public class TCPRMTImpl implements RMT{
 	 */
 	public synchronized void sendCDAPMessage(int portId, byte[] cdapMessage) {
 		Socket socket = flowTable.get(new Integer(portId));
-		byte[] delimitedSdu = ipcProcess.getDelimiter().getDelimitedSdu(cdapMessage);
+		Delimiter delimiter = (Delimiter) getIPCProcess().getIPCProcessComponent(BaseDelimiter.getComponentName());
+		byte[] delimitedSdu = delimiter.getDelimitedSdu(cdapMessage);
 		try{
 			socket.getOutputStream().write(delimitedSdu);
 			log.info("Sent PDU "+printBytes(delimitedSdu));
@@ -129,7 +127,9 @@ public class TCPRMTImpl implements RMT{
 	 */
 	public void newConnectionAccepted(Socket socket){
 		flowTable.put(new Integer(socket.getLocalPort()), socket);
-		TCPSocketReader tcpSocketReader = new TCPSocketReader(socket, ipcProcess.getRibDaemon(), ipcProcess.getDelimiter());
+		Delimiter delimiter = (Delimiter) getIPCProcess().getIPCProcessComponent(BaseDelimiter.getComponentName());
+		RIBDaemon ribdaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+		TCPSocketReader tcpSocketReader = new TCPSocketReader(socket, ribdaemon, delimiter);
 		executorService.execute(tcpSocketReader);
 	}
 	

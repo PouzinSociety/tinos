@@ -7,14 +7,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPSession;
 import rina.cdap.api.CDAPSessionDescriptor;
-import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 
-public class CDAPSessionManagerImpl implements CDAPSessionManager{
+public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
+	
 	private WireMessageProviderFactory wireMessageProviderFactory = null;
 	
 	private Map<Integer, CDAPSession> cdapSessions = null;

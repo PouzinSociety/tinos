@@ -13,8 +13,8 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.AuthTypes;
 import rina.delimiting.api.Delimiter;
 import rina.delimiting.api.DelimiterFactory;
-import rina.serialization.api.SerializationFactory;
-import rina.serialization.api.Serializer;
+import rina.encoding.api.Encoder;
+import rina.encoding.api.EncoderFactory;
 
 /**
  * Client of the CDAP Echo Server
@@ -36,9 +36,9 @@ public abstract class CDAPClient {
 	protected Delimiter delimiter = null;
 	
 	/**
-	 * The serializer (to marshall/unmarshall the payload of CDAP messages)
+	 * The encoder (to marshall/unmarshall the payload of CDAP messages)
 	 */
-	protected Serializer serializer = null;
+	protected Encoder encoder = null;
 	
 	/**
 	 * The TCP port where the CDAP Echo server is listening
@@ -62,11 +62,11 @@ public abstract class CDAPClient {
 	protected boolean end = false;
 	
 	public CDAPClient(CDAPSessionManager cdapSessionManager, DelimiterFactory delimiterFactory, 
-			SerializationFactory serializationFactory, String host, int port){
+			EncoderFactory encoderFactory, String host, int port){
 		this.cdapSessionManager = cdapSessionManager;
 		this.delimiter = delimiterFactory.createDelimiter(DelimiterFactory.DIF);
-		if (serializationFactory != null){
-			serializer = serializationFactory.createSerializerInstance();
+		if (encoderFactory != null){
+			encoder = encoderFactory.createEncoderInstance();
 		}
 		this.host = host;
 		this.port = port;

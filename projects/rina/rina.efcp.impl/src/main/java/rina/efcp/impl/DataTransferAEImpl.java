@@ -4,23 +4,17 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import rina.efcp.api.DataTransferAE;
+import rina.efcp.api.BaseDataTransferAE;
 import rina.efcp.api.DataTransferAEInstance;
 import rina.efcp.api.DataTransferConstants;
 import rina.flowallocator.api.Connection;
-import rina.ipcprocess.api.IPCProcess;
 
 /**
  * Simple implementation of DataTransferAEFactory
  * @author eduardgrasa
  *
  */
-public class DataTransferAEImpl implements DataTransferAE{
-	
-	/**
-	 * A pointer to the IPC process
-	 */
-	private IPCProcess ipcProcess = null;
+public class DataTransferAEImpl extends BaseDataTransferAE{
 	
 	/**
 	 * Stores all the instantiated data transfer application entities
@@ -45,10 +39,6 @@ public class DataTransferAEImpl implements DataTransferAE{
 		this.dataTransferConstants = dataTransferConstants;
 	}
 
-	public void setIPCProcess(IPCProcess ipcProcess) {
-		this.ipcProcess = ipcProcess;
-	}
-
 	public Map<Connection, DataTransferAEInstance> getDataTransferAEInstances() {
 		return dataTransferAEInstances;
 	}
@@ -63,7 +53,7 @@ public class DataTransferAEImpl implements DataTransferAE{
 			throw new RuntimeException("This connection already has a running data transfer AE instance attached");
 		}
 		DataTransferAEInstanceImpl dataTransferAEInstance = new DataTransferAEInstanceImpl(connection, dataTransferConstants);
-		dataTransferAEInstance.setIPCProcess(ipcProcess);
+		dataTransferAEInstance.setIPCProcess(getIPCProcess());
 		dataTransferAEInstances.put(connection, dataTransferAEInstance);
 		
 		return dataTransferAEInstance;
@@ -99,5 +89,4 @@ public class DataTransferAEImpl implements DataTransferAE{
 		
 		return null;
 	}
-
 }

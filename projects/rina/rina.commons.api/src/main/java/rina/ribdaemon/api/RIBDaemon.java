@@ -1,6 +1,5 @@
 package rina.ribdaemon.api;
 
-import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcessComponent;
 
@@ -78,10 +77,4 @@ public interface RIBDaemon extends IPCProcessComponent{
 	 * @param updateStrategy
 	 */
 	public void sendMessages(CDAPMessage[] cdapMessages, UpdateStrategy updateStrategy);
-	
-	/**
-	 * Required to create, retrieve and store CDAP sessions
-	 * @param cdapSessionFactory
-	 */
-	public void setCDAPSessionManager(CDAPSessionManager cdapSessionFactory);
 }

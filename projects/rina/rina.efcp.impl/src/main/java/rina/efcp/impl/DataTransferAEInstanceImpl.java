@@ -8,6 +8,7 @@ import rina.efcp.api.DataTransferAEInstance;
 import rina.efcp.api.DataTransferConstants;
 import rina.flowallocator.api.Connection;
 import rina.ipcprocess.api.IPCProcess;
+import rina.rmt.api.RMT;
 import rina.utils.types.Unsigned;
 
 public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
@@ -258,7 +259,8 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 		//Iterate over posted PDUs and give them to the RMT
 		for (int i=0; i<postablePDUs.size(); i++){
 			//TODO add the stuff if DTCP is present and there is retransmission control
-			ipcProcess.getRmt().sendEFCPPDU(postablePDUs.get(i).getSerializedPDU());
+			RMT rmt = (RMT) ipcProcess.getIPCProcessComponent(RMT.class.getName());
+			rmt.sendEFCPPDU(postablePDUs.get(i).getSerializedPDU());
 		}
 		
 	}
@@ -325,5 +327,10 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 		// TODO invoke the SDU gap timer policy
 		//Typically, the action would be to signal an error or abort the flow
 		
+	}
+
+	public String getName() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
