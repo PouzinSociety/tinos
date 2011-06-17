@@ -7,6 +7,7 @@ import rina.cdap.api.CDAPSessionManagerFactory;
 import rina.delimiting.api.DelimiterFactory;
 import rina.efcp.api.DataTransferAEFactory;
 import rina.encoding.api.EncoderFactory;
+import rina.enrollment.api.EnrollmentTaskFactory;
 import rina.flowallocator.api.FlowAllocatorFactory;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
@@ -56,6 +57,11 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	 */
 	private DelimiterFactory delimiterFactory = null;
 	
+	/**
+	 * Factory of enrollment tasks
+	 */
+	private EnrollmentTaskFactory enrollmentTaskFactory = null;
+	
 	public IPCProcessFactoryImpl(){
 		ipcProcesses = new HashMap<ApplicationProcessNamingInfo, IPCProcess>();
 	}
@@ -87,6 +93,10 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	public void setDelimiterFactory(DelimiterFactory delimiterFactory) {
 		this.delimiterFactory = delimiterFactory;
 	}
+	
+	public void setEnrollmentTaskFactory(EnrollmentTaskFactory enrollmentTaskFactory){
+		this.enrollmentTaskFactory = enrollmentTaskFactory;
+	}
 
 	public IPCProcess createIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
 		IPCProcess ipcProcess = new IPCProcessImpl(ipcProcessNamingInfo.getApplicationProcessName(), 
@@ -99,6 +109,7 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		ipcProcess.addIPCProcessComponent(cdapSessionManagerFactory.createCDAPSessionManager());
 		ipcProcess.addIPCProcessComponent(encoderFactory.createEncoderInstance());
 		ipcProcess.addIPCProcessComponent(delimiterFactory.createDelimiter(DelimiterFactory.DIF));
+		ipcProcess.addIPCProcessComponent(enrollmentTaskFactory.createEnrollmentTask(ipcProcessNamingInfo));
 		
 		ipcProcesses.put(ipcProcessNamingInfo, ipcProcess);
 		return ipcProcess;
@@ -110,6 +121,7 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		//flowAllocatorFactory.destroyFlowAllocator(ipcProcessNamingInfo);
 		ribDaemonFactory.destroyRIBDaemon(ipcProcessNamingInfo);
 		rmtFactory.destroyRMT(ipcProcessNamingInfo);
+		enrollmentTaskFactory.destroyEnrollmentTask(ipcProcessNamingInfo);
 		ipcProcess.destroy();
 	}
 

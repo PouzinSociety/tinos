@@ -15,6 +15,7 @@ import rina.ribdaemon.api.MessageSubscription;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPException;
+import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Opcode;
@@ -116,7 +117,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator implements MessageSubsc
 	/**
 	 * Invoked by the RIB Daemon when it has a CDAP message for the flow allocator
 	 */
-	public void messageReceived(CDAPMessage cdapMessage) {
+	public void messageReceived(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) {
 		switch (cdapMessage.getOpCode()){
 		case M_CREATE:
 			//received a create flow request from another IPC process, we have to process it

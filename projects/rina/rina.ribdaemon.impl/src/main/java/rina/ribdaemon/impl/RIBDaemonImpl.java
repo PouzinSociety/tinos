@@ -1,15 +1,13 @@
 package rina.ribdaemon.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPException;
+import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ribdaemon.api.BaseRIBDaemon;
@@ -28,7 +26,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	private static final Log log = LogFactory.getLog(RIBDaemonImpl.class);
 	
 	/** All the message subscribers **/
-	private Map<MessageSubscription, List<MessageSubscriber>> messageSubscribers = null;
+	private CDAPSubscriptionManager cdapSubscriptionManager = null;
 	
 	/** A simple in memory store **/
 	private InMemoryStore store = null;
@@ -37,7 +35,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	private CDAPSessionManager cdapSessionManager = null;
 	
 	public RIBDaemonImpl(){
-		messageSubscribers = new HashMap<MessageSubscription, List<MessageSubscriber>>();
+		cdapSubscriptionManager = new CDAPSubscriptionManager();
 		store = new InMemoryStore();
 	}
 	
@@ -59,10 +57,12 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	 */
 	public void cdapMessageDelivered(byte[] encodedCDAPMessage, int portId){
 		CDAPMessage cdapMessage = null;
+		CDAPSessionDescriptor cdapSessionDescriptor = null;
 		
-		//1 Deserialize the message
+		//1 Decode the message and obtain the CDAP session descriptor
 		try{
 			cdapMessage = getCDAPSessionManager().messageReceived(encodedCDAPMessage, portId);
+			cdapSessionDescriptor = getCDAPSessionManager().getCDAPSession(portId).getSessionDescriptor();
 		}catch(CDAPException ex){
 			log.error("Error decoding CDAP message: " + ex.getMessage());
 			ex.printStackTrace();
@@ -70,6 +70,12 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		}
 		
 		//2 Process the message (send to subscribed people, maybe something else)
+		//TODO subscribers will be called sequentially in this thread now, can improve 
+		//this later (have a thread pool and call subscribers from different threads)
+		List<MessageSubscriber> messageSubscribers = cdapSubscriptionManager.getSubscribersForMessage(cdapMessage);
+		for(int i=0; i<messageSubscribers.size(); i++){
+			messageSubscribers.get(i).messageReceived(cdapMessage, cdapSessionDescriptor);
+		}
 	}
 
 	/**
@@ -130,18 +136,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	 * @throws Exception if there's something wrong with the messageSubscription or messageSubscriber is null
 	 */
 	public synchronized void subscribeToMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber) throws RIBDaemonException {
-		if (messageSubscription == null || messageSubscriber == null){
-			throw new RIBDaemonException(RIBDaemonException.MALFORMED_MESSAGE_SUBSCRIPTION_REQUEST);
-		}
-		
-		List<MessageSubscriber> subscribers = messageSubscribers.get(messageSubscription);
-		if (subscribers == null){
-			subscribers = new ArrayList<MessageSubscriber>();
-			subscribers.add(messageSubscriber);
-			messageSubscribers.put(messageSubscription, subscribers);
-		}else{
-			subscribers.add(messageSubscriber);
-		}
+		cdapSubscriptionManager.subscribeToMessages(messageSubscription, messageSubscriber);
 	}
 
 	/**
@@ -153,18 +148,6 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	 * messageSubscription does not exist
 	 */
 	public synchronized void unsubscribeFromMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber) throws RIBDaemonException {
-		if (messageSubscription == null || messageSubscriber == null){
-			throw new RIBDaemonException(RIBDaemonException.MALFORMED_MESSAGE_UNSUBSCRIPTION_REQUEST);
-		}
-		
-		List<MessageSubscriber> subscribers = messageSubscribers.get(messageSubscription);
-		if (subscribers == null){
-			throw new RIBDaemonException(RIBDaemonException.SUBSCRIBER_WAS_NOT_SUBSCRIBED);
-		}
-		
-		subscribers.remove(messageSubscriber);
-		if (subscribers.size() == 0){
-			messageSubscribers.remove(messageSubscription);
-		}
+		cdapSubscriptionManager.unsubscribeFromMessages(messageSubscription, messageSubscriber);
 	}
 }

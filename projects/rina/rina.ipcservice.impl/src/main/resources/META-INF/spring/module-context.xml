@@ -13,6 +13,7 @@
 		<property name="CDAPSessionManagerFactory" ref="cdapSessionManagerFactoryService" />
 		<property name="encoderFactory" ref="encoderFactoryService" />
 		<property name="delimiterFactory" ref="delimiterFactoryService" />
+		<property name="enrollmentTaskFactory" ref="enrollmentTaskFactoryService" />
 	</bean>
 
 </beans>

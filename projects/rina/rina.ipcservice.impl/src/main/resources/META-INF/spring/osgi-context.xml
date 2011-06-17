@@ -15,6 +15,7 @@
     <osgi:reference id="cdapSessionManagerFactoryService" interface="rina.cdap.api.CDAPSessionManagerFactory"/>
     <osgi:reference id="encoderFactoryService" interface="rina.encoding.api.EncoderFactory"/>
     <osgi:reference id="delimiterFactoryService" interface="rina.delimiting.api.DelimiterFactory" />
+    <osgi:reference id="enrollmentTaskFactoryService" interface="rina.enrollment.api.EnrollmentTaskFactory" />
           
     <!--  Export the IPCProcessFactoryImpl to the OSGi registry-->
     <osgi:service id="ipcProcessFactory" ref="ipcProcessFactoryImpl">

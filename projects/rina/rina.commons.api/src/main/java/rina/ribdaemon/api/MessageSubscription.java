@@ -1,5 +1,6 @@
 package rina.ribdaemon.api;
 
+import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 
@@ -267,5 +268,69 @@ public class MessageSubscription {
 		}
 
 		return false;
+	}
+	
+	/**
+	 * Return true if this subscription matches the message, false otherwise
+	 * @param cdapMessage
+	 * @return
+	 */
+	public boolean isSubscribedToMessage(CDAPMessage cdapMessage){
+		if (!filterMatches(this.destAEInst, cdapMessage.getDestAEInst())){
+			return false;
+		}
+		if (!filterMatches(this.destAEName, cdapMessage.getDestAEName())){
+			return false;
+		}
+		if (!filterMatches(this.destApInst, cdapMessage.getDestApInst())){
+			return false;
+		}
+		if (!filterMatches(this.destApName, cdapMessage.getDestApName())){
+			return false;
+		}
+		if (!filterMatches(this.objClass, cdapMessage.getObjClass())){
+			return false;
+		}
+		if (!filterMatches(this.objValue, cdapMessage.getObjValue())){
+			return false;
+		}
+		if (!filterMatches(this.objInst, cdapMessage.getObjInst())){
+			return false;
+		}
+		if (!filterMatches(this.objName, cdapMessage.getObjName())){
+			return false;
+		}
+		if (!filterMatches(this.opCode, cdapMessage.getOpCode())){
+			return false;
+		}
+		if (!filterMatches(this.srcAEInst, cdapMessage.getSrcAEInst())){
+			return false;
+		}
+		if (!filterMatches(this.srcAEName, cdapMessage.getSrcAEName())){
+			return false;
+		}
+		if (!filterMatches(this.srcApInst, cdapMessage.getSrcApInst())){
+			return false;
+		}
+		if (!filterMatches(this.srcApName, cdapMessage.getSrcApName())){
+			return false;
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * If the filter field is not null, return if it equals to the 
+	 * message field
+	 * @param filterField
+	 * @param messageField
+	 * @return
+	 */
+	private boolean filterMatches(Object filterField, Object messageField){
+		if (filterField == null){
+			return true;
+		}
+		
+		return filterField.equals(messageField);
 	}
 }
