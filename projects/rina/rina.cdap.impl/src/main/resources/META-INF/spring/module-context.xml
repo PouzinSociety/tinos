@@ -3,9 +3,8 @@
 		xsi:schemaLocation="
 			http://www.springframework.org/schema/beans
 			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
-	<bean name="wireMessageProviderFactory" class="rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory">
-	</bean>	
+	<bean name="wireMessageProviderFactoryBean" class="rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory"/>
 	<bean name="cdapSessionManagerFactoryBean" class="rina.cdap.impl.CDAPSessionManagerFactoryImpl">
-		<property name="wireMessageProviderFactory" ref="wireMessageProviderFactory"/>
+		<property name="wireMessageProviderFactory" ref="wireMessageProviderFactoryBean"/>
 	</bean>
 </beans>

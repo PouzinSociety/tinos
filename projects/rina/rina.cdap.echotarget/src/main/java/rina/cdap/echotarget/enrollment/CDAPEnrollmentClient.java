@@ -27,7 +27,7 @@ import rina.encoding.impl.googleprotobuf.GPBEncoderFactory;
 public class CDAPEnrollmentClient extends CDAPClient{
 	
 	private static final Log log = LogFactory.getLog(CDAPEnrollmentClient.class);
-	private static final int DEFAULTPORT = 32768;
+	private static final int DEFAULTPORT = 32769;
 	private static final String DEFAULTHOST = "84.88.41.36";
 	
 	private enum State {NULL, WAITING_CONNECTION, WAITING_READ_ADDRESS, INITIALIZING_DATA, 

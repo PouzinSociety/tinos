@@ -13,6 +13,7 @@
 	<artifact type="bundle" name="rina.encoding.impl" version="[1, 2)"/>
 	<artifact type="bundle" name="rina.rmt.impl" version="[1, 2)"/>
 	<artifact type="bundle" name="rina.ribdaemon.impl" version="[1, 2)"/>
+	<artifact type="bundle" name="rina.enrollment.impl" version="[1, 2)"/>
 	<artifact type="bundle" name="rina.ipcservice.impl" version="[1, 2)"/>
 	<artifact type="bundle" name="rina.demo.bootstrapper" version="[1, 2)"/>
 </plan>

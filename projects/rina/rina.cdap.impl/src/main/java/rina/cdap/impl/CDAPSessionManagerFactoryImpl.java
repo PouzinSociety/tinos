@@ -13,7 +13,7 @@ public class CDAPSessionManagerFactoryImpl implements CDAPSessionManagerFactory{
 	public CDAPSessionManager createCDAPSessionManager() {
 		CDAPSessionManagerImpl cdapSessionManager = new CDAPSessionManagerImpl();
 		cdapSessionManager.setWireMessageProviderFactory(wireMessageProviderFactory);
-		return new CDAPSessionManagerImpl();
+		return cdapSessionManager;
 	}
 	
 	public void setWireMessageProviderFactory(WireMessageProviderFactory wireMessageProviderFactory){

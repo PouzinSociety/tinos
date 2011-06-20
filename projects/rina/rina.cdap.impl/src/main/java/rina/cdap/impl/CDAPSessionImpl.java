@@ -3,7 +3,6 @@ package rina.cdap.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-
 import rina.cdap.api.CDAPException;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.CDAPMessageValidator;
