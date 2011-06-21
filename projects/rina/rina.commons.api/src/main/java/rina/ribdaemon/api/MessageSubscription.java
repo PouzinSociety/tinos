@@ -333,4 +333,62 @@ public class MessageSubscription {
 		
 		return filterField.equals(messageField);
 	}
+	
+	public String toString(){
+		String result = "Subscription: \n";
+		
+		if (this.getDestAEInst() != null){
+			result = result + "Dest AE Inst: "+this.getDestAEInst() + "\n";
+		}
+		
+		if (this.getDestAEName() != null){
+			result = result + "Dest AE Name: "+this.getDestAEName() + "\n";
+		}
+		
+		if (this.getDestApInst() != null){
+			result = result + "Dest AP Inst: "+this.getDestApInst() + "\n";
+		}
+		
+		if (this.getDestApName() != null){
+			result = result + "Dest Ap Name: "+this.getDestApName() + "\n";
+		}
+		
+		if (this.getObjClass() != null){
+			result = result + "Obj class: "+this.getObjClass() + "\n";
+		}
+		
+		if (this.getObjName() != null){
+			result = result + "Obj name: "+this.getObjName() + "\n";
+		}
+		
+		if (this.getObjValue() != null){
+			result = result + "Obj value: "+this.getObjValue() + "\n";
+		}
+		
+		if (this.getObjInst() != 0){
+			result = result + "Obj inst: "+this.getObjInst() + "\n";
+		}
+		
+		if (this.getOpCode() != null){
+			result = result + "Opcode: "+this.getOpCode() + "\n";
+		}
+		
+		if (this.getSrcAEInst() != null){
+			result = result + "Src AE Inst: "+this.getSrcAEInst() + "\n";
+		}
+		
+		if (this.getSrcAEName() != null){
+			result = result + "Src AE Name: "+this.getSrcAEName() + "\n";
+		}
+		
+		if (this.getSrcApInst() != null){
+			result = result + "Src AP Inst: "+this.getSrcApInst() + "\n";
+		}
+		
+		if (this.getSrcApName() != null){
+			result = result + "Src AP Name: "+this.getSrcApName() + "\n";
+		}
+		
+		return result;
+	}
 }

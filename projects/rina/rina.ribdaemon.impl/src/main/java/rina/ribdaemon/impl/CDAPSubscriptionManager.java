@@ -6,6 +6,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import rina.cdap.api.message.CDAPMessage;
 import rina.ribdaemon.api.MessageSubscriber;
 import rina.ribdaemon.api.MessageSubscription;
@@ -17,6 +20,7 @@ import rina.ribdaemon.api.RIBDaemonException;
  *
  */
 public class CDAPSubscriptionManager {
+	private static final Log log = LogFactory.getLog(CDAPSubscriptionManager.class);
 
 	/** All the message subscribers **/
 	private Map<MessageSubscription, List<MessageSubscriber>> messageSubscribers = null;
@@ -45,6 +49,8 @@ public class CDAPSubscriptionManager {
 		}else{
 			subscribers.add(messageSubscriber);
 		}
+		
+		log.debug("Message subscriber "+messageSubscriber.getClass().getName()+" subscribed to: "+messageSubscription.toString());
 	}
 	
 	/**

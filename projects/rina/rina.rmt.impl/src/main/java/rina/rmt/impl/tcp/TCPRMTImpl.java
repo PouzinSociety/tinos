@@ -94,7 +94,7 @@ public class TCPRMTImpl extends BaseRMT{
 		
 		Socket socket = new Socket(host, port);
 		newConnectionAccepted(socket);
-		return socket.getLocalPort();
+		return socket.getPort();
 	}
 
 	/**
@@ -107,15 +107,21 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @param cdapMessage
 	 * @throws IPCException
 	 */
-	public synchronized void sendCDAPMessage(int portId, byte[] cdapMessage) {
+	public synchronized void sendCDAPMessage(int portId, byte[] cdapMessage) throws Exception{
 		Socket socket = flowTable.get(new Integer(portId));
+		if (socket == null){
+			throw new Exception("Flow closed");
+		}
+		
 		Delimiter delimiter = (Delimiter) getIPCProcess().getIPCProcessComponent(BaseDelimiter.getComponentName());
 		byte[] delimitedSdu = delimiter.getDelimitedSdu(cdapMessage);
 		try{
 			socket.getOutputStream().write(delimitedSdu);
-			log.info("Sent PDU "+printBytes(delimitedSdu));
+			log.debug("Sent PDU through flow "+portId+": "+printBytes(delimitedSdu));
 		}catch(IOException ex){
-			ex.printStackTrace();
+			log.error("Problems sending a PDU through flow "+portId+": "+ex.getMessage());
+			this.connectionEnded(portId);
+			throw new Exception("Flow closed", ex);
 		}
 	}
 	
@@ -126,11 +132,19 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @param socket
 	 */
 	public void newConnectionAccepted(Socket socket){
-		flowTable.put(new Integer(socket.getLocalPort()), socket);
+		flowTable.put(new Integer(socket.getPort()), socket);
 		Delimiter delimiter = (Delimiter) getIPCProcess().getIPCProcessComponent(BaseDelimiter.getComponentName());
 		RIBDaemon ribdaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-		TCPSocketReader tcpSocketReader = new TCPSocketReader(socket, ribdaemon, delimiter);
+		TCPSocketReader tcpSocketReader = new TCPSocketReader(socket, ribdaemon, delimiter, this);
 		executorService.execute(tcpSocketReader);
+	}
+	
+	/**
+	 * Called when the socket identified by portId is no longer connected
+	 * @param portId
+	 */
+	public synchronized void connectionEnded(int portId){
+		flowTable.remove(new Integer(portId));
 	}
 	
 	private String printBytes(byte[] message){

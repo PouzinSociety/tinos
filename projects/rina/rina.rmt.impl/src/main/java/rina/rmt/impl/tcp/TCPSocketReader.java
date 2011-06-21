@@ -19,6 +19,8 @@ public class TCPSocketReader implements Runnable{
 	
 	private static final Log log = LogFactory.getLog(TCPSocketReader.class);
 	
+	private TCPRMTImpl rmt = null;
+	
 	private RIBDaemon ribdaemon = null;
 	
 	private Delimiter delimiter = null;
@@ -30,10 +32,11 @@ public class TCPSocketReader implements Runnable{
 	 */
 	private boolean end = false;
 	
-	public TCPSocketReader(Socket socket, RIBDaemon ribdaemon, Delimiter delimiter){
+	public TCPSocketReader(Socket socket, RIBDaemon ribdaemon, Delimiter delimiter, TCPRMTImpl rmt){
 		this.socket = socket;
 		this.ribdaemon = ribdaemon;
 		this.delimiter = delimiter;
+		this.rmt = rmt;
 	}
 
 	public void run() {
@@ -44,6 +47,7 @@ public class TCPSocketReader implements Runnable{
 		byte[] currentSduLengthCandidate = null;
 		byte[] serializedCDAPMessage = null;
 		byte nextByte = 0;
+		int value = 0;
 		
 		log.info("Reading socket from remote interface: "+socket.getInetAddress().getHostAddress() + "\n" 
 				+ "Local port_id: "+socket.getLocalPort() + "\n" 
@@ -52,7 +56,12 @@ public class TCPSocketReader implements Runnable{
 		while(!end){
 			//Delimit the byte array that contains a serialized CDAP message
 			try{
-				nextByte = (byte) socket.getInputStream().read();
+				value = socket.getInputStream().read();
+				if (value == -1){
+					break;
+				}
+	
+				nextByte = (byte) value;
 				if (lookingForSduLength){
 					currentSduLengthCandidate = new byte[lastSduLengthCandidate.length + 1];
 					for(int i=0; i<lastSduLengthCandidate.length; i++){
@@ -65,7 +74,7 @@ public class TCPSocketReader implements Runnable{
 					}else{
 						lastSduLengthCandidate = new byte[0];
 						if (length > 0){
-							log.info("Found a delimited CDAP message, of length " + length);
+							log.debug("Found a delimited CDAP message, of length " + length);
 							lookingForSduLength = false;
 						}
 					}
@@ -77,7 +86,7 @@ public class TCPSocketReader implements Runnable{
 						serializedCDAPMessage[index] = nextByte;
 						index ++;
 						if (index == length){
-							ribdaemon.cdapMessageDelivered(serializedCDAPMessage, socket.getLocalPort());
+							ribdaemon.cdapMessageDelivered(serializedCDAPMessage, socket.getPort());
 							index = 0;
 							length = 0;
 							lookingForSduLength = true;
@@ -90,5 +99,9 @@ public class TCPSocketReader implements Runnable{
 				end = true;
 			}
 		}
+		
+		log.debug("The remote endpoint of flow "+socket.getPort()+" has disconnected. Notifying the RMT and the RIB Daemon");
+		this.rmt.connectionEnded(socket.getPort());
+		this.ribdaemon.flowDeallocated(socket.getPort());
 	}
 }

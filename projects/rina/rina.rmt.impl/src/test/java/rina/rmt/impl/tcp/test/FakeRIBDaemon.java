@@ -32,7 +32,12 @@ public class FakeRIBDaemon implements RIBDaemon {
 		messageReceived = true;
 		
 		RMT rmt = (RMT) ipcProcess.getIPCProcessComponent(RMT.class.getName());
-		rmt.sendCDAPMessage(portId, "CDAP message is coming back".getBytes());
+		try {
+			rmt.sendCDAPMessage(portId, "CDAP message is coming back".getBytes());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public boolean isMessageReceived(){
@@ -90,6 +95,11 @@ public class FakeRIBDaemon implements RIBDaemon {
 
 	public String getName() {
 		return RIBDaemon.class.getName();
+	}
+
+	public void flowDeallocated(int arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

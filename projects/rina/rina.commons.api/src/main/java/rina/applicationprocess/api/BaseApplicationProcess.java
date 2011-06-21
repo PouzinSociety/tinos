@@ -3,6 +3,8 @@ package rina.applicationprocess.api;
 import java.util.ArrayList;
 import java.util.List;
 
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
+
 /**
  * Base implementation of the ApplicationProcess class. Deals with all the naming related 
  * information and operations.
@@ -36,6 +38,16 @@ public class BaseApplicationProcess implements ApplicationProcess{
 
 	public void setApplicationProcessInstance(String applicationProcessInstance) {
 		this.applicationProcessInstance = applicationProcessInstance;
+	}
+	
+	public ApplicationProcessNamingInfo getApplicationProcessNamingInfo(){
+		ApplicationProcessNamingInfo result = new ApplicationProcessNamingInfo(this.applicationProcessName, this.applicationProcessInstance, null, null);
+		return result;
+	}
+
+	public void setApplicationProcessNamingInfo(ApplicationProcessNamingInfo applicationProcessNamingInfo){
+		this.applicationProcessName = applicationProcessNamingInfo.getApplicationProcessName();
+		this.applicationProcessInstance = applicationProcessNamingInfo.getApplicationProcessInstance();
 	}
 
 	public List<byte[]> getApplicationProcessNameSynonyms() {

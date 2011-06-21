@@ -2,6 +2,7 @@ package rina.cdap.api;
 
 import rina.cdap.api.message.AuthValue;
 import rina.cdap.api.message.CDAPMessage.AuthTypes;
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 /**
  * Describes a CDAPSession, by identifying the source and destination application processes.
@@ -202,5 +203,13 @@ public class CDAPSessionDescriptor {
 
 	public void setPortId(int portId) {
 		this.portId = portId;
+	}
+	
+	public ApplicationProcessNamingInfo getSourceApplicationProcessNamingInfo(){
+		return new ApplicationProcessNamingInfo(this.getSrcApName(), this.getSrcApInst(), this.getSrcAEName(), this.getSrcAEInst());
+	}
+	
+	public ApplicationProcessNamingInfo getDestinationApplicationProcessNamingInfo(){
+		return new ApplicationProcessNamingInfo(this.getDestApName(), this.getDestApInst(), this.getDestAEName(), this.getDestAEInst());
 	}
 }

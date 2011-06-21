@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPSession;
@@ -15,6 +18,8 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 
 public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
+	
+	private static final Log log = LogFactory.getLog(CDAPSessionManagerImpl.class);
 	
 	private WireMessageProviderFactory wireMessageProviderFactory = null;
 	
@@ -134,12 +139,15 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 		CDAPMessage cdapMessage = this.decodeCDAPMessage(encodedCDAPMessage);
 		CDAPSession cdapSession = this.getCDAPSession(portId);
 		
+		log.debug("Received CDAP message from port "+portId+". Decoded contents: "+cdapMessage.toString());
+		
 		switch(cdapMessage.getOpCode()){
 		case M_CONNECT:
 			if (cdapSession == null){
 				cdapSession = this.createCDAPSession(portId);
 				cdapSession.messageReceived(cdapMessage);
 				this.cdapSessions.put(new Integer(portId), cdapSession);
+				log.debug("Created a new CDAP session for port "+portId);
 			}else{
 				throw new CDAPException("M_CONNECT received on an already open CDAP Session, over flow " + portId);
 			}

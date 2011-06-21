@@ -59,6 +59,8 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		CDAPMessage cdapMessage = null;
 		CDAPSessionDescriptor cdapSessionDescriptor = null;
 		
+		log.debug("Got an encoded CDAP message from portId "+portId);
+		
 		//1 Decode the message and obtain the CDAP session descriptor
 		try{
 			cdapMessage = getCDAPSessionManager().messageReceived(encodedCDAPMessage, portId);
@@ -76,6 +78,16 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		for(int i=0; i<messageSubscribers.size(); i++){
 			messageSubscribers.get(i).messageReceived(cdapMessage, cdapSessionDescriptor);
 		}
+	}
+	
+	/**
+	 * Invoked by the RMT when it detects that a certain flow has been deallocated, and therefore any CDAP sessions 
+	 * over it should be terminated.
+	 * @param portId identifies the flow that has been deallocated
+	 */
+	public void flowDeallocated(int portId) {
+		getCDAPSessionManager().removeCDAPSession(portId);
+		//TODO inform all the subscribers about this?
 	}
 
 	/**

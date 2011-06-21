@@ -52,6 +52,13 @@ public interface RIBDaemon extends IPCProcessComponent{
 	public void cdapMessageDelivered(byte[] cdapMessage, int portId);
 	
 	/**
+	 * Invoked by the RMT when it detects that a certain flow has been deallocated, and therefore any CDAP sessions 
+	 * over it should be terminated.
+	 * @param portId identifies the flow that has been deallocated
+	 */
+	public void flowDeallocated(int portId);
+	
+	/**
 	 * Interested MessageSubscribers will be called when CDAP that comply with the 
 	 * filter defined by the non-default attributes of the messageSubscription class are received.
 	 * @param messageSubscription

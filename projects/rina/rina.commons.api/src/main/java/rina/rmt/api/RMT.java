@@ -27,8 +27,9 @@ public interface RMT extends IPCProcessComponent{
 	 * that was established when this IPC process joined the DIF.
 	 * @param portId
 	 * @param cdapMessage
+	 * @throws exception if the message cannot be sent through the flow identified by portId
 	 */
-	public void sendCDAPMessage(int portId, byte[] cdapMessage);
+	public void sendCDAPMessage(int portId, byte[] cdapMessage) throws Exception;
 	
 	/**
 	 * Cause the RMT to allocate a new flow through an N-1 DIF or the underlying

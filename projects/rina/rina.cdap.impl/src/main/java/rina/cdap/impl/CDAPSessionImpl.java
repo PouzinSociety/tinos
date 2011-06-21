@@ -159,10 +159,11 @@ public class CDAPSessionImpl implements CDAPSession{
 		switch(cdapMessage.getOpCode()){
 		case M_CONNECT:
 			connectionStateMachine.connectSentOrReceived(cdapMessage, sent);
+			populateSessionDescriptor(cdapMessage);
 			break;
 		case M_CONNECT_R:
 			connectionStateMachine.connectResponseSentOrReceived(cdapMessage, sent);
-			populateSessionDescriptor(cdapMessage);
+			
 			break;
 		case M_RELEASE:
 			connectionStateMachine.releaseSentOrReceived(cdapMessage, sent);
