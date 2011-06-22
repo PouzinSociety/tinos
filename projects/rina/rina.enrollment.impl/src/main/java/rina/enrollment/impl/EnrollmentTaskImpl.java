@@ -6,9 +6,13 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPSessionDescriptor;
+import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Opcode;
+import rina.encoding.api.BaseEncoder;
+import rina.encoding.api.Encoder;
 import rina.enrollment.api.BaseEnrollmentTask;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
@@ -17,6 +21,8 @@ import rina.ribdaemon.api.MessageSubscriber;
 import rina.ribdaemon.api.MessageSubscription;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
+import rina.rmt.api.BaseRMT;
+import rina.rmt.api.RMT;
 
 /**
  * Current limitations: Adresses of IPC processes are allocated forever (until we lose the connection with them)
@@ -31,10 +37,10 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements MessageSub
 	 * Stores the enrollment state machines, one per remote IPC process that this IPC 
 	 * process is enrolled to.
 	 */
-	private Map<ApplicationProcessNamingInfo, EnrollmentStateMachine> enrollmentStateMachines = null;
+	private Map<String, EnrollmentStateMachine> enrollmentStateMachines = null;
 
 	public EnrollmentTaskImpl(){
-		enrollmentStateMachines = new Hashtable<ApplicationProcessNamingInfo, EnrollmentStateMachine>();
+		enrollmentStateMachines = new Hashtable<String, EnrollmentStateMachine>();
 	}
 	
 	@Override
@@ -64,6 +70,22 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements MessageSub
 			messageSubscription = new MessageSubscription();
 			messageSubscription.setOpCode(Opcode.M_RELEASE_R);
 			ribDaemon.subscribeToMessages(messageSubscription, this);
+			
+			messageSubscription = new MessageSubscription();
+			messageSubscription.setOpCode(Opcode.M_START_R);
+			ribDaemon.subscribeToMessages(messageSubscription, this);
+			
+			messageSubscription = new MessageSubscription();
+			messageSubscription.setObjName("daf.management.currentSynonym");
+			ribDaemon.subscribeToMessages(messageSubscription, this);
+			
+			messageSubscription = new MessageSubscription();
+			messageSubscription.setObjName("daf.management.enrollment");
+			ribDaemon.subscribeToMessages(messageSubscription, this);
+			
+			messageSubscription = new MessageSubscription();
+			messageSubscription.setObjName("dif.management.operationalStatus");
+			ribDaemon.subscribeToMessages(messageSubscription, this);
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();
 			log.error("Could not subscribe to RIB Daemon:" +ex.getMessage());
@@ -82,7 +104,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements MessageSub
 			return;
 		}
 		
-		//TODO pass the message to the EnrollmentStateMachine and let it do the job
+		enrollmentStateMachine.processCDAPMessage(cdapMessage, cdapSessionDescriptor.getPortId());
 	}
 	
 	/**
@@ -96,15 +118,15 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements MessageSub
 		ApplicationProcessNamingInfo destinationNamingInfo = cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo();
 		EnrollmentStateMachine enrollmentStateMachine = null;
 		
-		if (myNamingInfo.equals(destinationNamingInfo)){
-			enrollmentStateMachine = enrollmentStateMachines.get(destinationNamingInfo);
-			if (enrollmentStateMachine == null){
-				enrollmentStateMachine = this.createEnrollmentStateMachine(destinationNamingInfo);
-			}
-		}else if (myNamingInfo.equals(destinationNamingInfo)){
-			enrollmentStateMachine = enrollmentStateMachines.get(sourceNamingInfo);
+		if (myNamingInfo.equals(destinationNamingInfo) || getIPCProcess().containsWhatevercastName(destinationNamingInfo.getApplicationProcessName())){
+			enrollmentStateMachine = getEnrollmentStateMachine(sourceNamingInfo);
 			if (enrollmentStateMachine == null){
 				enrollmentStateMachine = this.createEnrollmentStateMachine(sourceNamingInfo);
+			}
+		}else if (myNamingInfo.equals(sourceNamingInfo) || getIPCProcess().containsWhatevercastName(sourceNamingInfo.getApplicationProcessName())){
+			enrollmentStateMachine = getEnrollmentStateMachine(destinationNamingInfo);
+			if (enrollmentStateMachine == null){
+				enrollmentStateMachine = this.createEnrollmentStateMachine(destinationNamingInfo);
 			}
 		}else{
 			return null;
@@ -113,14 +135,24 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements MessageSub
 		return enrollmentStateMachine;
 	}
 	
+	private EnrollmentStateMachine getEnrollmentStateMachine(ApplicationProcessNamingInfo apNamingInfo){
+		return enrollmentStateMachines.get(apNamingInfo.getApplicationProcessName()+"-"+apNamingInfo.getApplicationProcessInstance());
+	}
+	
 	/**
 	 * Creates an enrollment state machine with the remote IPC process identified by the apNamingInfo
 	 * @param apNamingInfo
 	 * @return
 	 */
 	private EnrollmentStateMachine createEnrollmentStateMachine(ApplicationProcessNamingInfo apNamingInfo){
-		EnrollmentStateMachine enrollmentStateMachine = new EnrollmentStateMachine();
-		enrollmentStateMachines.put(apNamingInfo, enrollmentStateMachine);
+		CDAPSessionManager cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
+		RMT rmt = (RMT) getIPCProcess().getIPCProcessComponent(BaseRMT.getComponentName());
+		Encoder encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
+
+		EnrollmentStateMachine enrollmentStateMachine = new EnrollmentStateMachine(rmt, cdapSessionManager, encoder);
+		enrollmentStateMachines.put(apNamingInfo.getApplicationProcessName() +"-"+apNamingInfo.getApplicationProcessInstance(), enrollmentStateMachine);
+		log.debug("Created a new Enrollment state machine for remote IPC process: "
+				+apNamingInfo.getApplicationProcessName()+" "+apNamingInfo.getApplicationProcessInstance());
 		return enrollmentStateMachine;
 	}
 }

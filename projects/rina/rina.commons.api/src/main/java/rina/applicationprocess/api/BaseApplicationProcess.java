@@ -129,4 +129,20 @@ public class BaseApplicationProcess implements ApplicationProcess{
 		
 		whatevercastNames.remove(name);
 	}
+	
+	/**
+	 * True if the name matches one of the whatevercast names of the application process, false
+	 * otherwise
+	 * @param name
+	 * @return
+	 */
+	public boolean containsWhatevercastName(String name){
+		for(int i=0; i<whatevercastNames.size(); i++){
+			if (whatevercastNames.get(i).getName().equals(name)){
+				return true;
+			}
+		}
+		
+		return false;
+	}
 }

@@ -106,5 +106,12 @@ public interface ApplicationProcess {
 	 * @throws ApplicationProcessException if the name is null or it is not there
 	 */
 	public void removeWhatevercastName(WhatevercastName name) throws ApplicationProcessException;
-
+	
+	/**
+	 * True if the name matches one of the whatevercast names of the application process, false
+	 * otherwise
+	 * @param name
+	 * @return
+	 */
+	public boolean containsWhatevercastName(String name);
 }
