@@ -1,15 +1,9 @@
 package rina.ipcprocess.api;
 
 import java.util.List;
+import java.util.Map;
 
 import rina.applicationprocess.api.ApplicationProcess;
-import rina.cdap.api.CDAPSessionFactory;
-import rina.delimiting.api.Delimiter;
-import rina.efcp.api.DataTransferAE;
-import rina.flowallocator.api.FlowAllocator;
-import rina.ribdaemon.api.RIBDaemon;
-import rina.rmt.api.RMT;
-import rina.serialization.api.Serializer;
 
 /**
  * Represents an IPC Process. Holds together the different components of the IPC 
@@ -19,33 +13,16 @@ import rina.serialization.api.Serializer;
  */
 public interface IPCProcess extends ApplicationProcess{
 	
-	public FlowAllocator getFlowAllocator();
-
-	public void setFlowAllocator(FlowAllocator flowAllocator);
+	/* IPC Process Component management */
+	public Map<String, IPCProcessComponent> getIPCProcessComponents();
 	
-	public DataTransferAE getDataTransferAE();
+	public IPCProcessComponent getIPCProcessComponent(String componentName);
 	
-	public void setDataTransferAE(DataTransferAE dataTransferAE);
+	public void addIPCProcessComponent(IPCProcessComponent ipcProcessComponent);
 	
-	public RIBDaemon getRibDaemon();
-
-	public void setRibDaemon(RIBDaemon ribDaemon);
-
-	public RMT getRmt();
+	public IPCProcessComponent removeIPCProcessComponent(String componentName);
 	
-	public void setRmt(RMT rmt);
-	
-	public CDAPSessionFactory getCDAPSessionFactory();
-	
-	public void setCDAPSessionFactory(CDAPSessionFactory cdapSessionFactory);
-	
-	public Serializer getSerializer();
-	
-	public void setSerializer(Serializer serializer);
-	
-	public Delimiter getDelimiter();
-	
-	public void setDelimiter(Delimiter delimiter);
+	public void setIPCProcessCompnents(Map<String, IPCProcessComponent> ipcProcessComponents);
 	
 	/**
 	 * Lifecicle event, invoked to tell the IPC process it is about to be destroyed.

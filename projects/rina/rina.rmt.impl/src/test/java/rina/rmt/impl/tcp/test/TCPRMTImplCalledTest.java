@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.rmt.impl.tcp.TCPRMTImpl;
 
 /**
@@ -30,9 +31,8 @@ public class TCPRMTImplCalledTest {
 	public void setup(){
 		this.rmt = new TCPRMTImpl();
 		IPCProcess fakeIPCProcess = new FakeIPCProcess();
-		this.rmt.setIPCProcess(fakeIPCProcess);
-		fakeIPCProcess.setRmt(rmt);
-		this.ribdaemon = (FakeRIBDaemon) fakeIPCProcess.getRibDaemon();
+		fakeIPCProcess.addIPCProcessComponent(rmt);
+		this.ribdaemon = (FakeRIBDaemon) fakeIPCProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		this.executorService = Executors.newFixedThreadPool(3);
 		remoteIPCProcess = new TestTCPServer();
 		executorService.execute(remoteIPCProcess);
@@ -41,8 +41,8 @@ public class TCPRMTImplCalledTest {
 	@Test
 	public void testConnectionFromRemoteProcess() throws Exception{
 		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo("localhost", "40000", null, null);
-		rmt.allocateFlow(apNamingInfo, null);
-		rmt.sendCDAPMessage(new String("127.0.0.1").getBytes(), "Request message".getBytes());
+		int portId = rmt.allocateFlow(apNamingInfo, null);
+		rmt.sendCDAPMessage(portId, "Request message".getBytes());
 		Thread.sleep(2000);
 		Assert.assertTrue(ribdaemon.isMessageReceived());
 	}

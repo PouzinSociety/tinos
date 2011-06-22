@@ -3,16 +3,17 @@ package rina.ipcservice.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import rina.cdap.api.CDAPSessionFactory;
+import rina.cdap.api.CDAPSessionManagerFactory;
 import rina.delimiting.api.DelimiterFactory;
 import rina.efcp.api.DataTransferAEFactory;
+import rina.encoding.api.EncoderFactory;
+import rina.enrollment.api.EnrollmentTaskFactory;
 import rina.flowallocator.api.FlowAllocatorFactory;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBDaemonFactory;
 import rina.rmt.api.RMTFactory;
-import rina.serialization.api.SerializationFactory;
 
 public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	
@@ -42,19 +43,24 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	private DataTransferAEFactory dataTransferAEFactory = null;
 	
 	/**
-	 * Factory of CDAP sessions
+	 * Factory of CDAP session managers
 	 */
-	private CDAPSessionFactory cdapSessionFactory = null;
+	private CDAPSessionManagerFactory cdapSessionManagerFactory = null;
 	
 	/**
 	 * Factory of serializers
 	 */
-	private SerializationFactory serializationFactory = null;
+	private EncoderFactory encoderFactory = null;
 	
 	/**
 	 * Factory of delimiters
 	 */
 	private DelimiterFactory delimiterFactory = null;
+	
+	/**
+	 * Factory of enrollment tasks
+	 */
+	private EnrollmentTaskFactory enrollmentTaskFactory = null;
 	
 	public IPCProcessFactoryImpl(){
 		ipcProcesses = new HashMap<ApplicationProcessNamingInfo, IPCProcess>();
@@ -76,29 +82,34 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		this.dataTransferAEFactory = dataTransferAEFactory;
 	}
 	
-	public void setCDAPSessionFactory(CDAPSessionFactory cdapSessionFactory){
-		this.cdapSessionFactory = cdapSessionFactory;
+	public void setCDAPSessionManagerFactory(CDAPSessionManagerFactory cdapSessionManagerFactory){
+		this.cdapSessionManagerFactory = cdapSessionManagerFactory;
 	}
 	
-	public void setSerializationFactory(SerializationFactory serializationFactory){
-		this.serializationFactory = serializationFactory;
+	public void setEncoderFactory(EncoderFactory encoderFactory){
+		this.encoderFactory = encoderFactory;
 	}
 
 	public void setDelimiterFactory(DelimiterFactory delimiterFactory) {
 		this.delimiterFactory = delimiterFactory;
+	}
+	
+	public void setEnrollmentTaskFactory(EnrollmentTaskFactory enrollmentTaskFactory){
+		this.enrollmentTaskFactory = enrollmentTaskFactory;
 	}
 
 	public IPCProcess createIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
 		IPCProcess ipcProcess = new IPCProcessImpl(ipcProcessNamingInfo.getApplicationProcessName(), 
 				ipcProcessNamingInfo.getApplicationProcessInstance());
 		
-		ipcProcess.setFlowAllocator(flowAllocatorFactory.createFlowAllocator(ipcProcessNamingInfo));
-		ipcProcess.setDataTransferAE(dataTransferAEFactory.createDataTransferAE(ipcProcessNamingInfo));
-		ipcProcess.setRibDaemon(ribDaemonFactory.createRIBDaemon(ipcProcessNamingInfo));
-		ipcProcess.setRmt(rmtFactory.createRMT(ipcProcessNamingInfo));
-		ipcProcess.setCDAPSessionFactory(cdapSessionFactory);
-		ipcProcess.setSerializer(serializationFactory.createSerializerInstance());
-		ipcProcess.setDelimiter(delimiterFactory.createDelimiter(DelimiterFactory.DIF));
+		//ipcProcess.addIPCProcessComponent(flowAllocatorFactory.createFlowAllocator(ipcProcessNamingInfo));
+		//ipcProcess.addIPCProcessComponent(dataTransferAEFactory.createDataTransferAE(ipcProcessNamingInfo));
+		ipcProcess.addIPCProcessComponent(delimiterFactory.createDelimiter(DelimiterFactory.DIF));
+		ipcProcess.addIPCProcessComponent(encoderFactory.createEncoderInstance());
+		ipcProcess.addIPCProcessComponent(rmtFactory.createRMT(ipcProcessNamingInfo));
+		ipcProcess.addIPCProcessComponent(cdapSessionManagerFactory.createCDAPSessionManager());
+		ipcProcess.addIPCProcessComponent(ribDaemonFactory.createRIBDaemon(ipcProcessNamingInfo));
+		ipcProcess.addIPCProcessComponent(enrollmentTaskFactory.createEnrollmentTask(ipcProcessNamingInfo));
 		
 		ipcProcesses.put(ipcProcessNamingInfo, ipcProcess);
 		return ipcProcess;
@@ -107,9 +118,10 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	public void destroyIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
 		IPCProcess ipcProcess = ipcProcesses.remove(ipcProcessNamingInfo);
 		
-		flowAllocatorFactory.destroyFlowAllocator(ipcProcessNamingInfo);
+		//flowAllocatorFactory.destroyFlowAllocator(ipcProcessNamingInfo);
 		ribDaemonFactory.destroyRIBDaemon(ipcProcessNamingInfo);
 		rmtFactory.destroyRMT(ipcProcessNamingInfo);
+		enrollmentTaskFactory.destroyEnrollmentTask(ipcProcessNamingInfo);
 		ipcProcess.destroy();
 	}
 

@@ -12,12 +12,12 @@ import org.apache.commons.logging.LogFactory;
 
 import rina.applicationprocess.api.ApplicationProcessNameSynonym;
 import rina.cdap.api.CDAPException;
-import rina.cdap.api.CDAPSession;
+import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.cdap.echotarget.CDAPWorker;
 import rina.delimiting.api.Delimiter;
-import rina.serialization.api.Serializer;
+import rina.encoding.api.Encoder;
 
 public class CDAPEnrollmentWorker extends CDAPWorker {
 
@@ -59,8 +59,8 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 	 */
 	private TimerTask startResponseTimer = null;
 
-	public CDAPEnrollmentWorker(Socket socket, CDAPSession cdapSession, Delimiter delimiter, Serializer serializer) {
-		super(socket, cdapSession, delimiter, serializer);
+	public CDAPEnrollmentWorker(Socket socket, CDAPSessionManager cdapSessionManager, Delimiter delimiter, Encoder encoder) {
+		super(socket, cdapSessionManager, delimiter, encoder);
 		this.executorService = Executors.newFixedThreadPool(2);
 		timer = new Timer();
 	}
@@ -73,8 +73,8 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		return this.state;
 	}
 	
-	public Serializer getSerializer(){
-		return this.serializer;
+	public Encoder getEncoder(){
+		return this.encoder;
 	}
 
 	@Override
@@ -178,7 +178,7 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 			serializedAddress = cdapMessage.getObjValue().getByteval();
 			if (serializedAddress != null){
 				try {
-					address = (ApplicationProcessNameSynonym) serializer.deserialize(serializedAddress, ApplicationProcessNameSynonym.class.getName());
+					address = (ApplicationProcessNameSynonym) encoder.decode(serializedAddress, ApplicationProcessNameSynonym.class.getName());
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -293,7 +293,7 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 	private CDAPMessage cdapMessageReceived(byte[] serializedCDAPMessage) throws CDAPException{
 		log.info("Processing serialized CDAP message. This is the serialized message: ");
 		log.info(printBytes(serializedCDAPMessage));
-		CDAPMessage incomingCDAPMessage = cdapSession.messageReceived(serializedCDAPMessage);
+		CDAPMessage incomingCDAPMessage = cdapSessionManager.messageReceived(serializedCDAPMessage, socket.getLocalPort());
 		log.info("Received CDAP message: "+incomingCDAPMessage.toString());
 		
 		return incomingCDAPMessage;
@@ -303,10 +303,10 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		byte[] serializedCDAPMessageToBeSend = null;
 		byte[] delimitedSdu = null;
 		
-		serializedCDAPMessageToBeSend = cdapSession.serializeNextMessageToBeSent(cdapMessage);
+		serializedCDAPMessageToBeSend = cdapSessionManager.encodeNextMessageToBeSent(cdapMessage, socket.getLocalPort());
 		delimitedSdu = delimiter.getDelimitedSdu(serializedCDAPMessageToBeSend);
 		socket.getOutputStream().write(delimitedSdu);
-		cdapSession.messageSent(cdapMessage);
+		cdapSessionManager.messageSent(cdapMessage, socket.getLocalPort());
 		log.info("Sent CDAP Message: "+ cdapMessage.toString());
 		log.info("Sent SDU:" + printBytes(delimitedSdu));
 	}

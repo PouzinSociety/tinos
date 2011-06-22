@@ -32,10 +32,10 @@ public class EFCPTest {
 	public void setup(){
 		rmt = new FakeRMT();
 		fakeIPCProcess = new FakeIPCProcess();
-		fakeIPCProcess.setRmt(rmt);
+		fakeIPCProcess.addIPCProcessComponent(rmt);
 		dataTransferAE = new DataTransferAEImpl();
 		dataTransferAE.setIPCProcess(fakeIPCProcess);
-		fakeIPCProcess.setDataTransferAE(dataTransferAE);
+		fakeIPCProcess.addIPCProcessComponent(dataTransferAE);
 		dataTransferAE.setDataTransferConstants(dataTransferConstants);
 		initConnectionA();
 		initConnectionB();

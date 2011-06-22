@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.DataTransferAEInstance;
 import rina.flowallocator.api.Connection;
 import rina.flowallocator.api.DirectoryForwardingTable;
@@ -99,7 +100,8 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance{
 	 */
 	private void createDataTransferAEInstance(Flow flow){
 		Connection connection = new Connection(flow);
-		dataTransferAEInstance = ipcProcess.getDataTransferAE().createDataTransferAEInstance(connection);
+		DataTransferAE dataTransferAE = (DataTransferAE) ipcProcess.getIPCProcessComponent(DataTransferAE.class.getName());
+		dataTransferAEInstance = dataTransferAE.createDataTransferAEInstance(connection);
 		activeConnection = connection;
 		connections.add(connection);
 	}
@@ -168,7 +170,8 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance{
 	 * deletes the binding between the Application and the local DTP-instance, and sends a Delete_Response indicating the result.
 	 */
 	public void deleteFlowRequestMessageReceived(){
-		ipcProcess.getDataTransferAE().destroyDataTransferAEInstance(activeConnection);
+		DataTransferAE dataTransferAE = (DataTransferAE) ipcProcess.getIPCProcessComponent(DataTransferAE.class.getName());
+		dataTransferAE.destroyDataTransferAEInstance(activeConnection);
 		ipcProcess.deliverDeallocateRequestToApplicationProcess(portId);
 		//TODO create and send delete flow response message
 	}

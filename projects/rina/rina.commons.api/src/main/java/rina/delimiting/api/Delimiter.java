@@ -2,12 +2,14 @@ package rina.delimiting.api;
 
 import java.util.List;
 
+import rina.ipcprocess.api.IPCProcessComponent;
+
 /**
  * Delimits and undelimits SDUs, to allow multiple SDUs to be concatenated in the same PDU
  * @author eduardgrasa
  *
  */
-public interface Delimiter {
+public interface Delimiter extends IPCProcessComponent{
 	
 	/**
 	 * Takes a single rawSdu and produces a single delimited byte array, consisting in 

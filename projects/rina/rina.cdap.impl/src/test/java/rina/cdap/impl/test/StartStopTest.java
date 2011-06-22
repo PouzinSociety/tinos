@@ -25,7 +25,7 @@ public class StartStopTest extends BaseCDAPTest{
 		byte[] message = null;
 		
 		cdapMessage = CDAPMessage.getStartObjectRequestMessage(null, null, 25, "org.pouzinsociety.flow.Flow", null, 0, "123", 0);
-		message = sendingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+		message = sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 		
 		receivingCDAPSession.messageReceived(message);
@@ -33,7 +33,7 @@ public class StartStopTest extends BaseCDAPTest{
 		boolean failed = false;
 		cdapMessage = CDAPMessage.getStartObjectResponseMessage(null, 24, 0, null);
 		try{
-			message = receivingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+			message = receivingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		}catch(CDAPException ex){
 			System.out.println(ex.getMessage());
 			failed = true;
@@ -42,7 +42,7 @@ public class StartStopTest extends BaseCDAPTest{
 		Assert.assertTrue(failed);
 		
 		cdapMessage = CDAPMessage.getStartObjectResponseMessage(null, 25, 0, null);
-		message = receivingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+		message = receivingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		receivingCDAPSession.messageSent(cdapMessage);
 		
 		sendingCDAPSession.messageReceived(message);
@@ -54,7 +54,7 @@ public class StartStopTest extends BaseCDAPTest{
 		byte[] message = null;
 
 		cdapMessage = CDAPMessage.getStartObjectRequestMessage(null, null, 0, "org.pouzinsociety.flow.Flow", null, 0, "123", 0);
-		message = sendingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+		message = sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 
 		receivingCDAPSession.messageReceived(message);
@@ -62,7 +62,7 @@ public class StartStopTest extends BaseCDAPTest{
 		boolean failed = false;
 		cdapMessage = CDAPMessage.getStartObjectResponseMessage(null, 25, 0, null);
 		try{
-			message = receivingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+			message = receivingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		}catch(CDAPException ex){
 			System.out.println(ex.getMessage());
 			failed = true;
@@ -77,25 +77,25 @@ public class StartStopTest extends BaseCDAPTest{
 		byte[] message = null;
 
 		cdapMessage = CDAPMessage.getStartObjectRequestMessage(null, null, 2, "org.pouzinsociety.flow.Flow", null, 0, "123", 0);
-		message = sendingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+		message = sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 		
 		receivingCDAPSession.messageReceived(message);
 		
 		cdapMessage = CDAPMessage.getStartObjectRequestMessage(null, null, 3, "org.pouzinsociety.flow.Flow", null, 0, "789", 0);
-		message = sendingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+		message = sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 		
 		receivingCDAPSession.messageReceived(message);
 		
 		cdapMessage = CDAPMessage.getStartObjectResponseMessage(null, 2, 0, null);
-		message = receivingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+		message = receivingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		receivingCDAPSession.messageSent(cdapMessage);
 		
 		sendingCDAPSession.messageReceived(message);
 		
 		cdapMessage = CDAPMessage.getStartObjectResponseMessage(null, 3, 0, null);
-		message = receivingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+		message = receivingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		receivingCDAPSession.messageSent(cdapMessage);
 		
 		sendingCDAPSession.messageReceived(message);
@@ -109,7 +109,7 @@ public class StartStopTest extends BaseCDAPTest{
 		boolean failed = false;
 		cdapMessage = CDAPMessage.getStartObjectRequestMessage(null, null, 2, "org.pouzinsociety.flow.Flow", null, 0, "123", 0);
 		try{
-			sendingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+			sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		}catch(CDAPException ex){
 			System.out.println(ex.getMessage());
 			failed = true;
@@ -124,7 +124,7 @@ public class StartStopTest extends BaseCDAPTest{
 		byte[] message = null;
 		
 		cdapMessage = CDAPMessage.getStopObjectRequestMessage(null, null, 25, "org.pouzinsociety.flow.Flow", null, 0, "123", 0);
-		message = sendingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+		message = sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 		
 		receivingCDAPSession.messageReceived(message);
@@ -132,7 +132,7 @@ public class StartStopTest extends BaseCDAPTest{
 		boolean failed = false;
 		cdapMessage = CDAPMessage.getStopObjectResponseMessage(null, 24, 0, null);
 		try{
-			message = receivingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+			message = receivingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		}catch(CDAPException ex){
 			System.out.println(ex.getMessage());
 			failed = true;
@@ -141,7 +141,7 @@ public class StartStopTest extends BaseCDAPTest{
 		Assert.assertTrue(failed);
 		
 		cdapMessage = CDAPMessage.getStopObjectResponseMessage(null, 25, 0, null);
-		message = receivingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+		message = receivingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		receivingCDAPSession.messageSent(cdapMessage);
 		
 		sendingCDAPSession.messageReceived(message);
@@ -153,7 +153,7 @@ public class StartStopTest extends BaseCDAPTest{
 		byte[] message = null;
 
 		cdapMessage = CDAPMessage.getStopObjectRequestMessage(null, null, 0, "org.pouzinsociety.flow.Flow", null, 0, "123", 0);
-		message = sendingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+		message = sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 
 		receivingCDAPSession.messageReceived(message);
@@ -161,7 +161,7 @@ public class StartStopTest extends BaseCDAPTest{
 		boolean failed = false;
 		cdapMessage = CDAPMessage.getStopObjectResponseMessage(null, 25, 0, null);
 		try{
-			message = receivingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+			message = receivingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		}catch(CDAPException ex){
 			System.out.println(ex.getMessage());
 			failed = true;
@@ -176,25 +176,25 @@ public class StartStopTest extends BaseCDAPTest{
 		byte[] message = null;
 
 		cdapMessage = CDAPMessage.getStopObjectRequestMessage(null, null, 2, "org.pouzinsociety.flow.Flow", null, 0, "123", 0);
-		message = sendingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+		message = sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 		
 		receivingCDAPSession.messageReceived(message);
 		
 		cdapMessage = CDAPMessage.getStopObjectRequestMessage(null, null, 3, "org.pouzinsociety.flow.Flow", null, 0, "789", 0);
-		message = sendingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+		message = sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 		
 		receivingCDAPSession.messageReceived(message);
 		
 		cdapMessage = CDAPMessage.getStopObjectResponseMessage(null, 2, 0, null);
-		message = receivingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+		message = receivingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		receivingCDAPSession.messageSent(cdapMessage);
 		
 		sendingCDAPSession.messageReceived(message);
 		
 		cdapMessage = CDAPMessage.getStopObjectResponseMessage(null, 3, 0, null);
-		message = receivingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+		message = receivingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		receivingCDAPSession.messageSent(cdapMessage);
 		
 		sendingCDAPSession.messageReceived(message);
@@ -208,7 +208,7 @@ public class StartStopTest extends BaseCDAPTest{
 		boolean failed = false;
 		cdapMessage = CDAPMessage.getStopObjectRequestMessage(null, null, 2, "org.pouzinsociety.flow.Flow", null, 0, "123", 0);
 		try{
-			sendingCDAPSession.serializeNextMessageToBeSent(cdapMessage);
+			sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		}catch(CDAPException ex){
 			System.out.println(ex.getMessage());
 			failed = true;

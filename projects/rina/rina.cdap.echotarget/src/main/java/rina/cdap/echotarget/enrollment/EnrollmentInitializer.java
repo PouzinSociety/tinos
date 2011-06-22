@@ -89,7 +89,7 @@ public class EnrollmentInitializer implements Runnable{
 		address.setApplicationProcessName("B");
 		address.setSynonym(new byte[]{0x02});
 		try{
-			serializedAddress = cdapEnrollmentWorker.getSerializer().serialize(address);
+			serializedAddress = cdapEnrollmentWorker.getEncoder().encode(address);
 			objectValue = new ObjectValue();
 			objectValue.setByteval(serializedAddress);
 		}catch(Exception ex){
@@ -125,7 +125,7 @@ public class EnrollmentInitializer implements Runnable{
 		}
 		
 		try{
-			serializedObject = cdapEnrollmentWorker.getSerializer().serialize(whatevercastName);
+			serializedObject = cdapEnrollmentWorker.getEncoder().encode(whatevercastName);
 			objectValue = new ObjectValue();
 			objectValue.setByteval(serializedObject);
 		}catch(Exception ex){
@@ -162,7 +162,7 @@ public class EnrollmentInitializer implements Runnable{
 		dataTransferConstants.setSequenceNumberLength(2);
 		
 		try{
-			serializedObject = cdapEnrollmentWorker.getSerializer().serialize(dataTransferConstants);
+			serializedObject = cdapEnrollmentWorker.getEncoder().encode(dataTransferConstants);
 			objectValue = new ObjectValue();
 			objectValue.setByteval(serializedObject);
 		}catch(Exception ex){
@@ -210,7 +210,7 @@ public class EnrollmentInitializer implements Runnable{
 		}
 		
 		try{
-			serializedObject = cdapEnrollmentWorker.getSerializer().serialize(qosCube);
+			serializedObject = cdapEnrollmentWorker.getEncoder().encode(qosCube);
 			objectValue = new ObjectValue();
 			objectValue.setByteval(serializedObject);
 		}catch(Exception ex){

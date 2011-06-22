@@ -9,17 +9,16 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.cdap.api.CDAPSession;
-import rina.cdap.api.CDAPSessionFactory;
-import rina.cdap.impl.CDAPSessionFactoryImpl;
+import rina.cdap.api.CDAPSessionManager;
+import rina.cdap.impl.CDAPSessionManagerImpl;
 import rina.cdap.impl.WireMessageProviderFactory;
 import rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory;
 import rina.delimiting.api.Delimiter;
 import rina.delimiting.api.DelimiterFactory;
 import rina.delimiting.impl.DelimiterFactoryImpl;
-import rina.serialization.api.SerializationFactory;
-import rina.serialization.api.Serializer;
-import rina.utils.serialization.googleprotobuf.GPBSerializationFactory;
+import rina.encoding.api.Encoder;
+import rina.encoding.api.EncoderFactory;
+import rina.encoding.impl.googleprotobuf.GPBEncoderFactory;
 
 /**
  * CDAP echo target.  This is a very basic CDAP/GPB test process listening on an Internet port for a TCP connection.  
@@ -50,7 +49,7 @@ public class CDAPServer {
 	/**
 	 * The factory to create/remove CDAP sessions
 	 */
-	private CDAPSessionFactory cdapSessionFactory = null;
+	private CDAPSessionManager cdapSessionManager = null;
 	
 	/**
 	 * The delimiter factory for the sessions
@@ -60,7 +59,7 @@ public class CDAPServer {
 	/**
 	 * The serialization factory user for sessions
 	 */
-	private SerializationFactory serializationFactory = null;
+	private EncoderFactory encoderFactory = null;
 	
 	/**
 	 * The TCP port to listen for incoming connections
@@ -82,21 +81,21 @@ public class CDAPServer {
 	 */
 	private String type = null;
 	
-	public CDAPServer(CDAPSessionFactory cdapSessionFactory, DelimiterFactory delimiterFactory, SerializationFactory serializationFactory, int port, String type){
+	public CDAPServer(CDAPSessionManager cdapSessionManager, DelimiterFactory delimiterFactory, EncoderFactory encoderFactory, int port, String type){
 		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
-		this.cdapSessionFactory = cdapSessionFactory;
+		this.cdapSessionManager = cdapSessionManager;
 		this.delimiterFactory = delimiterFactory;
-		this.serializationFactory = serializationFactory;
+		this.encoderFactory = encoderFactory;
 		this.port = port;
 		this.type = type;
 	}
 
-	public CDAPSessionFactory getCdapSessionFactory() {
-		return cdapSessionFactory;
+	public CDAPSessionManager getCdapSessionManager() {
+		return cdapSessionManager;
 	}
 
-	public void setCdapSessionFactory(CDAPSessionFactory cdapSessionFactory) {
-		this.cdapSessionFactory = cdapSessionFactory;
+	public void setCdapSessionManager(CDAPSessionManager cdapSessionManager) {
+		this.cdapSessionManager = cdapSessionManager;
 	}
 	
 	public DelimiterFactory getDelimiterFactory() {
@@ -122,10 +121,9 @@ public class CDAPServer {
 			while(true){
 				Socket socket = serverSocket.accept();
 				log.info("Got a new request from "+socket.getInetAddress().getHostAddress());
-				CDAPSession cdapSession = cdapSessionFactory.createCDAPSession();
 				Delimiter delimiter = delimiterFactory.createDelimiter(DelimiterFactory.DIF);
-				Serializer serializer = serializationFactory.createSerializerInstance();
-				CDAPWorker cdapWorker = CDAPWorkerFactory.createCDAPWorker(type, socket, cdapSession, delimiter, serializer);
+				Encoder encoder = encoderFactory.createEncoderInstance();
+				CDAPWorker cdapWorker = CDAPWorkerFactory.createCDAPWorker(type, socket, cdapSessionManager, delimiter, encoder);
 				executorService.execute(cdapWorker);
 			}
 		} catch (IOException e) {
@@ -142,12 +140,12 @@ public class CDAPServer {
 	 * @return
 	 */
 	public static CDAPServer getNewInstance(int port, String type){
-		CDAPSessionFactoryImpl cdapSessionFactory = new CDAPSessionFactoryImpl();
+		CDAPSessionManagerImpl cdapSessionManager = new CDAPSessionManagerImpl();
 		WireMessageProviderFactory wmpFactory = new GoogleProtocolBufWireMessageProviderFactory();
-		cdapSessionFactory.setWireMessageProviderFactory(wmpFactory);
+		cdapSessionManager.setWireMessageProviderFactory(wmpFactory);
 		DelimiterFactory delimiterFactory = new DelimiterFactoryImpl();
-		SerializationFactory serializationFactory = new GPBSerializationFactory();
-		CDAPServer cdapEchoServer = new CDAPServer(cdapSessionFactory, delimiterFactory, serializationFactory, port, type);
+		EncoderFactory encoderFactory = new GPBEncoderFactory();
+		CDAPServer cdapEchoServer = new CDAPServer(cdapSessionManager, delimiterFactory, encoderFactory, port, type);
 		return cdapEchoServer;
 	}
 }

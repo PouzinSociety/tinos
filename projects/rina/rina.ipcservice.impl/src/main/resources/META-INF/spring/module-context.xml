@@ -7,12 +7,13 @@
 
 	<bean name="ipcProcessFactoryImpl" class="rina.ipcservice.impl.IPCProcessFactoryImpl">
 		<property name="rmtFactory" ref="rmtFactoryService" />
-		<property name="flowAllocatorFactory" ref="flowAllocatorFactoryService" />
+		<!-- <property name="flowAllocatorFactory" ref="flowAllocatorFactoryService" /> -->
 		<property name="ribDaemonFactory" ref="ribDaemonFactoryService" />
-		<property name="dataTransferAEFactory" ref="dataTransferAEFactoryService" />
-		<property name="CDAPSessionFactory" ref="cdapSessionFactoryService" />
-		<property name="serializationFactory" ref="serializationFactoryService" />
+		<!-- <property name="dataTransferAEFactory" ref="dataTransferAEFactoryService" /> -->
+		<property name="CDAPSessionManagerFactory" ref="cdapSessionManagerFactoryService" />
+		<property name="encoderFactory" ref="encoderFactoryService" />
 		<property name="delimiterFactory" ref="delimiterFactoryService" />
+		<property name="enrollmentTaskFactory" ref="enrollmentTaskFactoryService" />
 	</bean>
 
 </beans>

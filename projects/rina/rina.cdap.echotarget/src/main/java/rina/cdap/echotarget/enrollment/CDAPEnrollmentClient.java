@@ -6,18 +6,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.cdap.api.CDAPException;
-import rina.cdap.api.CDAPSessionFactory;
+import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Flags;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.cdap.echotarget.CDAPClient;
-import rina.cdap.impl.CDAPSessionFactoryImpl;
+import rina.cdap.impl.CDAPSessionManagerImpl;
 import rina.cdap.impl.WireMessageProviderFactory;
 import rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory;
 import rina.delimiting.api.DelimiterFactory;
 import rina.delimiting.impl.DelimiterFactoryImpl;
-import rina.serialization.api.SerializationFactory;
-import rina.utils.serialization.googleprotobuf.GPBSerializationFactory;
+import rina.encoding.api.EncoderFactory;
+import rina.encoding.impl.googleprotobuf.GPBEncoderFactory;
 
 /**
  * Client of the CDAP Enrollment Server
@@ -27,7 +27,7 @@ import rina.utils.serialization.googleprotobuf.GPBSerializationFactory;
 public class CDAPEnrollmentClient extends CDAPClient{
 	
 	private static final Log log = LogFactory.getLog(CDAPEnrollmentClient.class);
-	private static final int DEFAULTPORT = 32768;
+	private static final int DEFAULTPORT = 32769;
 	private static final String DEFAULTHOST = "84.88.41.36";
 	
 	private enum State {NULL, WAITING_CONNECTION, WAITING_READ_ADDRESS, INITIALIZING_DATA, 
@@ -35,9 +35,9 @@ public class CDAPEnrollmentClient extends CDAPClient{
 		
 	private State state = State.NULL;
 	
-	public CDAPEnrollmentClient(CDAPSessionFactory cdapSessionFactory, DelimiterFactory delimiterFactory, 
-			SerializationFactory serializationFactory, String host, int port){
-		super(cdapSessionFactory, delimiterFactory, serializationFactory, host, port);
+	public CDAPEnrollmentClient(CDAPSessionManager cdapSessionManager, DelimiterFactory delimiterFactory, 
+			EncoderFactory encoderFactory, String host, int port){
+		super(cdapSessionManager, delimiterFactory, encoderFactory, host, port);
 		
 		state = State.WAITING_CONNECTION;
 	}
@@ -161,19 +161,19 @@ public class CDAPEnrollmentClient extends CDAPClient{
 	private CDAPMessage cdapMessageReceived(byte[] serializedCDAPMessage) throws CDAPException{
 		log.info("Processing serialized CDAP message. This is the serialized message: ");
 		log.info(printBytes(serializedCDAPMessage));
-		CDAPMessage incomingCDAPMessage = cdapSession.messageReceived(serializedCDAPMessage);
+		CDAPMessage incomingCDAPMessage = cdapSessionManager.messageReceived(serializedCDAPMessage, clientSocket.getLocalPort());
 		log.info("Received CDAP message: "+incomingCDAPMessage.toString());
 		
 		return incomingCDAPMessage;
 	}
 	
 	public static void main(String[] args){
-		CDAPSessionFactoryImpl cdapSessionFactory = new CDAPSessionFactoryImpl();
+		CDAPSessionManagerImpl cdapSessionManager = new CDAPSessionManagerImpl();
 		WireMessageProviderFactory wmpFactory = new GoogleProtocolBufWireMessageProviderFactory();
-		cdapSessionFactory.setWireMessageProviderFactory(wmpFactory);
+		cdapSessionManager.setWireMessageProviderFactory(wmpFactory);
 		DelimiterFactory delimiterFactory = new DelimiterFactoryImpl();
-		SerializationFactory serializationFactory = new GPBSerializationFactory();
-		CDAPEnrollmentClient cdapEchoClient = new CDAPEnrollmentClient(cdapSessionFactory, delimiterFactory, serializationFactory, DEFAULTHOST, DEFAULTPORT);
+		EncoderFactory encoderFactory = new GPBEncoderFactory();
+		CDAPEnrollmentClient cdapEchoClient = new CDAPEnrollmentClient(cdapSessionManager, delimiterFactory, encoderFactory, DEFAULTHOST, DEFAULTPORT);
 		cdapEchoClient.run();
 	}
 }

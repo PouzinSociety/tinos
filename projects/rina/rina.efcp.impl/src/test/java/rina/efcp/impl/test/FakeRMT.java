@@ -110,7 +110,7 @@ public class FakeRMT implements RMT{
 		
 	}
 
-	public void sendCDAPMessage(byte[] arg0, byte[] arg1) {
+	public void sendCDAPMessage(int arg0, byte[] arg1) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -119,5 +119,9 @@ public class FakeRMT implements RMT{
 			QoSParameters arg1) throws Exception {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	public String getName() {
+		return RMT.class.getName();
 	}
 }

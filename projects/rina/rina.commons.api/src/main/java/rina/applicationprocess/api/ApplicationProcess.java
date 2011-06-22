@@ -2,6 +2,8 @@ package rina.applicationprocess.api;
 
 import java.util.List;
 
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
+
 /**
  * Defines an application process
  * @author eduardgrasa
@@ -34,6 +36,18 @@ public interface ApplicationProcess {
 	 * @param applicationProcessInstance
 	 */
 	public void setApplicationProcessInstance(String applicationProcessInstance);
+	
+	/**
+	 * Return the application process name and instance
+	 * @return
+	 */
+	public ApplicationProcessNamingInfo getApplicationProcessNamingInfo();
+	
+	/**
+	 * Set the application process name and instance
+	 * @param applicationProcessNamingInfo
+	 */
+	public void setApplicationProcessNamingInfo(ApplicationProcessNamingInfo applicationProcessNamingInfo);
 	
 	/* MANAGE SYNONYMS */
 	

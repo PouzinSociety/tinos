@@ -1,15 +1,18 @@
 package rina.ribdaemon.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import rina.cdap.api.BaseCDAPSessionManager;
+import rina.cdap.api.CDAPException;
+import rina.cdap.api.CDAPSessionDescriptor;
+import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
-import rina.ipcprocess.api.IPCProcess;
+import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.MessageSubscriber;
 import rina.ribdaemon.api.MessageSubscription;
-import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.UpdateStrategy;
 
@@ -18,24 +21,30 @@ import rina.ribdaemon.api.UpdateStrategy;
  * @author eduardgrasa
  *
  */
-public class RIBDaemonImpl implements RIBDaemon{
+public class RIBDaemonImpl extends BaseRIBDaemon{
 	
-	/** The IPCProcess where this RIB Daemon belongs **/
-	private IPCProcess ipcProcess = null;
+	private static final Log log = LogFactory.getLog(RIBDaemonImpl.class);
 	
 	/** All the message subscribers **/
-	private Map<MessageSubscription, List<MessageSubscriber>> messageSubscribers = null;
+	private CDAPSubscriptionManager cdapSubscriptionManager = null;
 	
 	/** A simple in memory store **/
 	private InMemoryStore store = null;
 	
+	/** Create, retrieve and delete CDAP sessions **/
+	private CDAPSessionManager cdapSessionManager = null;
+	
 	public RIBDaemonImpl(){
-		messageSubscribers = new HashMap<MessageSubscription, List<MessageSubscriber>>();
+		cdapSubscriptionManager = new CDAPSubscriptionManager();
 		store = new InMemoryStore();
 	}
-
-	public void setIPCProcess(IPCProcess ipcProcess) {
-		this.ipcProcess = ipcProcess;
+	
+	private CDAPSessionManager getCDAPSessionManager(){
+		if (this.cdapSessionManager == null){
+			this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
+		}
+		
+		return this.cdapSessionManager;
 	}
 
 	/**
@@ -46,8 +55,39 @@ public class RIBDaemonImpl implements RIBDaemon{
 	 * (after consulting an adequate forwarding table).
 	 * @param cdapMessage
 	 */
-	public void cdapMessageDelivered(byte[] cdapMessage) {
-		// TODO Auto-generated method stub
+	public void cdapMessageDelivered(byte[] encodedCDAPMessage, int portId){
+		CDAPMessage cdapMessage = null;
+		CDAPSessionDescriptor cdapSessionDescriptor = null;
+		
+		log.debug("Got an encoded CDAP message from portId "+portId);
+		
+		//1 Decode the message and obtain the CDAP session descriptor
+		try{
+			cdapMessage = getCDAPSessionManager().messageReceived(encodedCDAPMessage, portId);
+			cdapSessionDescriptor = getCDAPSessionManager().getCDAPSession(portId).getSessionDescriptor();
+		}catch(CDAPException ex){
+			log.error("Error decoding CDAP message: " + ex.getMessage());
+			ex.printStackTrace();
+			return;
+		}
+		
+		//2 Process the message (send to subscribed people, maybe something else)
+		//TODO subscribers will be called sequentially in this thread now, can improve 
+		//this later (have a thread pool and call subscribers from different threads)
+		List<MessageSubscriber> messageSubscribers = cdapSubscriptionManager.getSubscribersForMessage(cdapMessage);
+		for(int i=0; i<messageSubscribers.size(); i++){
+			messageSubscribers.get(i).messageReceived(cdapMessage, cdapSessionDescriptor);
+		}
+	}
+	
+	/**
+	 * Invoked by the RMT when it detects that a certain flow has been deallocated, and therefore any CDAP sessions 
+	 * over it should be terminated.
+	 * @param portId identifies the flow that has been deallocated
+	 */
+	public void flowDeallocated(int portId) {
+		getCDAPSessionManager().removeCDAPSession(portId);
+		//TODO inform all the subscribers about this?
 	}
 
 	/**
@@ -108,18 +148,7 @@ public class RIBDaemonImpl implements RIBDaemon{
 	 * @throws Exception if there's something wrong with the messageSubscription or messageSubscriber is null
 	 */
 	public synchronized void subscribeToMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber) throws RIBDaemonException {
-		if (messageSubscription == null || messageSubscriber == null){
-			throw new RIBDaemonException(RIBDaemonException.MALFORMED_MESSAGE_SUBSCRIPTION_REQUEST);
-		}
-		
-		List<MessageSubscriber> subscribers = messageSubscribers.get(messageSubscription);
-		if (subscribers == null){
-			subscribers = new ArrayList<MessageSubscriber>();
-			subscribers.add(messageSubscriber);
-			messageSubscribers.put(messageSubscription, subscribers);
-		}else{
-			subscribers.add(messageSubscriber);
-		}
+		cdapSubscriptionManager.subscribeToMessages(messageSubscription, messageSubscriber);
 	}
 
 	/**
@@ -131,19 +160,6 @@ public class RIBDaemonImpl implements RIBDaemon{
 	 * messageSubscription does not exist
 	 */
 	public synchronized void unsubscribeFromMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber) throws RIBDaemonException {
-		if (messageSubscription == null || messageSubscriber == null){
-			throw new RIBDaemonException(RIBDaemonException.MALFORMED_MESSAGE_UNSUBSCRIPTION_REQUEST);
-		}
-		
-		List<MessageSubscriber> subscribers = messageSubscribers.get(messageSubscription);
-		if (subscribers == null){
-			throw new RIBDaemonException(RIBDaemonException.SUBSCRIBER_WAS_NOT_SUBSCRIBED);
-		}
-		
-		subscribers.remove(messageSubscriber);
-		if (subscribers.size() == 0){
-			messageSubscribers.remove(messageSubscription);
-		}
+		cdapSubscriptionManager.unsubscribeFromMessages(messageSubscription, messageSubscriber);
 	}
-
 }

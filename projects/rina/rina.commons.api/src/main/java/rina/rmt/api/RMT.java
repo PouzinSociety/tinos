@@ -10,6 +10,7 @@ import rina.ipcservice.api.QoSParameters;
  * @author eduardgrasa
  */
 public interface RMT extends IPCProcessComponent{
+	
 	/**
 	 * When the RMT receives an EFCP PDU via a send primitive, it inspects the destination 
 	 * address field and the connection-id field of the PDU. Using the FIB, it determines 
@@ -24,10 +25,11 @@ public interface RMT extends IPCProcessComponent{
 	 * send CDAP messages to the nearest neighbors. The RMT will lookup the 'address' 
 	 * parameter in the forwarding table, and send the capMessage using the management flow 
 	 * that was established when this IPC process joined the DIF.
-	 * @param address
+	 * @param portId
 	 * @param cdapMessage
+	 * @throws exception if the message cannot be sent through the flow identified by portId
 	 */
-	public void sendCDAPMessage(byte[] address, byte[] cdapMessage);
+	public void sendCDAPMessage(int portId, byte[] cdapMessage) throws Exception;
 	
 	/**
 	 * Cause the RMT to allocate a new flow through an N-1 DIF or the underlying
@@ -35,7 +37,7 @@ public interface RMT extends IPCProcessComponent{
 	 * @param apNamingInfo the destination application process naming information 
 	 * @param qosparams the quality of service requested by the flow
 	 * @return int the portId allocated to the flow
-	 * @throws IPCException if there was an issue allocating the flow
+	 * @throws Exception if there was an issue allocating the flow
 	 */
 	public int allocateFlow(ApplicationProcessNamingInfo apNamingInfo, QoSParameters qosparams) throws Exception;
 }

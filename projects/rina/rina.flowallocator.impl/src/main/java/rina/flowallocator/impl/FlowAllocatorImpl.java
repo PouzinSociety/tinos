@@ -6,18 +6,24 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
+import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.MessageSubscriber;
 import rina.ribdaemon.api.MessageSubscription;
+import rina.ribdaemon.api.RIBDaemon;
+import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPException;
+import rina.cdap.api.CDAPSessionDescriptor;
+import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.cdap.api.message.ObjectValue;
+import rina.encoding.api.BaseEncoder;
+import rina.encoding.api.Encoder;
+import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.DirectoryForwardingTable;
-import rina.flowallocator.api.FlowAllocator;
 import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.flowallocator.api.message.Flow;
 import rina.flowallocator.impl.FlowAllocatorInstanceImpl;
@@ -26,14 +32,9 @@ import rina.flowallocator.impl.validation.AllocateRequestValidator;
 /** 
  * Implements the Flow Allocator
  */
-public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
+public class FlowAllocatorImpl extends BaseFlowAllocator implements MessageSubscriber {
 	
 	private static final Log log = LogFactory.getLog(FlowAllocatorImpl.class);
-
-	/**
-	 * A pointer to the IPC Process
-	 */
-	private IPCProcess ipcProcess = null;
 
 	/**
 	 * Flow allocator instances, each one associated to a port_id
@@ -66,8 +67,10 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 		MessageSubscription subscription = new MessageSubscription();
 		subscription.setObjClass("Flowobject");
 		subscription.setOpCode(Opcode.M_CREATE);
+		RIBDaemon ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+		
 		try{
-			ipcProcess.getRibDaemon().subscribeToMessages(subscription, this);
+			ribDaemon.subscribeToMessages(subscription, this);
 		}catch(Exception ex){
 			log.warn("Problems subscribing to Create Flow object request messages. "+ex.getMessage());
 		}
@@ -76,7 +79,7 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 		subscription.setObjClass("Flowobject");
 		subscription.setOpCode(Opcode.M_CREATE_R);
 		try{
-			ipcProcess.getRibDaemon().subscribeToMessages(subscription, this);
+			ribDaemon.subscribeToMessages(subscription, this);
 		}catch(Exception ex){
 			log.warn("Problems subscribing to Create Flow object response messages. "+ex.getMessage());
 		}
@@ -85,7 +88,7 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 		subscription.setObjClass("Flowobject");
 		subscription.setOpCode(Opcode.M_DELETE);
 		try{
-			ipcProcess.getRibDaemon().subscribeToMessages(subscription, this);
+			ribDaemon.subscribeToMessages(subscription, this);
 		}catch(Exception ex){
 			log.warn("Problems subscribing to Delete Flow object request messages. "+ex.getMessage());
 		}
@@ -94,7 +97,7 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 		subscription.setObjClass("Flowobject");
 		subscription.setOpCode(Opcode.M_DELETE_R);
 		try{
-			ipcProcess.getRibDaemon().subscribeToMessages(subscription, this);
+			ribDaemon.subscribeToMessages(subscription, this);
 		}catch(Exception ex){
 			log.warn("Problems subscribing to Delete Flow object response messages. "+ex.getMessage());
 		}
@@ -107,10 +110,6 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 		//TODO implement this
 	}
 	
-	public void setIPCProcess(IPCProcess ipcProcess) {
-		this.ipcProcess = ipcProcess;
-	}
-	
 	public DirectoryForwardingTable getDirectoryForwardingTable(){
 		return directoryForwardingTable;
 	}
@@ -118,7 +117,7 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 	/**
 	 * Invoked by the RIB Daemon when it has a CDAP message for the flow allocator
 	 */
-	public void messageReceived(CDAPMessage cdapMessage) {
+	public void messageReceived(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) {
 		switch (cdapMessage.getOpCode()){
 		case M_CREATE:
 			//received a create flow request from another IPC process, we have to process it
@@ -157,12 +156,14 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(
 				cdapMessage.getDestApName(), cdapMessage.getDestApInst(), cdapMessage.getDestAEName(), cdapMessage.getDestAEInst());
 		byte[] address = directoryForwardingTable.getAddress(apNamingInfo);
+		Encoder encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
+		CDAPSessionManager cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 		
 		if (address == null){
 			//error, the table should have at least returned a default IPC process address to continue looking for the application process
 			log.error("The directory forwarding table returned no entries when looking up " + apNamingInfo.toString());
 		}else{
-			if (address.equals(ipcProcess.getCurrentSynonym())){
+			if (address.equals(getIPCProcess().getCurrentSynonym())){
 				//TODO there is an entry and the address is this IPC Process, create a FAI, extract the Flow object from the CDAP message and
 				//call the FAI
 			}else{
@@ -171,7 +172,7 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 				Flow flow = null;
 				
 				try{
-					flow = (Flow) ipcProcess.getSerializer().deserialize(cdapMessage.getObjValue().getByteval(), Flow.class.toString());
+					flow = (Flow) encoder.decode(cdapMessage.getObjValue().getByteval(), Flow.class.toString());
 				}catch (Exception ex){
 					//Error that has to be fixed, we cannot continue, log it and return
 					log.error("Fatal error when deserializing a Flow object. " +ex.getMessage());
@@ -187,7 +188,7 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 				ObjectValue objectValue = new ObjectValue();
 				
 				try{
-					objectValue.setByteval(ipcProcess.getSerializer().serialize(flow));
+					objectValue.setByteval(encoder.encode(flow));
 				}catch(Exception ex){
 					//Error that has to be fixed, we cannot continue, log it and return
 					log.error("Fatal error when serializing a Flow object. " +ex.getMessage());
@@ -197,13 +198,13 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 				cdapMessage.setObjValue(objectValue);
 				byte[] serializedCDAPMesasge = null;
 				try{
-					serializedCDAPMesasge = ipcProcess.getCDAPSessionFactory().serializeCDAPMessage(cdapMessage);
+					serializedCDAPMesasge = cdapSessionManager.encodeCDAPMessage(cdapMessage);
 				}catch(CDAPException ex){
 					//Error that has to be fixed, we cannot continue, log it and return
 					log.error("Problems serializing CDAP message to be forwarded: " +ex.getMessage() + 
 					". As a consequence, the CDAP message won't be forwarded");
 				}
-				ipcProcess.getRmt().sendCDAPMessage(address, serializedCDAPMesasge);
+				//TODO ipcProcess.getRmt().sendCDAPMessage(address, serializedCDAPMesasge);
 			}
 		}
 	}
@@ -245,7 +246,7 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 	public void submitAllocateRequest(AllocateRequest allocateRequest, int portId) throws IPCException{
 		allocateRequestValidator.validateAllocateRequest(allocateRequest);
 		
-		FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.ipcProcess, portId, directoryForwardingTable);
+		FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), portId, directoryForwardingTable);
 		flowAllocatorInstance.submitAllocateRequest(allocateRequest, portId);
 		flowAllocatorInstances.put(new Integer(portId), flowAllocatorInstance);
 	}
@@ -283,5 +284,4 @@ public class FlowAllocatorImpl implements FlowAllocator, MessageSubscriber {
 		
 		flowAllocatorInstance.submitDeallocate(portId);
 	}
-	
 }

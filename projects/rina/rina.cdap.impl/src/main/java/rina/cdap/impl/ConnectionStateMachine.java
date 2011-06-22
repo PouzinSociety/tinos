@@ -83,7 +83,7 @@ public class ConnectionStateMachine {
 				log.error("M_CONNECT_R message not received within "+OPEN_CON_DELAY+" ms." +
 				"Reseting the connection");
 				connectionState = ConnectionState.NULL;
-				cdapSession.resetConnection();
+				cdapSession.stopConnection();
 			}
 		}, OPEN_CON_DELAY);
 	}
@@ -179,7 +179,7 @@ public class ConnectionStateMachine {
 					log.error("M_RELEASE_R message not received within "+OPEN_CON_DELAY+" ms." +
 					"Seting the connection to NULL");
 					connectionState = ConnectionState.NULL;
-					cdapSession.resetConnection();
+					cdapSession.stopConnection();
 				}
 			}, CLOSE_CON_DELAY);
 		}
@@ -200,7 +200,7 @@ public class ConnectionStateMachine {
 			connectionState = ConnectionState.AWAITCLOSE;
 		}else{
 			connectionState = ConnectionState.NULL;
-			cdapSession.resetConnection();
+			cdapSession.stopConnection();
 		}
 	}
 	
@@ -246,6 +246,6 @@ public class ConnectionStateMachine {
 		closeTimer.cancel();
 		closeTimer = null;
 		connectionState = ConnectionState.NULL;
-		cdapSession.resetConnection();
+		cdapSession.stopConnection();
 	}
 }

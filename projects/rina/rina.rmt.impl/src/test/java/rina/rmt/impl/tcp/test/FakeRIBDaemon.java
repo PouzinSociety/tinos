@@ -3,6 +3,7 @@ package rina.rmt.impl.tcp.test;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.MessageSubscriber;
@@ -10,6 +11,7 @@ import rina.ribdaemon.api.MessageSubscription;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.UpdateStrategy;
+import rina.rmt.api.RMT;
 
 public class FakeRIBDaemon implements RIBDaemon {
 	
@@ -23,13 +25,19 @@ public class FakeRIBDaemon implements RIBDaemon {
 		this.ipcProcess = ipcProcess;
 	}
 
-	public void cdapMessageDelivered(byte[] message) {
+	public void cdapMessageDelivered(byte[] message, int portId) {
 		log.info("Received message: " +printBytes(message));
 		String decodedMessage = new String(message);
 		log.info("Decoded message: "+decodedMessage);
 		messageReceived = true;
 		
-		ipcProcess.getRmt().sendCDAPMessage("127.0.0.1".getBytes(), "CDAP message is coming back".getBytes());
+		RMT rmt = (RMT) ipcProcess.getIPCProcessComponent(RMT.class.getName());
+		try {
+			rmt.sendCDAPMessage(portId, "CDAP message is coming back".getBytes());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public boolean isMessageReceived(){
@@ -78,6 +86,20 @@ public class FakeRIBDaemon implements RIBDaemon {
 		}
 		
 		return result;
+	}
+
+	public void setCDAPSessionManager(CDAPSessionManager arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public String getName() {
+		return RIBDaemon.class.getName();
+	}
+
+	public void flowDeallocated(int arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

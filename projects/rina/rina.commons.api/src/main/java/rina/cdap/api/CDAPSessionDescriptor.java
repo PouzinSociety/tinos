@@ -2,6 +2,7 @@ package rina.cdap.api;
 
 import rina.cdap.api.message.AuthValue;
 import rina.cdap.api.message.CDAPMessage.AuthTypes;
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 /**
  * Describes a CDAPSession, by identifying the source and destination application processes.
@@ -95,9 +96,10 @@ public class CDAPSessionDescriptor {
 	private long version = -1;
 	
 	/**
-	 * Uniquely identifies this CDAP session in this IPC process
+	 * Uniquely identifies this CDAP session in this IPC process. It matches the portId
+	 * of the (N-1) flow that supports the CDAP Session
 	 */
-	private String sessionID = null;
+	private int portId = 0;
 
 	public int getAbsSyntax() {
 		return absSyntax;
@@ -195,11 +197,19 @@ public class CDAPSessionDescriptor {
 		this.version = version;
 	}
 
-	public String getSessionID() {
-		return sessionID;
+	public int getPortId() {
+		return portId;
 	}
 
-	public void setSessionID(String sessionID) {
-		this.sessionID = sessionID;
+	public void setPortId(int portId) {
+		this.portId = portId;
+	}
+	
+	public ApplicationProcessNamingInfo getSourceApplicationProcessNamingInfo(){
+		return new ApplicationProcessNamingInfo(this.getSrcApName(), this.getSrcApInst(), this.getSrcAEName(), this.getSrcAEInst());
+	}
+	
+	public ApplicationProcessNamingInfo getDestinationApplicationProcessNamingInfo(){
+		return new ApplicationProcessNamingInfo(this.getDestApName(), this.getDestApInst(), this.getDestAEName(), this.getDestAEInst());
 	}
 }

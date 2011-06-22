@@ -8,14 +8,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.cdap.api.CDAPException;
-import rina.cdap.api.CDAPSession;
-import rina.cdap.api.CDAPSessionFactory;
+import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.AuthTypes;
 import rina.delimiting.api.Delimiter;
 import rina.delimiting.api.DelimiterFactory;
-import rina.serialization.api.SerializationFactory;
-import rina.serialization.api.Serializer;
+import rina.encoding.api.Encoder;
+import rina.encoding.api.EncoderFactory;
 
 /**
  * Client of the CDAP Echo Server
@@ -27,9 +26,9 @@ public abstract class CDAPClient {
 	private static final Log log = LogFactory.getLog(CDAPClient.class);
 	
 	/**
-	 * The cdap session
+	 * The cdap session manager
 	 */
-	protected CDAPSession cdapSession = null;
+	protected CDAPSessionManager cdapSessionManager = null;
 	
 	/**
 	 * The delimiter for the sessions
@@ -37,9 +36,9 @@ public abstract class CDAPClient {
 	protected Delimiter delimiter = null;
 	
 	/**
-	 * The serializer (to marshall/unmarshall the payload of CDAP messages)
+	 * The encoder (to marshall/unmarshall the payload of CDAP messages)
 	 */
-	protected Serializer serializer = null;
+	protected Encoder encoder = null;
 	
 	/**
 	 * The TCP port where the CDAP Echo server is listening
@@ -54,7 +53,7 @@ public abstract class CDAPClient {
 	/**
 	 * The socket to connect to the server
 	 */
-	private Socket clientSocket = null;
+	protected Socket clientSocket = null;
 	
 	/**
 	 * Tells when to stop listening the socket 
@@ -62,12 +61,12 @@ public abstract class CDAPClient {
 	 */
 	protected boolean end = false;
 	
-	public CDAPClient(CDAPSessionFactory cdapSessionFactory, DelimiterFactory delimiterFactory, 
-			SerializationFactory serializationFactory, String host, int port){
-		this.cdapSession = cdapSessionFactory.createCDAPSession();
+	public CDAPClient(CDAPSessionManager cdapSessionManager, DelimiterFactory delimiterFactory, 
+			EncoderFactory encoderFactory, String host, int port){
+		this.cdapSessionManager = cdapSessionManager;
 		this.delimiter = delimiterFactory.createDelimiter(DelimiterFactory.DIF);
-		if (serializationFactory != null){
-			serializer = serializationFactory.createSerializerInstance();
+		if (encoderFactory != null){
+			encoder = encoderFactory.createEncoderInstance();
 		}
 		this.host = host;
 		this.port = port;
@@ -153,10 +152,10 @@ public abstract class CDAPClient {
 		byte[] serializedCDAPMessageToBeSend = null;
 		byte[] delimitedSdu = null;
 		
-		serializedCDAPMessageToBeSend = cdapSession.serializeNextMessageToBeSent(cdapMessage);
+		serializedCDAPMessageToBeSend = cdapSessionManager.encodeNextMessageToBeSent(cdapMessage, clientSocket.getLocalPort());
 		delimitedSdu = delimiter.getDelimitedSdu(serializedCDAPMessageToBeSend);
 		clientSocket.getOutputStream().write(delimitedSdu);
-		cdapSession.messageSent(cdapMessage);
+		cdapSessionManager.messageSent(cdapMessage, clientSocket.getLocalPort());
 		log.info("Sent CDAP Message: "+ cdapMessage.toString());
 		log.info("Sent SDU:" + printBytes(delimitedSdu));
 	}

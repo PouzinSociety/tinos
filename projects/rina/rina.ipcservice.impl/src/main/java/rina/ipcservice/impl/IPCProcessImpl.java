@@ -10,13 +10,10 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applicationprocess.api.BaseApplicationProcess;
-import rina.cdap.api.CDAPSessionFactory;
-import rina.delimiting.api.Delimiter;
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.DataTransferAEInstance;
 import rina.flowallocator.api.FlowAllocator;
-import rina.ipcprocess.api.IPCProcess;
+import rina.ipcprocess.api.BaseIPCProcess;
 import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
@@ -25,9 +22,6 @@ import rina.ipcservice.api.APService;
 import rina.ipcservice.impl.jobs.DeliverAllocateResponseJob;
 import rina.ipcservice.impl.jobs.DeliverDeallocateJob;
 import rina.ipcservice.impl.jobs.DeliverSDUJob;
-import rina.ribdaemon.api.RIBDaemon;
-import rina.rmt.api.RMT;
-import rina.serialization.api.Serializer;
 
 /**
  * Point of entry to the IPC process for the application process. It is in charge 
@@ -37,7 +31,7 @@ import rina.serialization.api.Serializer;
  * @author eduardgrasa
  *
  */
-public class IPCProcessImpl extends BaseApplicationProcess implements IPCService, IPCProcess{
+public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	
 	private static final Log log = LogFactory.getLog(IPCProcessImpl.class);
 	
@@ -57,42 +51,6 @@ public class IPCProcessImpl extends BaseApplicationProcess implements IPCService
 	private Map<Integer, APService> transferApplicationProcesses = null;
 	
 	/**
-	 * The instance of the flow allocator
-	 */
-	private FlowAllocator flowAllocator = null;
-	
-	/**
-	 * The instance of the data transfer AE
-	 */
-	private DataTransferAE dataTransferAE = null;
-	
-	/**
-	 * The instance of the RIB Daemon
-	 */
-	private RIBDaemon ribDaemon = null;
-	
-	/**
-	 * The instance of the RMT
-	 */
-	private RMT rmt = null;
-	
-	/**
-	 * The instance of the CDAP session factory
-	 */
-	private CDAPSessionFactory cdapSessionFactory = null;
-	
-	/**
-	 * The serializer to serialize/deserialize objects
-	 * exchanged through CDAP
-	 */
-	private Serializer serializer = null;
-	
-	/**
-	 * The delimiter to delimit the SDUs
-	 */
-	private Delimiter delimiter = null;
-	
-	/**
 	 * The thread pool implementation
 	 */
 	private ExecutorService executorService = null;
@@ -103,67 +61,6 @@ public class IPCProcessImpl extends BaseApplicationProcess implements IPCService
 		this.transferApplicationProcesses = new HashMap<Integer, APService>();
 		this.setApplicationProcessName(applicationProcessName);
 		this.setApplicationProcessInstance(applicationProcessInstance);
-	}
-
-	public FlowAllocator getFlowAllocator() {
-		return flowAllocator;
-	}
-
-	public void setFlowAllocator(FlowAllocator flowAllocator) {
-		this.flowAllocator = flowAllocator;
-		flowAllocator.setIPCProcess(this);
-	}
-	
-	public DataTransferAE getDataTransferAE() {
-		return dataTransferAE;
-	}
-
-	public void setDataTransferAE(DataTransferAE dataTransferAE) {
-		this.dataTransferAE = dataTransferAE;
-		dataTransferAE.setIPCProcess(this);
-	}
-
-	public RIBDaemon getRibDaemon() {
-		return ribDaemon;
-	}
-
-	public void setRibDaemon(RIBDaemon ribDaemon) {
-		this.ribDaemon = ribDaemon;
-		ribDaemon.setIPCProcess(this);
-	}
-
-	public RMT getRmt() {
-		return rmt;
-	}
-
-	public void setRmt(RMT rmt) {
-		this.rmt = rmt;
-		rmt.setIPCProcess(this);
-	}
-	
-	public CDAPSessionFactory getCDAPSessionFactory() {
-		return cdapSessionFactory;
-	}
-
-	public void setCDAPSessionFactory(CDAPSessionFactory cdapSessionFactory) {
-		this.cdapSessionFactory = cdapSessionFactory;
-	}
-	
-	public Serializer getSerializer(){
-		return serializer;
-	}
-	
-	public void setSerializer(Serializer serializer){
-		this.serializer = serializer;
-		serializer.setIPCProcess(this);
-	}
-
-	public Delimiter getDelimiter() {
-		return delimiter;
-	}
-
-	public void setDelimiter(Delimiter delimiter) {
-		this.delimiter = delimiter;
 	}
 
 	public synchronized void deliverSDUsToApplicationProcess(List<byte[]> sdus, int portId) {
@@ -191,6 +88,7 @@ public class IPCProcessImpl extends BaseApplicationProcess implements IPCService
 		int portId = choosePortId();
 		allocationPendingApplicationProcesses.put(new Integer(portId), applicationProcess);
 		try{
+			FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
 			flowAllocator.submitAllocateRequest(allocateRequest, portId);
 		}catch(IPCException ex){
 			//Something in the validation request was not valid or there are not enough 
@@ -234,6 +132,7 @@ public class IPCProcessImpl extends BaseApplicationProcess implements IPCService
 			transferApplicationProcesses.put(key, apService);
 		}
 		
+		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
 		flowAllocator.submitAllocateResponse(portId, success);
 	}
 
@@ -250,6 +149,7 @@ public class IPCProcessImpl extends BaseApplicationProcess implements IPCService
 		
 		transferApplicationProcesses.remove(key);
 		
+		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
 		flowAllocator.submitDeallocate(portId);
 	}
 	
@@ -282,6 +182,7 @@ public class IPCProcessImpl extends BaseApplicationProcess implements IPCService
 		
 		List<byte[]> sdus = new ArrayList<byte[]>();
 		sdus.add(sdu);
+		DataTransferAE dataTransferAE = (DataTransferAE) this.getIPCProcessComponent(DataTransferAE.class.getName());
 		DataTransferAEInstance dataTransferAEInstance = dataTransferAE.getDataTransferAEInstance(portId);
 		dataTransferAEInstance.sdusDelivered(sdus);
 	}
@@ -290,6 +191,7 @@ public class IPCProcessImpl extends BaseApplicationProcess implements IPCService
 	 * An application says it is no longer available through this DIF
 	 */
 	public synchronized void unregister(ApplicationProcessNamingInfo apNamingInfo) {
+		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
 		flowAllocator.getDirectoryForwardingTable().removeEntry(apNamingInfo);
 		//TODO tell the RIB Daemon to disseminate this
 	}
@@ -298,6 +200,7 @@ public class IPCProcessImpl extends BaseApplicationProcess implements IPCService
 	 * An application process says it is available through this DIF
 	 */
 	public synchronized void register(ApplicationProcessNamingInfo apNamingInfo) {
+		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
 		flowAllocator.getDirectoryForwardingTable().addEntry(apNamingInfo, this.getCurrentSynonym());
 		//TODO tell the RIB Daemon to disseminate this
 	}

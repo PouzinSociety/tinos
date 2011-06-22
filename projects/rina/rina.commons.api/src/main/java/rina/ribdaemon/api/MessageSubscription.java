@@ -1,5 +1,6 @@
 package rina.ribdaemon.api;
 
+import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 
@@ -267,5 +268,127 @@ public class MessageSubscription {
 		}
 
 		return false;
+	}
+	
+	/**
+	 * Return true if this subscription matches the message, false otherwise
+	 * @param cdapMessage
+	 * @return
+	 */
+	public boolean isSubscribedToMessage(CDAPMessage cdapMessage){
+		if (!filterMatches(this.destAEInst, cdapMessage.getDestAEInst())){
+			return false;
+		}
+		if (!filterMatches(this.destAEName, cdapMessage.getDestAEName())){
+			return false;
+		}
+		if (!filterMatches(this.destApInst, cdapMessage.getDestApInst())){
+			return false;
+		}
+		if (!filterMatches(this.destApName, cdapMessage.getDestApName())){
+			return false;
+		}
+		if (!filterMatches(this.objClass, cdapMessage.getObjClass())){
+			return false;
+		}
+		if (!filterMatches(this.objValue, cdapMessage.getObjValue())){
+			return false;
+		}
+		if (!filterMatches(this.objInst, cdapMessage.getObjInst())){
+			return false;
+		}
+		if (!filterMatches(this.objName, cdapMessage.getObjName())){
+			return false;
+		}
+		if (!filterMatches(this.opCode, cdapMessage.getOpCode())){
+			return false;
+		}
+		if (!filterMatches(this.srcAEInst, cdapMessage.getSrcAEInst())){
+			return false;
+		}
+		if (!filterMatches(this.srcAEName, cdapMessage.getSrcAEName())){
+			return false;
+		}
+		if (!filterMatches(this.srcApInst, cdapMessage.getSrcApInst())){
+			return false;
+		}
+		if (!filterMatches(this.srcApName, cdapMessage.getSrcApName())){
+			return false;
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * If the filter field is not null, return if it equals to the 
+	 * message field
+	 * @param filterField
+	 * @param messageField
+	 * @return
+	 */
+	private boolean filterMatches(Object filterField, Object messageField){
+		if (filterField == null){
+			return true;
+		}
+		
+		return filterField.equals(messageField);
+	}
+	
+	public String toString(){
+		String result = "Subscription: \n";
+		
+		if (this.getDestAEInst() != null){
+			result = result + "Dest AE Inst: "+this.getDestAEInst() + "\n";
+		}
+		
+		if (this.getDestAEName() != null){
+			result = result + "Dest AE Name: "+this.getDestAEName() + "\n";
+		}
+		
+		if (this.getDestApInst() != null){
+			result = result + "Dest AP Inst: "+this.getDestApInst() + "\n";
+		}
+		
+		if (this.getDestApName() != null){
+			result = result + "Dest Ap Name: "+this.getDestApName() + "\n";
+		}
+		
+		if (this.getObjClass() != null){
+			result = result + "Obj class: "+this.getObjClass() + "\n";
+		}
+		
+		if (this.getObjName() != null){
+			result = result + "Obj name: "+this.getObjName() + "\n";
+		}
+		
+		if (this.getObjValue() != null){
+			result = result + "Obj value: "+this.getObjValue() + "\n";
+		}
+		
+		if (this.getObjInst() != 0){
+			result = result + "Obj inst: "+this.getObjInst() + "\n";
+		}
+		
+		if (this.getOpCode() != null){
+			result = result + "Opcode: "+this.getOpCode() + "\n";
+		}
+		
+		if (this.getSrcAEInst() != null){
+			result = result + "Src AE Inst: "+this.getSrcAEInst() + "\n";
+		}
+		
+		if (this.getSrcAEName() != null){
+			result = result + "Src AE Name: "+this.getSrcAEName() + "\n";
+		}
+		
+		if (this.getSrcApInst() != null){
+			result = result + "Src AP Inst: "+this.getSrcApInst() + "\n";
+		}
+		
+		if (this.getSrcApName() != null){
+			result = result + "Src AP Name: "+this.getSrcApName() + "\n";
+		}
+		
+		return result;
 	}
 }

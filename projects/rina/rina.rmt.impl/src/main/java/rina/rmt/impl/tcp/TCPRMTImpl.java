@@ -10,23 +10,27 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.ipcprocess.api.IPCProcess;
+import rina.delimiting.api.BaseDelimiter;
+import rina.delimiting.api.Delimiter;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.QoSParameters;
-import rina.rmt.api.RMT;
+import rina.ribdaemon.api.BaseRIBDaemon;
+import rina.ribdaemon.api.RIBDaemon;
+import rina.rmt.api.BaseRMT;
 
 /**
  * Specifies the interface of the Relaying and Multiplexing task. Mediates the access to one or more (N-1) DIFs 
  * or physical media
  * @author eduardgrasa
  */
-public class TCPRMTImpl implements RMT{
+public class TCPRMTImpl extends BaseRMT{
 	private static final Log log = LogFactory.getLog(TCPRMTImpl.class);
 	
-	private Map<String, Socket> forwardingTable = null;
-	
-	private IPCProcess ipcProcess = null;
+	/**
+	 * Contains the open TCP flows to other IPC processes, indexed by portId
+	 */
+	private Map<Integer, Socket> flowTable = null;
 	
 	/**
 	 * The thread pool implementation
@@ -50,14 +54,10 @@ public class TCPRMTImpl implements RMT{
 	}
 	
 	public TCPRMTImpl(int port){
-		this.forwardingTable = new Hashtable<String, Socket>();
+		this.flowTable = new Hashtable<Integer, Socket>();
 		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
 		this.rmtServer = new RMTServer(this, port);
 		executorService.execute(rmtServer);
-	}
-	
-	public void setIPCProcess(IPCProcess ipcProcess) {
-		this.ipcProcess = ipcProcess;
 	}
 
 	/**
@@ -98,24 +98,30 @@ public class TCPRMTImpl implements RMT{
 	}
 
 	/**
-	 * Send a CDAP message to the IPC process address identified by the 'address' parameter. 
+	 * Send a CDAP message to other end of the flow identified by the "port id". 
 	 * This operation is invoked by the management tasks of the IPC process, usually to 
-	 * send CDAP messages to the nearest neighbors. The RMT will lookup the 'address' 
-	 * parameter in the forwarding table, and send the capMessage using the management flow 
+	 * send CDAP messages to the nearest neighbors. The RMT will lookup the 'portId' 
+	 * parameter in the flow table, and send the capMessage using the management flow 
 	 * that was established when this IPC process joined the DIF.
-	 * @param address
+	 * @param portId
 	 * @param cdapMessage
 	 * @throws IPCException
 	 */
-	public synchronized void sendCDAPMessage(byte[] address, byte[] cdapMessage) {
-		String socketAddress = new String(address);
-		Socket socket = forwardingTable.get(socketAddress);
-		byte[] delimitedSdu = ipcProcess.getDelimiter().getDelimitedSdu(cdapMessage);
+	public synchronized void sendCDAPMessage(int portId, byte[] cdapMessage) throws Exception{
+		Socket socket = flowTable.get(new Integer(portId));
+		if (socket == null){
+			throw new Exception("Flow closed");
+		}
+		
+		Delimiter delimiter = (Delimiter) getIPCProcess().getIPCProcessComponent(BaseDelimiter.getComponentName());
+		byte[] delimitedSdu = delimiter.getDelimitedSdu(cdapMessage);
 		try{
 			socket.getOutputStream().write(delimitedSdu);
-			log.info("Sent PDU "+printBytes(delimitedSdu));
+			log.debug("Sent PDU through flow "+portId+": "+printBytes(delimitedSdu));
 		}catch(IOException ex){
-			ex.printStackTrace();
+			log.error("Problems sending a PDU through flow "+portId+": "+ex.getMessage());
+			this.connectionEnded(portId);
+			throw new Exception("Flow closed", ex);
 		}
 	}
 	
@@ -126,9 +132,19 @@ public class TCPRMTImpl implements RMT{
 	 * @param socket
 	 */
 	public void newConnectionAccepted(Socket socket){
-		forwardingTable.put(socket.getInetAddress().getHostAddress(), socket);
-		TCPSocketReader tcpSocketReader = new TCPSocketReader(socket, ipcProcess.getRibDaemon(), ipcProcess.getDelimiter());
+		flowTable.put(new Integer(socket.getPort()), socket);
+		Delimiter delimiter = (Delimiter) getIPCProcess().getIPCProcessComponent(BaseDelimiter.getComponentName());
+		RIBDaemon ribdaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+		TCPSocketReader tcpSocketReader = new TCPSocketReader(socket, ribdaemon, delimiter, this);
 		executorService.execute(tcpSocketReader);
+	}
+	
+	/**
+	 * Called when the socket identified by portId is no longer connected
+	 * @param portId
+	 */
+	public synchronized void connectionEnded(int portId){
+		flowTable.remove(new Integer(portId));
 	}
 	
 	private String printBytes(byte[] message){

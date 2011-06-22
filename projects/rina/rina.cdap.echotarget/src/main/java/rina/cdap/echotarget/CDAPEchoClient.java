@@ -6,15 +6,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.cdap.api.CDAPException;
-import rina.cdap.api.CDAPSessionFactory;
+import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
-import rina.cdap.impl.CDAPSessionFactoryImpl;
+import rina.cdap.impl.CDAPSessionManagerImpl;
 import rina.cdap.impl.WireMessageProviderFactory;
 import rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory;
 import rina.delimiting.api.DelimiterFactory;
 import rina.delimiting.impl.DelimiterFactoryImpl;
-import rina.serialization.api.SerializationFactory;
+import rina.encoding.api.EncoderFactory;
 
 /**
  * Client of the CDAP Echo Server
@@ -27,9 +27,9 @@ public class CDAPEchoClient extends CDAPClient{
 	private static final int DEFAULTPORT = 32767;
 	private static final String DEFAULTHOST = "84.88.41.36";
 	
-	public CDAPEchoClient(CDAPSessionFactory cdapSessionFactory, DelimiterFactory delimiterFactory, 
-			SerializationFactory serializationFactory, String host, int port){
-		super(cdapSessionFactory, delimiterFactory, serializationFactory, host, port);
+	public CDAPEchoClient(CDAPSessionManager cdapSessionManager, DelimiterFactory delimiterFactory, 
+			EncoderFactory encoderFactory, String host, int port){
+		super(cdapSessionManager, delimiterFactory, encoderFactory, host, port);
 	}
 	
 	/**
@@ -45,7 +45,7 @@ public class CDAPEchoClient extends CDAPClient{
 		CDAPMessage outgoingCDAPMessage = null;
 		
 		try {
-			incomingCDAPMessage = cdapSession.messageReceived(serializedCDAPMessage);
+			incomingCDAPMessage = cdapSessionManager.messageReceived(serializedCDAPMessage, clientSocket.getLocalPort());
 			log.info("Received CDAP message: "+incomingCDAPMessage.toString());
 			switch (incomingCDAPMessage.getOpCode()){
 			case M_CONNECT_R:
@@ -127,11 +127,11 @@ public class CDAPEchoClient extends CDAPClient{
 	}
 	
 	public static void main(String[] args){
-		CDAPSessionFactoryImpl cdapSessionFactory = new CDAPSessionFactoryImpl();
+		CDAPSessionManagerImpl cdapSessionManager = new CDAPSessionManagerImpl();
 		WireMessageProviderFactory wmpFactory = new GoogleProtocolBufWireMessageProviderFactory();
-		cdapSessionFactory.setWireMessageProviderFactory(wmpFactory);
+		cdapSessionManager.setWireMessageProviderFactory(wmpFactory);
 		DelimiterFactory delimiterFactory = new DelimiterFactoryImpl();
-		CDAPEchoClient cdapEchoClient = new CDAPEchoClient(cdapSessionFactory, delimiterFactory, null, DEFAULTHOST, DEFAULTPORT);
+		CDAPEchoClient cdapEchoClient = new CDAPEchoClient(cdapSessionManager, delimiterFactory, null, DEFAULTHOST, DEFAULTPORT);
 		cdapEchoClient.run();
 	}
 }

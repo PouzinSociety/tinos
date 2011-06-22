@@ -17,13 +17,13 @@ import rina.cdap.api.message.CDAPMessage;
 public interface CDAPSession {
 	
 	/**
-	 * Serializes the next CDAP message to be sent, and checks against the 
+	 * Encodes the next CDAP message to be sent, and checks against the 
 	 * CDAP state machine that this is a valid message to be sent
 	 * @param message
 	 * @return the serialized request message, ready to be sent to a flow
 	 * @throws CDAPException if the message is bad formed or inconsistent with the protocol state machine
 	 */
-	public byte[] serializeNextMessageToBeSent(CDAPMessage message) throws CDAPException;
+	public byte[] encodeNextMessageToBeSent(CDAPMessage message) throws CDAPException;
 	
 	/**
 	 * Tell the CDAP state machine that we've just sent the cdap Message, 
@@ -43,10 +43,18 @@ public interface CDAPSession {
 	public CDAPMessage messageReceived(byte[] cdapMessage) throws CDAPException;
 	
 	/**
-	 * Getter for the sessionID
+	 * Tell the CDAP state machine that we've received a message. The state of the CDAP state machine will be updated
+	 * @param cdapMessage
+	 * @return
+	 * @throws CDAPException if the message is bad formed or inconsistent with the protocol state machine
+	 */
+	public CDAPMessage messageReceived(CDAPMessage cdapMessage) throws CDAPException;
+	
+	/**
+	 * Getter for the portId
 	 * @return a String that identifies a CDAP session within an IPC process
 	 */
-	public String getSessionId();
+	public int getPortId();
 	
 	/**
 	 * Getter for the sessionDescriptor

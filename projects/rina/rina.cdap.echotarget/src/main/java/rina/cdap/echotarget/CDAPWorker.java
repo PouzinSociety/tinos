@@ -6,9 +6,9 @@ import java.net.Socket;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.cdap.api.CDAPSession;
+import rina.cdap.api.CDAPSessionManager;
 import rina.delimiting.api.Delimiter;
-import rina.serialization.api.Serializer;
+import rina.encoding.api.Encoder;
 
 /**
  * Gets a delimited CDAP message and processes it
@@ -20,9 +20,9 @@ public abstract class CDAPWorker implements Runnable{
 	private static final Log log = LogFactory.getLog(CDAPWorker.class);
 	
 	/**
-	 * The cdap session
+	 * The cdap session manager
 	 */
-	protected CDAPSession cdapSession = null;
+	protected CDAPSessionManager cdapSessionManager = null;
 	
 	/**
 	 * Used for delimiting the incoming and outgoing messages
@@ -32,17 +32,17 @@ public abstract class CDAPWorker implements Runnable{
 	/**
 	 * Used for converting data structures to bytes using a serializer- normally will be GPB
 	 */
-	protected Serializer serializer = null;
+	protected Encoder encoder = null;
 	
 	protected Socket socket = null;
 	
 	protected boolean end = false;
 	
-	public CDAPWorker(Socket socket, CDAPSession cdapSession, Delimiter delimiter, Serializer serializer){
+	public CDAPWorker(Socket socket, CDAPSessionManager cdapSessionManager, Delimiter delimiter, Encoder encoder){
 		this.socket = socket;
-		this.cdapSession = cdapSession;
+		this.cdapSessionManager = cdapSessionManager;
 		this.delimiter = delimiter;
-		this.serializer = serializer;
+		this.encoder = encoder;
 	}	
 
 	public void run() {
