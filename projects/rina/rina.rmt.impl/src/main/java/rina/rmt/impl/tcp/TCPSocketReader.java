@@ -102,6 +102,12 @@ public class TCPSocketReader implements Runnable{
 			}
 		}
 		
+		try{
+			socket.close();
+		}catch(IOException ex){
+			ex.printStackTrace();
+		}
+		
 		log.debug("The remote endpoint of flow "+socket.getPort()+" has disconnected. Notifying the RMT and the RIB Daemon");
 		this.rmt.connectionEnded(socket.getPort());
 		this.ribdaemon.flowDeallocated(socket.getPort());
