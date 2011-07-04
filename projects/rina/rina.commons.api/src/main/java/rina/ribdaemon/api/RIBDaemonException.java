@@ -15,6 +15,7 @@ public class RIBDaemonException extends Exception{
 	public static final int MALFORMED_MESSAGE_SUBSCRIPTION_REQUEST = 2;
 	public static final int MALFORMED_MESSAGE_UNSUBSCRIPTION_REQUEST = 3;
 	public static final int SUBSCRIBER_WAS_NOT_SUBSCRIBED = 4;
+	public static final int OBJECTCLASS_AND_OBJECT_NAME_OR_OBJECT_INSTANCE_NOT_SPECIFIED = 5;
 	
 	private int errorCode = 0;
 	

@@ -15,6 +15,8 @@ import rina.ribdaemon.api.MessageSubscriber;
 import rina.ribdaemon.api.MessageSubscription;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.UpdateStrategy;
+import rina.ribdaemon.impl.rib.RIB;
+import rina.ribdaemon.impl.rib.RIBNode;
 
 /**
  * RIBDaemon that stores the objects in memory
@@ -28,15 +30,15 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	/** All the message subscribers **/
 	private CDAPSubscriptionManager cdapSubscriptionManager = null;
 	
-	/** A simple in memory store **/
-	private InMemoryStore store = null;
-	
 	/** Create, retrieve and delete CDAP sessions **/
 	private CDAPSessionManager cdapSessionManager = null;
 	
+	/** The RIB **/
+	private RIB rib = null;
+	
 	public RIBDaemonImpl(){
 		cdapSubscriptionManager = new CDAPSubscriptionManager();
-		store = new InMemoryStore();
+		rib = new RIB();
 	}
 	
 	private CDAPSessionManager getCDAPSessionManager(){
@@ -101,8 +103,12 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	 * @return null if no object matching the call arguments can be found, one or more objects otherwise
 	 */
 	public Object read(String objectClass, long objectInstance, String objectName, Object template) throws RIBDaemonException{
-		// TODO Auto-generated method stub
-		return null;
+		validateObjectArguments(objectClass, objectName, objectInstance);
+		if(objectClass != null){
+			return rib.read(objectClass, objectName);
+		}else{
+			return rib.read(objectInstance);
+		}
 	}
 	
 	/**
@@ -114,7 +120,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	 * @throws RIBDaemonException if there are problems performing the "write" operation to the RIB
 	 */
 	public synchronized void write(String objectClass, long objectInstance, String objectName, Object objectToWrite) throws RIBDaemonException{
-		// TODO Auto-generated method stub
+		validateObjectArguments(objectClass, objectName, objectInstance);
 
 	}
 
@@ -126,7 +132,20 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	 * @throws RIBDaemonException if there are problems removinb the objects from the RIB
 	 */
 	public synchronized void remove(String objectClass, long objectInstance, String objectName) throws RIBDaemonException{
-		
+		validateObjectArguments(objectClass, objectName, objectInstance);
+	}
+	
+	/**
+	 * At least objectclass must not be null or objectInstance != from -1
+	 * @param objectClass
+	 * @param objectName
+	 * @param objectInstance
+	 * @throws RIBDaemonException
+	 */
+	private void validateObjectArguments(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
+		if (objectClass == null && objectInstance == -1){
+			throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_AND_OBJECT_NAME_OR_OBJECT_INSTANCE_NOT_SPECIFIED);
+		}
 	}
 
 	/**

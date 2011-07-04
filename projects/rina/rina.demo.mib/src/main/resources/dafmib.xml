@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mibRoot xmlns="http://pouzinsociety.org/rina/mib"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pouzinsociety.org/rina/mib mib.xsd" name="daf" id="1">
+	<childNode name="resourceallocator" id="1">
+		<objectClass>daf.ResourceAllocator</objectClass>
+	</childNode>
+	<childNode name="ribdaemon" id="2">
+		<objectClass>daf.RibDaemon</objectClass>
+		<description></description>
+	</childNode>
+	<childNode name="ipc" id="3">
+		<objectClass>daf.IPC</objectClass>
+		<description>The component that manages IPC</description>
+		<childNode name="multiplexing" id="1">
+			<objectClass>daf.ipc.Multiplexing</objectClass>
+			<description></description>
+		</childNode>
+		<childNode name="sduprotection" id="2">
+			<objectClass>daf.ipc.SduProection</objectClass>
+			<description></description>	
+		</childNode>
+	</childNode>
+	<childNode name="management" id="4">
+		<objectClass>daf.management</objectClass>
+		<description>The management component of the application process</description>
+		<childNode name="applicationprocessName" id="1">
+			<objectClass>daf.management.ApplicationProcessName</objectClass>
+			<description>The name of the application process</description>
+		</childNode>
+		<childNode name="currentsynonym" id="2">
+			<objectClass>daf.management.ApplicationProcessNameSynonym</objectClass>
+			<description>The current synonym of the application process names, i.e. its address</description>
+		</childNode>
+		<childNode name="synonyms" id="3">
+			<objectClass>daf.management.ApplicationProcessNameSynonym[]</objectClass>
+			<description>All the synonyms of the application process name</description>
+		</childNode>
+		<childNode name="whatevercastname" id="4">
+			<objectClass>daf.management.WhateverCastName[]</objectClass>
+			<description>The whatevercast names that the application process knows about</description>
+		</childNode>
+	</childNode>
+</mibRoot>
