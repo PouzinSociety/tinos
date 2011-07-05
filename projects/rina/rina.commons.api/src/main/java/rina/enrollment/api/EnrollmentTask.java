@@ -1,6 +1,7 @@
 package rina.enrollment.api;
 
 import rina.ipcprocess.api.IPCProcessComponent;
+import rina.ribdaemon.api.RIBHandler;
 
 /**
  * The enrollment task manages the members of the DIF. It implements the state machines that are used 
@@ -8,6 +9,6 @@ import rina.ipcprocess.api.IPCProcessComponent;
  * @author eduardgrasa
  *
  */
-public interface EnrollmentTask extends IPCProcessComponent{
+public interface EnrollmentTask extends IPCProcessComponent, RIBHandler{
 
 }
