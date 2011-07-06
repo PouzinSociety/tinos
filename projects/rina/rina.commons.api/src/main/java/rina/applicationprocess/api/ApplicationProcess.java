@@ -3,13 +3,14 @@ package rina.applicationprocess.api;
 import java.util.List;
 
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ribdaemon.api.RIBHandler;
 
 /**
  * Defines an application process
  * @author eduardgrasa
  *
  */
-public interface ApplicationProcess {
+public interface ApplicationProcess extends RIBHandler{
 	
 	/* MANAGE OWN NAMING INFORMATION */
 	

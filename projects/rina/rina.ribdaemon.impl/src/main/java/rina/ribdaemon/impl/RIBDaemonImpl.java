@@ -1,10 +1,17 @@
 package rina.ribdaemon.impl;
 
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPException;
+import rina.cdap.api.CDAPMessageHandler;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
@@ -16,6 +23,8 @@ import rina.ribdaemon.api.RIBHandler;
 import rina.ribdaemon.api.UpdateStrategy;
 import rina.ribdaemon.impl.rib.RIB;
 import rina.ribdaemon.impl.rib.RIBNode;
+import rina.rmt.api.BaseRMT;
+import rina.rmt.api.RMT;
 
 /**
  * RIBDaemon that stores the objects in memory
@@ -32,8 +41,12 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	/** The RIB **/
 	private RIB rib = null;
 	
+	/** CDAP Message handlers that have sent a CDAP message and are waiting for a reply **/
+	private Map<String, CDAPMessageHandler> messageHandlersWaitingForReply = null;
+	
 	public RIBDaemonImpl(){
 		rib = new RIB();
+		messageHandlersWaitingForReply = new Hashtable<String, CDAPMessageHandler>();
 	}
 	
 	private CDAPSessionManager getCDAPSessionManager(){
@@ -52,7 +65,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	 * (after consulting an adequate forwarding table).
 	 * @param cdapMessage
 	 */
-	public void cdapMessageDelivered(byte[] encodedCDAPMessage, int portId){
+	public synchronized void cdapMessageDelivered(byte[] encodedCDAPMessage, int portId){
 		CDAPMessage cdapMessage = null;
 		CDAPSessionDescriptor cdapSessionDescriptor = null;
 		
@@ -70,19 +83,32 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		
 		Opcode opcode = cdapMessage.getOpCode();
 		
-		RIBHandler ribHandler = null;
-		
-		if (opcode == Opcode.M_CONNECT || opcode == Opcode.M_CONNECT_R || opcode == Opcode.M_RELEASE || opcode == Opcode.M_RELEASE_R){
-			ribHandler = (RIBHandler) this.getIPCProcess().getIPCProcessComponent(BaseEnrollmentTask.getComponentName());
-		}else if (opcode == Opcode.M_READ  || opcode == Opcode.M_WRITE || opcode == Opcode.M_CREATE || 
-				opcode == Opcode.M_DELETE || opcode == Opcode.M_START || opcode == Opcode.M_STOP || opcode == Opcode.M_CANCELREAD){
-			ribHandler = this;
-		}else{
-			//TODO what to do with the Response messages
-		}
-		
+		//2 Find the destination of the message and call it
 		try{
-			ribHandler.processOperation(cdapMessage, cdapSessionDescriptor);
+			RIBHandler ribHandler = null;
+			CDAPMessageHandler cdapMessageHandler = null;
+
+			//M_CONNECT, M_CONNECT_R, M_RELEASE and M_RELEASE_R are handled by the Enrollment task
+			if (opcode.equals(Opcode.M_CONNECT) || opcode.equals(Opcode.M_CONNECT_R) || opcode.equals(Opcode.M_RELEASE) || opcode.equals(Opcode.M_RELEASE_R)){
+				ribHandler = (RIBHandler) this.getIPCProcess().getIPCProcessComponent(BaseEnrollmentTask.getComponentName());
+				ribHandler.processOperation(cdapMessage, cdapSessionDescriptor);
+			}
+			//All the other request messages (M_READ, M_WRITE, M_CREATE, M_DELETE, M_START, M_STOP, M_CANCELREAD) are 
+			//handled by the RIB
+			else if (opcode.equals(Opcode.M_READ) || opcode.equals(Opcode.M_WRITE) || opcode.equals(Opcode.M_CREATE) || 
+					opcode.equals(Opcode.M_DELETE) || opcode.equals(Opcode.M_START) || opcode.equals(Opcode.M_STOP) || opcode.equals(Opcode.M_CANCELREAD)){
+				ribHandler = this;
+				ribHandler.processOperation(cdapMessage, cdapSessionDescriptor);
+			}
+			//All the response messages must be handled by the entities that are waiting for the reply
+			else{
+				cdapMessageHandler = messageHandlersWaitingForReply.remove(cdapSessionDescriptor.getPortId()+"-"+cdapMessage.getInvokeID());
+				if (cdapMessageHandler == null){
+					log.error("Nobody was waiting for this response message");
+				}else{
+					cdapMessageHandler.processMessage(cdapMessage, cdapSessionDescriptor);
+				}
+			}
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();
 			log.error(ex);
@@ -95,8 +121,83 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	 * @param portId identifies the flow that has been deallocated
 	 */
 	public void flowDeallocated(int portId) {
+		CDAPSessionDescriptor cdapSessionDescriptor = getCDAPSessionManager().getCDAPSession(portId).getSessionDescriptor();
+		//Remove the CDAP session
 		getCDAPSessionManager().removeCDAPSession(portId);
-		//TODO inform all the subscribers about this?
+		//Clean the messageHandlersWaitingForReply queue
+		cleanMessageHandlersWaitingForReply(portId);
+		//Inform the enrollment task
+		RIBHandler ribHandler = (RIBHandler) this.getIPCProcess().getIPCProcessComponent(BaseEnrollmentTask.getComponentName());
+		try {
+			ribHandler.processOperation(CDAPMessage.getReleaseConnectionRequestMessage(null, 0), cdapSessionDescriptor);
+		} catch (Exception ex) {
+			log.error(ex);
+			ex.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Remove the CDAP Message handlers that were waiting for a reply message coming 
+	 * from a certain portId (because the underlying flow has been deallocated)
+	 * @param portId
+	 */
+	private void cleanMessageHandlersWaitingForReply(int portId){
+		Iterator<String> iterator = messageHandlersWaitingForReply.keySet().iterator();
+		String key = null;
+		List<String> toBeRemoved = new ArrayList<String>();
+		while(iterator.hasNext()){
+			key = iterator.next();
+			if (key.startsWith(""+portId)){
+				toBeRemoved.add(key);
+			}
+		}
+		
+		for(int i=0; i<toBeRemoved.size(); i++){
+			messageHandlersWaitingForReply.remove(toBeRemoved.get(i));
+		}
+	}
+	
+	/**
+	 * Causes a CDAP message to be sent
+	 * @param cdapMessage the message to be sent
+	 * @param sessionId the CDAP session id
+	 * @param cdapMessageHandler the class to be called when the response message is received (if required)
+	 * @throws RIBDaemonException
+	 */
+	public synchronized void sendMessage(CDAPMessage cdapMessage, int portId, CDAPMessageHandler cdapMessageHandler) throws RIBDaemonException{
+		byte[] serializedCDAPMessageToBeSend = null;
+		RMT rmt = (RMT) this.getIPCProcess().getIPCProcessComponent(BaseRMT.getComponentName());
+		
+		if (cdapMessage.getInvokeID() != 0 && !cdapMessage.getOpCode().equals(Opcode.M_CONNECT) 
+				&& !cdapMessage.getOpCode().equals(Opcode.M_RELEASE) && cdapMessageHandler == null){
+			throw new RIBDaemonException(RIBDaemonException.RESPONSE_REQUIRED_BUT_MESSAGE_HANDLER_IS_NULL);
+		}
+		
+		try{
+			serializedCDAPMessageToBeSend = cdapSessionManager.encodeNextMessageToBeSent(cdapMessage, portId);
+			rmt.sendCDAPMessage(portId, serializedCDAPMessageToBeSend);
+			cdapSessionManager.messageSent(cdapMessage, portId);
+			log.info("Sent CDAP Message: "+ cdapMessage.toString());
+		}catch(Exception ex){
+			if (ex.getMessage().equals("Flow closed")){
+				cdapSessionManager.removeCDAPSession(portId);
+			}
+			throw new RIBDaemonException(RIBDaemonException.PROBLEMS_SENDING_CDAP_MESSAGE, ex);
+		}
+		
+		if (cdapMessage.getInvokeID() != 0){
+			messageHandlersWaitingForReply.put(portId+"-"+cdapMessage.getInvokeID(), cdapMessageHandler);
+		}
+	}
+	
+	/**
+	 * Send an information update, consisting on a set of CDAP messages, using the updateStrategy update strategy
+	 * (on demand, scheduled)
+	 * @param cdapMessages
+	 * @param updateStrategy
+	 */
+	public synchronized void sendMessages(CDAPMessage[] cdapMessage, UpdateStrategy arg1) {
+		// TODO Auto-generated method stub
 	}
 	
 	/**
@@ -122,17 +223,6 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	public synchronized void remove(String objectClass, long objectInstance, String objectName) throws RIBDaemonException{
 		validateObjectArguments(objectClass, objectName, objectInstance);
 	}
-
-	/**
-	 * Send an information update, consisting on a set of CDAP messages, using the updateStrategy update strategy
-	 * (on demand, scheduled)
-	 * @param cdapMessages
-	 * @param updateStrategy
-	 */
-	public synchronized void sendMessages(CDAPMessage[] cdapMessage, UpdateStrategy arg1) {
-		// TODO Auto-generated method stub
-		
-	}
 	
 	/**
 	 * Add a ribHandler for a certain object name
@@ -143,6 +233,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	public void addRIBHandler(RIBHandler ribHandler, String objectName) throws RIBDaemonException{
 		RIBNode ribNode = rib.getRIBNode(objectName);
 		ribNode.setRIBHandler(ribHandler);
+		log.info(ribHandler.getClass().getName() + " will be handling the "+objectName+" node of the RIB");
 	}
 	
 	/**
@@ -153,6 +244,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	public void removeRIBHandler(RIBHandler ribHandler, String objectName) throws RIBDaemonException{
 		RIBNode ribNode = rib.getRIBNode(objectName);
 		ribNode.setRIBHandler(null);
+		log.info(ribHandler.getClass().getName() + " will no longer be handling the "+objectName+" node of the RIB");
 	}
 	
 	/**
@@ -194,14 +286,14 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	}
 	
 	/**
-	 * At least objectclass must not be null or objectInstance != from -1
+	 * At least objectName must not be null or objectInstance != from -1
 	 * @param objectClass
 	 * @param objectName
 	 * @param objectInstance
 	 * @throws RIBDaemonException
 	 */
 	private void validateObjectArguments(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
-		if (objectClass == null && objectInstance == -1){
+		if (objectName == null){
 			throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_AND_OBJECT_NAME_OR_OBJECT_INSTANCE_NOT_SPECIFIED);
 		}
 	}

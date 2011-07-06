@@ -3,7 +3,11 @@ package rina.applicationprocess.api;
 import java.util.ArrayList;
 import java.util.List;
 
+import rina.cdap.api.CDAPSessionDescriptor;
+import rina.cdap.api.message.CDAPMessage;
+import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ribdaemon.api.RIBDaemonException;
 
 /**
  * Base implementation of the ApplicationProcess class. Deals with all the naming related 
@@ -144,5 +148,15 @@ public class BaseApplicationProcess implements ApplicationProcess{
 		}
 		
 		return false;
+	}
+
+	public void processOperation(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
+		//TODO
+		
+	}
+
+	public Object processOperation(Opcode opcode, String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

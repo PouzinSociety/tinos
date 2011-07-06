@@ -5,4 +5,4 @@ Bundle-SymbolicName: rina.ribdaemon.impl
 Bundle-Version: 1.0.0
 Bundle-Vendor: Pouzin Society
 Export-Package: rina.ribdaemon.impl;version="1.0.0"
-Import-Package: org.apache.commons.logging;version="[1.1.1,1.1.1]", rina.ipcservice.api;version="1.0.0", rina.ipcprocess.api;version="1.0.0", rina.ribdaemon.api;version="1.0.0", rina.utils.types;version="1.0.0", rina.cdap.api;version="1.0.0", rina.cdap.api.message;version="1.0.0"
+Import-Package: org.apache.commons.logging;version="[1.1.1,1.1.1]", rina.ipcservice.api;version="1.0.0", rina.ipcprocess.api;version="1.0.0", rina.ribdaemon.api;version="1.0.0", rina.utils.types;version="1.0.0", rina.cdap.api;version="1.0.0", rina.cdap.api.message;version="1.0.0", rina.enrollment.api;version="1.0.0", rina.rmt.api;version="1.0.0"

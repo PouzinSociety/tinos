@@ -20,8 +20,6 @@ import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBHandler;
-import rina.rmt.api.BaseRMT;
-import rina.rmt.api.RMT;
 
 /**
  * Current limitations: Adresses of IPC processes are allocated forever (until we lose the connection with them)
@@ -54,9 +52,8 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 	private void subscribeToRIBDaemon(){
 		RIBDaemon ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		try{
-			ribDaemon.addRIBHandler(this, "daf.management.currentSynonym");
 			ribDaemon.addRIBHandler(this, "daf.management.enrollment");
-			ribDaemon.addRIBHandler(this, "dif.management.operationalStatus");
+			ribDaemon.addRIBHandler(this, "daf.management.operationalStatus");
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();
 			log.error("Could not subscribe to RIB Daemon:" +ex.getMessage());
@@ -119,10 +116,10 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 	 */
 	private EnrollmentStateMachine createEnrollmentStateMachine(ApplicationProcessNamingInfo apNamingInfo){
 		CDAPSessionManager cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
-		RMT rmt = (RMT) getIPCProcess().getIPCProcessComponent(BaseRMT.getComponentName());
+		RIBDaemon ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		Encoder encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
 
-		EnrollmentStateMachine enrollmentStateMachine = new EnrollmentStateMachine(rmt, cdapSessionManager, encoder);
+		EnrollmentStateMachine enrollmentStateMachine = new EnrollmentStateMachine(ribDaemon, cdapSessionManager, encoder);
 		enrollmentStateMachines.put(apNamingInfo.getApplicationProcessName() +"-"+apNamingInfo.getApplicationProcessInstance(), enrollmentStateMachine);
 		log.debug("Created a new Enrollment state machine for remote IPC process: "
 				+apNamingInfo.getApplicationProcessName()+" "+apNamingInfo.getApplicationProcessInstance());

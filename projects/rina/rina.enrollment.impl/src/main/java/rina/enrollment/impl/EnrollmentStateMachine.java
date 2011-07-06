@@ -10,18 +10,20 @@ import org.apache.commons.logging.LogFactory;
 
 import rina.applicationprocess.api.ApplicationProcessNameSynonym;
 import rina.cdap.api.CDAPException;
+import rina.cdap.api.CDAPMessageHandler;
+import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.encoding.api.Encoder;
-import rina.rmt.api.RMT;
+import rina.ribdaemon.api.RIBDaemon;
 
 /**
  * Implements the enrollment logics for enrolling with a particular remote IPC process
  * @author eduardgrasa
  *
  */
-public class EnrollmentStateMachine {
+public class EnrollmentStateMachine implements CDAPMessageHandler{
 	
 private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 	
@@ -37,7 +39,7 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 	/**
 	 * The RMT to post the return messages
 	 */
-	private RMT rmt = null;
+	private RIBDaemon ribDaemon = null;
 	
 	/**
 	 * The CDAPSessionManager, to encode/decode cdap messages
@@ -81,8 +83,8 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 	 */
 	private int portId = 0;
 	
-	public EnrollmentStateMachine(RMT rmt, CDAPSessionManager cdapSessionManager, Encoder encoder){
-		this.rmt = rmt;
+	public EnrollmentStateMachine(RIBDaemon ribDaemon, CDAPSessionManager cdapSessionManager, Encoder encoder){
+		this.ribDaemon = ribDaemon;
 		this.cdapSessionManager = cdapSessionManager;
 		this.encoder = encoder;
 		timer = new Timer();
@@ -103,6 +105,20 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 	
 	public int getPortId(){
 		return this.portId;
+	}
+	
+	/**
+	 * Called by the RIB Daemon when a response message for me has arrived.
+	 * @param cdapMessage
+	 * @param cdapSessionDescriptor
+	 */
+	public void processMessage(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) {
+		if (cdapSessionDescriptor.getPortId() != this.getPortId()){
+			log.error("Received a CDAP Message from port id "+cdapSessionDescriptor.getPortId()+". Was expecting messages from port id "+this.getPortId());
+			return;
+		}
+		
+		processCDAPMessage(cdapMessage, cdapSessionDescriptor.getPortId());
 	}
 	
 	/**
@@ -314,10 +330,14 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 	}
 	
 	private CDAPMessage processEnrolledState(CDAPMessage cdapMessage) throws CDAPException{
-		if (cdapMessage.getOpCode().equals(Opcode.M_RELEASE) && cdapMessage.getInvokeID() != 0){
-			return CDAPMessage.getReleaseConnectionResponseMessage(null, cdapMessage.getInvokeID(), 0, null);
+		if (cdapMessage.getOpCode().equals(Opcode.M_RELEASE)){
+			log.info("Remote IPC process disconnected");
+			this.setState(State.NULL);
+			if (cdapMessage.getInvokeID() != 0){
+				return CDAPMessage.getReleaseConnectionResponseMessage(null, cdapMessage.getInvokeID(), 0, null);
+			}
 		}
-		
+
 		return null;
 	}
 	
@@ -328,13 +348,8 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 	 * @param portId
 	 */
 	protected synchronized void sendCDAPMessage(CDAPMessage cdapMessage){
-		byte[] serializedCDAPMessageToBeSend = null;
-		
 		try{
-			serializedCDAPMessageToBeSend = cdapSessionManager.encodeNextMessageToBeSent(cdapMessage, portId);
-			rmt.sendCDAPMessage(portId, serializedCDAPMessageToBeSend);
-			cdapSessionManager.messageSent(cdapMessage, portId);
-			log.info("Sent CDAP Message: "+ cdapMessage.toString());
+			ribDaemon.sendMessage(cdapMessage, portId, this);
 		}catch(Exception ex){
 			ex.printStackTrace();
 			log.error("Could not send CDAP message: "+ex.getMessage());
@@ -362,5 +377,4 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 				}
 			}};
 	}
-
 }

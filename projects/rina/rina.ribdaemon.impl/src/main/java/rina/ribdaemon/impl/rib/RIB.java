@@ -26,11 +26,19 @@ public class RIB{
     public RIB() {
         super();
         
-        //TODO initialize the RIB (that is, create the structure without 
-        //the handlers
+        //TODO initialize the RIB (that is, create the structure without the handlers
         RIBNode rootElement = new RIBNode();
 		rootElement.setObjectName("daf");
 		this.setRootElement(rootElement);
+		RIBNode managementRIBNode = new RIBNode();
+		managementRIBNode.setObjectName("management");
+		rootElement.addChild(managementRIBNode);
+		RIBNode ribNode = new RIBNode();
+		ribNode.setObjectName("enrollment");
+		managementRIBNode.addChild(ribNode);
+		ribNode = new RIBNode();
+		ribNode.setObjectName("operationalStatus");
+		managementRIBNode.addChild(ribNode);
     }
  
     /**
@@ -116,7 +124,7 @@ public class RIB{
      * @return
      */
     public RIBNode getRIBNode(String objectName) throws RIBDaemonException{
-    	StringTokenizer tokenizer = new StringTokenizer(objectName, "\0");
+    	StringTokenizer tokenizer = new StringTokenizer(objectName, ".");
     	List<RIBNode> currentNodes = new ArrayList<RIBNode>();
     	currentNodes.add(rootElement);
     	RIBNode currentNode = null;

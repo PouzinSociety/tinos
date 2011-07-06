@@ -9,7 +9,7 @@ import rina.cdap.api.message.CDAPMessage.Opcode;
  * @author eduardgrasa
  *
  */
-public interface RIBHandler {
+public interface RIBHandler{
 	
 	/**
 	 * Reads/writes/created/deletes/starts/stops one or more objects at the RIB, matching the information specified by objectId + objectClass or objectInstance.

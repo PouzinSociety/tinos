@@ -1,5 +1,6 @@
 package rina.ribdaemon.api;
 
+import rina.cdap.api.CDAPMessageHandler;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcessComponent;
 
@@ -49,4 +50,13 @@ public interface RIBDaemon extends IPCProcessComponent, RIBHandler{
 	 * @param updateStrategy
 	 */
 	public void sendMessages(CDAPMessage[] cdapMessages, UpdateStrategy updateStrategy);
+	
+	/**
+	 * Causes a CDAP message to be sent
+	 * @param cdapMessage the message to be sent
+	 * @param sessionId the CDAP session id
+	 * @param cdapMessageHandler the class to be called when the response message is received (if required)
+	 * @throws RIBDaemonException
+	 */
+	public void sendMessage(CDAPMessage cdapMessage, int sessionId, CDAPMessageHandler cdapMessageHandler) throws RIBDaemonException;
 }

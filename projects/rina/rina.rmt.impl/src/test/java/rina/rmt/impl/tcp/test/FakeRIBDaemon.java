@@ -3,6 +3,7 @@ package rina.rmt.impl.tcp.test;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.cdap.api.CDAPMessageHandler;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
@@ -124,6 +125,12 @@ public class FakeRIBDaemon implements RIBDaemon {
 	}
 
 	public void removeRIBHandler(RIBHandler arg0, String arg1)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void sendMessage(CDAPMessage arg0, int arg1, CDAPMessageHandler arg2)
 			throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		
