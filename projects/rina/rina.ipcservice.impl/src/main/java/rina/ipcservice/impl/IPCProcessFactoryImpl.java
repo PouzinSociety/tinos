@@ -12,6 +12,7 @@ import rina.flowallocator.api.FlowAllocatorFactory;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonFactory;
 import rina.rmt.api.RMTFactory;
 
@@ -99,17 +100,18 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	}
 
 	public IPCProcess createIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
+		RIBDaemon ribDaemon = ribDaemonFactory.createRIBDaemon(ipcProcessNamingInfo);
 		IPCProcess ipcProcess = new IPCProcessImpl(ipcProcessNamingInfo.getApplicationProcessName(), 
-				ipcProcessNamingInfo.getApplicationProcessInstance());
+				ipcProcessNamingInfo.getApplicationProcessInstance(), ribDaemon);
 		
-		//ipcProcess.addIPCProcessComponent(flowAllocatorFactory.createFlowAllocator(ipcProcessNamingInfo));
-		//ipcProcess.addIPCProcessComponent(dataTransferAEFactory.createDataTransferAE(ipcProcessNamingInfo));
+		ipcProcess.addIPCProcessComponent(ribDaemon);
 		ipcProcess.addIPCProcessComponent(delimiterFactory.createDelimiter(DelimiterFactory.DIF));
 		ipcProcess.addIPCProcessComponent(encoderFactory.createEncoderInstance());
 		ipcProcess.addIPCProcessComponent(rmtFactory.createRMT(ipcProcessNamingInfo));
 		ipcProcess.addIPCProcessComponent(cdapSessionManagerFactory.createCDAPSessionManager());
-		ipcProcess.addIPCProcessComponent(ribDaemonFactory.createRIBDaemon(ipcProcessNamingInfo));
 		ipcProcess.addIPCProcessComponent(enrollmentTaskFactory.createEnrollmentTask(ipcProcessNamingInfo));
+		//ipcProcess.addIPCProcessComponent(flowAllocatorFactory.createFlowAllocator(ipcProcessNamingInfo));
+		//ipcProcess.addIPCProcessComponent(dataTransferAEFactory.createDataTransferAE(ipcProcessNamingInfo));
 		
 		ipcProcesses.put(ipcProcessNamingInfo, ipcProcess);
 		return ipcProcess;

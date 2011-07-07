@@ -20,6 +20,7 @@ import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBHandler;
+import rina.ribdaemon.api.RIBObjectNames;
 
 /**
  * Current limitations: Adresses of IPC processes are allocated forever (until we lose the connection with them)
@@ -52,8 +53,10 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 	private void subscribeToRIBDaemon(){
 		RIBDaemon ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		try{
-			ribDaemon.addRIBHandler(this, "daf.management.enrollment");
-			ribDaemon.addRIBHandler(this, "daf.management.operationalStatus");
+			ribDaemon.addRIBHandler(this, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT);
+			ribDaemon.addRIBHandler(this, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.OPERATIONAL_STATUS);
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();
 			log.error("Could not subscribe to RIB Daemon:" +ex.getMessage());

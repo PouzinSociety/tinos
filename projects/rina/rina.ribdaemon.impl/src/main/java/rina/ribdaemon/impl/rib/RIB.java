@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBObjectNames;
 
 /**
  * Represents a Tree of RIBNodes. The Tree is represented as
@@ -17,7 +18,6 @@ import rina.ribdaemon.api.RIBDaemonException;
  * hardcoded for the demo).
  */
 public class RIB{
- 
     private RIBNode rootElement = null;
      
     /**
@@ -26,19 +26,40 @@ public class RIB{
     public RIB() {
         super();
         
-        //TODO initialize the RIB (that is, create the structure without the handlers
+        //TODO initialize the RIB (that is, create the structure without the handlers)
         RIBNode rootElement = new RIBNode();
-		rootElement.setObjectName("daf");
+		rootElement.setObjectName(RIBObjectNames.ROOT);
 		this.setRootElement(rootElement);
+		RIBNode dafRIBNode = new RIBNode();
+		dafRIBNode.setObjectName(RIBObjectNames.DAF);
+		rootElement.addChild(dafRIBNode);
 		RIBNode managementRIBNode = new RIBNode();
-		managementRIBNode.setObjectName("management");
-		rootElement.addChild(managementRIBNode);
+		managementRIBNode.setObjectName(RIBObjectNames.MANAGEMENT);
+		dafRIBNode.addChild(managementRIBNode);
 		RIBNode ribNode = new RIBNode();
-		ribNode.setObjectName("enrollment");
+		ribNode.setObjectName(RIBObjectNames.ENROLLMENT);
 		managementRIBNode.addChild(ribNode);
 		ribNode = new RIBNode();
-		ribNode.setObjectName("operationalStatus");
+		ribNode.setObjectName(RIBObjectNames.OPERATIONAL_STATUS);
 		managementRIBNode.addChild(ribNode);
+		RIBNode namingNode = new RIBNode();
+		namingNode.setObjectName(RIBObjectNames.NAMING);
+		managementRIBNode.addChild(namingNode);
+		ribNode = new RIBNode();
+		ribNode.setObjectName(RIBObjectNames.APNAME);
+		namingNode.addChild(ribNode);
+		ribNode = new RIBNode();
+		ribNode.setObjectName(RIBObjectNames.CURRENT_SYNONYM);
+		namingNode.addChild(ribNode);
+		ribNode = new RIBNode();
+		ribNode.setObjectName(RIBObjectNames.SYNONYMS);
+		namingNode.addChild(ribNode);
+		ribNode = new RIBNode();
+		ribNode.setObjectName(RIBObjectNames.WHATEVERCAST_NAMES);
+		namingNode.addChild(ribNode);
+		RIBNode difRIBNode = new RIBNode();
+		difRIBNode.setObjectName(RIBObjectNames.DIF);
+		rootElement.addChild(difRIBNode);
     }
  
     /**
@@ -124,7 +145,8 @@ public class RIB{
      * @return
      */
     public RIBNode getRIBNode(String objectName) throws RIBDaemonException{
-    	StringTokenizer tokenizer = new StringTokenizer(objectName, ".");
+    	objectName = RIBObjectNames.ROOT + RIBObjectNames.SEPARATOR + objectName;
+    	StringTokenizer tokenizer = new StringTokenizer(objectName, RIBObjectNames.SEPARATOR);
     	List<RIBNode> currentNodes = new ArrayList<RIBNode>();
     	currentNodes.add(rootElement);
     	RIBNode currentNode = null;

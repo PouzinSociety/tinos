@@ -10,8 +10,16 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.applicationprocess.api.WhatevercastName;
+import rina.cdap.api.CDAPException;
+import rina.cdap.api.CDAPSessionDescriptor;
+import rina.cdap.api.message.CDAPMessage;
+import rina.cdap.api.message.CDAPMessage.Opcode;
+import rina.cdap.api.message.ObjectValue;
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.DataTransferAEInstance;
+import rina.encoding.api.BaseEncoder;
+import rina.encoding.api.Encoder;
 import rina.flowallocator.api.FlowAllocator;
 import rina.ipcprocess.api.BaseIPCProcess;
 import rina.ipcservice.api.AllocateRequest;
@@ -22,6 +30,11 @@ import rina.ipcservice.api.APService;
 import rina.ipcservice.impl.jobs.DeliverAllocateResponseJob;
 import rina.ipcservice.impl.jobs.DeliverDeallocateJob;
 import rina.ipcservice.impl.jobs.DeliverSDUJob;
+import rina.ribdaemon.api.BaseRIBDaemon;
+import rina.ribdaemon.api.RIBDaemon;
+import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBHandler;
+import rina.ribdaemon.api.RIBObjectNames;
 
 /**
  * Point of entry to the IPC process for the application process. It is in charge 
@@ -31,7 +44,7 @@ import rina.ipcservice.impl.jobs.DeliverSDUJob;
  * @author eduardgrasa
  *
  */
-public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
+public class IPCProcessImpl extends BaseIPCProcess implements IPCService, RIBHandler{
 	
 	private static final Log log = LogFactory.getLog(IPCProcessImpl.class);
 	
@@ -55,13 +68,239 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 */
 	private ExecutorService executorService = null;
 	
-	public IPCProcessImpl(String applicationProcessName, String applicationProcessInstance){
+	public IPCProcessImpl(String applicationProcessName, String applicationProcessInstance, RIBDaemon ribDaemon){
 		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
 		this.allocationPendingApplicationProcesses = new HashMap<Integer, APService>();
 		this.transferApplicationProcesses = new HashMap<Integer, APService>();
 		this.setApplicationProcessName(applicationProcessName);
 		this.setApplicationProcessInstance(applicationProcessInstance);
+		subscribeToRIBDaemon(ribDaemon);
 	}
+	
+	/**
+	 * Tell the ribDaemon the portions of the RIB space that the IPC process will manage
+	 * @param ribDaemon
+	 */
+	private void subscribeToRIBDaemon(RIBDaemon ribDaemon){
+		try{
+			ribDaemon.addRIBHandler(this, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME);
+			ribDaemon.addRIBHandler(this, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM);
+			ribDaemon.addRIBHandler(this, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.SYNONYMS);
+			ribDaemon.addRIBHandler(this, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES);
+		}catch(RIBDaemonException ex){
+			ex.printStackTrace();
+			log.error("Could not subscribe to RIB Daemon:" +ex.getMessage());
+		}
+	}
+	
+	/**
+	 * A CDAP Message has been received. The opcode must be M_READ, M_WRITE, M_CANCELREAD, M_CREATE, M_DELETE, M_START or M_STOP
+	 */
+	public void processOperation(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
+		CDAPMessage responseMessage = null;
+		Encoder encoder = (Encoder) this.getIPCProcessComponent(BaseEncoder.getComponentName());
+		RIBDaemon ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+
+		switch(cdapMessage.getOpCode()){
+		case M_READ:
+			responseMessage = handleRemoteRead(cdapMessage, encoder);
+			break;
+		case M_WRITE:
+			//TODO
+			break;
+		case M_CREATE:
+			//TODO
+			break;
+		case M_DELETE:
+			//TODO
+			break;
+		case M_START:
+			//TODO
+			break;
+		case M_STOP:
+			//TODO
+			break;
+		case M_CANCELREAD:
+			//TODO
+			break;
+		default:
+			throw new RIBDaemonException(RIBDaemonException.OPERATION_NOT_ALLOWED_AT_THIS_OBJECT, 
+					"Operation "+cdapMessage.getOpCode()+" not allowed for objectName "+cdapMessage.getObjName());
+
+		}
+
+		if (responseMessage != null){
+			ribDaemon.sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
+		}
+	}
+	
+	/**
+	 * Contains the logics to handle a remote M_READ message received by this task
+	 * @param cdapMessage
+	 * @param encoder
+	 * @return
+	 */
+	private CDAPMessage handleRemoteRead(CDAPMessage cdapMessage, Encoder encoder){
+		CDAPMessage responseMessage = null;
+		try{
+			Object object = this.handleRead(cdapMessage.getObjName());
+			ObjectValue objectValue = new ObjectValue();
+			objectValue.setByteval(encoder.encode(object));
+			responseMessage = CDAPMessage.getReadObjectResponseMessage(null, cdapMessage.getInvokeID(), cdapMessage.getObjClass(), 
+					cdapMessage.getObjInst(), cdapMessage.getObjName(), objectValue, 0, null);
+		}catch(RIBDaemonException ex){
+			try{
+				responseMessage = CDAPMessage.getReadObjectResponseMessage(null, cdapMessage.getInvokeID(), cdapMessage.getObjClass(), 
+						cdapMessage.getObjInst(), cdapMessage.getObjName(), null, 1, ex.getMessage());
+			}catch(CDAPException cdapEx){
+				log.error(cdapEx);
+			}
+		}catch(Exception ex){
+			log.error(ex);
+		}
+		
+		return responseMessage;
+	}
+
+	/**
+	 * Called intern
+	 */
+	public Object processOperation(Opcode opcode, String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+		switch(opcode){
+		case M_READ:
+			return handleRead(objectName);
+		case M_WRITE:
+			handleWrite(objectName, object);
+			break;
+		case M_CANCELREAD:
+			break;
+		case M_CREATE:
+			handleCreate(objectName, object);
+			break;
+		case M_DELETE:
+			handleDelete(objectName, object);
+			break;
+		default:
+			throw new RIBDaemonException(RIBDaemonException.OPERATION_NOT_ALLOWED_AT_THIS_OBJECT, "Operation "+opcode+" not allowed for objectName "+objectName);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Takes care of the M_READ operations for the objectnames that this class owns;
+	 * @param objectName
+	 * @return
+	 * @throws RIBDaemonException
+	 */
+	private Object handleRead(String objectName) throws RIBDaemonException {
+		if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME)){
+			return this.getApplicationProcessNamingInfo();
+		}else if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM)){
+			return this.getCurrentSynonym();
+		}else if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.SYNONYMS)){
+			List<byte[]> result = new ArrayList<byte[]>();
+			result.add(this.getCurrentSynonym());
+			return result;
+		}else if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES)){
+			return this.getWhatevercastNames();
+		}
+		
+		throw new RIBDaemonException(RIBDaemonException.UNRECOGNIZED_OBJECT_NAME, "Unrecognized object name");
+	}
+	
+	/**
+	 * Takes care of the M_WRITE operations for the objectnames that this class owns;
+	 * @param objectName
+	 * @param object
+	 * @throws RIBDaemonException
+	 */
+	private void handleWrite(String objectName, Object object) throws RIBDaemonException{
+		if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME)){
+			if (!(object instanceof ApplicationProcessNamingInfo)){
+				throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME, 
+						"Object class ("+object.getClass().getName()+") does not match object name "+objectName);
+			}
+			this.setApplicationProcessNamingInfo((ApplicationProcessNamingInfo)object);
+		}else if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM)){
+			if (!(object instanceof byte[])){
+				throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME, 
+						"Object class ("+object.getClass().getName()+") does not match object name "+objectName);
+			}
+			this.setCurrentSynonym((byte[])object);
+		}else if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.SYNONYMS)){
+			//TODO don't have synonym list yet
+		}else if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES)){
+			throw new RIBDaemonException(RIBDaemonException.OPERATION_NOT_ALLOWED_AT_THIS_OBJECT, "Operation M_WRITE not allowed for objectName "+objectName);
+		}
+
+		throw new RIBDaemonException(RIBDaemonException.UNRECOGNIZED_OBJECT_NAME, "Unrecognized object name");
+	}
+	
+	/**
+	 * Takes care of the M_CREATE operations for the objectnames that this class owns;
+	 * @param objectName
+	 * @param object
+	 * @throws RIBDaemonException
+	 */
+	private void handleCreate(String objectName, Object object) throws RIBDaemonException{
+		if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME)){
+			throw new RIBDaemonException(RIBDaemonException.OPERATION_NOT_ALLOWED_AT_THIS_OBJECT, "Operation M_WRITE not allowed for objectName "+objectName);
+		}else if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM)){
+			throw new RIBDaemonException(RIBDaemonException.OPERATION_NOT_ALLOWED_AT_THIS_OBJECT, "Operation M_WRITE not allowed for objectName "+objectName);
+		}else if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.SYNONYMS)){
+			//TODO don't have synonym list yet
+		}else if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES)){
+			if (!(object instanceof WhatevercastName)){
+				throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME, 
+						"Object class ("+object.getClass().getName()+") does not match object name "+objectName);
+			}
+			this.getWhatevercastNames().add((WhatevercastName) object);
+		}
+
+		throw new RIBDaemonException(RIBDaemonException.UNRECOGNIZED_OBJECT_NAME, "Unrecognized object name");
+	}
+	
+	/**
+	 * Takes care of the M_DELETE operations for the objectnames that this class owns;
+	 * @param objectName
+	 * @param object
+	 * @throws RIBDaemonException
+	 */
+	private void handleDelete(String objectName, Object object) throws RIBDaemonException{
+		if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME)){
+			this.setApplicationProcessNamingInfo(null);
+		}else if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM)){
+			this.setCurrentSynonym(null);
+		}else if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.SYNONYMS)){
+			//TODO don't have synonym list yet
+		}else if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES)){
+			this.getWhatevercastNames().removeAll(this.getWhatevercastNames());
+		}
+
+		throw new RIBDaemonException(RIBDaemonException.UNRECOGNIZED_OBJECT_NAME, "Unrecognized object name");
+	}
+	
 
 	public synchronized void deliverSDUsToApplicationProcess(List<byte[]> sdus, int portId) {
 		APService applicationProcess = transferApplicationProcesses.get(new Integer(portId));

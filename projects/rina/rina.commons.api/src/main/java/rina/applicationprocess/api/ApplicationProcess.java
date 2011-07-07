@@ -81,9 +81,8 @@ public interface ApplicationProcess extends RIBHandler{
 	/**
 	 * Set the synonym currently being used by this application process
 	 * @param synonym
-	 * @throws ApplicationProcessException if the synonym is not contained in the synonyms list
 	 */
-	public void setCurrentSynonym(byte[] synonym) throws ApplicationProcessException;
+	public void setCurrentSynonym(byte[] synonym);
 	
 	/* MANAGE WHATEVERCAST NAMES */
 	

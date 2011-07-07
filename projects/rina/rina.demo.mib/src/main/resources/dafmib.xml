@@ -23,21 +23,27 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http:/
 	<childNode name="management" id="4">
 		<objectClass>daf.management</objectClass>
 		<description>The management component of the application process</description>
-		<childNode name="applicationprocessName" id="1">
+		
+		
+		
+		
+		<childNode name="naming" id="1">
+			<objectClass>daf.management.Naming</objectClass>
+			<description>The naming information of this application process (name, synonyms, whatevercast)</description><childNode name="applicationprocessname" id="1">
 			<objectClass>daf.management.ApplicationProcessName</objectClass>
 			<description>The name of the application process</description>
-		</childNode>
-		<childNode name="currentsynonym" id="2">
+		</childNode><childNode name="currentsynonym" id="2">
 			<objectClass>daf.management.ApplicationProcessNameSynonym</objectClass>
 			<description>The current synonym of the application process names, i.e. its address</description>
-		</childNode>
-		<childNode name="synonyms" id="3">
+		</childNode><childNode name="synonyms" id="3">
 			<objectClass>daf.management.ApplicationProcessNameSynonym[]</objectClass>
 			<description>All the synonyms of the application process name</description>
-		</childNode>
-		<childNode name="whatevercastname" id="4">
-			<objectClass>daf.management.WhateverCastName[]</objectClass>
+		</childNode><childNode name="whatevercast" id="4">
+			<objectClass>daf.management.WhatevercastName[]</objectClass>
 			<description>The whatevercast names that the application process knows about</description>
-		</childNode>
+		</childNode></childNode>
+		<childNode name="enrollment" id="2">
+			<objectClass>daf.management.Enrollment</objectClass>
+			<description>All the enrollment information (names of the members of the DIF and their addresses?)</description></childNode>
 	</childNode>
 </mibRoot>

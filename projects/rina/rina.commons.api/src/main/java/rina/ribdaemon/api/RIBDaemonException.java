@@ -19,6 +19,9 @@ public class RIBDaemonException extends Exception{
 	public static final int OBJECTNAME_NOT_PRESENT_IN_THE_RIB = 6;
 	public static final int RESPONSE_REQUIRED_BUT_MESSAGE_HANDLER_IS_NULL = 7;
 	public static final int PROBLEMS_SENDING_CDAP_MESSAGE = 8;
+	public static final int OPERATION_NOT_ALLOWED_AT_THIS_OBJECT = 9;
+	public static final int UNRECOGNIZED_OBJECT_NAME = 10;
+	public static final int OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME = 11;
 	
 	private int errorCode = 0;
 	

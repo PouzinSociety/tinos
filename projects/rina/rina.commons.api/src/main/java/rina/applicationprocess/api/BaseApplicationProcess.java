@@ -3,11 +3,7 @@ package rina.applicationprocess.api;
 import java.util.ArrayList;
 import java.util.List;
 
-import rina.cdap.api.CDAPSessionDescriptor;
-import rina.cdap.api.message.CDAPMessage;
-import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
-import rina.ribdaemon.api.RIBDaemonException;
 
 /**
  * Base implementation of the ApplicationProcess class. Deals with all the naming related 
@@ -15,7 +11,7 @@ import rina.ribdaemon.api.RIBDaemonException;
  * @author eduardgrasa
  *
  */
-public class BaseApplicationProcess implements ApplicationProcess{
+public abstract class BaseApplicationProcess implements ApplicationProcess{
 	
 	private String applicationProcessName = null;
 	private String applicationProcessInstance = null;
@@ -94,15 +90,7 @@ public class BaseApplicationProcess implements ApplicationProcess{
 		return currentSynonym;
 	}
 
-	public void setCurrentSynonym(byte[] synonym) throws ApplicationProcessException {
-		if (synonym == null){
-			throw new ApplicationProcessException(ApplicationProcessException.NULL_OR_MALFORMED_SYNONYM);
-		}
-		
-		if (!synonyms.contains(synonym)){
-			throw new ApplicationProcessException(ApplicationProcessException.UNEXISTING_SYNOYM);
-		}
-		
+	public void setCurrentSynonym(byte[] synonym){
 		this.currentSynonym = synonym;
 	}
 
@@ -148,15 +136,5 @@ public class BaseApplicationProcess implements ApplicationProcess{
 		}
 		
 		return false;
-	}
-
-	public void processOperation(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		//TODO
-		
-	}
-
-	public Object processOperation(Opcode opcode, String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }
