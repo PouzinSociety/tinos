@@ -256,6 +256,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	 * @throws RIBDaemonException on a number of circumstances
 	 */
 	public void processOperation(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
+		log.debug("Remote operation "+cdapMessage.getOpCode()+" called on object "+cdapMessage.getObjName());
 		RIBNode ribNode = getRIBNode(cdapMessage.getObjName(), cdapMessage.getObjClass(), cdapMessage.getObjInst());
 		ribNode.getRIBHandler().processOperation(cdapMessage, cdapSessionDescriptor);
 	}
@@ -272,6 +273,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	 * @throws RIBDaemonException on a number of circumstances
 	 */
 	public Object processOperation(Opcode opcode, String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException{
+		log.debug("Local operation "+opcode+" called on object "+objectName);
 		RIBNode ribNode = getRIBNode(objectName, objectClass, objectInstance);
 		return ribNode.getRIBHandler().processOperation(opcode, objectClass, objectName, objectInstance, object);
 	}

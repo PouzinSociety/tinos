@@ -13,6 +13,11 @@ public class ApplicationProcessNameSynonym {
 	private String applicationProcessName = null;
 	
 	/**
+	 * The application process instance that this synonym refers to
+	 */
+	private String applicationProcessInstance = null;
+	
+	/**
 	 * The synonym
 	 */
 	private byte[] synonym = null;
@@ -23,6 +28,14 @@ public class ApplicationProcessNameSynonym {
 
 	public void setApplicationProcessName(String applicationProcessName) {
 		this.applicationProcessName = applicationProcessName;
+	}
+
+	public String getApplicationProcessInstance() {
+		return applicationProcessInstance;
+	}
+
+	public void setApplicationProcessInstance(String applicationProcessInstance) {
+		this.applicationProcessInstance = applicationProcessInstance;
 	}
 
 	public byte[] getSynonym() {

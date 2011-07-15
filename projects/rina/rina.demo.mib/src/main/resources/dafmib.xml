@@ -45,5 +45,8 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http:/
 		<childNode name="enrollment" id="2">
 			<objectClass>daf.management.Enrollment</objectClass>
 			<description>All the enrollment information (names of the members of the DIF and their addresses?)</description></childNode>
+		<childNode name="operationalstatus" id="3">
+			<objectClass>daf.management.OperationalStatus</objectClass>
+			<description>The operational status of the application process</description></childNode>
 	</childNode>
 </mibRoot>

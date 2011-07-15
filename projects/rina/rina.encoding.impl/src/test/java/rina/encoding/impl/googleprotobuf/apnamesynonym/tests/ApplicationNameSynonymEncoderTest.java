@@ -22,6 +22,7 @@ public class ApplicationNameSynonymEncoderTest {
 	public void setup(){
 		apnSynonym = new ApplicationProcessNameSynonym();
 		apnSynonym.setApplicationProcessName("B");
+		apnSynonym.setApplicationProcessInstance("1234");
 		apnSynonym.setSynonym(new byte[]{0x02});
 		apNameEncoder = new ApplicationProcessNameSynonymEncoder();
 	}
@@ -35,6 +36,7 @@ public class ApplicationNameSynonymEncoderTest {
 		
 		ApplicationProcessNameSynonym recoveredApns = (ApplicationProcessNameSynonym) apNameEncoder.decode(serializedApns, ApplicationProcessNameSynonym.class.toString());
 		Assert.assertEquals(apnSynonym.getApplicationProcessName(), recoveredApns.getApplicationProcessName());
+		Assert.assertEquals(apnSynonym.getApplicationProcessInstance(), recoveredApns.getApplicationProcessInstance());
 		Assert.assertArrayEquals(apnSynonym.getSynonym(), recoveredApns.getSynonym());
 	}
 }

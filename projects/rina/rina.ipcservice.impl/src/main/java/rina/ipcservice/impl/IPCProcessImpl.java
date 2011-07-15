@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.applicationprocess.api.ApplicationProcessNameSynonym;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPSessionDescriptor;
@@ -101,6 +102,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService, RIBHan
 	 * A CDAP Message has been received. The opcode must be M_READ, M_WRITE, M_CANCELREAD, M_CREATE, M_DELETE, M_START or M_STOP
 	 */
 	public void processOperation(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
+		log.debug("Processing a remote "+cdapMessage.getOpCode()+" operation on object "+cdapMessage.getObjName());
 		CDAPMessage responseMessage = null;
 		Encoder encoder = (Encoder) this.getIPCProcessComponent(BaseEncoder.getComponentName());
 		RIBDaemon ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
@@ -110,22 +112,13 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService, RIBHan
 			responseMessage = handleRemoteRead(cdapMessage, encoder);
 			break;
 		case M_WRITE:
-			//TODO
+			responseMessage = handleRemoteWrite(cdapMessage, encoder);
 			break;
 		case M_CREATE:
-			//TODO
+			responseMessage = handleRemoteCreate(cdapMessage, encoder);
 			break;
 		case M_DELETE:
-			//TODO
-			break;
-		case M_START:
-			//TODO
-			break;
-		case M_STOP:
-			//TODO
-			break;
-		case M_CANCELREAD:
-			//TODO
+			responseMessage = handleRemoteDelete(cdapMessage, encoder);
 			break;
 		default:
 			throw new RIBDaemonException(RIBDaemonException.OPERATION_NOT_ALLOWED_AT_THIS_OBJECT, 
@@ -142,7 +135,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService, RIBHan
 	 * Contains the logics to handle a remote M_READ message received by this task
 	 * @param cdapMessage
 	 * @param encoder
-	 * @return
+	 * @return an M_READ_R if required
 	 */
 	private CDAPMessage handleRemoteRead(CDAPMessage cdapMessage, Encoder encoder){
 		CDAPMessage responseMessage = null;
@@ -165,11 +158,91 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService, RIBHan
 		
 		return responseMessage;
 	}
+	
+	/**
+	 * Contains the logics to handle a remote M_WRITE message received by this task
+	 * @param cdapMessage
+	 * @param encoder
+	 * @return an M_WRITE_R if required
+	 */
+	private CDAPMessage handleRemoteWrite(CDAPMessage cdapMessage, Encoder encoder){
+		CDAPMessage responseMessage = null;
+		try{
+			Object object = encoder.decode(cdapMessage.getObjValue().getByteval(), ObjectNametoClassMapper.getObjectClass(cdapMessage.getObjName()));
+			this.handleWrite(cdapMessage.getObjName(), object);
+			if (cdapMessage.getInvokeID() != 0){
+				responseMessage = CDAPMessage.getWriteObjectResponseMessage(null, cdapMessage.getInvokeID(), 0, null);
+			}
+		}catch(Exception ex){
+			try{
+				responseMessage = CDAPMessage.getWriteObjectResponseMessage(null, cdapMessage.getInvokeID(), 1, ex.getMessage());
+			}catch(CDAPException cdapEx){
+				log.error(ex);
+			}
+		}
+		
+		return responseMessage;
+	}
+	
+	/**
+	 * Contains the logics to handle a remote M_CREATE message received by this task
+	 * @param cdapMessage
+	 * @param encoder
+	 * @return an M_CREATE_R if required
+	 */
+	private CDAPMessage handleRemoteCreate(CDAPMessage cdapMessage, Encoder encoder){
+		CDAPMessage responseMessage = null;
+		try{
+			Object object = encoder.decode(cdapMessage.getObjValue().getByteval(), ObjectNametoClassMapper.getObjectClass(cdapMessage.getObjName()));
+			this.handleCreate(cdapMessage.getObjName(), object);
+			if (cdapMessage.getInvokeID() != 0){
+				responseMessage = CDAPMessage.getCreateObjectResponseMessage(null, cdapMessage.getInvokeID(), 
+						cdapMessage.getObjClass(), 0, cdapMessage.getObjName(), cdapMessage.getObjValue(), 0, null);
+			}
+		}catch(Exception ex){
+			try{
+				responseMessage = CDAPMessage.getCreateObjectResponseMessage(null, cdapMessage.getInvokeID(), 
+						cdapMessage.getObjClass(), 0, cdapMessage.getObjName(), cdapMessage.getObjValue(), 1, ex.getMessage());
+			}catch(CDAPException cdapEx){
+				log.error(ex);
+			}
+		}
+		
+		return responseMessage;
+	}
+	
+	/**
+	 * Contains the logics to handle a remote M_DELETE message received by this task
+	 * @param cdapMessage
+	 * @param encoder
+	 * @return an M_DELETE_R if required
+	 */
+	private CDAPMessage handleRemoteDelete(CDAPMessage cdapMessage, Encoder encoder){
+		CDAPMessage responseMessage = null;
+		try{
+			this.handleDelete(cdapMessage.getObjName());
+			if (cdapMessage.getInvokeID() != 0){
+				responseMessage = CDAPMessage.getDeleteObjectResponseMessage(null, cdapMessage.getInvokeID(), 
+						cdapMessage.getObjClass(), 0, cdapMessage.getObjName(), 0, null);
+			}
+		}catch(Exception ex){
+			try{
+				responseMessage = CDAPMessage.getDeleteObjectResponseMessage(null, cdapMessage.getInvokeID(), 
+						cdapMessage.getObjClass(), 0, cdapMessage.getObjName(), 1, ex.getMessage());
+			}catch(CDAPException cdapEx){
+				log.error(ex);
+			}
+		}
+		
+		return responseMessage;
+	}
 
 	/**
 	 * Called intern
 	 */
 	public Object processOperation(Opcode opcode, String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+		log.debug("Processing a local "+opcode+" operation on object "+objectName);
+		
 		switch(opcode){
 		case M_READ:
 			return handleRead(objectName);
@@ -182,7 +255,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService, RIBHan
 			handleCreate(objectName, object);
 			break;
 		case M_DELETE:
-			handleDelete(objectName, object);
+			handleDelete(objectName);
 			break;
 		default:
 			throw new RIBDaemonException(RIBDaemonException.OPERATION_NOT_ALLOWED_AT_THIS_OBJECT, "Operation "+opcode+" not allowed for objectName "+objectName);
@@ -203,11 +276,17 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService, RIBHan
 			return this.getApplicationProcessNamingInfo();
 		}else if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM)){
-			return this.getCurrentSynonym();
+			ApplicationProcessNameSynonym synonym = new ApplicationProcessNameSynonym();
+			synonym.setApplicationProcessName(this.getApplicationProcessName());
+			synonym.setSynonym(this.getCurrentSynonym());
+			return synonym;
 		}else if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.SYNONYMS)){
-			List<byte[]> result = new ArrayList<byte[]>();
-			result.add(this.getCurrentSynonym());
+			ApplicationProcessNameSynonym synonym = null;
+			List<ApplicationProcessNameSynonym> result = new ArrayList<ApplicationProcessNameSynonym>();
+			synonym = new ApplicationProcessNameSynonym();
+			synonym.setApplicationProcessName(this.getApplicationProcessName());
+			result.add(synonym);
 			return result;
 		}else if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES)){
@@ -279,11 +358,10 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService, RIBHan
 	
 	/**
 	 * Takes care of the M_DELETE operations for the objectnames that this class owns;
-	 * @param objectName
 	 * @param object
 	 * @throws RIBDaemonException
 	 */
-	private void handleDelete(String objectName, Object object) throws RIBDaemonException{
+	private void handleDelete(String objectName) throws RIBDaemonException{
 		if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME)){
 			this.setApplicationProcessNamingInfo(null);

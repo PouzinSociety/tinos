@@ -1,7 +1,6 @@
 package rina.enrollment.impl;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -11,10 +10,14 @@ import rina.applicationprocess.api.ApplicationProcessNameSynonym;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.cdap.api.CDAPException;
 import rina.cdap.api.message.CDAPMessage;
+import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.cdap.api.message.CDAPMessage.Flags;
 import rina.cdap.api.message.ObjectValue;
 import rina.efcp.api.DataTransferConstants;
 import rina.flowallocator.api.QoSCube;
+import rina.ribdaemon.api.RIBDaemon;
+import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBObjectNames;
 
 /**
  * Sends all the M_READ_R messages required to initialize an IPC process that wants to join a DIF
@@ -35,8 +38,6 @@ public class EnrollmentInitializer implements Runnable{
 	private State state = State.ADDRESS;
 	
 	private int invokeId = 0;
-	
-	private int counter = 0;
 	
 	private int portId = 0;
 
@@ -82,9 +83,7 @@ public class EnrollmentInitializer implements Runnable{
 				default:
 					break;
 				}
-			}catch(CDAPException ex){
-				ex.printStackTrace();
-			}catch(IOException ex){
+			}catch(Exception ex){
 				ex.printStackTrace();
 			}
 		}
@@ -94,11 +93,12 @@ public class EnrollmentInitializer implements Runnable{
 		byte[] serializedAddress = null;
 		ObjectValue objectValue = null;
 		
-		ApplicationProcessNameSynonym address = new ApplicationProcessNameSynonym();
-		address.setApplicationProcessName("B");
-		address.setSynonym(new byte[]{0x02});
+		ApplicationProcessNameSynonym apNameSynonym = new ApplicationProcessNameSynonym();
+		apNameSynonym.setApplicationProcessName(enrollmentStateMachine.getRemoteNamingInfo().getApplicationProcessName());
+		apNameSynonym.setApplicationProcessInstance(enrollmentStateMachine.getRemoteNamingInfo().getApplicationProcessInstance());
+		apNameSynonym.setSynonym(new byte[]{0x02});
 		try{
-			serializedAddress = enrollmentStateMachine.getEncoder().encode(address);
+			serializedAddress = enrollmentStateMachine.getEncoder().encode(apNameSynonym);
 			objectValue = new ObjectValue();
 			objectValue.setByteval(serializedAddress);
 		}catch(Exception ex){
@@ -109,49 +109,33 @@ public class EnrollmentInitializer implements Runnable{
 				"rina.messages.ApplicationProcessNameSynonym", 1, "daf.management.currentSynonym", objectValue, 0, null);
 		
 		enrollmentStateMachine.sendCDAPMessage(cdapMessage);
+		enrollmentStateMachine.setRemoteAddress(apNameSynonym);
 		state = State.WHATEVERCAST_NAMES;
 	}
 	
-	private void sendWhatevercastNames() throws CDAPException, IOException{
+	private void sendWhatevercastNames() throws CDAPException, IOException, RIBDaemonException{
 		byte[] serializedObject = null;
 		ObjectValue objectValue = null;
-		List<byte[]> members = null;
 		
-		WhatevercastName whatevercastName = new WhatevercastName();
-		if (counter == 0){
-			whatevercastName.setName("RINA-Demo.DIF");
-			whatevercastName.setRule("all members");
-			members = new ArrayList<byte[]>();
-			members.add(new byte[]{0x01});
-			members.add(new byte[]{0x02});
-			whatevercastName.setSetMembers(members);
-		}else if (counter == 1){
-			whatevercastName.setName("RINA-Demo.one.DIF");
-			whatevercastName.setRule("nearest member");
-			members = new ArrayList<byte[]>();
-			members.add(new byte[]{0x01});
-			whatevercastName.setSetMembers(members);
+		RIBDaemon ribDaemon = enrollmentStateMachine.getRIBDaemon();
+		List<WhatevercastName> whatevercastNames = (List<WhatevercastName>) ribDaemon.processOperation(
+				Opcode.M_READ, null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + 
+				RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES, 0, null);
+
+		for(int i=0; i<whatevercastNames.size(); i++){
+			try{
+				serializedObject = enrollmentStateMachine.getEncoder().encode(whatevercastNames.get(i));
+				objectValue = new ObjectValue();
+				objectValue.setByteval(serializedObject);
+				CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(Flags.F_RD_INCOMPLETE, invokeId, 
+						"rina.messages.WhatevercastName", 2 + i, "daf.management.whatevercast", objectValue, 0, null);
+				enrollmentStateMachine.sendCDAPMessage(cdapMessage);
+			}catch(Exception ex){
+				ex.printStackTrace();
+			}
 		}
-		
-		try{
-			serializedObject = enrollmentStateMachine.getEncoder().encode(whatevercastName);
-			objectValue = new ObjectValue();
-			objectValue.setByteval(serializedObject);
-		}catch(Exception ex){
-			ex.printStackTrace();
-		}
-		
-		CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(Flags.F_RD_INCOMPLETE, invokeId, 
-				"rina.messages.WhatevercastName", 2 + counter, "daf.management.whatevercast", objectValue, 0, null);
-		
-		enrollmentStateMachine.sendCDAPMessage(cdapMessage);
-		
-		if (counter == 0){
-			counter++;
-		}else if (counter == 1){
-			counter = 0;
-			state = State.DATA_TRANSFER_CONSTANTS;
-		}
+
+		state = State.DATA_TRANSFER_CONSTANTS;
 	}
 	
 	private void sendDataTransferConstants() throws CDAPException, IOException{
@@ -184,58 +168,60 @@ public class EnrollmentInitializer implements Runnable{
 		enrollmentStateMachine.sendCDAPMessage(cdapMessage);
 		state = State.QOS_CUBES;
 	}
-	
+
 	private void sendQoSCubes() throws CDAPException, IOException{
 		byte[] serializedObject = null;
 		ObjectValue objectValue = null;
 		Flags flags = null;
-		
+
 		QoSCube qosCube = new QoSCube();
-		if (counter == 0){
-			qosCube.setAverageBandwidth(0);
-			qosCube.setAverageSDUBandwidth(0);
-			qosCube.setDelay(0);
-			qosCube.setJitter(0);
-			qosCube.setMaxAllowableGapSdu(-1);
-			qosCube.setOrder(false);
-			qosCube.setPartialDelivery(true);
-			qosCube.setPeakBandwidthDuration(0);
-			qosCube.setPeakSDUBandwidthDuration(0);
-			qosCube.setQosId(new byte[]{0x01});
-			qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
-			flags = Flags.F_RD_INCOMPLETE;
-		}else if (counter == 1){
-			qosCube.setAverageBandwidth(0);
-			qosCube.setAverageSDUBandwidth(0);
-			qosCube.setDelay(0);
-			qosCube.setJitter(0);
-			qosCube.setMaxAllowableGapSdu(0);
-			qosCube.setOrder(true);
-			qosCube.setPartialDelivery(false);
-			qosCube.setPeakBandwidthDuration(0);
-			qosCube.setPeakSDUBandwidthDuration(0);
-			qosCube.setQosId(new byte[]{0x02});
-			qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
-		}
-		
+		qosCube.setAverageBandwidth(0);
+		qosCube.setAverageSDUBandwidth(0);
+		qosCube.setDelay(0);
+		qosCube.setJitter(0);
+		qosCube.setMaxAllowableGapSdu(-1);
+		qosCube.setOrder(false);
+		qosCube.setPartialDelivery(true);
+		qosCube.setPeakBandwidthDuration(0);
+		qosCube.setPeakSDUBandwidthDuration(0);
+		qosCube.setQosId(new byte[]{0x01});
+		qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
+		flags = Flags.F_RD_INCOMPLETE;
+
 		try{
 			serializedObject = enrollmentStateMachine.getEncoder().encode(qosCube);
 			objectValue = new ObjectValue();
 			objectValue.setByteval(serializedObject);
+			CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(flags, invokeId, 
+					"rina.messages.qosCube", 5, "dif.management.flowallocator.qoscube", objectValue, 0, null);
+			enrollmentStateMachine.sendCDAPMessage(cdapMessage);
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
-		
-		CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(flags, invokeId, 
-				"rina.messages.qosCube", 5 + counter, "dif.management.flowallocator.qoscube", objectValue, 0, null);
-		enrollmentStateMachine.sendCDAPMessage(cdapMessage);
-		
-		if (counter == 0){
-			counter++;
-		}else if (counter == 1){
-			counter = 0;
-			state = State.DONE;
-		}
-	}
 
+		qosCube = new QoSCube();
+		qosCube.setAverageBandwidth(0);
+		qosCube.setAverageSDUBandwidth(0);
+		qosCube.setDelay(0);
+		qosCube.setJitter(0);
+		qosCube.setMaxAllowableGapSdu(0);
+		qosCube.setOrder(true);
+		qosCube.setPartialDelivery(false);
+		qosCube.setPeakBandwidthDuration(0);
+		qosCube.setPeakSDUBandwidthDuration(0);
+		qosCube.setQosId(new byte[]{0x02});
+		qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
+
+		try{
+			serializedObject = enrollmentStateMachine.getEncoder().encode(qosCube);
+			objectValue = new ObjectValue();
+			objectValue.setByteval(serializedObject);
+			CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(null, invokeId, 
+					"rina.messages.qosCube", 5, "dif.management.flowallocator.qoscube", objectValue, 0, null);
+			enrollmentStateMachine.sendCDAPMessage(cdapMessage);
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+		state = State.DONE;
+	}
 }

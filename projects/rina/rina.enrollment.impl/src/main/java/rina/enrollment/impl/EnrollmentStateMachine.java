@@ -16,6 +16,7 @@ import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.encoding.api.Encoder;
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBDaemon;
 
 /**
@@ -83,10 +84,21 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 	 */
 	private int portId = 0;
 	
-	public EnrollmentStateMachine(RIBDaemon ribDaemon, CDAPSessionManager cdapSessionManager, Encoder encoder){
+	/**
+	 * The naming information of the remote IPC process
+	 */
+	private ApplicationProcessNamingInfo remoteNamingInfo = null;
+	
+	/**
+	 * The address of the remote IPC Process being enrolled
+	 */
+	private ApplicationProcessNameSynonym remoteAddress = null;
+	
+	public EnrollmentStateMachine(RIBDaemon ribDaemon, CDAPSessionManager cdapSessionManager, Encoder encoder, ApplicationProcessNamingInfo remoteNamingInfo){
 		this.ribDaemon = ribDaemon;
 		this.cdapSessionManager = cdapSessionManager;
 		this.encoder = encoder;
+		this.remoteNamingInfo = remoteNamingInfo;
 		timer = new Timer();
 		this.executorService = Executors.newFixedThreadPool(2);
 	}
@@ -95,8 +107,24 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 		this.state = state;
 	}
 	
-	protected State getState(){
+	public State getState(){
 		return this.state;
+	}
+	
+	protected void setRemoteAddress(ApplicationProcessNameSynonym address){
+		this.remoteAddress = address;
+	}
+	
+	public ApplicationProcessNameSynonym getRemoteAddress(){
+		return this.remoteAddress;
+	}
+	
+	public ApplicationProcessNamingInfo getRemoteNamingInfo(){
+		return this.remoteNamingInfo;
+	}
+	
+	protected RIBDaemon getRIBDaemon(){
+		return this.ribDaemon;
 	}
 	
 	public Encoder getEncoder(){
@@ -309,7 +337,7 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 		timer.schedule(startResponseTimer, TIME_TO_WAIT_FOR_START_RESPONSE);
 		
 		outgoingCDAPMessage = CDAPMessage.getStartObjectRequestMessage(null, null, 25, 
-				"rina.messages.operationalStatus", null, 0, "dif.management.operationalStatus", 0);
+				"rina.messages.operationalStatus", null, 0, "daf.management.operationalStatus", 0);
 		this.setState(State.WAITING_FOR_STARTUP);
 			
 		return outgoingCDAPMessage;
