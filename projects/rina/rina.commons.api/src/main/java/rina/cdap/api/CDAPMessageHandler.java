@@ -1,6 +1,7 @@
 package rina.cdap.api;
 
 import rina.cdap.api.message.CDAPMessage;
+import rina.ribdaemon.api.RIBDaemonException;
 
 /**
  * Handles CDAP messages
@@ -9,10 +10,17 @@ import rina.cdap.api.message.CDAPMessage;
  */
 public interface CDAPMessageHandler {
 	
-	/**
-	 * Handles a CDAP message (does something with it)
-	 * @param cdapMessage The CDAP message received
-	 * @param cdapSessionDescriptor Describes the CDAP session to where the CDAP message belongs
-	 */
-	public void processMessage(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor);
+	public void createResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException;
+	
+	public void deleteResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException;
+	
+	public void readResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException;
+	
+	public void cancelReadResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException;
+	
+	public void writeResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException;
+	
+	public void startResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException;
+	
+	public void stopResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException;
 }

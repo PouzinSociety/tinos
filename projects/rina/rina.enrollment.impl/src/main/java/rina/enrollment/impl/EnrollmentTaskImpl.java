@@ -10,7 +10,6 @@ import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
-import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
 import rina.enrollment.api.BaseEnrollmentTask;
@@ -63,23 +62,6 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 		}
 	}
 	
-	public void processOperation(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		log.debug("Received cdapMessage from portId "+cdapSessionDescriptor.getPortId()+" and opcode "+cdapMessage.getOpCode());
-
-		EnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor);
-		if (enrollmentStateMachine == null){
-			log.error("Got a CDAP message that is not for me: "+cdapMessage.toString());
-			return;
-		}
-
-		enrollmentStateMachine.processCDAPMessage(cdapMessage, cdapSessionDescriptor.getPortId());
-	}
-
-	public Object processOperation(Opcode opcode, String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
 	/**
 	 * Returns the enrollment state machine associated to the cdap descriptor. If none can be found a new one is created.
 	 * @param cdapSessionDescriptor
@@ -127,6 +109,126 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 		log.debug("Created a new Enrollment state machine for remote IPC process: "
 				+apNamingInfo.getApplicationProcessName()+" "+apNamingInfo.getApplicationProcessInstance());
 		return enrollmentStateMachine;
+	}
+
+	public void connect(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) {
+		log.debug("Received M_CONNECT cdapMessage from portId "+cdapSessionDescriptor.getPortId());
+
+		EnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor);
+		if (enrollmentStateMachine == null){
+			log.error("Got a CDAP message that is not for me: "+cdapMessage.toString());
+			return;
+		}
+
+		enrollmentStateMachine.processCDAPMessage(cdapMessage, cdapSessionDescriptor.getPortId());
+	}
+
+	public void connectResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) {
+		log.debug("Received M_CONNECT_R cdapMessage from portId "+cdapSessionDescriptor.getPortId());
+
+		EnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor);
+		if (enrollmentStateMachine == null){
+			log.error("Got a CDAP message that is not for me: "+cdapMessage.toString());
+			return;
+		}
+
+		enrollmentStateMachine.processCDAPMessage(cdapMessage, cdapSessionDescriptor.getPortId());
+	}
+
+	public void release(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor){
+		log.debug("Received M_RELEASE cdapMessage from portId "+cdapSessionDescriptor.getPortId());
+
+		EnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor);
+		if (enrollmentStateMachine == null){
+			log.error("Got a CDAP message that is not for me: "+cdapMessage.toString());
+			return;
+		}
+
+		enrollmentStateMachine.processCDAPMessage(cdapMessage, cdapSessionDescriptor.getPortId());
+	}
+
+	public void releaseResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor){
+		log.debug("Received M_RELEASE_R cdapMessage from portId "+cdapSessionDescriptor.getPortId());
+
+		EnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor);
+		if (enrollmentStateMachine == null){
+			log.error("Got a CDAP message that is not for me: "+cdapMessage.toString());
+			return;
+		}
+
+		enrollmentStateMachine.processCDAPMessage(cdapMessage, cdapSessionDescriptor.getPortId());
+	}
+
+	public void cancelRead(CDAPMessage arg0, CDAPSessionDescriptor arg1) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void cancelRead(String arg0, String arg1, long arg2, Object arg3) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void create(CDAPMessage arg0, CDAPSessionDescriptor arg1) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void create(String arg0, String arg1, long arg2, Object arg3) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void delete(CDAPMessage arg0, CDAPSessionDescriptor arg1) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void delete(String arg0, String arg1, long arg2, Object arg3) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void read(CDAPMessage arg0, CDAPSessionDescriptor arg1) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Object read(String arg0, String arg1, long arg2) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void start(CDAPMessage arg0, CDAPSessionDescriptor arg1) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void start(String arg0, String arg1, long arg2, Object arg3) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void stop(CDAPMessage arg0, CDAPSessionDescriptor arg1) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void stop(String arg0, String arg1, long arg2, Object arg3) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void write(CDAPMessage arg0, CDAPSessionDescriptor arg1)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void write(String arg0, String arg1, long arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

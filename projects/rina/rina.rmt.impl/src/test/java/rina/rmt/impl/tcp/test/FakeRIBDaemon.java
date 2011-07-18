@@ -136,4 +136,46 @@ public class FakeRIBDaemon implements RIBDaemon {
 		
 	}
 
+	public void cancelRead(String arg0, String arg1, long arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void create(String arg0, String arg1, long arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void delete(String arg0, String arg1, long arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Object read(String arg0, String arg1, long arg2)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void start(String arg0, String arg1, long arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void stop(String arg0, String arg1, long arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void write(String arg0, String arg1, long arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

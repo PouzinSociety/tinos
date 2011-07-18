@@ -1,6 +1,7 @@
 package rina.ribdaemon.api;
 
 import rina.cdap.api.CDAPMessageHandler;
+import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcessComponent;
 
@@ -8,7 +9,7 @@ import rina.ipcprocess.api.IPCProcessComponent;
  * Specifies the interface of the RIB Daemon
  * @author eduardgrasa
  */
-public interface RIBDaemon extends IPCProcessComponent, RIBHandler{
+public interface RIBDaemon extends IPCProcessComponent{
 	
 	/**
 	 * Invoked by the RMT when it detects a CDAP message. The RIB Daemon has to process the CDAP message and, 
@@ -59,4 +60,28 @@ public interface RIBDaemon extends IPCProcessComponent, RIBHandler{
 	 * @throws RIBDaemonException
 	 */
 	public void sendMessage(CDAPMessage cdapMessage, int sessionId, CDAPMessageHandler cdapMessageHandler) throws RIBDaemonException;
+	
+	/**
+	 * Reads/writes/created/deletes/starts/stops one or more objects at the RIB, matching the information specified by objectId + objectClass or objectInstance.
+	 * At least objectName or objectInstance have to be not null. This operation is invoked because the RIB Daemon has received a CDAP message from another 
+	 * IPC process
+	 * @param cdapMessage The CDAP message received
+	 * @param cdapSessionDescriptor Describes the CDAP session to where the CDAP message belongs
+	 * @throws RIBDaemonException on a number of circumstances
+	 */
+	public void processOperation(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException;
+	
+	public void create(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
+	
+	public void delete(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
+	
+	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException;
+	
+	public void cancelRead(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
+	
+	public void write(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
+	
+	public void start(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
+	
+	public void stop(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;	
 }

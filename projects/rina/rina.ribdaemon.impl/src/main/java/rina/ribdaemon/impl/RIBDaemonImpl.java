@@ -17,6 +17,7 @@ import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.enrollment.api.BaseEnrollmentTask;
+import rina.enrollment.api.EnrollmentTask;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBHandler;
@@ -85,20 +86,31 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		
 		//2 Find the destination of the message and call it
 		try{
-			RIBHandler ribHandler = null;
 			CDAPMessageHandler cdapMessageHandler = null;
 
 			//M_CONNECT, M_CONNECT_R, M_RELEASE and M_RELEASE_R are handled by the Enrollment task
 			if (opcode.equals(Opcode.M_CONNECT) || opcode.equals(Opcode.M_CONNECT_R) || opcode.equals(Opcode.M_RELEASE) || opcode.equals(Opcode.M_RELEASE_R)){
-				ribHandler = (RIBHandler) this.getIPCProcess().getIPCProcessComponent(BaseEnrollmentTask.getComponentName());
-				ribHandler.processOperation(cdapMessage, cdapSessionDescriptor);
+				EnrollmentTask enrollmentTask = (EnrollmentTask) this.getIPCProcess().getIPCProcessComponent(BaseEnrollmentTask.getComponentName());
+				switch(opcode){
+				case M_CONNECT:
+					enrollmentTask.connect(cdapMessage, cdapSessionDescriptor);
+					break;
+				case M_CONNECT_R:
+					enrollmentTask.connectResponse(cdapMessage, cdapSessionDescriptor);
+					break;
+				case M_RELEASE:
+					enrollmentTask.release(cdapMessage, cdapSessionDescriptor);
+					break;
+				case M_RELEASE_R:
+					enrollmentTask.releaseResponse(cdapMessage, cdapSessionDescriptor);
+					break;
+				}
 			}
 			//All the other request messages (M_READ, M_WRITE, M_CREATE, M_DELETE, M_START, M_STOP, M_CANCELREAD) are 
 			//handled by the RIB
 			else if (opcode.equals(Opcode.M_READ) || opcode.equals(Opcode.M_WRITE) || opcode.equals(Opcode.M_CREATE) || 
 					opcode.equals(Opcode.M_DELETE) || opcode.equals(Opcode.M_START) || opcode.equals(Opcode.M_STOP) || opcode.equals(Opcode.M_CANCELREAD)){
-				ribHandler = this;
-				ribHandler.processOperation(cdapMessage, cdapSessionDescriptor);
+				this.processOperation(cdapMessage, cdapSessionDescriptor);
 			}
 			//All the response messages must be handled by the entities that are waiting for the reply
 			else{
@@ -106,7 +118,29 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 				if (cdapMessageHandler == null){
 					log.error("Nobody was waiting for this response message");
 				}else{
-					cdapMessageHandler.processMessage(cdapMessage, cdapSessionDescriptor);
+					switch(opcode){
+					case M_READ_R:
+						cdapMessageHandler.readResponse(cdapMessage, cdapSessionDescriptor);
+						break;
+					case M_WRITE_R:
+						cdapMessageHandler.writeResponse(cdapMessage, cdapSessionDescriptor);
+						break;
+					case M_CREATE_R:
+						cdapMessageHandler.createResponse(cdapMessage, cdapSessionDescriptor);
+						break;
+					case M_DELETE_R:
+						cdapMessageHandler.deleteResponse(cdapMessage, cdapSessionDescriptor);
+						break;
+					case M_START_R:
+						cdapMessageHandler.startResponse(cdapMessage, cdapSessionDescriptor);
+						break;
+					case M_STOP_R:
+						cdapMessageHandler.stopResponse(cdapMessage, cdapSessionDescriptor);
+						break;
+					case M_CANCELREAD_R:
+						cdapMessageHandler.cancelReadResponse(cdapMessage, cdapSessionDescriptor);
+						break;
+					}
 				}
 			}
 		}catch(RIBDaemonException ex){
@@ -127,9 +161,9 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		//Clean the messageHandlersWaitingForReply queue
 		cleanMessageHandlersWaitingForReply(portId);
 		//Inform the enrollment task
-		RIBHandler ribHandler = (RIBHandler) this.getIPCProcess().getIPCProcessComponent(BaseEnrollmentTask.getComponentName());
+		EnrollmentTask enrollmentTask = (EnrollmentTask) this.getIPCProcess().getIPCProcessComponent(BaseEnrollmentTask.getComponentName());
 		try {
-			ribHandler.processOperation(CDAPMessage.getReleaseConnectionRequestMessage(null, 0), cdapSessionDescriptor);
+			enrollmentTask.release(CDAPMessage.getReleaseConnectionRequestMessage(null, 0), cdapSessionDescriptor);
 		} catch (Exception ex) {
 			log.error(ex);
 			ex.printStackTrace();
@@ -201,30 +235,6 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	}
 	
 	/**
-	 * Store an object to the RIB. This may cause a new object to be created in the RIB, or an existing object to be updated.
-	 * @param objectClass optional if objectInstance specified, mandatory otherwise. A string identifying the class of the object
-	 * @param objectInstance objectInstance optional if objectClass specified, mandatory otherwise. An id that uniquely identifies the object within a RIB
-	 * @param objectName optional if objectClass specified, ignored otherwise. An id that uniquely identifies an object within an objectClass
-	 * @param objectToWrite the object to be written to the RIB
-	 * @throws RIBDaemonException if there are problems performing the "write" operation to the RIB
-	 */
-	public synchronized void write(String objectClass, long objectInstance, String objectName, Object objectToWrite) throws RIBDaemonException{
-		validateObjectArguments(objectClass, objectName, objectInstance);
-
-	}
-
-	/**
-	 * Remove an object from the RIB
-	 * @param objectClass optional if objectInstance specified, mandatory otherwise. A string identifying the class of the object
-	 * @param objectInstance objectInstance optional if objectClass specified, mandatory otherwise. An id that uniquely identifies the object within a RIB
-	 * @param objectName optional if objectClass specified, ignored otherwise. An id that uniquely identifies an object within an objectClass
-	 * @throws RIBDaemonException if there are problems removinb the objects from the RIB
-	 */
-	public synchronized void remove(String objectClass, long objectInstance, String objectName) throws RIBDaemonException{
-		validateObjectArguments(objectClass, objectName, objectInstance);
-	}
-	
-	/**
 	 * Add a ribHandler for a certain object name
 	 * @param ribHandler
 	 * @param objectName
@@ -258,24 +268,33 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	public void processOperation(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
 		log.debug("Remote operation "+cdapMessage.getOpCode()+" called on object "+cdapMessage.getObjName());
 		RIBNode ribNode = getRIBNode(cdapMessage.getObjName(), cdapMessage.getObjClass(), cdapMessage.getObjInst());
-		ribNode.getRIBHandler().processOperation(cdapMessage, cdapSessionDescriptor);
-	}
-	
-	/**
-	 * Reads/writes/created/deletes/starts/stops one or more objects at the RIB, matching the information specified by objectId + objectClass or objectInstance.
-	 * At least objectName or objectInstance have to be not null. This method is invoked by tasks that are internal to the IPC process.
-	 * @param opcode the operation (can only be read/write/create/delete/start/stop)
-	 * @param objectClass
-	 * @param objectName
-	 * @param objectInstance
-	 * @param objectToWrite the object that will be written if required by the operation
-	 * @return may return an object (or a collection of objects) depending on the operation, null otherwise
-	 * @throws RIBDaemonException on a number of circumstances
-	 */
-	public Object processOperation(Opcode opcode, String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException{
-		log.debug("Local operation "+opcode+" called on object "+objectName);
-		RIBNode ribNode = getRIBNode(objectName, objectClass, objectInstance);
-		return ribNode.getRIBHandler().processOperation(opcode, objectClass, objectName, objectInstance, object);
+		RIBHandler ribHandler = ribNode.getRIBHandler();
+		
+		switch(cdapMessage.getOpCode()){
+		case M_CREATE:
+			ribHandler.create(cdapMessage, cdapSessionDescriptor);
+			break;
+		case M_DELETE:
+			ribHandler.delete(cdapMessage, cdapSessionDescriptor);
+			break;
+		case M_READ:
+			ribHandler.read(cdapMessage, cdapSessionDescriptor);
+			break;
+		case M_CANCELREAD:
+			ribHandler.cancelRead(cdapMessage, cdapSessionDescriptor);
+			break;
+		case M_WRITE:
+			ribHandler.write(cdapMessage, cdapSessionDescriptor);
+			break;
+		case M_START:
+			ribHandler.start(cdapMessage, cdapSessionDescriptor);
+			break;
+		case M_STOP:
+			ribHandler.stop(cdapMessage, cdapSessionDescriptor);
+			break;
+		default:
+			throw new RIBDaemonException(RIBDaemonException.OPERATION_NOT_ALLOWED_AT_THIS_OBJECT);
+		}
 	}
 	
 	private RIBNode getRIBNode(String objectName, String objectClass, long objectInstance) throws RIBDaemonException{
@@ -285,6 +304,63 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		}else{
 			return rib.getRIBNode(objectInstance);
 		}
+	}
+
+	public synchronized void cancelRead(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+		log.debug("Local operation cancelRead called on object "+objectName);
+		validateObjectArguments(objectClass, objectName, objectInstance);
+		RIBHandler ribHandler = getRIBNode(objectName, objectClass, objectInstance).getRIBHandler();
+		ribHandler.cancelRead(objectClass, objectName, objectInstance, object);
+	}
+
+	public synchronized void create(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+		log.debug("Local operation create called on object "+objectName);
+		validateObjectArguments(objectClass, objectName, objectInstance);
+		RIBHandler ribHandler = getRIBNode(objectName, objectClass, objectInstance).getRIBHandler();
+		ribHandler.create(objectClass, objectName, objectInstance, object);
+	}
+
+	public synchronized void delete(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+		log.debug("Local operation delete called on object "+objectName);
+		validateObjectArguments(objectClass, objectName, objectInstance);
+		RIBHandler ribHandler = getRIBNode(objectName, objectClass, objectInstance).getRIBHandler();
+		ribHandler.delete(objectClass, objectName, objectInstance, object);
+	}
+
+	public synchronized Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
+		log.debug("Local operation read called on object "+objectName);
+		validateObjectArguments(objectClass, objectName, objectInstance);
+		RIBHandler ribHandler = getRIBNode(objectName, objectClass, objectInstance).getRIBHandler();
+		return ribHandler.read(objectClass, objectName, objectInstance);
+	}
+
+	public synchronized void start(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+		log.debug("Local operation start called on object "+objectName);
+		validateObjectArguments(objectClass, objectName, objectInstance);
+		RIBHandler ribHandler = getRIBNode(objectName, objectClass, objectInstance).getRIBHandler();
+		ribHandler.start(objectClass, objectName, objectInstance, object);
+	}
+
+	public synchronized void stop(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+		log.debug("Local operation stop called on object "+objectName);
+		validateObjectArguments(objectClass, objectName, objectInstance);
+		RIBHandler ribHandler = getRIBNode(objectName, objectClass, objectInstance).getRIBHandler();
+		ribHandler.stop(objectClass, objectName, objectInstance, object);
+	}
+
+	/**
+	 * Store an object to the RIB. This may cause a new object to be created in the RIB, or an existing object to be updated.
+	 * @param objectClass optional if objectInstance specified, mandatory otherwise. A string identifying the class of the object
+	 * @param objectInstance objectInstance optional if objectClass specified, mandatory otherwise. An id that uniquely identifies the object within a RIB
+	 * @param objectName optional if objectClass specified, ignored otherwise. An id that uniquely identifies an object within an objectClass
+	 * @param objectToWrite the object to be written to the RIB
+	 * @throws RIBDaemonException if there are problems performing the "write" operation to the RIB
+	 */
+	public synchronized void write(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+		log.debug("Local operation write called on object "+objectName);
+		validateObjectArguments(objectClass, objectName, objectInstance);
+		RIBHandler ribHandler = getRIBNode(objectName, objectClass, objectInstance).getRIBHandler();
+		ribHandler.write(objectClass, objectName, objectInstance, object);
 	}
 	
 	/**

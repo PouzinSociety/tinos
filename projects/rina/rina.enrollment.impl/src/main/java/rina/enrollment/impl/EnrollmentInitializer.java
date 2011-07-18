@@ -10,7 +10,6 @@ import rina.applicationprocess.api.ApplicationProcessNameSynonym;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.cdap.api.CDAPException;
 import rina.cdap.api.message.CDAPMessage;
-import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.cdap.api.message.CDAPMessage.Flags;
 import rina.cdap.api.message.ObjectValue;
 import rina.efcp.api.DataTransferConstants;
@@ -118,9 +117,8 @@ public class EnrollmentInitializer implements Runnable{
 		ObjectValue objectValue = null;
 		
 		RIBDaemon ribDaemon = enrollmentStateMachine.getRIBDaemon();
-		List<WhatevercastName> whatevercastNames = (List<WhatevercastName>) ribDaemon.processOperation(
-				Opcode.M_READ, null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + 
-				RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES, 0, null);
+		List<WhatevercastName> whatevercastNames = (List<WhatevercastName>) ribDaemon.read(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + 
+				RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES, 0);
 
 		for(int i=0; i<whatevercastNames.size(); i++){
 			try{
