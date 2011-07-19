@@ -22,7 +22,7 @@ import rina.ribdaemon.api.RIBHandler;
 import rina.ribdaemon.api.RIBObjectNames;
 
 /**
- * Current limitations: Adresses of IPC processes are allocated forever (until we lose the connection with them)
+ * Current limitations: Addresses of IPC processes are allocated forever (until we lose the connection with them)
  * @author eduardgrasa
  *
  */
@@ -111,6 +111,11 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 		return enrollmentStateMachine;
 	}
 
+	/**
+	 * Called by the RIB Daemon when an M_CONNECT message is received
+	 * @param CDAPMessage the cdap message received
+	 * @param CDAPSessionDescriptor contains the data about the CDAP session (including the portId)
+	 */
 	public void connect(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) {
 		log.debug("Received M_CONNECT cdapMessage from portId "+cdapSessionDescriptor.getPortId());
 
@@ -120,9 +125,14 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 			return;
 		}
 
-		enrollmentStateMachine.processCDAPMessage(cdapMessage, cdapSessionDescriptor.getPortId());
+		enrollmentStateMachine.connect(cdapMessage, cdapSessionDescriptor.getPortId());
 	}
 
+	/**
+	 * Called by the RIB Daemon when an M_CONNECT_R message is received
+	 * @param CDAPMessage the cdap message received
+	 * @param CDAPSessionDescriptor contains the data about the CDAP session (including the portId)
+	 */
 	public void connectResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) {
 		log.debug("Received M_CONNECT_R cdapMessage from portId "+cdapSessionDescriptor.getPortId());
 
@@ -132,9 +142,14 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 			return;
 		}
 
-		enrollmentStateMachine.processCDAPMessage(cdapMessage, cdapSessionDescriptor.getPortId());
+		enrollmentStateMachine.connectResponse(cdapMessage, cdapSessionDescriptor);
 	}
 
+	/**
+	 * Called by the RIB Daemon when an M_RELEASE message is received
+	 * @param CDAPMessage the cdap message received
+	 * @param CDAPSessionDescriptor contains the data about the CDAP session (including the portId)
+	 */
 	public void release(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor){
 		log.debug("Received M_RELEASE cdapMessage from portId "+cdapSessionDescriptor.getPortId());
 
@@ -144,9 +159,14 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 			return;
 		}
 
-		enrollmentStateMachine.processCDAPMessage(cdapMessage, cdapSessionDescriptor.getPortId());
+		enrollmentStateMachine.release(cdapMessage, cdapSessionDescriptor);
 	}
 
+	/**
+	 * Called by the RIB Daemon when an M_RELEASE_R message is received
+	 * @param CDAPMessage the cdap message received
+	 * @param CDAPSessionDescriptor contains the data about the CDAP session (including the portId)
+	 */
 	public void releaseResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor){
 		log.debug("Received M_RELEASE_R cdapMessage from portId "+cdapSessionDescriptor.getPortId());
 
@@ -156,11 +176,30 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 			return;
 		}
 
-		enrollmentStateMachine.processCDAPMessage(cdapMessage, cdapSessionDescriptor.getPortId());
+		enrollmentStateMachine.releaseResponse(cdapMessage, cdapSessionDescriptor);
 	}
 
-	public void cancelRead(CDAPMessage arg0, CDAPSessionDescriptor arg1) throws RIBDaemonException {
-		// TODO Auto-generated method stub
+	/* RIBHANDLER Operations */
+	public void read(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
+		if (cdapMessage.getObjName().equals("daf.management.enrollment")){
+			EnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor);
+			if (enrollmentStateMachine == null){
+				log.error("Got a CDAP message that is not for me: "+cdapMessage.toString());
+				return;
+			}
+			enrollmentStateMachine.read(cdapMessage, cdapSessionDescriptor);
+		}
+	}
+	
+	public void cancelRead(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
+		if (cdapMessage.getObjName().equals("daf.management.enrollment")){
+			EnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor);
+			if (enrollmentStateMachine == null){
+				log.error("Got a CDAP message that is not for me: "+cdapMessage.toString());
+				return;
+			}
+			enrollmentStateMachine.cancelread(cdapMessage, cdapSessionDescriptor);
+		}
 		
 	}
 
@@ -185,11 +224,6 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 	}
 
 	public void delete(String arg0, String arg1, long arg2, Object arg3) throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void read(CDAPMessage arg0, CDAPSessionDescriptor arg1) throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		
 	}

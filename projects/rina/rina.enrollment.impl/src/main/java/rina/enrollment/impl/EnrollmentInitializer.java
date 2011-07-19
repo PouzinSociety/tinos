@@ -37,13 +37,10 @@ public class EnrollmentInitializer implements Runnable{
 	private State state = State.ADDRESS;
 	
 	private int invokeId = 0;
-	
-	private int portId = 0;
 
 	public EnrollmentInitializer(EnrollmentStateMachine enrollmentStateMachine, int invokeId, int portId){
 		this.enrollmentStateMachine = enrollmentStateMachine;
 		this.invokeId = invokeId;
-		this.portId = portId;
 	}
 	
 	public void cancelread(){
@@ -77,7 +74,7 @@ public class EnrollmentInitializer implements Runnable{
 					break;
 				case DONE:
 					this.cancelread();
-					enrollmentStateMachine.processCDAPMessage(null, portId);
+					enrollmentStateMachine.enrollmentDataInitializationComplete();
 					break;
 				default:
 					break;
