@@ -1,11 +1,14 @@
 package rina.enrollment.impl;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.applicationprocess.api.ApplicationProcessNameSynonym;
 import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
@@ -35,10 +38,34 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 	 * process is enrolled to.
 	 */
 	private Map<String, EnrollmentStateMachine> enrollmentStateMachines = null;
+	
+	/**
+	 * The list of application processes this AP is enrolled to, with 
+	 * their addresses
+	 */
+	private List<ApplicationProcessNameSynonym> members = null;
 
 	public EnrollmentTaskImpl(){
 		enrollmentStateMachines = new Hashtable<String, EnrollmentStateMachine>();
+		members = new ArrayList<ApplicationProcessNameSynonym>();
 	}
+	
+	/**
+	 * Add a member to the list
+	 * @param apNameSynonym
+	 */
+	public void addMember(ApplicationProcessNameSynonym apNameSynonym){
+		members.add(apNameSynonym);
+	}
+	
+	/**
+	 * Remove a member from the list
+	 * @param apNameSynonym
+	 */
+	public void removeMember(ApplicationProcessNameSynonym apNameSynonym){
+		members.remove(apNameSynonym);
+	}
+	
 	
 	@Override
 	public void setIPCProcess(IPCProcess ipcProcess){
@@ -104,7 +131,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 		RIBDaemon ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		Encoder encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
 
-		EnrollmentStateMachine enrollmentStateMachine = new EnrollmentStateMachine(ribDaemon, cdapSessionManager, encoder, apNamingInfo);
+		EnrollmentStateMachine enrollmentStateMachine = new EnrollmentStateMachine(ribDaemon, cdapSessionManager, encoder, apNamingInfo, this);
 		enrollmentStateMachines.put(apNamingInfo.getApplicationProcessName() +"-"+apNamingInfo.getApplicationProcessInstance(), enrollmentStateMachine);
 		log.debug("Created a new Enrollment state machine for remote IPC process: "
 				+apNamingInfo.getApplicationProcessName()+" "+apNamingInfo.getApplicationProcessInstance());
@@ -181,18 +208,30 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 
 	/* RIBHANDLER Operations */
 	public void read(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		if (cdapMessage.getObjName().equals("daf.management.enrollment")){
+		if (cdapMessage.getObjName().equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT)){
 			EnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor);
 			if (enrollmentStateMachine == null){
 				log.error("Got a CDAP message that is not for me: "+cdapMessage.toString());
 				return;
 			}
 			enrollmentStateMachine.read(cdapMessage, cdapSessionDescriptor);
+		}else if (cdapMessage.getObjName().equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR 
+				+ RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS)){
+			//TODO
 		}
 	}
 	
+	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
+		if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR 
+				+ RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS)){
+			return this.members;
+		}
+		
+		return null;
+	}
+	
 	public void cancelRead(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		if (cdapMessage.getObjName().equals("daf.management.enrollment")){
+		if (cdapMessage.getObjName().equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT)){
 			EnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor);
 			if (enrollmentStateMachine == null){
 				log.error("Got a CDAP message that is not for me: "+cdapMessage.toString());
@@ -203,17 +242,15 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 		
 	}
 
-	public void cancelRead(String arg0, String arg1, long arg2, Object arg3) throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
+	public void create(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
+		if (cdapMessage.getObjName().equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR 
+				+ RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS)){
+			//TODO check that we are not already enrolled to the application
+			//TODO initiate the enrollment sequence
+		}
 	}
 
-	public void create(CDAPMessage arg0, CDAPSessionDescriptor arg1) throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void create(String arg0, String arg1, long arg2, Object arg3) throws RIBDaemonException {
+	public void create(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		
 	}
@@ -225,44 +262,30 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 
 	public void delete(String arg0, String arg1, long arg2, Object arg3) throws RIBDaemonException {
 		// TODO Auto-generated method stub
-		
-	}
-
-	public Object read(String arg0, String arg1, long arg2) throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	public void start(CDAPMessage arg0, CDAPSessionDescriptor arg1) throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
+		//Do nothing
 	}
 
 	public void start(String arg0, String arg1, long arg2, Object arg3) throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
+		//Do nothing
 	}
 
 	public void stop(CDAPMessage arg0, CDAPSessionDescriptor arg1) throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
+		//Do nothing
 	}
 
 	public void stop(String arg0, String arg1, long arg2, Object arg3) throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
+		//Do nothing
 	}
 
-	public void write(CDAPMessage arg0, CDAPSessionDescriptor arg1)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
+	public void write(CDAPMessage arg0, CDAPSessionDescriptor arg1) throws RIBDaemonException {
+		//Do nothing
 	}
 
-	public void write(String arg0, String arg1, long arg2, Object arg3)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
+	public void write(String arg0, String arg1, long arg2, Object arg3) throws RIBDaemonException {
+		//Do nothing
 	}
 	
 }

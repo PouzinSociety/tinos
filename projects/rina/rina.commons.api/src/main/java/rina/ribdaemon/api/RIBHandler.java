@@ -17,8 +17,6 @@ public interface RIBHandler{
 	
 	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException;
 	
-	public void cancelRead(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
-	
 	public void write(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
 	
 	public void start(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;

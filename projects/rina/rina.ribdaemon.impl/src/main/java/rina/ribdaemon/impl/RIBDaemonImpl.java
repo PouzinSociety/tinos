@@ -306,13 +306,6 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		}
 	}
 
-	public synchronized void cancelRead(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
-		log.debug("Local operation cancelRead called on object "+objectName);
-		validateObjectArguments(objectClass, objectName, objectInstance);
-		RIBHandler ribHandler = getRIBNode(objectName, objectClass, objectInstance).getRIBHandler();
-		ribHandler.cancelRead(objectClass, objectName, objectInstance, object);
-	}
-
 	public synchronized void create(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
 		log.debug("Local operation create called on object "+objectName);
 		validateObjectArguments(objectClass, objectName, objectInstance);

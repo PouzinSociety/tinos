@@ -94,11 +94,15 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 	 */
 	private ApplicationProcessNameSynonym remoteAddress = null;
 	
-	public EnrollmentStateMachine(RIBDaemon ribDaemon, CDAPSessionManager cdapSessionManager, Encoder encoder, ApplicationProcessNamingInfo remoteNamingInfo){
+	private EnrollmentTaskImpl enrollmentTaskImpl = null;
+	
+	public EnrollmentStateMachine(RIBDaemon ribDaemon, CDAPSessionManager cdapSessionManager, Encoder encoder, 
+			ApplicationProcessNamingInfo remoteNamingInfo, EnrollmentTaskImpl enrollmentTaskImpl){
 		this.ribDaemon = ribDaemon;
 		this.cdapSessionManager = cdapSessionManager;
 		this.encoder = encoder;
 		this.remoteNamingInfo = remoteNamingInfo;
+		this.enrollmentTaskImpl = enrollmentTaskImpl;
 		timer = new Timer();
 		this.executorService = Executors.newFixedThreadPool(2);
 	}
@@ -154,6 +158,7 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 	private void handleNullState(CDAPMessage cdapMessage, int portId){
 		CDAPMessage outgoingCDAPMessage = null;
 		this.portId = portId;
+		log.debug(portId);
 		
 		log.debug("Trying to enroll IPC process "+cdapMessage.getSrcApName()+" "+cdapMessage.getSrcApInst());
 
@@ -429,6 +434,7 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 		//Cancel timer
 		startResponseTimer.cancel();
 		timer.cancel();
+		this.enrollmentTaskImpl.addMember(this.remoteAddress);
 		this.setState(State.ENROLLED);
 		log.info("Remote IPC Process enrolled!");
 	}
@@ -444,6 +450,7 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 			log.error(ex);
 		}
 		this.setState(State.NULL);
+		this.enrollmentTaskImpl.removeMember(this.remoteAddress);
 	}
 	
 	private boolean isValidPortId(CDAPSessionDescriptor cdapSessionDescriptor){

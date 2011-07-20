@@ -17,4 +17,5 @@ public interface RIBObjectNames {
 	public static final String CURRENT_SYNONYM = "currentsynonym";
 	public static final String SYNONYMS = "synonyms";
 	public static final String WHATEVERCAST_NAMES = "whatevercastnames";
+	public static final String MEMBERS = "members";
 }
