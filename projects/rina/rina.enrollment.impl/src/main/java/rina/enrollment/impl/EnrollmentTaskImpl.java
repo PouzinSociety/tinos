@@ -16,6 +16,7 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
 import rina.enrollment.api.BaseEnrollmentTask;
+import rina.enrollment.impl.handlers.DIFMembersHandler;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.BaseRIBDaemon;
@@ -44,10 +45,14 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 	 * their addresses
 	 */
 	private List<ApplicationProcessNameSynonym> members = null;
+	
+	/** Handles the operations on "daf.management.enrollment.members" objects **/
+	private DIFMembersHandler difMembersHandler = null;
 
 	public EnrollmentTaskImpl(){
 		enrollmentStateMachines = new Hashtable<String, EnrollmentStateMachine>();
 		members = new ArrayList<ApplicationProcessNameSynonym>();
+		difMembersHandler = new DIFMembersHandler(this);
 	}
 	
 	/**
@@ -66,6 +71,9 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 		members.remove(apNameSynonym);
 	}
 	
+	public List<ApplicationProcessNameSynonym> getMembers(){
+		return this.members;
+	}
 	
 	@Override
 	public void setIPCProcess(IPCProcess ipcProcess){
@@ -81,6 +89,8 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 		try{
 			ribDaemon.addRIBHandler(this, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT);
+			ribDaemon.addRIBHandler(this, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS);
 			ribDaemon.addRIBHandler(this, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.OPERATIONAL_STATUS);
 		}catch(RIBDaemonException ex){
@@ -217,7 +227,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 			enrollmentStateMachine.read(cdapMessage, cdapSessionDescriptor);
 		}else if (cdapMessage.getObjName().equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR 
 				+ RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS)){
-			//TODO
+			difMembersHandler.read(cdapMessage, cdapSessionDescriptor);
 		}
 	}
 	
@@ -245,8 +255,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 	public void create(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
 		if (cdapMessage.getObjName().equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR 
 				+ RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS)){
-			//TODO check that we are not already enrolled to the application
-			//TODO initiate the enrollment sequence
+			difMembersHandler.create(cdapMessage, cdapSessionDescriptor);
 		}
 	}
 
@@ -255,9 +264,11 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 		
 	}
 
-	public void delete(CDAPMessage arg0, CDAPSessionDescriptor arg1) throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
+	public void delete(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
+		if (cdapMessage.getObjName().equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR 
+				+ RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS)){
+			difMembersHandler.delete(cdapMessage, cdapSessionDescriptor);
+		}
 	}
 
 	public void delete(String arg0, String arg1, long arg2, Object arg3) throws RIBDaemonException {
