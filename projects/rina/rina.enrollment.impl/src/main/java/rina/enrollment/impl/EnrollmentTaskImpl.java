@@ -17,12 +17,13 @@ import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
 import rina.enrollment.api.BaseEnrollmentTask;
 import rina.enrollment.impl.handlers.DIFMembersHandler;
+import rina.enrollment.impl.handlers.EnrollmentHandler;
+import rina.enrollment.impl.handlers.OperationalStatusHandler;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
-import rina.ribdaemon.api.RIBHandler;
 import rina.ribdaemon.api.RIBObjectNames;
 
 /**
@@ -30,7 +31,7 @@ import rina.ribdaemon.api.RIBObjectNames;
  * @author eduardgrasa
  *
  */
-public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler{
+public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	
 	private static final Log log = LogFactory.getLog(EnrollmentTaskImpl.class);
 	
@@ -48,11 +49,23 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 	
 	/** Handles the operations on "daf.management.enrollment.members" objects **/
 	private DIFMembersHandler difMembersHandler = null;
+	
+	/**
+	 * Handles the operations on "daf.management.enrollment" objects
+	 */
+	private EnrollmentHandler enrollmentHandler = null;
+	
+	/**
+	 * Handles the operations on "daf.management.operationalStatus" objects
+	 */
+	private OperationalStatusHandler operationalStatusHandler = null;
 
 	public EnrollmentTaskImpl(){
 		enrollmentStateMachines = new Hashtable<String, EnrollmentStateMachine>();
 		members = new ArrayList<ApplicationProcessNameSynonym>();
 		difMembersHandler = new DIFMembersHandler(this);
+		enrollmentHandler = new EnrollmentHandler(this);
+		operationalStatusHandler = new OperationalStatusHandler(this);
 	}
 	
 	/**
@@ -87,11 +100,11 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 	private void subscribeToRIBDaemon(){
 		RIBDaemon ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		try{
-			ribDaemon.addRIBHandler(this, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+			ribDaemon.addRIBHandler(enrollmentHandler, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT);
-			ribDaemon.addRIBHandler(this, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+			ribDaemon.addRIBHandler(difMembersHandler, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS);
-			ribDaemon.addRIBHandler(this, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+			ribDaemon.addRIBHandler(operationalStatusHandler, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.OPERATIONAL_STATUS);
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();
@@ -104,7 +117,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 	 * @param cdapSessionDescriptor
 	 * @return
 	 */
-	private EnrollmentStateMachine getEnrollmentStateMachine(CDAPSessionDescriptor cdapSessionDescriptor){
+	public EnrollmentStateMachine getEnrollmentStateMachine(CDAPSessionDescriptor cdapSessionDescriptor){
 		ApplicationProcessNamingInfo myNamingInfo = getIPCProcess().getApplicationProcessNamingInfo();
 		ApplicationProcessNamingInfo sourceNamingInfo = cdapSessionDescriptor.getSourceApplicationProcessNamingInfo();
 		ApplicationProcessNamingInfo destinationNamingInfo = cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo();
@@ -215,88 +228,4 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements RIBHandler
 
 		enrollmentStateMachine.releaseResponse(cdapMessage, cdapSessionDescriptor);
 	}
-
-	/* RIBHANDLER Operations */
-	public void read(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		if (cdapMessage.getObjName().equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT)){
-			EnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor);
-			if (enrollmentStateMachine == null){
-				log.error("Got a CDAP message that is not for me: "+cdapMessage.toString());
-				return;
-			}
-			enrollmentStateMachine.read(cdapMessage, cdapSessionDescriptor);
-		}else if (cdapMessage.getObjName().equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR 
-				+ RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS)){
-			difMembersHandler.read(cdapMessage, cdapSessionDescriptor);
-		}
-	}
-	
-	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
-		if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR 
-				+ RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS)){
-			return this.members;
-		}
-		
-		return null;
-	}
-	
-	public void cancelRead(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		if (cdapMessage.getObjName().equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT)){
-			EnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor);
-			if (enrollmentStateMachine == null){
-				log.error("Got a CDAP message that is not for me: "+cdapMessage.toString());
-				return;
-			}
-			enrollmentStateMachine.cancelread(cdapMessage, cdapSessionDescriptor);
-		}
-		
-	}
-
-	public void create(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		if (cdapMessage.getObjName().equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR 
-				+ RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS)){
-			difMembersHandler.create(cdapMessage, cdapSessionDescriptor);
-		}
-	}
-
-	public void create(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void delete(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		if (cdapMessage.getObjName().equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR 
-				+ RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS)){
-			difMembersHandler.delete(cdapMessage, cdapSessionDescriptor);
-		}
-	}
-
-	public void delete(String arg0, String arg1, long arg2, Object arg3) throws RIBDaemonException {
-		// TODO Auto-generated method stub
-	}
-
-	public void start(CDAPMessage arg0, CDAPSessionDescriptor arg1) throws RIBDaemonException {
-		//Do nothing
-	}
-
-	public void start(String arg0, String arg1, long arg2, Object arg3) throws RIBDaemonException {
-		//Do nothing
-	}
-
-	public void stop(CDAPMessage arg0, CDAPSessionDescriptor arg1) throws RIBDaemonException {
-		//Do nothing
-	}
-
-	public void stop(String arg0, String arg1, long arg2, Object arg3) throws RIBDaemonException {
-		//Do nothing
-	}
-
-	public void write(CDAPMessage arg0, CDAPSessionDescriptor arg1) throws RIBDaemonException {
-		//Do nothing
-	}
-
-	public void write(String arg0, String arg1, long arg2, Object arg3) throws RIBDaemonException {
-		//Do nothing
-	}
-	
 }

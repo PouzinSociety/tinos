@@ -13,13 +13,14 @@ import rina.enrollment.impl.EnrollmentTaskImpl;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBHandler;
 
 /**
  * Handles all the operations for the "daf.management.enrollment.members" objectname
  * @author eduardgrasa
  *
  */
-public class DIFMembersHandler{
+public class DIFMembersHandler implements RIBHandler{
 	
 	private static final Log log = LogFactory.getLog(DIFMembersHandler.class);
 
@@ -57,6 +58,10 @@ public class DIFMembersHandler{
 		}
 	}
 	
+	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
+		return enrollmentTask.getMembers();
+	}
+	
 	public void create(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
 		//TODO check that we are not already enrolled to the application
 		//TODO initiate the enrollment sequence
@@ -64,5 +69,59 @@ public class DIFMembersHandler{
 	
 	public void delete(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
 		//TODO 
+	}
+
+	public void cancelRead(CDAPMessage arg0, CDAPSessionDescriptor arg1)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void create(String arg0, String arg1, long arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void delete(String arg0, String arg1, long arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void start(CDAPMessage arg0, CDAPSessionDescriptor arg1)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void start(String arg0, String arg1, long arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void stop(CDAPMessage arg0, CDAPSessionDescriptor arg1)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void stop(String arg0, String arg1, long arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void write(CDAPMessage arg0, CDAPSessionDescriptor arg1)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void write(String arg0, String arg1, long arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
 	}
 }

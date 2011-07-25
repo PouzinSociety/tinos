@@ -3,7 +3,6 @@ package rina.enrollment.api;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcessComponent;
-import rina.ribdaemon.api.RIBHandler;
 
 /**
  * The enrollment task manages the members of the DIF. It implements the state machines that are used 
@@ -11,7 +10,7 @@ import rina.ribdaemon.api.RIBHandler;
  * @author eduardgrasa
  *
  */
-public interface EnrollmentTask extends IPCProcessComponent, RIBHandler{
+public interface EnrollmentTask extends IPCProcessComponent{
 	
 	/**
 	 * A remote IPC process Connect request has been received
