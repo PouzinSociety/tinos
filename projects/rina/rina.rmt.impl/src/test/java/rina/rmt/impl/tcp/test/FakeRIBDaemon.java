@@ -13,7 +13,7 @@ import rina.ribdaemon.api.MessageSubscriber;
 import rina.ribdaemon.api.MessageSubscription;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
-import rina.ribdaemon.api.RIBHandler;
+import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.UpdateStrategy;
 import rina.rmt.api.RMT;
 
@@ -118,18 +118,6 @@ public class FakeRIBDaemon implements RIBDaemon {
 		return null;
 	}
 
-	public void addRIBHandler(RIBHandler arg0, String arg1)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void removeRIBHandler(RIBHandler arg0, String arg1)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
 	public void sendMessage(CDAPMessage arg0, int arg1, CDAPMessageHandler arg2)
 			throws RIBDaemonException {
 		// TODO Auto-generated method stub
@@ -173,6 +161,17 @@ public class FakeRIBDaemon implements RIBDaemon {
 	}
 
 	public void write(String arg0, String arg1, long arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void addRIBObject(RIBObject arg0) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void removeRIBObject(RIBObject arg0, String arg1)
 			throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		

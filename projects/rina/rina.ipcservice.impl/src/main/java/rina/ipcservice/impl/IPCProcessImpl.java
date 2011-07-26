@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.applicationprocess.api.ApplicationProcessNameSynonym;
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.DataTransferAEInstance;
 import rina.flowallocator.api.FlowAllocator;
@@ -19,15 +20,15 @@ import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
-import rina.ipcservice.impl.handlers.ApplicationProcessNameHandler;
-import rina.ipcservice.impl.handlers.CurrentSynonymHandler;
-import rina.ipcservice.impl.handlers.SynonymsHandler;
-import rina.ipcservice.impl.handlers.WhatevercastNamesHandler;
 import rina.ipcservice.impl.jobs.DeliverAllocateResponseJob;
 import rina.ipcservice.impl.jobs.DeliverDeallocateJob;
 import rina.ipcservice.impl.jobs.DeliverSDUJob;
+import rina.ipcservice.impl.ribobjects.ApplicationProcessNameRIBObject;
+import rina.ipcservice.impl.ribobjects.CurrentSynonymRIBObject;
+import rina.ipcservice.impl.ribobjects.WhatevercastNameSetRIBObject;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
 
 /**
@@ -62,38 +63,32 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 */
 	private ExecutorService executorService = null;
 	
-	private ApplicationProcessNameHandler apNameHandler = null;
-	private CurrentSynonymHandler currentSynonymHandler = null;
-	private SynonymsHandler synonymsHandler = null;
-	private WhatevercastNamesHandler whatevercastNamesHandler = null;
+	/**
+	 * The RIB Daemon
+	 */
+	private RIBDaemon ribDaemon = null;
 
 	public IPCProcessImpl(String applicationProcessName, String applicationProcessInstance, RIBDaemon ribDaemon){
 		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
 		this.allocationPendingApplicationProcesses = new HashMap<Integer, APService>();
 		this.transferApplicationProcesses = new HashMap<Integer, APService>();
-		this.setApplicationProcessName(applicationProcessName);
-		this.setApplicationProcessInstance(applicationProcessInstance);
-		this.apNameHandler = new ApplicationProcessNameHandler(this);
-		this.currentSynonymHandler = new CurrentSynonymHandler(this);
-		this.synonymsHandler = new SynonymsHandler(this);
-		this.whatevercastNamesHandler = new WhatevercastNamesHandler(this);
-		subscribeToRIBDaemon(ribDaemon);
+		this.ribDaemon = ribDaemon;
+		populateRIB(applicationProcessName, applicationProcessInstance);
 	}
 
 	/**
 	 * Tell the ribDaemon the portions of the RIB space that the IPC process will manage
-	 * @param ribDaemon
 	 */
-	private void subscribeToRIBDaemon(RIBDaemon ribDaemon){
+	private void populateRIB(String applicationProcessName, String applicationProcessInstance){
 		try{
-			ribDaemon.addRIBHandler(apNameHandler, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME);
-			ribDaemon.addRIBHandler(currentSynonymHandler, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM);
-			ribDaemon.addRIBHandler(synonymsHandler, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.SYNONYMS);
-			ribDaemon.addRIBHandler(whatevercastNamesHandler, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES);
+			ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance, null, null);
+			RIBObject ribObject = new ApplicationProcessNameRIBObject(this);
+			ribObject.write(null, null, 0, apNamingInfo);
+			ribDaemon.addRIBObject(ribObject);
+			ribObject = new CurrentSynonymRIBObject(this);
+			ribDaemon.addRIBObject(ribObject);
+			ribObject = new WhatevercastNameSetRIBObject(this);
+			ribDaemon.addRIBObject(ribObject);
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();
 			log.error("Could not subscribe to RIB Daemon:" +ex.getMessage());
@@ -238,8 +233,14 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 */
 	public synchronized void register(ApplicationProcessNamingInfo apNamingInfo) {
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
-		flowAllocator.getDirectoryForwardingTable().addEntry(apNamingInfo, this.getCurrentSynonym());
-		//TODO tell the RIB Daemon to disseminate this
+		try{
+			ApplicationProcessNameSynonym currentSynonym = (ApplicationProcessNameSynonym) ribDaemon.read(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0);
+			flowAllocator.getDirectoryForwardingTable().addEntry(apNamingInfo, currentSynonym.getSynonym());
+			//TODO tell the RIB Daemon to disseminate this
+		}catch(RIBDaemonException ex){
+			log.error(ex);
+		}
 	}
 
 	public void destroy(){

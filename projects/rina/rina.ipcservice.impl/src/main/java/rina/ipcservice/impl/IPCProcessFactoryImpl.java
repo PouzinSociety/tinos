@@ -12,8 +12,10 @@ import rina.flowallocator.api.FlowAllocatorFactory;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonFactory;
+import rina.ribdaemon.api.RIBObjectNames;
 import rina.rmt.api.RMTFactory;
 
 public class IPCProcessFactoryImpl implements IPCProcessFactory{
@@ -128,9 +130,15 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	}
 
 	public void destroyIPCProcess(IPCProcess ipcProcess) {
-		ApplicationProcessNamingInfo apNamingInfo = 
-			new ApplicationProcessNamingInfo(ipcProcess.getApplicationProcessName(), ipcProcess.getApplicationProcessInstance(), null, null);
-		this.destroyIPCProcess(apNamingInfo);
+		RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+
+		try{
+			ApplicationProcessNamingInfo apNamingInfo = (ApplicationProcessNamingInfo) ribDaemon.read(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + 
+					RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME, 0);
+			this.destroyIPCProcess(apNamingInfo);
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
 	}
 
 	public IPCProcess getIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) {

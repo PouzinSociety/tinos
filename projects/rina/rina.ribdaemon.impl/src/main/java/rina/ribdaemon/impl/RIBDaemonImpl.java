@@ -20,10 +20,10 @@ import rina.enrollment.api.BaseEnrollmentTask;
 import rina.enrollment.api.EnrollmentTask;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
-import rina.ribdaemon.api.RIBHandler;
+import rina.ribdaemon.api.RIBObject;
+import rina.ribdaemon.api.RIBObjectNames;
 import rina.ribdaemon.api.UpdateStrategy;
 import rina.ribdaemon.impl.rib.RIB;
-import rina.ribdaemon.impl.rib.RIBNode;
 import rina.rmt.api.BaseRMT;
 import rina.rmt.api.RMT;
 
@@ -235,26 +235,26 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	}
 	
 	/**
-	 * Add a ribHandler for a certain object name
+	 * Add a RIB object to the RIB
 	 * @param ribHandler
 	 * @param objectName
 	 * @throws RIBDaemonException
 	 */
-	public void addRIBHandler(RIBHandler ribHandler, String objectName) throws RIBDaemonException{
-		RIBNode ribNode = rib.getRIBNode(objectName);
-		ribNode.setRIBHandler(ribHandler);
-		log.info(ribHandler.getClass().getName() + " will be handling the "+objectName+" node of the RIB");
+	public void addRIBObject(RIBObject ribObject) throws RIBDaemonException{
+		rib.addRIBObject(ribObject);
+		log.info("RIBObject with objectname "+ribObject.getObjectName()+", objectClass "+ribObject.getObjectClass()+", " +
+				"objectInstance "+ribObject.getObjectInstance()+" added to the RIB");
 	}
 	
 	/**
-	 * Remove a ribHandler from a certain object name
+	 * Remove a ribObject from the RIB
 	 * @param objectName
 	 * @throws RIBDaemonException
 	 */
-	public void removeRIBHandler(RIBHandler ribHandler, String objectName) throws RIBDaemonException{
-		RIBNode ribNode = rib.getRIBNode(objectName);
-		ribNode.setRIBHandler(null);
-		log.info(ribHandler.getClass().getName() + " will no longer be handling the "+objectName+" node of the RIB");
+	public void removeRIBObject(RIBObject ribObject, String objectName) throws RIBDaemonException{
+		rib.removeRIBObject(ribObject.getObjectName());
+		log.info("RIBObject with objectname "+ribObject.getObjectName()+", objectClass "+ribObject.getObjectClass()+", " +
+				"objectInstance "+ribObject.getObjectInstance()+" removed from the RIB");
 	}
 	
 	/**
@@ -267,78 +267,78 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	 */
 	public void processOperation(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
 		log.debug("Remote operation "+cdapMessage.getOpCode()+" called on object "+cdapMessage.getObjName());
-		RIBNode ribNode = getRIBNode(cdapMessage.getObjName(), cdapMessage.getObjClass(), cdapMessage.getObjInst());
-		RIBHandler ribHandler = ribNode.getRIBHandler();
+		RIBObject ribObject = getRIBObject(cdapMessage.getObjName(), cdapMessage.getObjClass(), cdapMessage.getObjInst());
 		
 		switch(cdapMessage.getOpCode()){
 		case M_CREATE:
-			ribHandler.create(cdapMessage, cdapSessionDescriptor);
+			/* Creation is delegated to the parent objects */
+			String parentObjectName = cdapMessage.getObjName().substring(0, cdapMessage.getObjName().lastIndexOf(RIBObjectNames.SEPARATOR));
+			ribObject = getRIBObject(parentObjectName, null, 0);
+			ribObject.create(cdapMessage, cdapSessionDescriptor);
 			break;
 		case M_DELETE:
-			ribHandler.delete(cdapMessage, cdapSessionDescriptor);
+			ribObject.delete(cdapMessage, cdapSessionDescriptor);
 			break;
 		case M_READ:
-			ribHandler.read(cdapMessage, cdapSessionDescriptor);
+			ribObject.read(cdapMessage, cdapSessionDescriptor);
 			break;
 		case M_CANCELREAD:
-			ribHandler.cancelRead(cdapMessage, cdapSessionDescriptor);
+			ribObject.cancelRead(cdapMessage, cdapSessionDescriptor);
 			break;
 		case M_WRITE:
-			ribHandler.write(cdapMessage, cdapSessionDescriptor);
+			ribObject.write(cdapMessage, cdapSessionDescriptor);
 			break;
 		case M_START:
-			ribHandler.start(cdapMessage, cdapSessionDescriptor);
+			ribObject.start(cdapMessage, cdapSessionDescriptor);
 			break;
 		case M_STOP:
-			ribHandler.stop(cdapMessage, cdapSessionDescriptor);
+			ribObject.stop(cdapMessage, cdapSessionDescriptor);
 			break;
 		default:
 			throw new RIBDaemonException(RIBDaemonException.OPERATION_NOT_ALLOWED_AT_THIS_OBJECT);
 		}
 	}
 	
-	private RIBNode getRIBNode(String objectName, String objectClass, long objectInstance) throws RIBDaemonException{
+	private RIBObject getRIBObject(String objectName, String objectClass, long objectInstance) throws RIBDaemonException{
 		validateObjectArguments(objectClass, objectName, objectInstance);
-		if(objectName != null){
-			return rib.getRIBNode(objectName);
-		}else{
-			return rib.getRIBNode(objectInstance);
-		}
+		return rib.getRIBObject(objectName);
 	}
 
 	public synchronized void create(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
 		log.debug("Local operation create called on object "+objectName);
 		validateObjectArguments(objectClass, objectName, objectInstance);
-		RIBHandler ribHandler = getRIBNode(objectName, objectClass, objectInstance).getRIBHandler();
-		ribHandler.create(objectClass, objectName, objectInstance, object);
+		/* Creation is delegated to the parent objects */
+		String parentObjectName = objectName.substring(0, objectName.lastIndexOf(RIBObjectNames.SEPARATOR));
+		RIBObject ribObject = getRIBObject(parentObjectName, null, 0);
+		ribObject.create(objectClass, objectName, objectInstance, object);
 	}
 
 	public synchronized void delete(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
 		log.debug("Local operation delete called on object "+objectName);
 		validateObjectArguments(objectClass, objectName, objectInstance);
-		RIBHandler ribHandler = getRIBNode(objectName, objectClass, objectInstance).getRIBHandler();
-		ribHandler.delete(objectClass, objectName, objectInstance, object);
+		RIBObject ribObject = getRIBObject(objectName, objectClass, objectInstance);
+		ribObject.delete(objectClass, objectName, objectInstance, object);
 	}
 
 	public synchronized Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
 		log.debug("Local operation read called on object "+objectName);
 		validateObjectArguments(objectClass, objectName, objectInstance);
-		RIBHandler ribHandler = getRIBNode(objectName, objectClass, objectInstance).getRIBHandler();
-		return ribHandler.read(objectClass, objectName, objectInstance);
+		RIBObject ribObject = getRIBObject(objectName, objectClass, objectInstance);
+		return ribObject.read(objectClass, objectName, objectInstance);
 	}
 
 	public synchronized void start(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
 		log.debug("Local operation start called on object "+objectName);
 		validateObjectArguments(objectClass, objectName, objectInstance);
-		RIBHandler ribHandler = getRIBNode(objectName, objectClass, objectInstance).getRIBHandler();
-		ribHandler.start(objectClass, objectName, objectInstance, object);
+		RIBObject ribObject = getRIBObject(objectName, objectClass, objectInstance);
+		ribObject.start(objectClass, objectName, objectInstance, object);
 	}
 
 	public synchronized void stop(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
 		log.debug("Local operation stop called on object "+objectName);
 		validateObjectArguments(objectClass, objectName, objectInstance);
-		RIBHandler ribHandler = getRIBNode(objectName, objectClass, objectInstance).getRIBHandler();
-		ribHandler.stop(objectClass, objectName, objectInstance, object);
+		RIBObject ribObject = getRIBObject(objectName, objectClass, objectInstance);
+		ribObject.stop(objectClass, objectName, objectInstance, object);
 	}
 
 	/**
@@ -352,8 +352,8 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	public synchronized void write(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
 		log.debug("Local operation write called on object "+objectName);
 		validateObjectArguments(objectClass, objectName, objectInstance);
-		RIBHandler ribHandler = getRIBNode(objectName, objectClass, objectInstance).getRIBHandler();
-		ribHandler.write(objectClass, objectName, objectInstance, object);
+		RIBObject ribObject = getRIBObject(objectName, objectClass, objectInstance);
+		ribObject.write(objectClass, objectName, objectInstance, object);
 	}
 	
 	/**

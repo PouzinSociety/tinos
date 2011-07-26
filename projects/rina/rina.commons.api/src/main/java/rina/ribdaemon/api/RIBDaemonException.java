@@ -22,6 +22,8 @@ public class RIBDaemonException extends Exception{
 	public static final int OPERATION_NOT_ALLOWED_AT_THIS_OBJECT = 9;
 	public static final int UNRECOGNIZED_OBJECT_NAME = 10;
 	public static final int OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME = 11;
+	public static final int OBJECT_ALREADY_HAS_THIS_CHILD = 12;
+	public static final int CHILD_NOT_FOUND = 13;
 	
 	private int errorCode = 0;
 	

@@ -1,4 +1,4 @@
-package rina.ipcservice.impl;
+package rina.ribdaemon.api;
 
 import java.util.List;
 

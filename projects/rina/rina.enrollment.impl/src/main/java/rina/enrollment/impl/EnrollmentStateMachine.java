@@ -18,6 +18,7 @@ import rina.encoding.api.Encoder;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBObjectNames;
 
 /**
  * Implements the enrollment logics for enrolling with a particular remote IPC process
@@ -94,15 +95,12 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 	 */
 	private ApplicationProcessNameSynonym remoteAddress = null;
 	
-	private EnrollmentTaskImpl enrollmentTaskImpl = null;
-	
 	public EnrollmentStateMachine(RIBDaemon ribDaemon, CDAPSessionManager cdapSessionManager, Encoder encoder, 
-			ApplicationProcessNamingInfo remoteNamingInfo, EnrollmentTaskImpl enrollmentTaskImpl){
+			ApplicationProcessNamingInfo remoteNamingInfo){
 		this.ribDaemon = ribDaemon;
 		this.cdapSessionManager = cdapSessionManager;
 		this.encoder = encoder;
 		this.remoteNamingInfo = remoteNamingInfo;
-		this.enrollmentTaskImpl = enrollmentTaskImpl;
 		timer = new Timer();
 		this.executorService = Executors.newFixedThreadPool(2);
 	}
@@ -204,11 +202,25 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 	 * @param cdapSessionDescriptor
 	 */
 	public void release(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor){
+		log.debug("Releasing the CDAP connection");
 		if (!isValidPortId(cdapSessionDescriptor)){
 			return;
 		}
 
+		if (this.getState().equals(State.ENROLLED)){
+			try{
+				ribDaemon.delete(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+						RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS
+						+ RIBObjectNames.SEPARATOR + this.remoteAddress.getApplicationProcessName()+this.remoteAddress.getApplicationProcessInstance(), 
+						0, null);
+			}catch(RIBDaemonException ex){
+				log.error(ex);
+			}
+		}
+		
 		this.setState(State.NULL);
+		this.remoteAddress = null;
+		
 		if (cdapMessage.getInvokeID() != 0){
 			try{
 				sendCDAPMessage(CDAPMessage.getReleaseConnectionResponseMessage(null, cdapMessage.getInvokeID(), 0, null));
@@ -434,7 +446,16 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 		//Cancel timer
 		startResponseTimer.cancel();
 		timer.cancel();
-		this.enrollmentTaskImpl.addMember(this.remoteAddress);
+
+		try{
+			ribDaemon.create(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS
+					+ RIBObjectNames.SEPARATOR + this.remoteAddress.getApplicationProcessName()+this.remoteAddress.getApplicationProcessInstance(), 
+					0, this.remoteAddress);
+		}catch(RIBDaemonException ex){
+			log.error(ex);
+		}
+
 		this.setState(State.ENROLLED);
 		log.info("Remote IPC Process enrolled!");
 	}
@@ -450,7 +471,6 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 			log.error(ex);
 		}
 		this.setState(State.NULL);
-		this.enrollmentTaskImpl.removeMember(this.remoteAddress);
 	}
 	
 	private boolean isValidPortId(CDAPSessionDescriptor cdapSessionDescriptor){

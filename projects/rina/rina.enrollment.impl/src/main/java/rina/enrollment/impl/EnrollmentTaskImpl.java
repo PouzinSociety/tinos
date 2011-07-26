@@ -1,6 +1,5 @@
 package rina.enrollment.impl;
 
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -8,7 +7,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applicationprocess.api.ApplicationProcessNameSynonym;
+import rina.applicationprocess.api.WhatevercastName;
 import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
@@ -16,14 +15,15 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
 import rina.enrollment.api.BaseEnrollmentTask;
-import rina.enrollment.impl.handlers.DIFMembersHandler;
-import rina.enrollment.impl.handlers.EnrollmentHandler;
-import rina.enrollment.impl.handlers.OperationalStatusHandler;
+import rina.enrollment.impl.ribobjects.DIFMemberSetRIBObject;
+import rina.enrollment.impl.ribobjects.EnrollmentRIBObject;
+import rina.enrollment.impl.ribobjects.OperationalStatusRIBObject;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
 
 /**
@@ -41,71 +41,30 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 */
 	private Map<String, EnrollmentStateMachine> enrollmentStateMachines = null;
 	
-	/**
-	 * The list of application processes this AP is enrolled to, with 
-	 * their addresses
-	 */
-	private List<ApplicationProcessNameSynonym> members = null;
-	
-	/** Handles the operations on "daf.management.enrollment.members" objects **/
-	private DIFMembersHandler difMembersHandler = null;
-	
-	/**
-	 * Handles the operations on "daf.management.enrollment" objects
-	 */
-	private EnrollmentHandler enrollmentHandler = null;
-	
-	/**
-	 * Handles the operations on "daf.management.operationalStatus" objects
-	 */
-	private OperationalStatusHandler operationalStatusHandler = null;
+	private RIBDaemon ribDaemon = null;
 
 	public EnrollmentTaskImpl(){
 		enrollmentStateMachines = new Hashtable<String, EnrollmentStateMachine>();
-		members = new ArrayList<ApplicationProcessNameSynonym>();
-		difMembersHandler = new DIFMembersHandler(this);
-		enrollmentHandler = new EnrollmentHandler(this);
-		operationalStatusHandler = new OperationalStatusHandler(this);
-	}
-	
-	/**
-	 * Add a member to the list
-	 * @param apNameSynonym
-	 */
-	public void addMember(ApplicationProcessNameSynonym apNameSynonym){
-		members.add(apNameSynonym);
-	}
-	
-	/**
-	 * Remove a member from the list
-	 * @param apNameSynonym
-	 */
-	public void removeMember(ApplicationProcessNameSynonym apNameSynonym){
-		members.remove(apNameSynonym);
-	}
-	
-	public List<ApplicationProcessNameSynonym> getMembers(){
-		return this.members;
 	}
 	
 	@Override
 	public void setIPCProcess(IPCProcess ipcProcess){
 		super.setIPCProcess(ipcProcess);
-		subscribeToRIBDaemon();
+		this.ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+		populateRIB(ipcProcess);
 	}
 	
 	/**
 	 * Subscribe to all M_CONNECTs, M_CONNECT_R, M_RELEASE and M_RELEASE_R
 	 */
-	private void subscribeToRIBDaemon(){
-		RIBDaemon ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+	private void populateRIB(IPCProcess ipcProcess){
 		try{
-			ribDaemon.addRIBHandler(enrollmentHandler, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT);
-			ribDaemon.addRIBHandler(difMembersHandler, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS);
-			ribDaemon.addRIBHandler(operationalStatusHandler, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.OPERATIONAL_STATUS);
+			RIBObject ribObject = new DIFMemberSetRIBObject(this, ipcProcess);
+			ribDaemon.addRIBObject(ribObject);
+			ribObject = new EnrollmentRIBObject(this, ipcProcess);
+			ribDaemon.addRIBObject(ribObject);
+			ribObject = new OperationalStatusRIBObject(this, ipcProcess);
+			ribDaemon.addRIBObject(ribObject);
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();
 			log.error("Could not subscribe to RIB Daemon:" +ex.getMessage());
@@ -118,26 +77,35 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 * @return
 	 */
 	public EnrollmentStateMachine getEnrollmentStateMachine(CDAPSessionDescriptor cdapSessionDescriptor){
-		ApplicationProcessNamingInfo myNamingInfo = getIPCProcess().getApplicationProcessNamingInfo();
-		ApplicationProcessNamingInfo sourceNamingInfo = cdapSessionDescriptor.getSourceApplicationProcessNamingInfo();
-		ApplicationProcessNamingInfo destinationNamingInfo = cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo();
-		EnrollmentStateMachine enrollmentStateMachine = null;
-		
-		if (myNamingInfo.equals(destinationNamingInfo) || getIPCProcess().containsWhatevercastName(destinationNamingInfo.getApplicationProcessName())){
-			enrollmentStateMachine = getEnrollmentStateMachine(sourceNamingInfo);
-			if (enrollmentStateMachine == null){
-				enrollmentStateMachine = this.createEnrollmentStateMachine(sourceNamingInfo);
+		try{
+			ApplicationProcessNamingInfo myNamingInfo = (ApplicationProcessNamingInfo) ribDaemon.read(null, 
+					RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + 
+					RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME, 0);
+			ApplicationProcessNamingInfo sourceNamingInfo = cdapSessionDescriptor.getSourceApplicationProcessNamingInfo();
+			ApplicationProcessNamingInfo destinationNamingInfo = cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo();
+			EnrollmentStateMachine enrollmentStateMachine = null;
+			List<WhatevercastName> whatevercastNames = (List<WhatevercastName>) ribDaemon.read(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES, 0);
+
+			if (myNamingInfo.equals(destinationNamingInfo) || this.containsWhatevercastName(whatevercastNames, destinationNamingInfo.getApplicationProcessName())){
+				enrollmentStateMachine = getEnrollmentStateMachine(sourceNamingInfo);
+				if (enrollmentStateMachine == null){
+					enrollmentStateMachine = this.createEnrollmentStateMachine(sourceNamingInfo);
+				}
+			}else if (myNamingInfo.equals(sourceNamingInfo) || this.containsWhatevercastName(whatevercastNames, sourceNamingInfo.getApplicationProcessName())){
+				enrollmentStateMachine = getEnrollmentStateMachine(destinationNamingInfo);
+				if (enrollmentStateMachine == null){
+					enrollmentStateMachine = this.createEnrollmentStateMachine(destinationNamingInfo);
+				}
+			}else{
+				return null;
 			}
-		}else if (myNamingInfo.equals(sourceNamingInfo) || getIPCProcess().containsWhatevercastName(sourceNamingInfo.getApplicationProcessName())){
-			enrollmentStateMachine = getEnrollmentStateMachine(destinationNamingInfo);
-			if (enrollmentStateMachine == null){
-				enrollmentStateMachine = this.createEnrollmentStateMachine(destinationNamingInfo);
-			}
-		}else{
+
+			return enrollmentStateMachine;
+		}catch(RIBDaemonException ex){
+			log.error(ex);
 			return null;
 		}
-		
-		return enrollmentStateMachine;
 	}
 	
 	private EnrollmentStateMachine getEnrollmentStateMachine(ApplicationProcessNamingInfo apNamingInfo){
@@ -154,11 +122,21 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		RIBDaemon ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		Encoder encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
 
-		EnrollmentStateMachine enrollmentStateMachine = new EnrollmentStateMachine(ribDaemon, cdapSessionManager, encoder, apNamingInfo, this);
+		EnrollmentStateMachine enrollmentStateMachine = new EnrollmentStateMachine(ribDaemon, cdapSessionManager, encoder, apNamingInfo);
 		enrollmentStateMachines.put(apNamingInfo.getApplicationProcessName() +"-"+apNamingInfo.getApplicationProcessInstance(), enrollmentStateMachine);
 		log.debug("Created a new Enrollment state machine for remote IPC process: "
 				+apNamingInfo.getApplicationProcessName()+" "+apNamingInfo.getApplicationProcessInstance());
 		return enrollmentStateMachine;
+	}
+	
+	private boolean containsWhatevercastName(List<WhatevercastName> whatevercastNames, String name){
+		for(int i=0; i<whatevercastNames.size(); i++){
+			if (whatevercastNames.get(i).getName().equals(name)){
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

@@ -3,15 +3,13 @@ package rina.ipcprocess.api;
 import java.util.List;
 import java.util.Map;
 
-import rina.applicationprocess.api.ApplicationProcess;
-
 /**
  * Represents an IPC Process. Holds together the different components of the IPC 
  * process
  * @author eduardgrasa
  *
  */
-public interface IPCProcess extends ApplicationProcess{
+public interface IPCProcess{
 	
 	/* IPC Process Component management */
 	public Map<String, IPCProcessComponent> getIPCProcessComponents();

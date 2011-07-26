@@ -30,19 +30,19 @@ public interface RIBDaemon extends IPCProcessComponent{
 	public void flowDeallocated(int portId);
 	
 	/**
-	 * Add a ribHandler for a certain object name
+	 * Add a RIB object to the RIB
 	 * @param ribHandler
 	 * @param objectName
 	 * @throws RIBDaemonException
 	 */
-	public void addRIBHandler(RIBHandler ribHandler, String objectName) throws RIBDaemonException;
+	public void addRIBObject(RIBObject ribObject) throws RIBDaemonException;
 	
 	/**
-	 * Remove a ribHandler from a certain object name
+	 * Remove a ribObject from the RIB
 	 * @param objectName
 	 * @throws RIBDaemonException
 	 */
-	public void removeRIBHandler(RIBHandler ribHandler, String objectName) throws RIBDaemonException;
+	public void removeRIBObject(RIBObject ribObject, String objectName) throws RIBDaemonException;
 	
 	/**
 	 * Send an information update, consisting on a set of CDAP messages, using the updateStrategy update strategy
