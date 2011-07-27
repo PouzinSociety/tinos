@@ -6,7 +6,9 @@ import java.net.Socket;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPSessionManager;
+import rina.cdap.api.message.CDAPMessage;
 import rina.delimiting.api.Delimiter;
 import rina.encoding.api.Encoder;
 
@@ -104,6 +106,109 @@ public abstract class CDAPWorker implements Runnable{
 		}
 		
 		return result;
+	}
+	
+	protected synchronized void sendErrorMessage(CDAPException cdapException){
+		CDAPMessage wrongMessage = cdapException.getCDAPMessage();
+		CDAPMessage returnMessage = null;
+
+		switch(wrongMessage.getOpCode()){
+		case M_CONNECT:
+			try{
+				returnMessage = CDAPMessage.getOpenConnectionResponseMessage(wrongMessage.getAuthMech(), wrongMessage.getAuthValue(), wrongMessage.getSrcAEInst(), 
+						wrongMessage.getSrcAEName(), wrongMessage.getSrcApInst(), wrongMessage.getSrcApName(), wrongMessage.getInvokeID(), cdapException.getResult(), 
+						cdapException.getResultReason(), wrongMessage.getDestAEInst(), wrongMessage.getDestAEName(), wrongMessage.getDestApInst(), 
+						wrongMessage.getDestApName(), (int)wrongMessage.getVersion());
+			}catch(CDAPException ex){
+				ex.printStackTrace();
+			}
+			break;
+		case M_CREATE:
+			try{
+				returnMessage = CDAPMessage.getCreateObjectResponseMessage(wrongMessage.getFlags(), 
+						wrongMessage.getInvokeID(), wrongMessage.getObjClass(), wrongMessage.getObjInst(), wrongMessage.getObjName(), wrongMessage.getObjValue(), 
+						cdapException.getResult(), cdapException.getResultReason());
+			}catch(CDAPException ex){
+				ex.printStackTrace();
+			}
+			break;
+		case M_DELETE:
+			try{
+				returnMessage = CDAPMessage.getDeleteObjectResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), wrongMessage.getObjClass(), 
+						wrongMessage.getObjInst(), wrongMessage.getObjName(), cdapException.getResult(), cdapException.getResultReason());
+			}catch(CDAPException ex){
+				ex.printStackTrace();
+			}
+			break;
+		case M_READ:
+			try{
+				returnMessage = CDAPMessage.getReadObjectResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), wrongMessage.getObjClass(), 
+						wrongMessage.getObjInst(), wrongMessage.getObjName(), wrongMessage.getObjValue(), cdapException.getResult(), cdapException.getResultReason());
+			}catch(CDAPException ex){
+				ex.printStackTrace();
+			}
+			break;
+		case M_WRITE:
+			try{
+				returnMessage = CDAPMessage.getWriteObjectResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), cdapException.getResult(), 
+						cdapException.getResultReason());
+			}catch(CDAPException ex){
+				ex.printStackTrace();
+			}
+			break;
+		case M_CANCELREAD:
+			try{
+				returnMessage = CDAPMessage.getCancelReadResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), cdapException.getResult(), 
+						cdapException.getResultReason());
+			}catch(CDAPException ex){
+				ex.printStackTrace();
+			}
+			break;
+		case M_START:
+			try{
+				returnMessage = CDAPMessage.getStartObjectResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), cdapException.getResult(), 
+						cdapException.getResultReason());
+			}catch(CDAPException ex){
+				ex.printStackTrace();
+			}
+			break;
+		case M_STOP:
+			try{
+				returnMessage = CDAPMessage.getStopObjectResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), cdapException.getResult(), 
+						cdapException.getResultReason());
+			}catch(CDAPException ex){
+				ex.printStackTrace();
+			}
+			break;
+		case M_RELEASE:
+			try{
+				returnMessage = CDAPMessage.getReleaseConnectionResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), cdapException.getResult(), 
+						cdapException.getResultReason());
+			}catch(CDAPException ex){
+				ex.printStackTrace();
+			}
+			break;
+		}
+
+		if (returnMessage != null){
+			try{
+				this.sendCDAPMessage(returnMessage);
+			}catch(Exception ex){
+				ex.printStackTrace();
+			}
+		}
+	}
+	
+	public synchronized void sendCDAPMessage(CDAPMessage cdapMessage) throws CDAPException, IOException{
+		byte[] serializedCDAPMessageToBeSend = null;
+		byte[] delimitedSdu = null;
+		
+		serializedCDAPMessageToBeSend = cdapSessionManager.encodeNextMessageToBeSent(cdapMessage, socket.getPort());
+		delimitedSdu = delimiter.getDelimitedSdu(serializedCDAPMessageToBeSend);
+		socket.getOutputStream().write(delimitedSdu);
+		cdapSessionManager.messageSent(cdapMessage, socket.getPort());
+		log.info("Sent CDAP Message: "+ cdapMessage.toString());
+		log.info("Sent SDU:" + printBytes(delimitedSdu));
 	}
 	
 	protected abstract void processCDAPMessage(byte[] serializedCDAPMessage);

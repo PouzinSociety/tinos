@@ -31,11 +31,9 @@ public class CDAPEchoWorker extends CDAPWorker {
 		log.info(printBytes(serializedCDAPMessage));
 		CDAPMessage incomingCDAPMessage = null;
 		CDAPMessage outgoingCDAPMessage = null;
-		byte[] serializedCDAPMessageToBeSend = null;
-		byte[] delimitedSdu = null;
 		
 		try {
-			incomingCDAPMessage = cdapSessionManager.messageReceived(serializedCDAPMessage, socket.getLocalPort());
+			incomingCDAPMessage = cdapSessionManager.messageReceived(serializedCDAPMessage, socket.getPort());
 			log.info("Received CDAP message: "+incomingCDAPMessage.toString());
 			//TODO
 			switch (incomingCDAPMessage.getOpCode()){
@@ -73,14 +71,15 @@ public class CDAPEchoWorker extends CDAPWorker {
 				break;
 			}
 			
-			serializedCDAPMessageToBeSend = cdapSessionManager.encodeNextMessageToBeSent(outgoingCDAPMessage,socket.getLocalPort());
-			log.info("Replying with CDAP message: "+outgoingCDAPMessage.toString());
-			delimitedSdu = delimiter.getDelimitedSdu(serializedCDAPMessageToBeSend);
-			socket.getOutputStream().write(delimitedSdu);
-			cdapSessionManager.messageSent(outgoingCDAPMessage, socket.getLocalPort());
+			if (outgoingCDAPMessage != null){
+				this.sendCDAPMessage(outgoingCDAPMessage);
+			}
 		} catch (CDAPException ex) {
 			// TODO Auto-generated catch block
 			ex.printStackTrace();
+			if (ex.getCDAPMessage().getInvokeID() != 0){
+				this.sendErrorMessage(ex);
+			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -154,8 +154,6 @@ public class CDAPSessionImpl implements CDAPSession{
 	}
 	
 	private CDAPMessage messageSentOrReceived(CDAPMessage cdapMessage, boolean sent) throws CDAPException{
-		CDAPMessageValidator.validate(cdapMessage);
-
 		switch(cdapMessage.getOpCode()){
 		case M_CONNECT:
 			connectionStateMachine.connectSentOrReceived(cdapMessage, sent);
@@ -163,7 +161,6 @@ public class CDAPSessionImpl implements CDAPSession{
 			break;
 		case M_CONNECT_R:
 			connectionStateMachine.connectResponseSentOrReceived(cdapMessage, sent);
-			
 			break;
 		case M_RELEASE:
 			connectionStateMachine.releaseSentOrReceived(cdapMessage, sent);
@@ -218,6 +215,7 @@ public class CDAPSessionImpl implements CDAPSession{
 			throw new CDAPException("Unrecognized operation code: "+cdapMessage.getOpCode().toString());	
 		}
 
+		CDAPMessageValidator.validate(cdapMessage);
 		return cdapMessage;
 	}
 	

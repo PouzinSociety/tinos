@@ -108,8 +108,8 @@ public class CDAPEchoClient extends CDAPClient{
 	}
 	
 	private CDAPMessage getMReadMessage(CDAPMessage cdapMessage) throws CDAPException{
-		return CDAPMessage.getReadObjectRequestMessage(null, null, 46, cdapMessage.getObjClass(), 
-				cdapMessage.getObjInst(), cdapMessage.getObjName(), 0);
+		return CDAPMessage.getReadObjectRequestMessage(null, null, 46, "Enrollment", 
+				cdapMessage.getObjInst(), "daf.management.enrollment", 0);
 	}
 	
 	private CDAPMessage getMStopMessage(CDAPMessage cdapMessage) throws CDAPException{

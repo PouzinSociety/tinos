@@ -79,6 +79,9 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		}catch(CDAPException ex){
 			log.error("Error decoding CDAP message: " + ex.getMessage());
 			ex.printStackTrace();
+			if (ex.getCDAPMessage().getInvokeID() != 0){
+				this.sendErrorMessage(ex, portId);
+			}
 			return;
 		}
 		
@@ -146,6 +149,103 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();
 			log.error(ex);
+		}
+	}
+	
+	/**
+	 * Invoked by the RIB Daemon when there has been an error decoding the contents of a 
+	 * CDAP Message
+	 * @param cdapException
+	 * @param portId
+	 */
+	private synchronized void sendErrorMessage(CDAPException cdapException, int portId){
+		CDAPMessage wrongMessage = cdapException.getCDAPMessage();
+		CDAPMessage returnMessage = null;
+
+		switch(wrongMessage.getOpCode()){
+		case M_CONNECT:
+			try{
+				returnMessage = CDAPMessage.getOpenConnectionResponseMessage(wrongMessage.getAuthMech(), wrongMessage.getAuthValue(), wrongMessage.getSrcAEInst(), 
+						wrongMessage.getSrcAEName(), wrongMessage.getSrcApInst(), wrongMessage.getSrcApName(), wrongMessage.getInvokeID(), cdapException.getResult(), 
+						cdapException.getResultReason(), wrongMessage.getDestAEInst(), wrongMessage.getDestAEName(), wrongMessage.getDestApInst(), 
+						wrongMessage.getDestApName(), (int)wrongMessage.getVersion());
+			}catch(CDAPException ex){
+				ex.printStackTrace();
+			}
+			break;
+		case M_CREATE:
+			try{
+				returnMessage = CDAPMessage.getCreateObjectResponseMessage(wrongMessage.getFlags(), 
+						wrongMessage.getInvokeID(), wrongMessage.getObjClass(), wrongMessage.getObjInst(), wrongMessage.getObjName(), wrongMessage.getObjValue(), 
+						cdapException.getResult(), cdapException.getResultReason());
+			}catch(CDAPException ex){
+				ex.printStackTrace();
+			}
+			break;
+		case M_DELETE:
+			try{
+				returnMessage = CDAPMessage.getDeleteObjectResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), wrongMessage.getObjClass(), 
+						wrongMessage.getObjInst(), wrongMessage.getObjName(), cdapException.getResult(), cdapException.getResultReason());
+			}catch(CDAPException ex){
+				ex.printStackTrace();
+			}
+			break;
+		case M_READ:
+			try{
+				returnMessage = CDAPMessage.getReadObjectResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), wrongMessage.getObjClass(), 
+						wrongMessage.getObjInst(), wrongMessage.getObjName(), wrongMessage.getObjValue(), cdapException.getResult(), cdapException.getResultReason());
+			}catch(CDAPException ex){
+				ex.printStackTrace();
+			}
+			break;
+		case M_WRITE:
+			try{
+				returnMessage = CDAPMessage.getWriteObjectResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), cdapException.getResult(), 
+						cdapException.getResultReason());
+			}catch(CDAPException ex){
+				ex.printStackTrace();
+			}
+			break;
+		case M_CANCELREAD:
+			try{
+				returnMessage = CDAPMessage.getCancelReadResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), cdapException.getResult(), 
+						cdapException.getResultReason());
+			}catch(CDAPException ex){
+				ex.printStackTrace();
+			}
+			break;
+		case M_START:
+			try{
+				returnMessage = CDAPMessage.getStartObjectResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), cdapException.getResult(), 
+						cdapException.getResultReason());
+			}catch(CDAPException ex){
+				ex.printStackTrace();
+			}
+			break;
+		case M_STOP:
+			try{
+				returnMessage = CDAPMessage.getStopObjectResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), cdapException.getResult(), 
+						cdapException.getResultReason());
+			}catch(CDAPException ex){
+				ex.printStackTrace();
+			}
+			break;
+		case M_RELEASE:
+			try{
+				returnMessage = CDAPMessage.getReleaseConnectionResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), cdapException.getResult(), 
+						cdapException.getResultReason());
+			}catch(CDAPException ex){
+				ex.printStackTrace();
+			}
+			break;
+		}
+
+		if (returnMessage != null){
+			try{
+				this.sendMessage(returnMessage, portId, null);
+			}catch(Exception ex){
+				ex.printStackTrace();
+			}
 		}
 	}
 	

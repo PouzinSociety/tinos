@@ -5,7 +5,7 @@ package rina.ribdaemon.api;
  * @author eduardgrasa
  */
 public interface RIBObjectNames {
-	public static final String SEPARATOR = ".";
+	public static final String SEPARATOR = "/";
 	public static final String ROOT = "root";
 	public static final String DAF = "daf";
 	public static final String DIF = "dif";
