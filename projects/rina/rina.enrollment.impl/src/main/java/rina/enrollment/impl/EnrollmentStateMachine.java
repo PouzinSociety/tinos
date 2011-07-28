@@ -517,6 +517,21 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 				}
 			}};
 	}
+	
+	/**
+	 * Called by the DIFMembersSetObject to initiate the enrollment sequence 
+	 * with a remote IPC Process
+	 * @param cdapMessage
+	 * @param portId
+	 */
+	public void initiateEnrollment(CDAPMessage cdapMessage, int portId){
+		switch(state){
+		case NULL:
+			break;
+		default:
+			
+		}
+	}
 
 	public void cancelReadResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1)
 			throws RIBDaemonException {

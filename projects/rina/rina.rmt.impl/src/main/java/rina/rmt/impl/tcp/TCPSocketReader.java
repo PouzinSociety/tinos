@@ -31,7 +31,7 @@ public class TCPSocketReader implements Runnable{
 	 * Controls when the reader will finish the execution
 	 */
 	private boolean end = false;
-	
+
 	public TCPSocketReader(Socket socket, RIBDaemon ribdaemon, Delimiter delimiter, TCPRMTImpl rmt){
 		this.socket = socket;
 		this.ribdaemon = ribdaemon;

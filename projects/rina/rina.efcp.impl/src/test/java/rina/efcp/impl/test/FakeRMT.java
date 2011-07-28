@@ -124,4 +124,9 @@ public class FakeRMT implements RMT{
 	public String getName() {
 		return RMT.class.getName();
 	}
+
+	public void deallocateFlow(int arg0) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
 }

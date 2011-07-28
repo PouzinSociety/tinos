@@ -104,13 +104,14 @@ public final class CDAP {
       rina.cdap.impl.googleprotobuf.CDAP.getDescriptor();
     }
     
-    // @@protoc_insertion_point(enum_scope:rina.cdap.impl.message.opCode_t)
+    // @@protoc_insertion_point(enum_scope:rina.cdap.impl.googleprotobuf.opCode_t)
   }
   
   public enum flagValues_t
       implements com.google.protobuf.ProtocolMessageEnum {
-    F_SYNC(0, 1),
-    F_RD_INCOMPLETE(1, 2),
+    F_NO_FLAGS(0, 0),
+    F_SYNC(1, 1),
+    F_RD_INCOMPLETE(2, 2),
     ;
     
     
@@ -118,6 +119,7 @@ public final class CDAP {
     
     public static flagValues_t valueOf(int value) {
       switch (value) {
+        case 0: return F_NO_FLAGS;
         case 1: return F_SYNC;
         case 2: return F_RD_INCOMPLETE;
         default: return null;
@@ -150,7 +152,7 @@ public final class CDAP {
     }
     
     private static final flagValues_t[] VALUES = {
-      F_SYNC, F_RD_INCOMPLETE, 
+      F_NO_FLAGS, F_SYNC, F_RD_INCOMPLETE, 
     };
     public static flagValues_t valueOf(
         com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
@@ -171,7 +173,7 @@ public final class CDAP {
       rina.cdap.impl.googleprotobuf.CDAP.getDescriptor();
     }
     
-    // @@protoc_insertion_point(enum_scope:rina.cdap.impl.message.flagValues_t)
+    // @@protoc_insertion_point(enum_scope:rina.cdap.impl.googleprotobuf.flagValues_t)
   }
   
   public enum authTypes_t
@@ -242,7 +244,7 @@ public final class CDAP {
       rina.cdap.impl.googleprotobuf.CDAP.getDescriptor();
     }
     
-    // @@protoc_insertion_point(enum_scope:rina.cdap.impl.message.authTypes_t)
+    // @@protoc_insertion_point(enum_scope:rina.cdap.impl.googleprotobuf.authTypes_t)
   }
   
   public static final class objVal_t extends
@@ -264,12 +266,12 @@ public final class CDAP {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return rina.cdap.impl.googleprotobuf.CDAP.internal_static_rina_cdap_impl_message_objVal_t_descriptor;
+      return rina.cdap.impl.googleprotobuf.CDAP.internal_static_rina_cdap_impl_googleprotobuf_objVal_t_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return rina.cdap.impl.googleprotobuf.CDAP.internal_static_rina_cdap_impl_message_objVal_t_fieldAccessorTable;
+      return rina.cdap.impl.googleprotobuf.CDAP.internal_static_rina_cdap_impl_googleprotobuf_objVal_t_fieldAccessorTable;
     }
     
     // optional int32 intval = 1;
@@ -485,7 +487,7 @@ public final class CDAP {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private rina.cdap.impl.googleprotobuf.CDAP.objVal_t result;
       
-      // Construct using rina.cdap.impl.message.CDAP.objVal_t.newBuilder()
+      // Construct using rina.cdap.impl.googleprotobuf.CDAP.objVal_t.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -796,7 +798,7 @@ public final class CDAP {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:rina.cdap.impl.message.objVal_t)
+      // @@protoc_insertion_point(builder_scope:rina.cdap.impl.googleprotobuf.objVal_t)
     }
     
     static {
@@ -805,7 +807,7 @@ public final class CDAP {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:rina.cdap.impl.message.objVal_t)
+    // @@protoc_insertion_point(class_scope:rina.cdap.impl.googleprotobuf.objVal_t)
   }
   
   public static final class authValue_t extends
@@ -827,12 +829,12 @@ public final class CDAP {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return rina.cdap.impl.googleprotobuf.CDAP.internal_static_rina_cdap_impl_message_authValue_t_descriptor;
+      return rina.cdap.impl.googleprotobuf.CDAP.internal_static_rina_cdap_impl_googleprotobuf_authValue_t_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return rina.cdap.impl.googleprotobuf.CDAP.internal_static_rina_cdap_impl_message_authValue_t_fieldAccessorTable;
+      return rina.cdap.impl.googleprotobuf.CDAP.internal_static_rina_cdap_impl_googleprotobuf_authValue_t_fieldAccessorTable;
     }
     
     // optional string authName = 1;
@@ -978,7 +980,7 @@ public final class CDAP {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private rina.cdap.impl.googleprotobuf.CDAP.authValue_t result;
       
-      // Construct using rina.cdap.impl.message.CDAP.authValue_t.newBuilder()
+      // Construct using rina.cdap.impl.googleprotobuf.CDAP.authValue_t.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -1167,7 +1169,7 @@ public final class CDAP {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:rina.cdap.impl.message.authValue_t)
+      // @@protoc_insertion_point(builder_scope:rina.cdap.impl.googleprotobuf.authValue_t)
     }
     
     static {
@@ -1176,7 +1178,7 @@ public final class CDAP {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:rina.cdap.impl.message.authValue_t)
+    // @@protoc_insertion_point(class_scope:rina.cdap.impl.googleprotobuf.authValue_t)
   }
   
   public static final class CDAPMessage extends
@@ -1198,12 +1200,12 @@ public final class CDAP {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return rina.cdap.impl.googleprotobuf.CDAP.internal_static_rina_cdap_impl_message_CDAPMessage_descriptor;
+      return rina.cdap.impl.googleprotobuf.CDAP.internal_static_rina_cdap_impl_googleprotobuf_CDAPMessage_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return rina.cdap.impl.googleprotobuf.CDAP.internal_static_rina_cdap_impl_message_CDAPMessage_fieldAccessorTable;
+      return rina.cdap.impl.googleprotobuf.CDAP.internal_static_rina_cdap_impl_googleprotobuf_CDAPMessage_fieldAccessorTable;
     }
     
     // optional int32 absSyntax = 1;
@@ -1213,7 +1215,7 @@ public final class CDAP {
     public boolean hasAbsSyntax() { return hasAbsSyntax; }
     public int getAbsSyntax() { return absSyntax_; }
     
-    // required .rina.cdap.impl.message.opCode_t opCode = 2;
+    // required .rina.cdap.impl.googleprotobuf.opCode_t opCode = 2;
     public static final int OPCODE_FIELD_NUMBER = 2;
     private boolean hasOpCode;
     private rina.cdap.impl.googleprotobuf.CDAP.opCode_t opCode_;
@@ -1227,7 +1229,7 @@ public final class CDAP {
     public boolean hasInvokeID() { return hasInvokeID; }
     public int getInvokeID() { return invokeID_; }
     
-    // optional .rina.cdap.impl.message.flagValues_t flags = 4;
+    // optional .rina.cdap.impl.googleprotobuf.flagValues_t flags = 4;
     public static final int FLAGS_FIELD_NUMBER = 4;
     private boolean hasFlags;
     private rina.cdap.impl.googleprotobuf.CDAP.flagValues_t flags_;
@@ -1255,7 +1257,7 @@ public final class CDAP {
     public boolean hasObjInst() { return hasObjInst; }
     public long getObjInst() { return objInst_; }
     
-    // optional .rina.cdap.impl.message.objVal_t objValue = 8;
+    // optional .rina.cdap.impl.googleprotobuf.objVal_t objValue = 8;
     public static final int OBJVALUE_FIELD_NUMBER = 8;
     private boolean hasObjValue;
     private rina.cdap.impl.googleprotobuf.CDAP.objVal_t objValue_;
@@ -1283,14 +1285,14 @@ public final class CDAP {
     public boolean hasFilter() { return hasFilter; }
     public com.google.protobuf.ByteString getFilter() { return filter_; }
     
-    // optional .rina.cdap.impl.message.authTypes_t authMech = 17;
+    // optional .rina.cdap.impl.googleprotobuf.authTypes_t authMech = 17;
     public static final int AUTHMECH_FIELD_NUMBER = 17;
     private boolean hasAuthMech;
     private rina.cdap.impl.googleprotobuf.CDAP.authTypes_t authMech_;
     public boolean hasAuthMech() { return hasAuthMech; }
     public rina.cdap.impl.googleprotobuf.CDAP.authTypes_t getAuthMech() { return authMech_; }
     
-    // optional .rina.cdap.impl.message.authValue_t authValue = 18;
+    // optional .rina.cdap.impl.googleprotobuf.authValue_t authValue = 18;
     public static final int AUTHVALUE_FIELD_NUMBER = 18;
     private boolean hasAuthValue;
     private rina.cdap.impl.googleprotobuf.CDAP.authValue_t authValue_;
@@ -1369,7 +1371,7 @@ public final class CDAP {
     
     private void initFields() {
       opCode_ = rina.cdap.impl.googleprotobuf.CDAP.opCode_t.M_CONNECT;
-      flags_ = rina.cdap.impl.googleprotobuf.CDAP.flagValues_t.F_SYNC;
+      flags_ = rina.cdap.impl.googleprotobuf.CDAP.flagValues_t.F_NO_FLAGS;
       objValue_ = rina.cdap.impl.googleprotobuf.CDAP.objVal_t.getDefaultInstance();
       authMech_ = rina.cdap.impl.googleprotobuf.CDAP.authTypes_t.AUTH_NONE;
       authValue_ = rina.cdap.impl.googleprotobuf.CDAP.authValue_t.getDefaultInstance();
@@ -1635,7 +1637,7 @@ public final class CDAP {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private rina.cdap.impl.googleprotobuf.CDAP.CDAPMessage result;
       
-      // Construct using rina.cdap.impl.message.CDAP.CDAPMessage.newBuilder()
+      // Construct using rina.cdap.impl.googleprotobuf.CDAP.CDAPMessage.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -1947,7 +1949,7 @@ public final class CDAP {
         return this;
       }
       
-      // required .rina.cdap.impl.message.opCode_t opCode = 2;
+      // required .rina.cdap.impl.googleprotobuf.opCode_t opCode = 2;
       public boolean hasOpCode() {
         return result.hasOpCode();
       }
@@ -1986,7 +1988,7 @@ public final class CDAP {
         return this;
       }
       
-      // optional .rina.cdap.impl.message.flagValues_t flags = 4;
+      // optional .rina.cdap.impl.googleprotobuf.flagValues_t flags = 4;
       public boolean hasFlags() {
         return result.hasFlags();
       }
@@ -2003,7 +2005,7 @@ public final class CDAP {
       }
       public Builder clearFlags() {
         result.hasFlags = false;
-        result.flags_ = rina.cdap.impl.googleprotobuf.CDAP.flagValues_t.F_SYNC;
+        result.flags_ = rina.cdap.impl.googleprotobuf.CDAP.flagValues_t.F_NO_FLAGS;
         return this;
       }
       
@@ -2067,7 +2069,7 @@ public final class CDAP {
         return this;
       }
       
-      // optional .rina.cdap.impl.message.objVal_t objValue = 8;
+      // optional .rina.cdap.impl.googleprotobuf.objVal_t objValue = 8;
       public boolean hasObjValue() {
         return result.hasObjValue();
       }
@@ -2161,7 +2163,7 @@ public final class CDAP {
         return this;
       }
       
-      // optional .rina.cdap.impl.message.authTypes_t authMech = 17;
+      // optional .rina.cdap.impl.googleprotobuf.authTypes_t authMech = 17;
       public boolean hasAuthMech() {
         return result.hasAuthMech();
       }
@@ -2182,7 +2184,7 @@ public final class CDAP {
         return this;
       }
       
-      // optional .rina.cdap.impl.message.authValue_t authValue = 18;
+      // optional .rina.cdap.impl.googleprotobuf.authValue_t authValue = 18;
       public boolean hasAuthValue() {
         return result.hasAuthValue();
       }
@@ -2426,7 +2428,7 @@ public final class CDAP {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:rina.cdap.impl.message.CDAPMessage)
+      // @@protoc_insertion_point(builder_scope:rina.cdap.impl.googleprotobuf.CDAPMessage)
     }
     
     static {
@@ -2435,24 +2437,24 @@ public final class CDAP {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:rina.cdap.impl.message.CDAPMessage)
+    // @@protoc_insertion_point(class_scope:rina.cdap.impl.googleprotobuf.CDAPMessage)
   }
   
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_rina_cdap_impl_message_objVal_t_descriptor;
+    internal_static_rina_cdap_impl_googleprotobuf_objVal_t_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_rina_cdap_impl_message_objVal_t_fieldAccessorTable;
+      internal_static_rina_cdap_impl_googleprotobuf_objVal_t_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_rina_cdap_impl_message_authValue_t_descriptor;
+    internal_static_rina_cdap_impl_googleprotobuf_authValue_t_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_rina_cdap_impl_message_authValue_t_fieldAccessorTable;
+      internal_static_rina_cdap_impl_googleprotobuf_authValue_t_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_rina_cdap_impl_message_CDAPMessage_descriptor;
+    internal_static_rina_cdap_impl_googleprotobuf_CDAPMessage_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_rina_cdap_impl_message_CDAPMessage_fieldAccessorTable;
+      internal_static_rina_cdap_impl_googleprotobuf_CDAPMessage_fieldAccessorTable;
   
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -2462,66 +2464,67 @@ public final class CDAP {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\nCDAP.proto\022\026rina.cdap.impl.message\"\226\001\n" +
-      "\010objVal_t\022\016\n\006intval\030\001 \001(\005\022\017\n\007sintval\030\002 \001" +
-      "(\021\022\020\n\010int64val\030\003 \001(\003\022\021\n\tsint64val\030\004 \001(\022\022" +
-      "\016\n\006strval\030\005 \001(\t\022\017\n\007byteval\030\006 \001(\014\022\020\n\010floa" +
-      "tval\030\007 \001(\007\022\021\n\tdoubleval\030\010 \001(\006\"H\n\013authVal" +
-      "ue_t\022\020\n\010authName\030\001 \001(\t\022\024\n\014authPassword\030\002" +
-      " \001(\t\022\021\n\tauthOther\030\003 \001(\014\"\345\004\n\013CDAPMessage\022" +
-      "\021\n\tabsSyntax\030\001 \001(\005\0220\n\006opCode\030\002 \002(\0162 .rin" +
-      "a.cdap.impl.message.opCode_t\022\020\n\010invokeID" +
-      "\030\003 \001(\005\0223\n\005flags\030\004 \001(\0162$.rina.cdap.impl.m",
-      "essage.flagValues_t\022\020\n\010objClass\030\005 \001(\t\022\017\n" +
-      "\007objName\030\006 \001(\t\022\017\n\007objInst\030\007 \001(\003\0222\n\010objVa" +
-      "lue\030\010 \001(\0132 .rina.cdap.impl.message.objVa" +
-      "l_t\022\021\n\006result\030\t \001(\005:\0010\022\r\n\005scope\030\n \001(\005\022\016\n" +
-      "\006filter\030\013 \001(\014\0225\n\010authMech\030\021 \001(\0162#.rina.c" +
-      "dap.impl.message.authTypes_t\0226\n\tauthValu" +
-      "e\030\022 \001(\0132#.rina.cdap.impl.message.authVal" +
-      "ue_t\022\022\n\ndestAEInst\030\023 \001(\t\022\022\n\ndestAEName\030\024" +
-      " \001(\t\022\022\n\ndestApInst\030\025 \001(\t\022\022\n\ndestApName\030\026" +
-      " \001(\t\022\021\n\tsrcAEInst\030\027 \001(\t\022\021\n\tsrcAEName\030\030 \001",
-      "(\t\022\021\n\tsrcApInst\030\031 \001(\t\022\021\n\tsrcApName\030\032 \001(\t" +
-      "\022\024\n\014resultReason\030\033 \001(\t\022\017\n\007version\030\034 \001(\003*" +
-      "\230\002\n\010opCode_t\022\r\n\tM_CONNECT\020\000\022\017\n\013M_CONNECT" +
-      "_R\020\001\022\r\n\tM_RELEASE\020\002\022\017\n\013M_RELEASE_R\020\003\022\014\n\010" +
-      "M_CREATE\020\004\022\016\n\nM_CREATE_R\020\005\022\014\n\010M_DELETE\020\006" +
-      "\022\016\n\nM_DELETE_R\020\007\022\n\n\006M_READ\020\010\022\014\n\010M_READ_R" +
-      "\020\t\022\020\n\014M_CANCELREAD\020\n\022\022\n\016M_CANCELREAD_R\020\013" +
-      "\022\013\n\007M_WRITE\020\014\022\r\n\tM_WRITE_R\020\r\022\013\n\007M_START\020" +
-      "\016\022\r\n\tM_START_R\020\017\022\n\n\006M_STOP\020\020\022\014\n\010M_STOP_R" +
-      "\020\021*/\n\014flagValues_t\022\n\n\006F_SYNC\020\001\022\023\n\017F_RD_I",
-      "NCOMPLETE\020\002*O\n\013authTypes_t\022\r\n\tAUTH_NONE\020" +
-      "\000\022\017\n\013AUTH_PASSWD\020\001\022\017\n\013AUTH_SSHRSA\020\002\022\017\n\013A" +
-      "UTH_SSHDSA\020\003"
+      "\n\nCDAP.proto\022\035rina.cdap.impl.googleproto" +
+      "buf\"\226\001\n\010objVal_t\022\016\n\006intval\030\001 \001(\005\022\017\n\007sint" +
+      "val\030\002 \001(\021\022\020\n\010int64val\030\003 \001(\003\022\021\n\tsint64val" +
+      "\030\004 \001(\022\022\016\n\006strval\030\005 \001(\t\022\017\n\007byteval\030\006 \001(\014\022" +
+      "\020\n\010floatval\030\007 \001(\007\022\021\n\tdoubleval\030\010 \001(\006\"H\n\013" +
+      "authValue_t\022\020\n\010authName\030\001 \001(\t\022\024\n\014authPas" +
+      "sword\030\002 \001(\t\022\021\n\tauthOther\030\003 \001(\014\"\210\005\n\013CDAPM" +
+      "essage\022\021\n\tabsSyntax\030\001 \001(\005\0227\n\006opCode\030\002 \002(" +
+      "\0162\'.rina.cdap.impl.googleprotobuf.opCode" +
+      "_t\022\020\n\010invokeID\030\003 \001(\005\022:\n\005flags\030\004 \001(\0162+.ri",
+      "na.cdap.impl.googleprotobuf.flagValues_t" +
+      "\022\020\n\010objClass\030\005 \001(\t\022\017\n\007objName\030\006 \001(\t\022\017\n\007o" +
+      "bjInst\030\007 \001(\003\0229\n\010objValue\030\010 \001(\0132\'.rina.cd" +
+      "ap.impl.googleprotobuf.objVal_t\022\021\n\006resul" +
+      "t\030\t \001(\005:\0010\022\r\n\005scope\030\n \001(\005\022\016\n\006filter\030\013 \001(" +
+      "\014\022<\n\010authMech\030\021 \001(\0162*.rina.cdap.impl.goo" +
+      "gleprotobuf.authTypes_t\022=\n\tauthValue\030\022 \001" +
+      "(\0132*.rina.cdap.impl.googleprotobuf.authV" +
+      "alue_t\022\022\n\ndestAEInst\030\023 \001(\t\022\022\n\ndestAEName" +
+      "\030\024 \001(\t\022\022\n\ndestApInst\030\025 \001(\t\022\022\n\ndestApName",
+      "\030\026 \001(\t\022\021\n\tsrcAEInst\030\027 \001(\t\022\021\n\tsrcAEName\030\030" +
+      " \001(\t\022\021\n\tsrcApInst\030\031 \001(\t\022\021\n\tsrcApName\030\032 \001" +
+      "(\t\022\024\n\014resultReason\030\033 \001(\t\022\017\n\007version\030\034 \001(" +
+      "\003*\230\002\n\010opCode_t\022\r\n\tM_CONNECT\020\000\022\017\n\013M_CONNE" +
+      "CT_R\020\001\022\r\n\tM_RELEASE\020\002\022\017\n\013M_RELEASE_R\020\003\022\014" +
+      "\n\010M_CREATE\020\004\022\016\n\nM_CREATE_R\020\005\022\014\n\010M_DELETE" +
+      "\020\006\022\016\n\nM_DELETE_R\020\007\022\n\n\006M_READ\020\010\022\014\n\010M_READ" +
+      "_R\020\t\022\020\n\014M_CANCELREAD\020\n\022\022\n\016M_CANCELREAD_R" +
+      "\020\013\022\013\n\007M_WRITE\020\014\022\r\n\tM_WRITE_R\020\r\022\013\n\007M_STAR" +
+      "T\020\016\022\r\n\tM_START_R\020\017\022\n\n\006M_STOP\020\020\022\014\n\010M_STOP",
+      "_R\020\021*?\n\014flagValues_t\022\016\n\nF_NO_FLAGS\020\000\022\n\n\006" +
+      "F_SYNC\020\001\022\023\n\017F_RD_INCOMPLETE\020\002*O\n\013authTyp" +
+      "es_t\022\r\n\tAUTH_NONE\020\000\022\017\n\013AUTH_PASSWD\020\001\022\017\n\013" +
+      "AUTH_SSHRSA\020\002\022\017\n\013AUTH_SSHDSA\020\003"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
             com.google.protobuf.Descriptors.FileDescriptor root) {
           descriptor = root;
-          internal_static_rina_cdap_impl_message_objVal_t_descriptor =
+          internal_static_rina_cdap_impl_googleprotobuf_objVal_t_descriptor =
             getDescriptor().getMessageTypes().get(0);
-          internal_static_rina_cdap_impl_message_objVal_t_fieldAccessorTable = new
+          internal_static_rina_cdap_impl_googleprotobuf_objVal_t_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_rina_cdap_impl_message_objVal_t_descriptor,
+              internal_static_rina_cdap_impl_googleprotobuf_objVal_t_descriptor,
               new java.lang.String[] { "Intval", "Sintval", "Int64Val", "Sint64Val", "Strval", "Byteval", "Floatval", "Doubleval", },
               rina.cdap.impl.googleprotobuf.CDAP.objVal_t.class,
               rina.cdap.impl.googleprotobuf.CDAP.objVal_t.Builder.class);
-          internal_static_rina_cdap_impl_message_authValue_t_descriptor =
+          internal_static_rina_cdap_impl_googleprotobuf_authValue_t_descriptor =
             getDescriptor().getMessageTypes().get(1);
-          internal_static_rina_cdap_impl_message_authValue_t_fieldAccessorTable = new
+          internal_static_rina_cdap_impl_googleprotobuf_authValue_t_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_rina_cdap_impl_message_authValue_t_descriptor,
+              internal_static_rina_cdap_impl_googleprotobuf_authValue_t_descriptor,
               new java.lang.String[] { "AuthName", "AuthPassword", "AuthOther", },
               rina.cdap.impl.googleprotobuf.CDAP.authValue_t.class,
               rina.cdap.impl.googleprotobuf.CDAP.authValue_t.Builder.class);
-          internal_static_rina_cdap_impl_message_CDAPMessage_descriptor =
+          internal_static_rina_cdap_impl_googleprotobuf_CDAPMessage_descriptor =
             getDescriptor().getMessageTypes().get(2);
-          internal_static_rina_cdap_impl_message_CDAPMessage_fieldAccessorTable = new
+          internal_static_rina_cdap_impl_googleprotobuf_CDAPMessage_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_rina_cdap_impl_message_CDAPMessage_descriptor,
+              internal_static_rina_cdap_impl_googleprotobuf_CDAPMessage_descriptor,
               new java.lang.String[] { "AbsSyntax", "OpCode", "InvokeID", "Flags", "ObjClass", "ObjName", "ObjInst", "ObjValue", "Result", "Scope", "Filter", "AuthMech", "AuthValue", "DestAEInst", "DestAEName", "DestApInst", "DestApName", "SrcAEInst", "SrcAEName", "SrcApInst", "SrcApName", "ResultReason", "Version", },
               rina.cdap.impl.googleprotobuf.CDAP.CDAPMessage.class,
               rina.cdap.impl.googleprotobuf.CDAP.CDAPMessage.Builder.class);

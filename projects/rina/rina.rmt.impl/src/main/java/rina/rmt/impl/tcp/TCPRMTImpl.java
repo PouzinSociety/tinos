@@ -83,6 +83,8 @@ public class TCPRMTImpl extends BaseRMT{
 		String host = apNamingInfo.getApplicationProcessName();
 		int port = RMTServer.DEFAULT_PORT;
 		
+		//TODO need to map the application naming information to the IP address of the IPC process
+		//right one assuming that the application name is the IP address 
 		if (apNamingInfo.getApplicationProcessInstance() != null){
 			try{
 				port = Integer.parseInt(apNamingInfo.getApplicationProcessInstance());
@@ -95,6 +97,20 @@ public class TCPRMTImpl extends BaseRMT{
 		Socket socket = new Socket(host, port);
 		newConnectionAccepted(socket);
 		return socket.getPort();
+	}
+	
+	/**
+	 * Cause the RMT to deallocate a flow through an N-1 DIF or the underlying physical media
+	 * @param portId the identifier of the flow
+	 * @throws Exception if the flow is not allocated or there are problems deallocating the flow
+	 */
+	public void deallocateFlow(int portId) throws Exception{
+		Socket socket = flowTable.get(new Integer(portId));
+		if (socket == null){
+			throw new Exception("Unexisting flow");
+		}
+		
+		socket.close();
 	}
 
 	/**
