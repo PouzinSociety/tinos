@@ -3,5 +3,6 @@ option java_package="rina.encoding.impl.googleprotobuf.apnamesynonim";
 
 message applicationProcessNameSynonym_t{   //carries information of am application process name synonim 
 	optional string applicationProcessName = 1;
-	optional bytes synonymValue = 2;
+	optional string applicationProcessInstance = 2;
+	optional bytes synonymValue = 3;
 }

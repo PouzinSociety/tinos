@@ -1,5 +1,7 @@
 package rina.ribdaemon.api;
 
+import rina.cdap.api.CDAPMessageHandler;
+import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcessComponent;
 
@@ -8,37 +10,6 @@ import rina.ipcprocess.api.IPCProcessComponent;
  * @author eduardgrasa
  */
 public interface RIBDaemon extends IPCProcessComponent{
-	
-	/**
-	 * Gets one or more objects from the RIB, matching the information specified by objectClass, objectInstance, objectName and a template object.
-	 * All the parameters but objectClass are optional.
-	 * @param objectClass optional if objectInstance specified, mandatory otherwise. A string identifying the class of the object
-	 * @param objectInstance optional if objectClass specified, mandatory otherwise. An id that uniquely identifies the object within a RIB
-	 * @param objectName optional if objectClass specified, ignored otherwise. An id that uniquely identifies an object within an objectClass
-	 * @param template optional (if objectClass + objectName or objectInstance specified, template is ignored). A template object whose fields
-	 * have to match the requested object(s)
-	 * @return null if no object matching the call arguments can be found, one or more objects otherwise
-	 */
-	public Object read(String objectClass, long objectInstance, String objectName, Object template) throws RIBDaemonException;
-	
-	/**
-	 * Store an object to the RIB. This may cause a new object to be created in the RIB, or an existing object to be updated.
-	 * @param objectClass optional if objectInstance specified, mandatory otherwise. A string identifying the class of the object
-	 * @param objectInstance objectInstance optional if objectClass specified, mandatory otherwise. An id that uniquely identifies the object within a RIB
-	 * @param objectName optional if objectClass specified, ignored otherwise. An id that uniquely identifies an object within an objectClass
-	 * @param objectToWrite the object to be written to the RIB
-	 * @throws RIBDaemonException if there are problems performing the "write" operation to the RIB
-	 */
-	public void write(String objectClass, long objectInstance, String objectName, Object objectToWrite) throws RIBDaemonException;
-	
-	/**
-	 * Remove an object from the RIB
-	 * @param objectClass optional if objectInstance specified, mandatory otherwise. A string identifying the class of the object
-	 * @param objectInstance objectInstance optional if objectClass specified, mandatory otherwise. An id that uniquely identifies the object within a RIB
-	 * @param objectName optional if objectClass specified, ignored otherwise. An id that uniquely identifies an object within an objectClass
-	 * @throws RIBDaemonException if there are problems removinb the objects from the RIB
-	 */
-	public void remove(String objectClass, long objectInstance, String objectName) throws RIBDaemonException;
 	
 	/**
 	 * Invoked by the RMT when it detects a CDAP message. The RIB Daemon has to process the CDAP message and, 
@@ -59,23 +30,19 @@ public interface RIBDaemon extends IPCProcessComponent{
 	public void flowDeallocated(int portId);
 	
 	/**
-	 * Interested MessageSubscribers will be called when CDAP that comply with the 
-	 * filter defined by the non-default attributes of the messageSubscription class are received.
-	 * @param messageSubscription
-	 * @param messageSubscriber
-	 * @throws Exception if there's something wrong with the messageSubscription or messageSubscriber is null
+	 * Add a RIB object to the RIB
+	 * @param ribHandler
+	 * @param objectName
+	 * @throws RIBDaemonException
 	 */
-	public void subscribeToMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber) throws RIBDaemonException;
+	public void addRIBObject(RIBObject ribObject) throws RIBDaemonException;
 	
 	/**
-	 * MessageSubscribers will stop being called when CDAP that comply with the 
-	 * filter defined by the non-default attributes of the messageSubscription class are received.
-	 * @param messageSubscription
-	 * @param messageSubscriber
-	 * @throws Exception if there's something wrong with the messageSubscription or messageSubscriber is null, or the 
-	 * messageSubscription does not exist
+	 * Remove a ribObject from the RIB
+	 * @param objectName
+	 * @throws RIBDaemonException
 	 */
-	public void unsubscribeFromMessages(MessageSubscription messageSubscription, MessageSubscriber messageSubscriber) throws RIBDaemonException;
+	public void removeRIBObject(RIBObject ribObject, String objectName) throws RIBDaemonException;
 	
 	/**
 	 * Send an information update, consisting on a set of CDAP messages, using the updateStrategy update strategy
@@ -84,4 +51,35 @@ public interface RIBDaemon extends IPCProcessComponent{
 	 * @param updateStrategy
 	 */
 	public void sendMessages(CDAPMessage[] cdapMessages, UpdateStrategy updateStrategy);
+	
+	/**
+	 * Causes a CDAP message to be sent
+	 * @param cdapMessage the message to be sent
+	 * @param sessionId the CDAP session id
+	 * @param cdapMessageHandler the class to be called when the response message is received (if required)
+	 * @throws RIBDaemonException
+	 */
+	public void sendMessage(CDAPMessage cdapMessage, int sessionId, CDAPMessageHandler cdapMessageHandler) throws RIBDaemonException;
+	
+	/**
+	 * Reads/writes/created/deletes/starts/stops one or more objects at the RIB, matching the information specified by objectId + objectClass or objectInstance.
+	 * At least objectName or objectInstance have to be not null. This operation is invoked because the RIB Daemon has received a CDAP message from another 
+	 * IPC process
+	 * @param cdapMessage The CDAP message received
+	 * @param cdapSessionDescriptor Describes the CDAP session to where the CDAP message belongs
+	 * @throws RIBDaemonException on a number of circumstances
+	 */
+	public void processOperation(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException;
+	
+	public void create(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
+	
+	public void delete(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
+	
+	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException;
+	
+	public void write(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
+	
+	public void start(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
+	
+	public void stop(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;	
 }

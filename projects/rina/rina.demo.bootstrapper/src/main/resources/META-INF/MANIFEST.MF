@@ -4,4 +4,4 @@ Bundle-Name: RINA Demo Bootstrapper
 Bundle-SymbolicName: rina.demo.bootstrapper
 Bundle-Version: 1.0.0
 Bundle-Vendor: Pouzin Society
-Import-Package: rina.ipcservice.api;version="1.0.0", rina.ipcprocess.api;version="1.0.0" 
+Import-Package: rina.ipcservice.api;version="1.0.0", rina.ipcprocess.api;version="1.0.0", rina.applicationprocess.api;version="1.0.0" , rina.ribdaemon.api;version="1.0.0"

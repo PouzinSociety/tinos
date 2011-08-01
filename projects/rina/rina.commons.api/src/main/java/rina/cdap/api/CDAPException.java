@@ -1,40 +1,52 @@
 package rina.cdap.api;
 
+import rina.cdap.api.message.CDAPMessage;
+
 public class CDAPException extends Exception{
 	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Name of the operation that failed
 	 */
-	private String operation;
+	private String operation = null;
 	
 	/**
 	 * Operation result code
 	 */
-	private String result;
+	private int result = 1;
 	
 	/**
 	 * Result reason
 	 */
-	private String resultReason;
+	private String resultReason = null;
+	
+	/**
+	 * The CDAPMessage that caused the exception
+	 */
+	private CDAPMessage cdapMessage = null;
 	
 	public CDAPException(Exception ex){
 		super(ex);
 	}
 	
-	public CDAPException(String operation, String result, String resultReason){
+	public CDAPException(String operation, int result, String resultReason){
 		super(resultReason);
 		this.operation = operation;
 		this.result = result;
 		this.resultReason = resultReason;
 	}
 	
-	public CDAPException(String result, String resultReason){
+	public CDAPException(int result, String resultReason){
 		this (null, result, resultReason);
 	}
 	
 	public CDAPException(String resultReason){
-		this(null, null, resultReason);
+		this(null, 1, resultReason);
+	}
+	
+	public CDAPException(String resultReason, CDAPMessage cdapMessage){
+		this(null, 1, resultReason);
+		this.setCDAPMessage(cdapMessage);
 	}
 
 	public String getOperation() {
@@ -45,11 +57,11 @@ public class CDAPException extends Exception{
 		this.operation = operation;
 	}
 
-	public String getResult() {
+	public int getResult() {
 		return result;
 	}
 
-	public void setResult(String result) {
+	public void setResult(int result) {
 		this.result = result;
 	}
 
@@ -59,5 +71,13 @@ public class CDAPException extends Exception{
 
 	public void setResultReason(String resultReason) {
 		this.resultReason = resultReason;
+	}
+
+	public CDAPMessage getCDAPMessage() {
+		return cdapMessage;
+	}
+
+	public void setCDAPMessage(CDAPMessage cdapMessage) {
+		this.cdapMessage = cdapMessage;
 	}
 }

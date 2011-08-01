@@ -16,6 +16,7 @@ public class ApplicationProcessNameSynonymEncoder extends BaseEncoder{
 		
 		ApplicationProcessNameSynonym apSynonym = new ApplicationProcessNameSynonym();
 		apSynonym.setApplicationProcessName(gpbApSynonym.getApplicationProcessName());
+		apSynonym.setApplicationProcessInstance(gpbApSynonym.getApplicationProcessInstance());
 		apSynonym.setSynonym(GPBUtils.getByteArray(gpbApSynonym.getSynonymValue()));
 		
 		return apSynonym;
@@ -31,6 +32,7 @@ public class ApplicationProcessNameSynonymEncoder extends BaseEncoder{
 		ApplicationProcessNameSynonymMessage.applicationProcessNameSynonym_t gpbApSynonym = 
 			ApplicationProcessNameSynonymMessage.applicationProcessNameSynonym_t.newBuilder().
 										setApplicationProcessName(apSynonym.getApplicationProcessName()).
+										setApplicationProcessInstance(apSynonym.getApplicationProcessInstance()).
 										setSynonymValue(GPBUtils.getByteString(apSynonym.getSynonym())).
 										build();
 		

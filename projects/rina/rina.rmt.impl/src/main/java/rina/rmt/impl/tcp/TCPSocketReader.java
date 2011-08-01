@@ -31,7 +31,7 @@ public class TCPSocketReader implements Runnable{
 	 * Controls when the reader will finish the execution
 	 */
 	private boolean end = false;
-	
+
 	public TCPSocketReader(Socket socket, RIBDaemon ribdaemon, Delimiter delimiter, TCPRMTImpl rmt){
 		this.socket = socket;
 		this.ribdaemon = ribdaemon;
@@ -86,6 +86,8 @@ public class TCPSocketReader implements Runnable{
 						serializedCDAPMessage[index] = nextByte;
 						index ++;
 						if (index == length){
+							log.debug("Received PDU through flow "+socket.getPort()+": "+printBytes(serializedCDAPMessage));
+							log.debug("Passing the PDU to the RIB Daemon");
 							ribdaemon.cdapMessageDelivered(serializedCDAPMessage, socket.getPort());
 							index = 0;
 							length = 0;
@@ -100,8 +102,23 @@ public class TCPSocketReader implements Runnable{
 			}
 		}
 		
+		try{
+			socket.close();
+		}catch(IOException ex){
+			ex.printStackTrace();
+		}
+		
 		log.debug("The remote endpoint of flow "+socket.getPort()+" has disconnected. Notifying the RMT and the RIB Daemon");
 		this.rmt.connectionEnded(socket.getPort());
 		this.ribdaemon.flowDeallocated(socket.getPort());
+	}
+	
+	private String printBytes(byte[] message){
+		String result = "";
+		for(int i=0; i<message.length; i++){
+			result = result + String.format("%02X", message[i]) + " ";
+		}
+		
+		return result;
 	}
 }

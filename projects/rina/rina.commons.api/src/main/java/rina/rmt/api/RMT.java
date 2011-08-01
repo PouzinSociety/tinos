@@ -40,4 +40,11 @@ public interface RMT extends IPCProcessComponent{
 	 * @throws Exception if there was an issue allocating the flow
 	 */
 	public int allocateFlow(ApplicationProcessNamingInfo apNamingInfo, QoSParameters qosparams) throws Exception;
+	
+	/**
+	 * Cause the RMT to deallocate a flow through an N-1 DIF or the underlying physical media
+	 * @param portId the identifier of the flow
+	 * @throws Exception if the flow is not allocated or there are problems deallocating the flow
+	 */
+	public void deallocateFlow(int portId) throws Exception;
 }

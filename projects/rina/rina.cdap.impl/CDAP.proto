@@ -24,6 +24,7 @@ enum opCode_t {
 
 // Values for the flags field.
 enum flagValues_t {
+	F_NO_FLAGS = 0;							// The default value, no flags are set
 	F_SYNC = 1;								// set on READ/WRITE to request synchronous r/w
 	F_RD_INCOMPLETE = 2;					// set on all but final reply to an M_READ
 }

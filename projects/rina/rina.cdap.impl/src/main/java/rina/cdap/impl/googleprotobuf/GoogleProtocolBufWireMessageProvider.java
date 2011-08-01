@@ -288,32 +288,32 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 			if (srcApName == null){
 				srcApName = "";
 			}
-			
 			CDAP.CDAPMessage response = CDAP.CDAPMessage.newBuilder().
-											setAbsSyntax(cdapMessage.getAbsSyntax()).
-											setAuthMech(authMech).
-											setAuthValue(authValue).
-											setDestAEInst(destAEInst).
-											setDestAEName(destAEName).
-											setDestApInst(destApInst).
-											setDestApName(destApName).
-											setFilter(filter).
-											setFlags(flags).
-											setInvokeID(cdapMessage.getInvokeID()).
-											setObjClass(objClass).
-											setObjInst(cdapMessage.getObjInst()).
-											setObjName(objName).
-											setObjValue(objValue).
-											setOpCode(opCode).
-											setResult(cdapMessage.getResult()).
-											setResultReason(resultReason).
-											setScope(cdapMessage.getScope()).
-											setSrcAEInst(srcAEInst).
-											setSrcAEName(srcAEName).
-											setSrcApInst(srcApInst).
-											setSrcApName(srcApName).
-											setVersion(cdapMessage.getVersion()).
-											build();
+			setAbsSyntax(cdapMessage.getAbsSyntax()).
+			setAuthMech(authMech).
+			setAuthValue(authValue).
+			setDestAEInst(destAEInst).
+			setDestAEName(destAEName).
+			setDestApInst(destApInst).
+			setDestApName(destApName).
+			setFilter(filter).
+			setFlags(flags).
+			setInvokeID(cdapMessage.getInvokeID()).
+			setObjClass(objClass).
+			setObjInst(cdapMessage.getObjInst()).
+			setObjName(objName).
+			setObjValue(objValue).
+			setOpCode(opCode).
+			setResult(cdapMessage.getResult()).
+			setResultReason(resultReason).
+			setScope(cdapMessage.getScope()).
+			setSrcAEInst(srcAEInst).
+			setSrcAEName(srcAEName).
+			setSrcApInst(srcApInst).
+			setSrcApName(srcApName).
+			setVersion(cdapMessage.getVersion()).
+			build();
+
 			return response.toByteArray();
 		}catch(Exception ex){
 			throw new CDAPException(ex);
@@ -376,7 +376,7 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 		flagValues_t flags = null;
 		
 		if (cdapMessage.getFlags() == null){
-			return flagValues_t.F_SYNC;
+			flags = flagValues_t.F_NO_FLAGS;
 		}else if (cdapMessage.getFlags().equals(Flags.F_RD_INCOMPLETE)){
 			flags = flagValues_t.F_RD_INCOMPLETE;
 		}else if (cdapMessage.getFlags().equals(Flags.F_SYNC)){

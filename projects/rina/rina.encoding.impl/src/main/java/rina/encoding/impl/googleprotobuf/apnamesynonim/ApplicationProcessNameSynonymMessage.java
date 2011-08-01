@@ -42,8 +42,15 @@ public final class ApplicationProcessNameSynonymMessage {
     public boolean hasApplicationProcessName() { return hasApplicationProcessName; }
     public java.lang.String getApplicationProcessName() { return applicationProcessName_; }
     
-    // optional bytes synonymValue = 2;
-    public static final int SYNONYMVALUE_FIELD_NUMBER = 2;
+    // optional string applicationProcessInstance = 2;
+    public static final int APPLICATIONPROCESSINSTANCE_FIELD_NUMBER = 2;
+    private boolean hasApplicationProcessInstance;
+    private java.lang.String applicationProcessInstance_ = "";
+    public boolean hasApplicationProcessInstance() { return hasApplicationProcessInstance; }
+    public java.lang.String getApplicationProcessInstance() { return applicationProcessInstance_; }
+    
+    // optional bytes synonymValue = 3;
+    public static final int SYNONYMVALUE_FIELD_NUMBER = 3;
     private boolean hasSynonymValue;
     private com.google.protobuf.ByteString synonymValue_ = com.google.protobuf.ByteString.EMPTY;
     public boolean hasSynonymValue() { return hasSynonymValue; }
@@ -61,8 +68,11 @@ public final class ApplicationProcessNameSynonymMessage {
       if (hasApplicationProcessName()) {
         output.writeString(1, getApplicationProcessName());
       }
+      if (hasApplicationProcessInstance()) {
+        output.writeString(2, getApplicationProcessInstance());
+      }
       if (hasSynonymValue()) {
-        output.writeBytes(2, getSynonymValue());
+        output.writeBytes(3, getSynonymValue());
       }
       getUnknownFields().writeTo(output);
     }
@@ -77,9 +87,13 @@ public final class ApplicationProcessNameSynonymMessage {
         size += com.google.protobuf.CodedOutputStream
           .computeStringSize(1, getApplicationProcessName());
       }
+      if (hasApplicationProcessInstance()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeStringSize(2, getApplicationProcessInstance());
+      }
       if (hasSynonymValue()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, getSynonymValue());
+          .computeBytesSize(3, getSynonymValue());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -242,6 +256,9 @@ public final class ApplicationProcessNameSynonymMessage {
         if (other.hasApplicationProcessName()) {
           setApplicationProcessName(other.getApplicationProcessName());
         }
+        if (other.hasApplicationProcessInstance()) {
+          setApplicationProcessInstance(other.getApplicationProcessInstance());
+        }
         if (other.hasSynonymValue()) {
           setSynonymValue(other.getSynonymValue());
         }
@@ -275,6 +292,10 @@ public final class ApplicationProcessNameSynonymMessage {
               break;
             }
             case 18: {
+              setApplicationProcessInstance(input.readString());
+              break;
+            }
+            case 26: {
               setSynonymValue(input.readBytes());
               break;
             }
@@ -304,7 +325,28 @@ public final class ApplicationProcessNameSynonymMessage {
         return this;
       }
       
-      // optional bytes synonymValue = 2;
+      // optional string applicationProcessInstance = 2;
+      public boolean hasApplicationProcessInstance() {
+        return result.hasApplicationProcessInstance();
+      }
+      public java.lang.String getApplicationProcessInstance() {
+        return result.getApplicationProcessInstance();
+      }
+      public Builder setApplicationProcessInstance(java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasApplicationProcessInstance = true;
+        result.applicationProcessInstance_ = value;
+        return this;
+      }
+      public Builder clearApplicationProcessInstance() {
+        result.hasApplicationProcessInstance = false;
+        result.applicationProcessInstance_ = getDefaultInstance().getApplicationProcessInstance();
+        return this;
+      }
+      
+      // optional bytes synonymValue = 3;
       public boolean hasSynonymValue() {
         return result.hasSynonymValue();
       }
@@ -352,11 +394,12 @@ public final class ApplicationProcessNameSynonymMessage {
   static {
     java.lang.String[] descriptorData = {
       "\n5protofiles/ApplicationProcessNameSynon" +
-      "ymMessage.proto\022\rrina.messages\"W\n\037applic" +
+      "ymMessage.proto\022\rrina.messages\"{\n\037applic" +
       "ationProcessNameSynonym_t\022\036\n\026application" +
-      "ProcessName\030\001 \001(\t\022\024\n\014synonymValue\030\002 \001(\014B" +
-      "1\n/rina.encoding.impl.googleprotobuf.apn" +
-      "amesynonim"
+      "ProcessName\030\001 \001(\t\022\"\n\032applicationProcessI" +
+      "nstance\030\002 \001(\t\022\024\n\014synonymValue\030\003 \001(\014B1\n/r" +
+      "ina.encoding.impl.googleprotobuf.apnames" +
+      "ynonim"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -368,7 +411,7 @@ public final class ApplicationProcessNameSynonymMessage {
           internal_static_rina_messages_applicationProcessNameSynonym_t_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rina_messages_applicationProcessNameSynonym_t_descriptor,
-              new java.lang.String[] { "ApplicationProcessName", "SynonymValue", },
+              new java.lang.String[] { "ApplicationProcessName", "ApplicationProcessInstance", "SynonymValue", },
               rina.encoding.impl.googleprotobuf.apnamesynonim.ApplicationProcessNameSynonymMessage.applicationProcessNameSynonym_t.class,
               rina.encoding.impl.googleprotobuf.apnamesynonim.ApplicationProcessNameSynonymMessage.applicationProcessNameSynonym_t.Builder.class);
           return null;

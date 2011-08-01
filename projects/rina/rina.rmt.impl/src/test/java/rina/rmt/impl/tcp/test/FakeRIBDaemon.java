@@ -3,13 +3,17 @@ package rina.rmt.impl.tcp.test;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.cdap.api.CDAPMessageHandler;
+import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
+import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.MessageSubscriber;
 import rina.ribdaemon.api.MessageSubscription;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.UpdateStrategy;
 import rina.rmt.api.RMT;
 
@@ -98,6 +102,77 @@ public class FakeRIBDaemon implements RIBDaemon {
 	}
 
 	public void flowDeallocated(int arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void processOperation(CDAPMessage arg0, CDAPSessionDescriptor arg1)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Object processOperation(Opcode arg0, String arg1, String arg2,
+			long arg3, Object arg4) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void sendMessage(CDAPMessage arg0, int arg1, CDAPMessageHandler arg2)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void cancelRead(String arg0, String arg1, long arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void create(String arg0, String arg1, long arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void delete(String arg0, String arg1, long arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Object read(String arg0, String arg1, long arg2)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void start(String arg0, String arg1, long arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void stop(String arg0, String arg1, long arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void write(String arg0, String arg1, long arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void addRIBObject(RIBObject arg0) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void removeRIBObject(RIBObject arg0, String arg1)
+			throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		
 	}

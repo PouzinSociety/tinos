@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mibRoot xmlns="http://pouzinsociety.org/rina/mib"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pouzinsociety.org/rina/mib mib.xsd" name="daf" id="1">
+	<childNode name="resourceallocator" id="1">
+		<objectClass>daf.ResourceAllocator</objectClass>
+	</childNode>
+	<childNode name="ribdaemon" id="2">
+		<objectClass>daf.RibDaemon</objectClass>
+		<description></description>
+	</childNode>
+	<childNode name="ipc" id="3">
+		<objectClass>daf.IPC</objectClass>
+		<description>The component that manages IPC</description>
+		<childNode name="multiplexing" id="1">
+			<objectClass>daf.ipc.Multiplexing</objectClass>
+			<description></description>
+		</childNode>
+		<childNode name="sduprotection" id="2">
+			<objectClass>daf.ipc.SduProection</objectClass>
+			<description></description>	
+		</childNode>
+	</childNode>
+	<childNode name="management" id="4">
+		<objectClass>daf.management</objectClass>
+		<description>The management component of the application process</description>
+		
+		
+		
+		
+		<childNode name="naming" id="1">
+			<objectClass>daf.management.Naming</objectClass>
+			<description>The naming information of this application process (name, synonyms, whatevercast)</description><childNode name="applicationprocessname" id="1">
+			<objectClass>daf.management.ApplicationProcessName</objectClass>
+			<description>The name of the application process</description>
+		</childNode><childNode name="currentsynonym" id="2">
+			<objectClass>daf.management.ApplicationProcessNameSynonym</objectClass>
+			<description>The current synonym of the application process names, i.e. its address</description>
+		</childNode><childNode name="synonyms" id="3">
+			<objectClass>daf.management.ApplicationProcessNameSynonym[]</objectClass>
+			<description>All the synonyms of the application process name</description>
+		</childNode><childNode name="whatevercast" id="4">
+			<objectClass>daf.management.WhatevercastName[]</objectClass>
+			<description>The whatevercast names that the application process knows about</description>
+		</childNode></childNode>
+		<childNode name="enrollment" id="2">
+			<objectClass>daf.management.Enrollment</objectClass>
+			<description>All the enrollment information</description>
+			<childNode name="daf.management.enrollment.members" id="1">
+				<objectClass>daf.management.ApplicationProcessNameSynonym[]</objectClass>
+				<description>The members of the DAF this AP is enrolled with</description></childNode></childNode>
+		<childNode name="operationalstatus" id="3">
+			<objectClass>daf.management.OperationalStatus</objectClass>
+			<description>The operational status of the application process</description></childNode>
+	</childNode>
+</mibRoot>

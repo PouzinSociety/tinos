@@ -108,18 +108,18 @@ public class CDAPEnrollmentClient extends CDAPClient{
 	private CDAPMessage processWaitingReadAddressState(CDAPMessage cdapMessage) throws CDAPException, IOException{
 		//TODO cancel timer
 		
-		if (!cdapMessage.getOpCode().equals(Opcode.M_READ) || !cdapMessage.getObjName().equals("daf.management.currentSynonym")){
+		if (!cdapMessage.getOpCode().equals(Opcode.M_READ) || !cdapMessage.getObjName().equals("daf/management/currentSynonym")){
 			end = true;
 			return CDAPMessage.getReleaseConnectionRequestMessage(null, 0);
 		}
 		
 		CDAPMessage outgoingCDAPMessage = CDAPMessage.getReadObjectResponseMessage(null, cdapMessage.getInvokeID(), 
-				"rina.messages.ApplicationProcessNameSynonym", 0, "daf.management.currentSynonym", null, 0, null);
+				"rina.messages.ApplicationProcessNameSynonym", 0, "daf/management/currentSynonym", null, 0, null);
 		
 		sendCDAPMessage(outgoingCDAPMessage);
 		
 		outgoingCDAPMessage = CDAPMessage.getReadObjectRequestMessage(null, null, 49, 
-				"rina.messages.DIFEnrollmentInformation", 0, "daf.management.enrollment", 0);
+				"rina.messages.DIFEnrollmentInformation", 0, "daf/management/enrollment", 0);
 		
 		//TODO set timer
 		
