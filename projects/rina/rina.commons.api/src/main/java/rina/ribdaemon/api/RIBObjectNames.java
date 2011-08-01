@@ -18,4 +18,6 @@ public interface RIBObjectNames {
 	public static final String SYNONYMS = "synonyms";
 	public static final String WHATEVERCAST_NAMES = "whatevercastnames";
 	public static final String MEMBERS = "members";
+	public static final String RESOURCE_ALLOCATION = "resourceallocation";
+	public static final String FLOW_ALLOCATOR = "flowallocator";
 }

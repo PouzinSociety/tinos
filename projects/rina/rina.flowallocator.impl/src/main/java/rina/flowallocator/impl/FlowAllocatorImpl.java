@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
@@ -32,7 +33,7 @@ import rina.flowallocator.impl.validation.AllocateRequestValidator;
 /** 
  * Implements the Flow Allocator
  */
-public class FlowAllocatorImpl extends BaseFlowAllocator implements MessageSubscriber {
+public class FlowAllocatorImpl extends BaseFlowAllocator{
 	
 	private static final Log log = LogFactory.getLog(FlowAllocatorImpl.class);
 
@@ -52,12 +53,26 @@ public class FlowAllocatorImpl extends BaseFlowAllocator implements MessageSubsc
 	 */
 	private DirectoryForwardingTable directoryForwardingTable = null;
 	
+	/**
+	 * The RIB Daemon
+	 */
+	private RIBDaemon ribDaemon = null;
+	
 	public FlowAllocatorImpl(){
 		allocateRequestValidator = new AllocateRequestValidator();
 		flowAllocatorInstances = new HashMap<Integer, FlowAllocatorInstance>();
 		directoryForwardingTable = new DirectoryForwardingTableImpl();
-		subscribeToFlowMessages();
-		subscribeToEvents();
+	}
+	
+	@Override
+	public void setIPCProcess(IPCProcess ipcProcess){
+		super.setIPCProcess(ipcProcess);
+		this.ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+		populateRIB(ipcProcess);
+	}
+	
+	private void populateRIB(IPCProcess ipcProcess){
+		
 	}
 	
 	/**
