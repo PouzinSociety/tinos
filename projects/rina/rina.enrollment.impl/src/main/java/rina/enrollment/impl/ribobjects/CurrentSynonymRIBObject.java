@@ -1,9 +1,14 @@
-package rina.ipcservice.impl.ribobjects;
+package rina.enrollment.impl.ribobjects;
 
 import java.util.Calendar;
 
 import rina.applicationprocess.api.ApplicationProcessNameSynonym;
-import rina.ipcservice.impl.IPCProcessImpl;
+import rina.cdap.api.CDAPSessionDescriptor;
+import rina.cdap.api.message.CDAPMessage;
+import rina.enrollment.impl.EnrollmentStateMachine;
+import rina.enrollment.impl.EnrollmentTaskImpl;
+import rina.enrollment.impl.EnrollmentStateMachine.State;
+import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObjectNames;
@@ -16,11 +21,24 @@ import rina.ribdaemon.api.RIBObjectNames;
 public class CurrentSynonymRIBObject extends BaseRIBObject{
 	
 	private ApplicationProcessNameSynonym synonym = null;
+	private EnrollmentTaskImpl enrollmentTask = null;
 	
-	public CurrentSynonymRIBObject(IPCProcessImpl ipcProcess){
+	public CurrentSynonymRIBObject(IPCProcess ipcProcess, EnrollmentTaskImpl enrollmentTask){
 		super(ipcProcess, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 
 				null, Calendar.getInstance().getTimeInMillis());
+		this.enrollmentTask = enrollmentTask;
+	}
+	
+	@Override
+	public void read(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
+		EnrollmentStateMachine enrollmentStateMachine = enrollmentTask.getEnrollmentStateMachine(cdapSessionDescriptor);
+		if (enrollmentStateMachine.getState().equals(State.WAITING_READ_ADDRESS)){
+			enrollmentStateMachine.read(cdapMessage, cdapSessionDescriptor);
+		}else{
+			super.read(cdapMessage, cdapSessionDescriptor);
+		}
+		
 	}
 
 	@Override

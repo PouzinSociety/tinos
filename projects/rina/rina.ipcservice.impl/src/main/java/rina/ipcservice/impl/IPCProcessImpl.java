@@ -24,7 +24,6 @@ import rina.ipcservice.impl.jobs.DeliverAllocateResponseJob;
 import rina.ipcservice.impl.jobs.DeliverDeallocateJob;
 import rina.ipcservice.impl.jobs.DeliverSDUJob;
 import rina.ipcservice.impl.ribobjects.ApplicationProcessNameRIBObject;
-import rina.ipcservice.impl.ribobjects.CurrentSynonymRIBObject;
 import rina.ipcservice.impl.ribobjects.WhatevercastNameSetRIBObject;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
@@ -84,8 +83,6 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 			ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance, null, null);
 			RIBObject ribObject = new ApplicationProcessNameRIBObject(this);
 			ribObject.write(null, null, 0, apNamingInfo);
-			ribDaemon.addRIBObject(ribObject);
-			ribObject = new CurrentSynonymRIBObject(this);
 			ribDaemon.addRIBObject(ribObject);
 			ribObject = new WhatevercastNameSetRIBObject(this);
 			ribDaemon.addRIBObject(ribObject);

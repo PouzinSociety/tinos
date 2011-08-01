@@ -14,6 +14,10 @@ import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.MessageSubscriber;
 import rina.ribdaemon.api.MessageSubscription;
 import rina.ribdaemon.api.RIBDaemon;
+import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBObject;
+import rina.ribdaemon.api.RIBObjectNames;
+import rina.applicationprocess.api.ApplicationProcessNameSynonym;
 import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPSessionDescriptor;
@@ -28,6 +32,7 @@ import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.flowallocator.api.message.Flow;
 import rina.flowallocator.impl.FlowAllocatorInstanceImpl;
+import rina.flowallocator.impl.ribobjects.FlowAllocatorRIBObject;
 import rina.flowallocator.impl.validation.AllocateRequestValidator;
 
 /** 
@@ -58,6 +63,11 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 */
 	private RIBDaemon ribDaemon = null;
 	
+	/**
+	 * The Encoder
+	 */
+	private Encoder encoder = null;
+	
 	public FlowAllocatorImpl(){
 		allocateRequestValidator = new AllocateRequestValidator();
 		flowAllocatorInstances = new HashMap<Integer, FlowAllocatorInstance>();
@@ -68,63 +78,20 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	public void setIPCProcess(IPCProcess ipcProcess){
 		super.setIPCProcess(ipcProcess);
 		this.ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+		this.encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
 		populateRIB(ipcProcess);
 	}
 	
 	private void populateRIB(IPCProcess ipcProcess){
-		
-	}
-	
-	/**
-	 * Subscribe to create flow and delete flow requests and responses
-	 */
-	private void subscribeToFlowMessages(){
-		MessageSubscription subscription = new MessageSubscription();
-		subscription.setObjClass("Flowobject");
-		subscription.setOpCode(Opcode.M_CREATE);
-		RIBDaemon ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-		
 		try{
-			ribDaemon.subscribeToMessages(subscription, this);
-		}catch(Exception ex){
-			log.warn("Problems subscribing to Create Flow object request messages. "+ex.getMessage());
-		}
-		
-		subscription = new MessageSubscription();
-		subscription.setObjClass("Flowobject");
-		subscription.setOpCode(Opcode.M_CREATE_R);
-		try{
-			ribDaemon.subscribeToMessages(subscription, this);
-		}catch(Exception ex){
-			log.warn("Problems subscribing to Create Flow object response messages. "+ex.getMessage());
-		}
-		
-		subscription = new MessageSubscription();
-		subscription.setObjClass("Flowobject");
-		subscription.setOpCode(Opcode.M_DELETE);
-		try{
-			ribDaemon.subscribeToMessages(subscription, this);
-		}catch(Exception ex){
-			log.warn("Problems subscribing to Delete Flow object request messages. "+ex.getMessage());
-		}
-		
-		subscription = new MessageSubscription();
-		subscription.setObjClass("Flowobject");
-		subscription.setOpCode(Opcode.M_DELETE_R);
-		try{
-			ribDaemon.subscribeToMessages(subscription, this);
-		}catch(Exception ex){
-			log.warn("Problems subscribing to Delete Flow object response messages. "+ex.getMessage());
+			RIBObject ribObject = new FlowAllocatorRIBObject(this, ipcProcess);
+			ribDaemon.addRIBObject(ribObject);
+		}catch(RIBDaemonException ex){
+			ex.printStackTrace();
+			log.error("Could not subscribe to RIB Daemon:" +ex.getMessage());
 		}
 	}
-	
-	/**
-	 * subscribe to SequenceNumberRollOverThreshold Events and any other required events
-	 */
-	private void subscribeToEvents(){
-		//TODO implement this
-	}
-	
+
 	public DirectoryForwardingTable getDirectoryForwardingTable(){
 		return directoryForwardingTable;
 	}
@@ -137,7 +104,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		case M_CREATE:
 			//received a create flow request from another IPC process, we have to process it
 			//and deliver an M_CREATE_R
-			createFlowRequestMessageReceived(cdapMessage);
+			//createFlowRequestMessageReceived(cdapMessage);
 			break;
 		case M_CREATE_R:
 			//received a create flow object response from another IPC process, we have to process it
@@ -167,33 +134,37 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * entry and the address is not this IPC Process, it forwards the Create_Request to the IPC Process designated by the address.
 	 * @param cdapMessage
 	 */
-	private void createFlowRequestMessageReceived(CDAPMessage cdapMessage){
-		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(
-				cdapMessage.getDestApName(), cdapMessage.getDestApInst(), cdapMessage.getDestAEName(), cdapMessage.getDestAEInst());
-		byte[] address = directoryForwardingTable.getAddress(apNamingInfo);
-		Encoder encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
-		CDAPSessionManager cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
+	public void createFlowRequestMessageReceived(CDAPMessage cdapMessage, int portId){
+		Flow flow = null;
+		byte[] myAddress = null;
+		
+		try{
+			flow = (Flow) encoder.decode(cdapMessage.getObjValue().getByteval(), Flow.class.toString());
+		}catch (Exception ex){
+			//Error that has to be fixed, we cannot continue, log it and return
+			log.error("Fatal error when deserializing a Flow object. " +ex.getMessage());
+			return;
+		}
+		
+		byte[] address = directoryForwardingTable.getAddress(flow.getDestinationNamingInfo());
+		try{
+			myAddress = ((ApplicationProcessNameSynonym) ribDaemon.read(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0)).getSynonym();
+		}catch(RIBDaemonException ex){
+			log.error(ex);
+			//TODO
+		}
 		
 		if (address == null){
 			//error, the table should have at least returned a default IPC process address to continue looking for the application process
-			log.error("The directory forwarding table returned no entries when looking up " + apNamingInfo.toString());
+			log.error("The directory forwarding table returned no entries when looking up " + flow.getDestinationNamingInfo().toString());
 		}else{
-			if (address.equals(getIPCProcess().getCurrentSynonym())){
+			if (address.equals(myAddress)){
 				//TODO there is an entry and the address is this IPC Process, create a FAI, extract the Flow object from the CDAP message and
 				//call the FAI
 			}else{
 				//The address is not this IPC process, forward the CDAP message to that address increment the hop count of the Flow object
 				//extract the flow object from the CDAP message
-				Flow flow = null;
-				
-				try{
-					flow = (Flow) encoder.decode(cdapMessage.getObjValue().getByteval(), Flow.class.toString());
-				}catch (Exception ex){
-					//Error that has to be fixed, we cannot continue, log it and return
-					log.error("Fatal error when deserializing a Flow object. " +ex.getMessage());
-					return;
-				}
-				
 				flow.setHopCount(flow.getHopCount() - 1);
 				if (flow.getHopCount()  == 0){
 					//TODO send negative create Flow response CDAP message to the source IPC process, specifying that the application process
@@ -209,16 +180,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 					log.error("Fatal error when serializing a Flow object. " +ex.getMessage());
 					return;
 				}
-
-				cdapMessage.setObjValue(objectValue);
-				byte[] serializedCDAPMesasge = null;
-				try{
-					serializedCDAPMesasge = cdapSessionManager.encodeCDAPMessage(cdapMessage);
-				}catch(CDAPException ex){
-					//Error that has to be fixed, we cannot continue, log it and return
-					log.error("Problems serializing CDAP message to be forwarded: " +ex.getMessage() + 
-					". As a consequence, the CDAP message won't be forwarded");
-				}
+				//TODO
 				//TODO ipcProcess.getRmt().sendCDAPMessage(address, serializedCDAPMesasge);
 			}
 		}

@@ -77,7 +77,7 @@ public abstract class CDAPClient {
 			clientSocket = new Socket(host, port);
 			
 			//1 Create an M_CONNECT message, delimit it and send it to the CDAP Echo Target
-			CDAPMessage message = CDAPMessage.getOpenConnectionRequestMessage(AuthTypes.AUTH_NONE, null, null, null, null,"RINA-Demo.DIF", 15, null, "Enrollment Task", "1", "TSSG-Waterford", 1);
+			CDAPMessage message = CDAPMessage.getOpenConnectionRequestMessage(AuthTypes.AUTH_NONE, null, null, null, null,"RINA-Demo.DIF", 15, null, "Enrollment Task", "1", "TSSG-Waterford");
 			sendCDAPMessage(message);
 			
 			//2 Enter the loop to wait for response messages, and continue the message exchange while possible

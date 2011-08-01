@@ -204,7 +204,7 @@ public class CDAPMessage implements Serializable{
 	public static CDAPMessage getOpenConnectionRequestMessage(AuthTypes authMech, 
 			AuthValue authValue, String destAEInst, String destAEName, String destApInst,
 			String destApName, int invokeID, String srcAEInst, String srcAEName, String srcApInst,
-			String srcApName, int version) throws CDAPException{
+			String srcApName) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setAbsSyntax(ABSTRACT_SYNTAX_VERSION);
 		cdapMessage.setAuthMech(authMech);
@@ -220,7 +220,7 @@ public class CDAPMessage implements Serializable{
 		cdapMessage.setSrcAEName(srcAEName);
 		cdapMessage.setSrcApInst(srcApInst);
 		cdapMessage.setSrcApName(srcApName);
-		cdapMessage.setVersion(version);
+		cdapMessage.setVersion(1);
 		CDAPMessageValidator.validate(cdapMessage);
 		return cdapMessage;
 	}
@@ -228,7 +228,7 @@ public class CDAPMessage implements Serializable{
 	public static CDAPMessage getOpenConnectionResponseMessage(AuthTypes authMech, 
 			AuthValue authValue, String destAEInst, String destAEName, String destApInst,
 			String destApName, int invokeID, int result, String resultReason, String srcAEInst, String srcAEName, 
-			String srcApInst, String srcApName, int version) throws CDAPException{
+			String srcApInst, String srcApName) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setAbsSyntax(ABSTRACT_SYNTAX_VERSION);
 		cdapMessage.setAuthMech(authMech);
@@ -246,7 +246,7 @@ public class CDAPMessage implements Serializable{
 		cdapMessage.setSrcAEName(srcAEName);
 		cdapMessage.setSrcApInst(srcApInst);
 		cdapMessage.setSrcApName(srcApName);
-		cdapMessage.setVersion(version);
+		cdapMessage.setVersion(1);
 		CDAPMessageValidator.validate(cdapMessage);
 		return cdapMessage;
 	}

@@ -192,8 +192,11 @@ public class BaseRIBObject implements RIBObject{
 		
 		try{
 			Object object = this.read(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst());
-			ObjectValue objectValue = new ObjectValue();
-			objectValue.setByteval(getEncoder().encode(object));
+			ObjectValue objectValue = null;
+			if (object != null){
+				objectValue = new ObjectValue();
+				objectValue.setByteval(getEncoder().encode(object));
+			}
 			responseMessage = CDAPMessage.getReadObjectResponseMessage(null, cdapMessage.getInvokeID(), cdapMessage.getObjClass(), 
 					cdapMessage.getObjInst(), cdapMessage.getObjName(), objectValue, 0, null);
 			getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);

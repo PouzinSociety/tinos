@@ -102,7 +102,8 @@ public class EnrollmentInitializer implements Runnable{
 		}
 		
 		CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(Flags.F_RD_INCOMPLETE, invokeId, 
-				"rina.messages.ApplicationProcessNameSynonym", 1, "daf.management.currentSynonym", objectValue, 0, null);
+				"rina.messages.ApplicationProcessNameSynonym", 1, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, objectValue, 0, null);
 		
 		enrollmentStateMachine.sendCDAPMessage(cdapMessage);
 		enrollmentStateMachine.setRemoteAddress(apNameSynonym);
@@ -123,7 +124,8 @@ public class EnrollmentInitializer implements Runnable{
 				objectValue = new ObjectValue();
 				objectValue.setByteval(serializedObject);
 				CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(Flags.F_RD_INCOMPLETE, invokeId, 
-						"rina.messages.WhatevercastName", 2 + i, "daf.management.whatevercast", objectValue, 0, null);
+						"rina.messages.WhatevercastName", 2 + i, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + 
+						RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + (i+1), objectValue, 0, null);
 				enrollmentStateMachine.sendCDAPMessage(cdapMessage);
 			}catch(Exception ex){
 				ex.printStackTrace();

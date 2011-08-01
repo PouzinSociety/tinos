@@ -54,14 +54,7 @@ public class DIFMemberSetRIBObject extends BaseRIBObject{
 	 */
 	@Override
 	public void create(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
-		//TODO
-			//1 Check that we're not already enrolled to the IPC Process
-			//2 Tell the RMT to allocate a new flow to the IPC process  (will return a port Id)
-			//3 Tell the enrollment task to create a new Enrollment state machine (or get one if we had already enrolled wit the remote IPC process in the past)
-			//4 Tell the enrollment state machine to initiate the enrollment (will require an M_CONNECT message and a port Id)
-			//5 Call the local create operation, to update the RIB
-			//6 When the enrollment state machine has finished enrolling the remote IPC process (or an error has occurred), I have to be notified
-			//and then issue the create response request
+		enrollmentTask.initiateEnrollment(cdapMessage, cdapSessionDescriptor);
 	}
 
 	/**

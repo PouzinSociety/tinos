@@ -9,11 +9,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.applicationprocess.api.ApplicationProcessNameSynonym;
+import rina.applicationprocess.api.WhatevercastName;
 import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPMessageHandler;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
+import rina.cdap.api.message.CDAPMessage.AuthTypes;
+import rina.cdap.api.message.CDAPMessage.Flags;
+import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.encoding.api.Encoder;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBDaemon;
@@ -33,8 +37,8 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 	private static final long TIME_TO_WAIT_FOR_READ_INITIALIZATION_DATA = 5*1000;
 	private static final long TIME_TO_WAIT_FOR_START_RESPONSE = 5*1000;
 	
-	private enum State {NULL, READ_ADDRESS, INITIALIZE_NEW_MEMBER, INITIALIZE_NEW_MEMBER_SEND_RESPONSE, 
-		WAITING_FOR_STARTUP, ENROLLED};
+	public enum State {NULL, READ_ADDRESS, INITIALIZE_NEW_MEMBER, INITIALIZE_NEW_MEMBER_SEND_RESPONSE, 
+		WAITING_FOR_STARTUP, ENROLLED, WAITING_CONNECTION, WAITING_READ_ADDRESS, INITIALIZING_DATA};
 		
 	private State state = State.NULL;
 	
@@ -95,12 +99,18 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 	 */
 	private ApplicationProcessNameSynonym remoteAddress = null;
 	
+	/**
+	 * The enrollment task
+	 */
+	private EnrollmentTaskImpl enrollmentTask = null;
+	
 	public EnrollmentStateMachine(RIBDaemon ribDaemon, CDAPSessionManager cdapSessionManager, Encoder encoder, 
-			ApplicationProcessNamingInfo remoteNamingInfo){
+			ApplicationProcessNamingInfo remoteNamingInfo, EnrollmentTaskImpl enrollmentTask){
 		this.ribDaemon = ribDaemon;
 		this.cdapSessionManager = cdapSessionManager;
 		this.encoder = encoder;
 		this.remoteNamingInfo = remoteNamingInfo;
+		this.enrollmentTask = enrollmentTask;
 		timer = new Timer();
 		this.executorService = Executors.newFixedThreadPool(2);
 	}
@@ -167,13 +177,14 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 		try{
 			outgoingCDAPMessage = CDAPMessage.getOpenConnectionResponseMessage(cdapMessage.getAuthMech(), cdapMessage.getAuthValue(), cdapMessage.getSrcAEInst(), 
 					cdapMessage.getSrcAEName(), cdapMessage.getSrcApInst(), cdapMessage.getSrcApName(), cdapMessage.getInvokeID(), 0, null, cdapMessage.getDestAEInst(), 
-					cdapMessage.getDestAEName(), cdapMessage.getDestApInst(), cdapMessage.getDestApName(), (int)cdapMessage.getVersion());
+					cdapMessage.getDestAEName(), cdapMessage.getDestApInst(), cdapMessage.getDestApName());
 
 			sendCDAPMessage(outgoingCDAPMessage);
 
 			//Read the joining IPC process address
 			outgoingCDAPMessage = CDAPMessage.getReadObjectRequestMessage(null, null, 14, 
-					"rina.messages.ApplicationProcessNameSynonym", 0, "daf.management.currentSynonym", 0);
+					"rina.messages.ApplicationProcessNameSynonym", 0, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0);
 			sendCDAPMessage(outgoingCDAPMessage);
 
 			//set timer (max time to wait before getting M_READ_R)
@@ -185,15 +196,6 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 		}catch(CDAPException ex){
 			log.error(ex);
 		}
-	}
-	
-	/**
-	 * Called by the EnrollmentTask when it got an M_CONNECT_R message
-	 * @param cdapMessage
-	 * @param cdapSessionDescriptor
-	 */
-	public void connectResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor){
-		//TODO
 	}
 	
 	/**
@@ -252,10 +254,13 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 		if (!isValidPortId(cdapSessionDescriptor)){
 			return;
 		}
-		
+
 		switch (state){
 		case READ_ADDRESS:
 			handleReadAddressState(cdapMessage);
+			break;
+		case INITIALIZING_DATA:
+			handleInitializingData(cdapMessage);
 			break;
 		default:
 			reset();
@@ -338,6 +343,9 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 		case INITIALIZE_NEW_MEMBER:
 			handleInitializeNewMember(cdapMessage);
 			break;
+		case WAITING_READ_ADDRESS:
+			handleWaitingReadAddress(cdapMessage);
+			break;
 		default:
 			reset();
 			break;
@@ -348,7 +356,8 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 		//Cancel timer
 		readInitializationDataTimer.cancel();
 		
-		if (cdapMessage.getObjName() == null || !cdapMessage.getObjName().equals("daf.management.enrollment")){
+		if (cdapMessage.getObjName() == null || !cdapMessage.getObjName().equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + 
+				RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT)){
 			reset();
 			return;
 		}
@@ -385,7 +394,8 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 	}
 	
 	private void handleInitializeNewMemberCancelread(CDAPMessage cdapMessage){
-		if (cdapMessage.getObjName() == null || !cdapMessage.getObjName().equals("daf.management.enrollment")){
+		if (cdapMessage.getObjName() == null || !cdapMessage.getObjName().equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + 
+				RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT)){
 			reset();
 			return;
 		}
@@ -415,7 +425,8 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 		
 		try{
 			CDAPMessage outgoingCDAPMessage = CDAPMessage.getStartObjectRequestMessage(null, null, 25, 
-					"rina.messages.operationalStatus", null, 0, "daf.management.operationalStatus", 0);
+					"rina.messages.operationalStatus", null, 0, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.OPERATIONAL_STATUS, 0);
 			this.sendCDAPMessage(outgoingCDAPMessage);
 			
 			//start timer
@@ -463,6 +474,186 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 	/**
 	 * Go back to the NULL state and send an M_RELEASE message
 	 */
+	
+	
+	/**
+	 * Called by the DIFMembersSetObject to initiate the enrollment sequence 
+	 * with a remote IPC Process
+	 * @param cdapMessage
+	 * @param portId
+	 */
+	public void initiateEnrollment(ApplicationProcessNameSynonym candidate, int portId){
+		remoteNamingInfo = new ApplicationProcessNamingInfo(candidate.getApplicationProcessName(), candidate.getApplicationProcessInstance(), null, null);
+		remoteAddress = candidate;
+		switch(state){
+		case NULL:
+			try{
+				ApplicationProcessNamingInfo apNamingInfo = (ApplicationProcessNamingInfo) this.getRIBDaemon().read(null, 
+						RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+						RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME, 0);
+				CDAPMessage requestMessage = CDAPMessage.getOpenConnectionRequestMessage(AuthTypes.AUTH_NONE, null, null, null, candidate.getApplicationProcessInstance(), 
+						candidate.getApplicationProcessName(), 1, null, null, apNamingInfo.getApplicationProcessInstance(), apNamingInfo.getApplicationProcessName());
+				ribDaemon.sendMessage(requestMessage, portId, null);
+				this.portId = portId;
+				//todo set Timer
+				this.state = State.WAITING_CONNECTION;
+			}catch(Exception ex){
+				ex.printStackTrace();
+				log.error(ex);
+			}
+			break;
+		default:
+			enrollmentTask.enrollmentCompleted(candidate, 1, "Enrollment state machine was not in NULL state");
+		}
+	}
+	
+	/**
+	 * Called by the EnrollmentTask when it got an M_CONNECT_R message
+	 * @param cdapMessage
+	 * @param cdapSessionDescriptor
+	 */
+	public void connectResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor){
+		switch(state){
+		case WAITING_CONNECTION:
+			handleConnectResponse(cdapMessage);
+			break;
+		default:
+			this.state = State.NULL;
+			enrollmentTask.enrollmentCompleted(remoteAddress, 1, "Message received in wrong order");
+			break;
+		}
+	}
+	
+	private void handleConnectResponse(CDAPMessage cdapMessage){
+		//TODO cancel timer
+		
+		if (cdapMessage.getResult() != 0){
+			this.state = State.NULL;
+			enrollmentTask.enrollmentCompleted(remoteAddress, cdapMessage.getResult(), cdapMessage.getResultReason());
+		}
+		
+		//TODO set timer
+		
+		state = State.WAITING_READ_ADDRESS;
+	}
+	
+	private void handleWaitingReadAddress(CDAPMessage cdapMessage){
+		//TODO cancel timer
+		
+		if (!cdapMessage.getObjName().equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM)){
+			reset();
+			enrollmentTask.enrollmentCompleted(remoteAddress, 1, "Wrong objectName");
+		}
+		
+		try{
+			CDAPMessage outgoingCDAPMessage = CDAPMessage.getReadObjectResponseMessage(null, cdapMessage.getInvokeID(), 
+					"rina.messages.ApplicationProcessNameSynonym", 0, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, null, 0, null);
+
+			sendCDAPMessage(outgoingCDAPMessage);
+
+			outgoingCDAPMessage = CDAPMessage.getReadObjectRequestMessage(null, null, 49, 
+					"rina.messages.DIFEnrollmentInformation", 0, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT, 0);
+
+			//TODO set timer
+
+			sendCDAPMessage(outgoingCDAPMessage);
+			state = State.INITIALIZING_DATA;
+		}catch(CDAPException ex){
+			log.error(ex);
+			//If there is an exception fix the code, it should never happen.
+		}
+	}
+	
+	private void handleInitializingData(CDAPMessage cdapMessage){
+		//TODO cancel timer
+		
+		if (cdapMessage.getResult() != 0){
+			reset();
+			enrollmentTask.enrollmentCompleted(remoteAddress, cdapMessage.getResult(), cdapMessage.getResultReason());
+		}
+		
+		if (cdapMessage.getObjName().equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM)){
+			try{
+				ApplicationProcessNameSynonym synonym = (ApplicationProcessNameSynonym) encoder.decode(
+						cdapMessage.getObjValue().getByteval(), ApplicationProcessNameSynonym.class.toString());
+				ribDaemon.write(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), synonym);
+			}catch(Exception ex){
+				log.error(ex);
+			}
+		}else if (cdapMessage.getObjName().startsWith(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES)){
+			try{
+				WhatevercastName name = (WhatevercastName) encoder.decode(
+						cdapMessage.getObjValue().getByteval(), WhatevercastName.class.toString());
+				ribDaemon.create(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), name);
+			}catch(Exception ex){
+				log.error(ex);
+			}
+		}
+		//TODO add DIF constants and QoS cubes info
+		
+		if (cdapMessage.getFlags() != null && cdapMessage.getFlags().equals(Flags.F_RD_INCOMPLETE)){
+			//TODO set timer, more read response messages to come
+		}else{
+			//TODO set timer, an START request should be coming
+			state = State.WAITING_FOR_STARTUP;
+		}
+	}
+	
+	public void start(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor){
+		//TODO cancel timer
+		
+		if (!cdapMessage.getObjName().equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.OPERATIONAL_STATUS)){
+			reset();
+			enrollmentTask.enrollmentCompleted(remoteAddress, 1, "Wrong objectname");
+		}
+		
+		try{
+			CDAPMessage outgoingCDAPMessage = CDAPMessage.getStartObjectResponseMessage(null, cdapMessage.getInvokeID(), 0, null);
+			sendCDAPMessage(outgoingCDAPMessage);
+			log.info("IPC Process enrolled!");
+			state = State.ENROLLED;
+			enrollmentTask.enrollmentCompleted(remoteAddress, 0, null);
+		}catch(CDAPException ex){
+			log.error(ex);
+		}
+	}
+
+	public void cancelReadResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void createResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void deleteResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void stopResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void writeResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	private void reset(){
 		log.error("Received a failed response message or a message in the wrong orther");
 		try{
@@ -516,50 +707,5 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 					ex.printStackTrace();
 				}
 			}};
-	}
-	
-	/**
-	 * Called by the DIFMembersSetObject to initiate the enrollment sequence 
-	 * with a remote IPC Process
-	 * @param cdapMessage
-	 * @param portId
-	 */
-	public void initiateEnrollment(CDAPMessage cdapMessage, int portId){
-		switch(state){
-		case NULL:
-			break;
-		default:
-			
-		}
-	}
-
-	public void cancelReadResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void createResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void deleteResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void stopResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void writeResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
 	}
 }
