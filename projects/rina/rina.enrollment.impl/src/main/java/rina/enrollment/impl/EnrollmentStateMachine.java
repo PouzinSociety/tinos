@@ -111,7 +111,6 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 		this.encoder = encoder;
 		this.remoteNamingInfo = remoteNamingInfo;
 		this.enrollmentTask = enrollmentTask;
-		timer = new Timer();
 		this.executorService = Executors.newFixedThreadPool(2);
 	}
 	
@@ -189,6 +188,7 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 
 			//set timer (max time to wait before getting M_READ_R)
 			readAddressResponseTimer = getDisconnectTimerTask();
+			timer = new Timer();
 			timer.schedule(readAddressResponseTimer, TIME_TO_WAIT_FOR_READ_ADDRESS_RESPONSE);
 			log.debug("Requesting to read the address of the remote IPC Process");
 

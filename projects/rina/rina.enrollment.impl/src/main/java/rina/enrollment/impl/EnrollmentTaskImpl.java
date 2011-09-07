@@ -102,7 +102,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 			EnrollmentStateMachine enrollmentStateMachine = null;
 			List<WhatevercastName> whatevercastNames = (List<WhatevercastName>) ribDaemon.read(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES, 0);
-
+			
 			if (myNamingInfo.equals(destinationNamingInfo) || this.containsWhatevercastName(whatevercastNames, destinationNamingInfo.getApplicationProcessName())){
 				enrollmentStateMachine = getEnrollmentStateMachine(sourceNamingInfo);
 				if (enrollmentStateMachine == null){
