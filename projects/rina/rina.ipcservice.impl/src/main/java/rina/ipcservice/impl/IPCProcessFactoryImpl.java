@@ -101,7 +101,11 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		this.enrollmentTaskFactory = enrollmentTaskFactory;
 	}
 
-	public IPCProcess createIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
+	public IPCProcess createIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) throws Exception{
+		if (ipcProcesses.get(ipcProcessNamingInfo) != null){
+			throw new Exception("An IPC Process with this naming information already exists in this system");
+		}
+		
 		RIBDaemon ribDaemon = ribDaemonFactory.createRIBDaemon(ipcProcessNamingInfo);
 		IPCProcess ipcProcess = new IPCProcessImpl(ipcProcessNamingInfo.getApplicationProcessName(), 
 				ipcProcessNamingInfo.getApplicationProcessInstance(), ribDaemon);
@@ -119,7 +123,11 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		return ipcProcess;
 	}
 
-	public void destroyIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
+	public void destroyIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) throws Exception{
+		if (ipcProcesses.get(ipcProcessNamingInfo) == null){
+			throw new Exception("An IPC Process with this naming information does not exist in this system");
+		}
+		
 		IPCProcess ipcProcess = ipcProcesses.remove(ipcProcessNamingInfo);
 		
 		//flowAllocatorFactory.destroyFlowAllocator(ipcProcessNamingInfo);

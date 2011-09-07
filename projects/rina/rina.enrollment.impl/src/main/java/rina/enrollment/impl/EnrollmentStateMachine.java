@@ -452,7 +452,7 @@ private static final Log log = LogFactory.getLog(EnrollmentStateMachine.class);
 			break;
 		}
 	}
-	
+
 	private void handleStartup(CDAPMessage cdapMessage){
 		//Cancel timer
 		startResponseTimer.cancel();
