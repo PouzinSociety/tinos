@@ -50,6 +50,11 @@ public class ApplicationProcessNamingInfo {
 		this.applicationEntityInstance = applicationEntityInstance;
 	}
 	
+	public String getProcessKey(){
+		return this.applicationProcessName + "-" + this.getApplicationProcessInstance();
+	}
+	
+	
 	@Override
 	public boolean equals(Object candidate){
 		if (candidate == null){

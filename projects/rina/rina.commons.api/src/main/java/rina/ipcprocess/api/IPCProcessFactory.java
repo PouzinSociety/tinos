@@ -1,5 +1,7 @@
 package rina.ipcprocess.api;
 
+import java.util.List;
+
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 /**
@@ -36,4 +38,10 @@ public interface IPCProcessFactory {
 	 * @param namingInfo the name of this new IPC process
 	 */
 	public IPCProcess getIPCProcess(ApplicationProcessNamingInfo namingInfo);
+	
+	/**
+	 * Return a list of the existing IPC processes
+	 * @return
+	 */
+	public List<IPCProcess> listIPCProcesses();
 }

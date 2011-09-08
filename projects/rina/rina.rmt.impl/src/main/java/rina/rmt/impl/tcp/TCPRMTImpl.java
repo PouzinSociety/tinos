@@ -3,6 +3,7 @@ package rina.rmt.impl.tcp;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,6 +59,25 @@ public class TCPRMTImpl extends BaseRMT{
 		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
 		this.rmtServer = new RMTServer(this, port);
 		executorService.execute(rmtServer);
+	}
+	
+	/**
+	 * Close all the sockets and stop
+	 */
+	public void stop(){
+		Iterator<Integer> iterator = flowTable.keySet().iterator();
+		Socket socket = null;
+		
+		while(iterator.hasNext()){
+			socket = flowTable.get(iterator.next());
+			try{
+				socket.close();
+			}catch(IOException ex){
+				log.error(ex.getMessage());
+			}
+		}
+		
+		this.rmtServer.setEnd(true);
 	}
 
 	/**

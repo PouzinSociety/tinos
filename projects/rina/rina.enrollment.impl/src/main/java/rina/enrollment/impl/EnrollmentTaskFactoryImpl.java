@@ -9,24 +9,24 @@ import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 public class EnrollmentTaskFactoryImpl implements EnrollmentTaskFactory{
 	
-	private Map<ApplicationProcessNamingInfo, EnrollmentTask> enrollmentTaskRespository = null;
+	private Map<String, EnrollmentTask> enrollmentTaskRespository = null;
 	
 	public EnrollmentTaskFactoryImpl(){
-		enrollmentTaskRespository = new Hashtable<ApplicationProcessNamingInfo, EnrollmentTask>();
+		enrollmentTaskRespository = new Hashtable<String, EnrollmentTask>();
 	}
 
 	public EnrollmentTask createEnrollmentTask(ApplicationProcessNamingInfo apNamingInfo) {
 		EnrollmentTask enrollmentTask = new EnrollmentTaskImpl();
-		enrollmentTaskRespository.put(apNamingInfo, enrollmentTask);
+		enrollmentTaskRespository.put(apNamingInfo.getProcessKey(), enrollmentTask);
 		return enrollmentTask;
 	}
 
 	public void destroyEnrollmentTask(ApplicationProcessNamingInfo apNamingInfo) {
-		enrollmentTaskRespository.remove(apNamingInfo);
+		enrollmentTaskRespository.remove(apNamingInfo.getProcessKey());
 	}
 
 	public EnrollmentTask getEnrollmentTask(ApplicationProcessNamingInfo apNamingInfo) {
-		return enrollmentTaskRespository.get(apNamingInfo);
+		return enrollmentTaskRespository.get(apNamingInfo.getProcessKey());
 	}
 
 }

@@ -9,10 +9,10 @@ import rina.rmt.api.RMTFactory;
 
 public class TCPRMTFactoryImpl implements RMTFactory{
 
-	private Map<ApplicationProcessNamingInfo, RMT> rmtRespository = null;
+	private Map<String, RMT> rmtRespository = null;
 	
 	public TCPRMTFactoryImpl(){
-		rmtRespository = new HashMap<ApplicationProcessNamingInfo, RMT>();
+		rmtRespository = new HashMap<String, RMT>();
 	}
 	
 	public RMT createRMT(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
@@ -23,16 +23,17 @@ public class TCPRMTFactoryImpl implements RMTFactory{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		rmtRespository.put(ipcProcessNamingInfo, rmt);
+		rmtRespository.put(ipcProcessNamingInfo.getProcessKey(), rmt);
 		return rmt;
 	}
 
 	public void destroyRMT(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
-		rmtRespository.remove(ipcProcessNamingInfo);
+		RMT rmt = rmtRespository.remove(ipcProcessNamingInfo.getProcessKey());
+		((TCPRMTImpl)rmt).stop();
 	}
 
 	public RMT getRMT(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
-		return rmtRespository.get(ipcProcessNamingInfo);
+		return rmtRespository.get(ipcProcessNamingInfo.getProcessKey());
 	}
 
 }

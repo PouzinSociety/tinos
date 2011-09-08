@@ -1,5 +1,6 @@
 package rina.ipcmanager.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -14,6 +15,7 @@ import rina.ipcprocess.api.IPCProcessFactory;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
+import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObjectNames;
 
 public class IPCManagerImpl {
@@ -60,6 +62,35 @@ public class IPCManagerImpl {
 	public void destroyIPCProcesses(String applicationProcessName, String applicationProcessInstance) throws Exception{
 		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance, null, null);
 		ipcProcessFactory.destroyIPCProcess(apNamingInfo);
+	}
+	
+	public List<String> listIPCProcessesInformation(){
+		List<String> ipcProcessesInformation = new ArrayList<String>();
+		List<IPCProcess> ipcProcesses = ipcProcessFactory.listIPCProcesses();
+		RIBDaemon ribDaemon = null;
+		ApplicationProcessNamingInfo apNamingInfo = null;
+		WhatevercastName difName = null;
+		String information = null;
+		
+		for(int i=0; i<ipcProcesses.size(); i++){
+			try{
+				ribDaemon = (RIBDaemon) ipcProcesses.get(i).getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+				apNamingInfo = (ApplicationProcessNamingInfo) ribDaemon.read(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+						RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME, 0);
+				difName = (WhatevercastName) ribDaemon.read(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+						RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
+						RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "1" , 0);
+				information = "\n";
+				information = information + "DIF name: " + difName.getName() + "\n";
+				information = information + "Application process name: "+apNamingInfo.getApplicationProcessName() + "\n";
+				information = information + "Application process instance: "+apNamingInfo.getApplicationProcessInstance() + "\n";
+				ipcProcessesInformation.add(information);
+			}catch(RIBDaemonException ex){
+				log.error(ex);
+			}
+		}
+		
+		return ipcProcessesInformation;
 	}
 
 }

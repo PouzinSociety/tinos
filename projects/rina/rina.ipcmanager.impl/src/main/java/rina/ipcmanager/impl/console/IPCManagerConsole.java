@@ -29,8 +29,6 @@ public class IPCManagerConsole implements Runnable{
 	private static final String PROMPT = "ipcmanager> ";
 	private static final int PORT = 32766;
 	
-	private IPCManagerImpl ipcManagerImpl = null;
-	
 	public ServerSocket serverSocket = null;
 
 	public Socket incoming = null;
@@ -38,10 +36,10 @@ public class IPCManagerConsole implements Runnable{
 	private Map<String, ConsoleCommand> commands = null;
 	
 	public IPCManagerConsole(IPCManagerImpl ipcManagerImpl){
-		this.ipcManagerImpl = ipcManagerImpl;
 		commands = new Hashtable<String, ConsoleCommand>();
 		commands.put(CreateIPCProcessCommand.ID, new CreateIPCProcessCommand(ipcManagerImpl));
 		commands.put(DestroyIPCProcessCommand.ID, new DestroyIPCProcessCommand(ipcManagerImpl));
+		commands.put(ListIPCProcessesCommand.ID, new ListIPCProcessesCommand(ipcManagerImpl));
 	}
 	
 	public void run() {

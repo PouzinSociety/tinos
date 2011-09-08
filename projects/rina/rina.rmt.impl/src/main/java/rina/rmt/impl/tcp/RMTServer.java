@@ -49,6 +49,13 @@ public class RMTServer implements Runnable{
 	
 	public void setEnd(boolean end){
 		this.end = end;
+		if (end){
+			try{
+				this.serverSocket.close();
+			}catch(IOException ex){
+				log.error(ex.getMessage());
+			}
+		}
 	}
 
 	public void run() {
@@ -61,8 +68,6 @@ public class RMTServer implements Runnable{
 				tcpRmtImpl.newConnectionAccepted(socket);
 			}
 		}catch(IOException e){
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 			log.error(e.getMessage());
 		}
 	}
