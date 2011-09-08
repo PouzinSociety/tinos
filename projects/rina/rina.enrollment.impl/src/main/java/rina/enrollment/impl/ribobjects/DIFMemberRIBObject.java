@@ -47,4 +47,9 @@ public class DIFMemberRIBObject extends BaseRIBObject{
 	public void delete(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
 		this.getParent().removeChild(objectName);
 	}
+	
+	@Override
+	public Object getObjectValue(){
+		return member;
+	}
 }

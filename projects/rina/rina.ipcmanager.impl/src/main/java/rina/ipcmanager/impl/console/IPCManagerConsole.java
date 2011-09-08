@@ -37,9 +37,10 @@ public class IPCManagerConsole implements Runnable{
 	
 	public IPCManagerConsole(IPCManagerImpl ipcManagerImpl){
 		commands = new Hashtable<String, ConsoleCommand>();
-		commands.put(CreateIPCProcessCommand.ID, new CreateIPCProcessCommand(ipcManagerImpl));
-		commands.put(DestroyIPCProcessCommand.ID, new DestroyIPCProcessCommand(ipcManagerImpl));
+		commands.put(PrintRIBCommand.ID, new PrintRIBCommand(ipcManagerImpl));
 		commands.put(ListIPCProcessesCommand.ID, new ListIPCProcessesCommand(ipcManagerImpl));
+		commands.put(DestroyIPCProcessCommand.ID, new DestroyIPCProcessCommand(ipcManagerImpl));
+		commands.put(CreateIPCProcessCommand.ID, new CreateIPCProcessCommand(ipcManagerImpl));
 	}
 	
 	public void run() {

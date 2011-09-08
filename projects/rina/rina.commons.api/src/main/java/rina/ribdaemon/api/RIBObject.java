@@ -16,6 +16,7 @@ public interface RIBObject{
 	public String getObjectName();
 	public String getObjectClass();
 	public long getObjectInstance();
+	public Object getObjectValue();
 
 	/* Tree management operations */
 	public RIBObject getParent();

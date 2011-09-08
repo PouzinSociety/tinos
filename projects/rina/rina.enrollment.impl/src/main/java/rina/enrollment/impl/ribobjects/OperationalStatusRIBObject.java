@@ -32,5 +32,10 @@ public class OperationalStatusRIBObject extends BaseRIBObject{
 		enrollmentStateMachine.start(cdapMessage, cdapSessionDescriptor);
 		this.started = true;
 	}
+	
+	@Override
+	public Object getObjectValue(){
+		return started;
+	}
 
 }

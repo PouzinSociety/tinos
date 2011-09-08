@@ -51,4 +51,9 @@ public class EnrollmentRIBObject extends BaseRIBObject{
 		}
 		enrollmentStateMachine.cancelread(cdapMessage, cdapSessionDescriptor);
 	}
+	
+	@Override
+	public Object getObjectValue(){
+		return null;
+	}
 }

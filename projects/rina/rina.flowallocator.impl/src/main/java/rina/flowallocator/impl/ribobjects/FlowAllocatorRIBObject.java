@@ -28,5 +28,11 @@ public class FlowAllocatorRIBObject extends BaseRIBObject{
 	public void create(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
 		flowAllocator.createFlowRequestMessageReceived(cdapMessage, cdapSessionDescriptor.getPortId());
 	}
+	
+	@Override
+	public Object getObjectValue(){
+		return null;
+	}
+	
 
 }

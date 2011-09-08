@@ -51,6 +51,7 @@ public class WhatevercastName {
 		this.setMembers = setMembers;
 	}
 	
+	@Override
 	public boolean equals(Object object){
 		if (object == null){
 			return false;
@@ -65,5 +66,12 @@ public class WhatevercastName {
 		}
 		
 		return false;
+	}
+	
+	@Override
+	public String toString(){
+		String result = "Name: " + this.getName() + "\n";
+		result = result + "Rule: " + this.getRule();
+		return result;
 	}
 }

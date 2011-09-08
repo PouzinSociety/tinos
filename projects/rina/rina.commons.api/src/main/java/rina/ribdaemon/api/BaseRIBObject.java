@@ -26,7 +26,7 @@ import rina.ipcprocess.api.IPCProcess;
  * @author eduardgrasa
  *
  */
-public class BaseRIBObject implements RIBObject{
+public abstract class BaseRIBObject implements RIBObject{
 	
 	private static final Log log = LogFactory.getLog(BaseRIBObject.class);
 	private IPCProcess ipcProcess = null;
@@ -34,7 +34,7 @@ public class BaseRIBObject implements RIBObject{
 	private RIBDaemon ribDaemon = null;
 	
 	/**
-	 * The attributes of this object: objectName, objectClass, objectInstance
+	 * The attributes of this object: objectName, objectClass, objectInstance, objectValue
 	 */
 	private String objectName = null;
 	private String objectClass = null;
@@ -81,6 +81,8 @@ public class BaseRIBObject implements RIBObject{
 	public void setParent(RIBObject parent){
 		this.parent = parent;
 	}
+	
+	public abstract Object getObjectValue();
 	
 	/**
     * Return the children of RIBObject. The RIB is represented by a single

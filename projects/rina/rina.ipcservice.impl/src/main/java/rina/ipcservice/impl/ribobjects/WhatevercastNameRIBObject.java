@@ -36,4 +36,9 @@ public class WhatevercastNameRIBObject extends BaseRIBObject{
 		this.getParent().removeChild(objectName);
 		this.getRIBDaemon().delete(this.getObjectClass(), this.getObjectName(), this.getObjectInstance(), object);
 	}
+	
+	@Override
+	public Object getObjectValue(){
+		return whatevercastName;
+	}
 }

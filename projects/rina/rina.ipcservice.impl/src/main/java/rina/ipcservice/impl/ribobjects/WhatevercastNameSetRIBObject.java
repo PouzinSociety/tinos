@@ -69,4 +69,9 @@ public class WhatevercastNameSetRIBObject extends BaseRIBObject{
 		
 		return whatevercastNames;
 	}
+	
+	@Override
+	public Object getObjectValue(){
+		return null;
+	}
 }

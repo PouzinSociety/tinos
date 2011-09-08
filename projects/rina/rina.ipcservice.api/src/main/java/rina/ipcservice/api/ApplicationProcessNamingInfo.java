@@ -54,7 +54,6 @@ public class ApplicationProcessNamingInfo {
 		return this.applicationProcessName + "-" + this.getApplicationProcessInstance();
 	}
 	
-	
 	@Override
 	public boolean equals(Object candidate){
 		if (candidate == null){
@@ -90,6 +89,15 @@ public class ApplicationProcessNamingInfo {
 		}
 		
 		return true;
+	}
+	
+	@Override
+	public String toString(){
+		String result = "Application Process Name: " + this.applicationProcessName + "\n";
+		result = result + "Application Process Instance: " + this.getApplicationProcessInstance() + "\n";
+		result = result + "Application Entity Name: " + this.getApplicationEntityName() + "\n";
+		result = result + "Applciation Entity Instance: " + this.getApplicationEntityInstance() + "\n";
+		return result;
 	}
 	
 }

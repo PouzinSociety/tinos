@@ -485,4 +485,8 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 			throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_AND_OBJECT_NAME_OR_OBJECT_INSTANCE_NOT_SPECIFIED);
 		}
 	}
+	
+	public List<RIBObject> getRIBObjects(){
+		return this.rib.getRIBObjects();
+	}
 }

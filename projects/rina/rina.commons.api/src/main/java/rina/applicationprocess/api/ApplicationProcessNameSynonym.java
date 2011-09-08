@@ -45,4 +45,22 @@ public class ApplicationProcessNameSynonym {
 	public void setSynonym(byte[] synonym) {
 		this.synonym = synonym;
 	}
+	
+	@Override
+	public String toString(){
+		String result = "Application Process Name: " + this.applicationProcessName + "\n";
+		result = result + "Application Process Instance: " + this.applicationProcessInstance + "\n";
+		result = result + "Synonym: " + printBytes(this.synonym);
+		
+		return result;
+	}
+
+	private String printBytes(byte[] synonym) {
+		String result = "";
+		for(int i=0; i<synonym.length; i++){
+			result = result + String.format("%02X", synonym[i]) + " ";
+		}
+		
+		return result;
+	}
 }

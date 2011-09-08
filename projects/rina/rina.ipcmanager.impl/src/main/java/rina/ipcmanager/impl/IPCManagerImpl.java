@@ -16,6 +16,7 @@ import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
 
 public class IPCManagerImpl {
@@ -91,6 +92,26 @@ public class IPCManagerImpl {
 		}
 		
 		return ipcProcessesInformation;
+	}
+	
+	public List<String> getPrintedRIB(String applicationProcessName, String applicationProcessInstance) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance, null, null));
+		RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+		List<RIBObject> ribObjects = ribDaemon.getRIBObjects();
+		List<String> result = new ArrayList<String>();
+		RIBObject currentRIBObject = null;
+		String object = null;
+		
+		for(int i=0; i<ribObjects.size(); i++){
+			currentRIBObject = ribObjects.get(i);
+			object = "\nObject name: " + currentRIBObject.getObjectName() + "\n";
+			object = object + "Object class: " + currentRIBObject.getObjectClass() + "\n";
+			object = object + "Object instance: " + currentRIBObject.getObjectInstance() + "\n";
+			object = object + "Object value: " + currentRIBObject.getObjectValue() + "\n";
+			result.add(object);
+		}
+		
+		return result;
 	}
 
 }

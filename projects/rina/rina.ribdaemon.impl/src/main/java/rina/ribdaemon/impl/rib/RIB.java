@@ -1,6 +1,9 @@
 package rina.ribdaemon.impl.rib;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import rina.ribdaemon.api.RIBDaemonException;
@@ -35,6 +38,16 @@ public class RIB{
     
     public void removeRIBObject(String objectName){
     	rib.remove(objectName);
+    }
+    
+    public List<RIBObject> getRIBObjects(){
+    	List<RIBObject> result = new ArrayList<RIBObject>();
+    	Iterator<String> iterator = rib.keySet().iterator();
+    	while (iterator.hasNext()){
+    		result.add(rib.get(iterator.next()));
+    	}
+    	
+    	return result;
     }
     
 }

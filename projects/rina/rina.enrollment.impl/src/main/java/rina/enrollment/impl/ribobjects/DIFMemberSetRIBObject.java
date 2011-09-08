@@ -93,4 +93,9 @@ public class DIFMemberSetRIBObject extends BaseRIBObject{
 			this.removeChild(childrenNames.get(i));
 		}
 	}
+	
+	@Override
+	public Object getObjectValue(){
+		return null;
+	}
 }

@@ -55,5 +55,10 @@ public class CurrentSynonymRIBObject extends BaseRIBObject{
 		
 		this.synonym = (ApplicationProcessNameSynonym) object;
 	}
+	
+	@Override
+	public Object getObjectValue(){
+		return synonym;
+	}
 
 }

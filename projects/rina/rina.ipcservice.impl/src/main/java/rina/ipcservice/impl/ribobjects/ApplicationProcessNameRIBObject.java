@@ -37,5 +37,10 @@ public class ApplicationProcessNameRIBObject extends BaseRIBObject{
 		
 		this.apNamingInfo = (ApplicationProcessNamingInfo) object;
 	}
+	
+	@Override
+	public Object getObjectValue(){
+		return apNamingInfo;
+	}
 
 }
