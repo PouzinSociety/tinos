@@ -100,10 +100,9 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @throws Exception if there was an issue allocating the flow
 	 */
 	public int allocateFlow(ApplicationProcessNamingInfo apNamingInfo, QoSParameters qosparams) throws Exception{
-		//TODO need to map the application naming information to the IP address of the IPC process
-		
-		//TODO hardcoded to test, fix this
-		Socket socket = new Socket("84.88.41.36", RMTServer.DEFAULT_PORT);
+		//Map the application naming information to the DNS name of the interface of the IPC process
+		String hostname = apNamingInfo.getApplicationProcessName() + "-" + apNamingInfo.getApplicationProcessInstance() + ".rina";
+		Socket socket = new Socket(hostname, RMTServer.DEFAULT_PORT);
 		newConnectionAccepted(socket);
 		return socket.getPort();
 	}

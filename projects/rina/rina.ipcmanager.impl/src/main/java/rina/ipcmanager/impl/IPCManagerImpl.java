@@ -8,7 +8,15 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.applicationprocess.api.ApplicationProcessNameSynonym;
 import rina.applicationprocess.api.WhatevercastName;
+import rina.cdap.api.CDAPSessionDescriptor;
+import rina.cdap.api.message.CDAPMessage;
+import rina.cdap.api.message.ObjectValue;
+import rina.encoding.api.BaseEncoder;
+import rina.encoding.api.Encoder;
+import rina.enrollment.api.BaseEnrollmentTask;
+import rina.enrollment.api.EnrollmentTask;
 import rina.ipcmanager.impl.console.IPCManagerConsole;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
@@ -112,6 +120,29 @@ public class IPCManagerImpl {
 		}
 		
 		return result;
+	}
+	
+	public void enroll(String sourceApplicationProcessName, String sourceApplicationProcessInstance, 
+			String destinationApplicationProcessName, String destinationApplicationProcessInstance) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(
+				new ApplicationProcessNamingInfo(sourceApplicationProcessName, sourceApplicationProcessInstance, null, null));
+		EnrollmentTask enrollmentTask = (EnrollmentTask) ipcProcess.getIPCProcessComponent(BaseEnrollmentTask.getComponentName());
+		Encoder encoder = (Encoder) ipcProcess.getIPCProcessComponent(BaseEncoder.getComponentName());
+		
+		ApplicationProcessNameSynonym apNameSynonym = new ApplicationProcessNameSynonym();
+		apNameSynonym.setApplicationProcessName(destinationApplicationProcessName);
+		apNameSynonym.setApplicationProcessInstance(destinationApplicationProcessInstance);
+		byte[] encodedApNamesynonym = encoder.encode(apNameSynonym);
+		ObjectValue objectValue = new ObjectValue();
+		objectValue.setByteval(encodedApNamesynonym);
+		
+		
+		CDAPMessage cdapMessage = CDAPMessage.getCreateObjectRequestMessage(null, null, 3, "", 0, RIBObjectNames.DAF + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS + RIBObjectNames.SEPARATOR + destinationApplicationProcessName + "-" + 
+				destinationApplicationProcessInstance, objectValue, 0);
+		CDAPSessionDescriptor cdapSessionDescriptor = new CDAPSessionDescriptor();
+		enrollmentTask.initiateEnrollment(cdapMessage, cdapSessionDescriptor);
 	}
 
 }

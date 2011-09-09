@@ -39,6 +39,7 @@ public class IPCManagerConsole implements Runnable{
 		commands = new Hashtable<String, ConsoleCommand>();
 		commands.put(PrintRIBCommand.ID, new PrintRIBCommand(ipcManagerImpl));
 		commands.put(ListIPCProcessesCommand.ID, new ListIPCProcessesCommand(ipcManagerImpl));
+		commands.put(EnrollCommand.ID, new EnrollCommand(ipcManagerImpl));
 		commands.put(DestroyIPCProcessCommand.ID, new DestroyIPCProcessCommand(ipcManagerImpl));
 		commands.put(CreateIPCProcessCommand.ID, new CreateIPCProcessCommand(ipcManagerImpl));
 	}
@@ -56,8 +57,9 @@ public class IPCManagerConsole implements Runnable{
 			while (true){
 				Socket socket = serverSocket.accept();
 				String address = socket.getInetAddress().getHostAddress();
+				String hostname = socket.getInetAddress().getHostName();
 				
-				if (!address.equals("127.0.0.1")){
+				if (!address.equals("127.0.0.1") && !hostname.equals("localhost")){
 					log.info("Connection attempt from "+address+" blocked");
 					socket.close();
 					continue;
