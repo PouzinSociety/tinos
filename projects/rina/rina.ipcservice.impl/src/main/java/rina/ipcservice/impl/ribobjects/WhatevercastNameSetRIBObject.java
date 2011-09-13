@@ -24,7 +24,7 @@ public class WhatevercastNameSetRIBObject extends BaseRIBObject{
 	private static final Log log = LogFactory.getLog(WhatevercastNameSetRIBObject.class);
 	
 	public WhatevercastNameSetRIBObject(IPCProcessImpl ipcProcess){
-		super(ipcProcess, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES, 
 				null, Calendar.getInstance().getTimeInMillis());
 	}

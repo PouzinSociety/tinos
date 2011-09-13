@@ -18,7 +18,7 @@ public class ApplicationProcessNameRIBObject extends BaseRIBObject{
 	private ApplicationProcessNamingInfo apNamingInfo = null;
 	
 	public ApplicationProcessNameRIBObject(IPCProcess ipcProcess){
-		super(ipcProcess, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME, 
 				null, Calendar.getInstance().getTimeInMillis());
 	}

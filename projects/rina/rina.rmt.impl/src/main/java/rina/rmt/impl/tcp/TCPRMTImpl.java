@@ -1,6 +1,10 @@
 package rina.rmt.impl.tcp;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -28,6 +32,13 @@ import rina.rmt.api.BaseRMT;
 public class TCPRMTImpl extends BaseRMT{
 	private static final Log log = LogFactory.getLog(TCPRMTImpl.class);
 	
+	private static final String CONFIG_FILE_NAME = "config/rina/aptohostmappings.rina";
+	
+	/**
+	 * Map applicationprocess name + instance to hostname (or IP address) and socket number
+	 */
+	private Map<String, String> apToHostnameMappings = null;
+	
 	/**
 	 * Contains the open TCP flows to other IPC processes, indexed by portId
 	 */
@@ -52,7 +63,32 @@ public class TCPRMTImpl extends BaseRMT{
 
 	public TCPRMTImpl(){
 		this(RMTServer.DEFAULT_PORT);
+		try{
+			apToHostnameMappings = new Hashtable<String, String>();
+			FileInputStream fstream = new FileInputStream(CONFIG_FILE_NAME);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine = null;
+			String[] tokens = null;
+			log.debug("Reading configuration file to lean IPC processes AP naming to host mappings");
+			while ((strLine = br.readLine()) != null)   {
+				if (strLine.startsWith("#")){
+					continue;
+				}
+				tokens = strLine.split(" ");
+				if (tokens.length != 4){
+					log.error("Ignoring line "+strLine+" because it hasn't got enough arguments");
+					continue;
+				}
+				apToHostnameMappings.put(tokens[0]+tokens[1], tokens[2]+"#"+tokens[3]);
+				log.debug("IPC process " + tokens[0] + " " + tokens[1] + " reachable at "+ tokens[2] +" port " + tokens[3]);
+			}
+			in.close();
+		}catch (Exception e){
+			log.error("Error initializing application process name to host mappings: " + e.getMessage());
+		}
 	}
+
 	
 	public TCPRMTImpl(int port){
 		this.flowTable = new Hashtable<Integer, Socket>();
@@ -101,8 +137,8 @@ public class TCPRMTImpl extends BaseRMT{
 	 */
 	public int allocateFlow(ApplicationProcessNamingInfo apNamingInfo, QoSParameters qosparams) throws Exception{
 		//Map the application naming information to the DNS name of the interface of the IPC process
-		String hostname = apNamingInfo.getApplicationProcessName() + "-" + apNamingInfo.getApplicationProcessInstance() + ".rina";
-		Socket socket = new Socket(hostname, RMTServer.DEFAULT_PORT);
+		String[] contactInformation = apToHostnameMappings.get(apNamingInfo.getApplicationProcessName() + apNamingInfo.getApplicationProcessInstance()).split("#");
+		Socket socket = new Socket(contactInformation[0], Integer.parseInt(contactInformation[1]));
 		newConnectionAccepted(socket);
 		return socket.getPort();
 	}

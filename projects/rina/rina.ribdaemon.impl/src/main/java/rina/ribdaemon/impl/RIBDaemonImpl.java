@@ -435,6 +435,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		validateObjectArguments(objectClass, objectName, objectInstance);
 		RIBObject ribObject = getRIBObject(objectName, objectClass, objectInstance);
 		ribObject.delete(objectClass, objectName, objectInstance, object);
+		this.rib.removeRIBObject(objectName);
 	}
 
 	public synchronized Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {

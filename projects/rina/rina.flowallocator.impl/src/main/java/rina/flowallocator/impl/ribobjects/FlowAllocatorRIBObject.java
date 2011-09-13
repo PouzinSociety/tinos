@@ -16,7 +16,7 @@ public class FlowAllocatorRIBObject extends BaseRIBObject{
 	private FlowAllocatorImpl flowAllocator = null;
 	
 	public FlowAllocatorRIBObject(FlowAllocatorImpl flowAllocator, IPCProcess ipcProcess){
-		super(ipcProcess, RIBObjectNames.DIF + RIBObjectNames.SEPARATOR + RIBObjectNames.RESOURCE_ALLOCATION + RIBObjectNames.SEPARATOR +
+		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DIF + RIBObjectNames.SEPARATOR + RIBObjectNames.RESOURCE_ALLOCATION + RIBObjectNames.SEPARATOR +
 				RIBObjectNames.FLOW_ALLOCATOR, null, Calendar.getInstance().getTimeInMillis());
 		this.flowAllocator = flowAllocator;
 	}

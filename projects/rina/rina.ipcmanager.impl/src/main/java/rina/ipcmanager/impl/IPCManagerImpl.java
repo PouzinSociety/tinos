@@ -63,7 +63,7 @@ public class IPCManagerImpl {
 		dan.setRule("All members");
 
 		RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-		ribDaemon.create(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+		ribDaemon.create(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
 				RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "1", 0, dan);
 	}
@@ -84,11 +84,10 @@ public class IPCManagerImpl {
 		for(int i=0; i<ipcProcesses.size(); i++){
 			try{
 				ribDaemon = (RIBDaemon) ipcProcesses.get(i).getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-				apNamingInfo = (ApplicationProcessNamingInfo) ribDaemon.read(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-						RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME, 0);
-				difName = (WhatevercastName) ribDaemon.read(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-						RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
-						RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "1" , 0);
+				apNamingInfo = (ApplicationProcessNamingInfo) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + 
+						RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME, 0);
+				difName = (WhatevercastName) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+						RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "1" , 0);
 				information = "\n";
 				information = information + "DIF name: " + difName.getName() + "\n";
 				information = information + "Application process name: "+apNamingInfo.getApplicationProcessName() + "\n";
@@ -137,7 +136,7 @@ public class IPCManagerImpl {
 		objectValue.setByteval(encodedApNamesynonym);
 		
 		
-		CDAPMessage cdapMessage = CDAPMessage.getCreateObjectRequestMessage(null, null, 3, "", 0, RIBObjectNames.DAF + 
+		CDAPMessage cdapMessage = CDAPMessage.getCreateObjectRequestMessage(null, null, 3, "", 0, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS + RIBObjectNames.SEPARATOR + destinationApplicationProcessName + "-" + 
 				destinationApplicationProcessInstance, objectValue, 0);

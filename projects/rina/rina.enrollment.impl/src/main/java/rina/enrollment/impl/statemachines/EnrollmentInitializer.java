@@ -1,4 +1,4 @@
-package rina.enrollment.impl;
+package rina.enrollment.impl.statemachines;
 
 import java.io.IOException;
 import java.util.List;
@@ -30,7 +30,7 @@ public class EnrollmentInitializer implements Runnable{
 	private enum State {ADDRESS, WHATEVERCAST_NAMES, DATA_TRANSFER_CONSTANTS, QOS_CUBES, 
 		EFCP_POLICIES, FLOW_ALLOCATOR_POLICIES, DONE};
 	
-	private EnrollmentStateMachine enrollmentStateMachine = null;
+	private DefaultEnrollmentStateMachine enrollmentStateMachine = null;
 	
 	private boolean cancelread = false;
 		
@@ -38,7 +38,7 @@ public class EnrollmentInitializer implements Runnable{
 	
 	private int invokeId = 0;
 
-	public EnrollmentInitializer(EnrollmentStateMachine enrollmentStateMachine, int invokeId, int portId){
+	public EnrollmentInitializer(DefaultEnrollmentStateMachine enrollmentStateMachine, int invokeId, int portId){
 		this.enrollmentStateMachine = enrollmentStateMachine;
 		this.invokeId = invokeId;
 	}
@@ -102,7 +102,7 @@ public class EnrollmentInitializer implements Runnable{
 		}
 		
 		CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(Flags.F_RD_INCOMPLETE, invokeId, 
-				"rina.messages.ApplicationProcessNameSynonym", 1, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				"rina.messages.ApplicationProcessNameSynonym", 1, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, objectValue, 0, null);
 		
 		enrollmentStateMachine.sendCDAPMessage(cdapMessage);
@@ -115,8 +115,8 @@ public class EnrollmentInitializer implements Runnable{
 		ObjectValue objectValue = null;
 		
 		RIBDaemon ribDaemon = enrollmentStateMachine.getRIBDaemon();
-		List<WhatevercastName> whatevercastNames = (List<WhatevercastName>) ribDaemon.read(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + 
-				RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES, 0);
+		List<WhatevercastName> whatevercastNames = (List<WhatevercastName>) ribDaemon.read(null, RIBObjectNames.SEPARATOR +  RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + 
+				RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES, 0);
 
 		for(int i=0; i<whatevercastNames.size(); i++){
 			try{
@@ -124,7 +124,7 @@ public class EnrollmentInitializer implements Runnable{
 				objectValue = new ObjectValue();
 				objectValue.setByteval(serializedObject);
 				CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(Flags.F_RD_INCOMPLETE, invokeId, 
-						"rina.messages.WhatevercastName", 2 + i, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + 
+						"rina.messages.WhatevercastName", 2 + i, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + 
 						RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + (i+1), objectValue, 0, null);
 				enrollmentStateMachine.sendCDAPMessage(cdapMessage);
 			}catch(Exception ex){
@@ -160,7 +160,7 @@ public class EnrollmentInitializer implements Runnable{
 		}
 		
 		CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(Flags.F_RD_INCOMPLETE, invokeId, 
-				"rina.messages.DataTransferConstants", 4, "dif.ipc.datatransfer.constants", objectValue, 0, null);
+				"rina.messages.DataTransferConstants", 4, "/dif/ipc/datatransfer/constants", objectValue, 0, null);
 		
 		enrollmentStateMachine.sendCDAPMessage(cdapMessage);
 		state = State.QOS_CUBES;
@@ -190,7 +190,7 @@ public class EnrollmentInitializer implements Runnable{
 			objectValue = new ObjectValue();
 			objectValue.setByteval(serializedObject);
 			CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(flags, invokeId, 
-					"rina.messages.qosCube", 5, "dif.management.flowallocator.qoscube", objectValue, 0, null);
+					"rina.messages.qosCube", 5, "/dif/management/flowallocator/qoscube", objectValue, 0, null);
 			enrollmentStateMachine.sendCDAPMessage(cdapMessage);
 		}catch(Exception ex){
 			ex.printStackTrace();
@@ -214,7 +214,7 @@ public class EnrollmentInitializer implements Runnable{
 			objectValue = new ObjectValue();
 			objectValue.setByteval(serializedObject);
 			CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(null, invokeId, 
-					"rina.messages.qosCube", 5, "dif.management.flowallocator.qoscube", objectValue, 0, null);
+					"rina.messages.qosCube", 5, "/dif/management/flowallocator/qoscube", objectValue, 0, null);
 			enrollmentStateMachine.sendCDAPMessage(cdapMessage);
 		}catch(Exception ex){
 			ex.printStackTrace();

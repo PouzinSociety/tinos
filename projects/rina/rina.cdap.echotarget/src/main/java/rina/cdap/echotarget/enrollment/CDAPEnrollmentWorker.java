@@ -141,7 +141,7 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		
 		//Read the joining IPC process address
 		outgoingCDAPMessage = CDAPMessage.getReadObjectRequestMessage(null, null, 14, 
-				"rina.messages.ApplicationProcessNameSynonym", 0, "daf/management/currentSynonym", 0);
+				"rina.messages.ApplicationProcessNameSynonym", 0, "/daf/management/currentSynonym", 0);
 		
 		//set timer (max time to wait before getting M_READ_R)
 		readAddressResponseTimer = getDisconnectTimerTask();
@@ -205,7 +205,7 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		
 		if (address != null && allocated && !expired){
 			outgoingCDAPMessage = CDAPMessage.getStartObjectRequestMessage(null, null, 25, 
-					"rina.messages.operationalStatus", null, 0, "dif/management/operationalStatus", 0);
+					"rina.messages.operationalStatus", null, 0, "/dif/management/operationalStatus", 0);
 			this.setState(State.WAITING_FOR_STARTUP);
 			startResponseTimer = getDisconnectTimerTask();
 			timer.schedule(startResponseTimer, TIME_TO_WAIT_FOR_START_RESPONSE);
@@ -221,7 +221,7 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		timer.purge();
 		
 		if (!cdapMessage.getOpCode().equals(Opcode.M_READ) || cdapMessage.getObjName() == null || 
-				!cdapMessage.getObjName().equals("daf/management/enrollment")){
+				!cdapMessage.getObjName().equals("/daf/management/enrollment")){
 			end = true;
 			return CDAPMessage.getReleaseConnectionRequestMessage(null, 0);
 		}
@@ -241,7 +241,7 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		
 		if (cdapMessage != null){
 			if (!cdapMessage.getOpCode().equals(Opcode.M_CANCELREAD) || cdapMessage.getObjName() == null || 
-					!cdapMessage.getObjName().equals("daf/management/enrollment")){
+					!cdapMessage.getObjName().equals("/daf/management/enrollment")){
 				end = true;
 				return CDAPMessage.getReleaseConnectionRequestMessage(null, 0);
 			}
@@ -263,7 +263,7 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		timer.schedule(startResponseTimer, TIME_TO_WAIT_FOR_START_RESPONSE);
 		
 		outgoingCDAPMessage = CDAPMessage.getStartObjectRequestMessage(null, null, 25, 
-				"rina.messages.operationalStatus", null, 0, "dif/management/operationalStatus", 0);
+				"rina.messages.operationalStatus", null, 0, "/dif/management/operationalStatus", 0);
 		this.setState(State.WAITING_FOR_STARTUP);
 			
 		return outgoingCDAPMessage;
@@ -275,7 +275,7 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		timer.purge();
 		
 		if (!cdapMessage.getOpCode().equals(Opcode.M_START_R) || cdapMessage.getObjName() == null || 
-				!cdapMessage.getObjName().equals("dif/management/operationalStatus")){
+				!cdapMessage.getObjName().equals("/dif/management/operationalStatus")){
 			end = true;
 			return CDAPMessage.getReleaseConnectionRequestMessage(null, 0);
 		}

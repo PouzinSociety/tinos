@@ -28,7 +28,7 @@ public class DIFMemberSetRIBObject extends BaseRIBObject{
 	private EnrollmentTaskImpl enrollmentTask = null;
 	
 	public DIFMemberSetRIBObject(EnrollmentTaskImpl enrollmentTask, IPCProcess ipcProcess){
-		super(ipcProcess, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS, 
 				null, Calendar.getInstance().getTimeInMillis());
 		this.enrollmentTask = enrollmentTask;

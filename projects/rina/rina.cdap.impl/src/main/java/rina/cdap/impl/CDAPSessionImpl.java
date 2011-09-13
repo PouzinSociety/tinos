@@ -380,7 +380,7 @@ public class CDAPSessionImpl implements CDAPSession{
 		sessionDescriptor.setDestAEName(cdapMessage.getDestAEName());
 		sessionDescriptor.setDestApInst(cdapMessage.getDestApInst());
 		sessionDescriptor.setDestApName(cdapMessage.getDestApName());
-		sessionDescriptor.setSrcAEInst(cdapMessage.getSrcApInst());
+		sessionDescriptor.setSrcAEInst(cdapMessage.getSrcAEInst());
 		sessionDescriptor.setSrcAEName(cdapMessage.getSrcAEName());
 		sessionDescriptor.setSrcApInst(cdapMessage.getSrcApInst());
 		sessionDescriptor.setSrcApName(cdapMessage.getSrcApName());

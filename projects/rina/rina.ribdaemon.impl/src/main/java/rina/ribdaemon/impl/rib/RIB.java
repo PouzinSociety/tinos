@@ -8,6 +8,7 @@ import java.util.Map;
 
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
+import rina.ribdaemon.api.RIBObjectNames;
 
 /**
  * Stores the RIB information
@@ -43,11 +44,55 @@ public class RIB{
     public List<RIBObject> getRIBObjects(){
     	List<RIBObject> result = new ArrayList<RIBObject>();
     	Iterator<String> iterator = rib.keySet().iterator();
+    	
     	while (iterator.hasNext()){
-    		result.add(rib.get(iterator.next()));
+    		String objectName = iterator.next();
+    		int index = getInsertionIndex(result, objectName);
+    		result.add(index, rib.get(objectName));
     	}
     	
     	return result;
+    }
+    
+    private int getInsertionIndex(List<RIBObject> result, String objectname){
+    	int index = 0;
+    	int matches = 0;
+    	int currentMatches = 0;
+    	String candidate = null;
+    	
+    	for(int i=0; i<result.size(); i++){
+    		candidate = result.get(i).getObjectName();
+    		matches = getMatches(candidate, objectname);
+    		
+    		if (matches == objectname.split(RIBObjectNames.SEPARATOR).length -1){
+    			return i;
+    		}
+    		
+    		else if (matches > currentMatches){
+    			currentMatches = matches;
+    			index = i;
+    		}
+    	}
+    	
+    	return index;
+    }
+    
+    private int getMatches(String candidate, String objectName){
+    	String[] splittedCandidate = candidate.split(RIBObjectNames.SEPARATOR);
+    	String[] splittedObjectName = objectName.split(RIBObjectNames.SEPARATOR);
+    	
+    	int iterations = Math.min(splittedCandidate.length, splittedObjectName.length);
+    	
+    	int matches = 0;
+    	for(int i=0; i<iterations; i++){
+    		if (splittedCandidate[i].equals(splittedObjectName[i])){
+    			matches++;
+    		}else{
+    			return matches;
+    		}
+    	}
+    	
+    	return matches;
     }
     
 }

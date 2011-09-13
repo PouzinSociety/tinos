@@ -231,8 +231,9 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	public synchronized void register(ApplicationProcessNamingInfo apNamingInfo) {
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
 		try{
-			ApplicationProcessNameSynonym currentSynonym = (ApplicationProcessNameSynonym) ribDaemon.read(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0);
+			ApplicationProcessNameSynonym currentSynonym = (ApplicationProcessNameSynonym) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
+					RIBObjectNames.CURRENT_SYNONYM, 0);
 			flowAllocator.getDirectoryForwardingTable().addEntry(apNamingInfo, currentSynonym.getSynonym());
 			//TODO tell the RIB Daemon to disseminate this
 		}catch(RIBDaemonException ex){
