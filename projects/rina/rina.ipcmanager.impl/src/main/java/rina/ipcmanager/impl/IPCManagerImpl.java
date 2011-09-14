@@ -13,10 +13,12 @@ import rina.applicationprocess.api.WhatevercastName;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
+import rina.efcp.api.DataTransferConstants;
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
 import rina.enrollment.api.BaseEnrollmentTask;
 import rina.enrollment.api.EnrollmentTask;
+import rina.flowallocator.api.QoSCube;
 import rina.ipcmanager.impl.console.IPCManagerConsole;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
@@ -54,18 +56,72 @@ public class IPCManagerImpl {
 		this.ipcProcessFactory = ipcProcessFactory;
 	}
 	
-	public void createIPCProcess(String difName, String applicationProcessName, String applicationProcessInstance) throws Exception{
+	public void createIPCProcess(String applicationProcessName, String applicationProcessInstance, String difName) throws Exception{
 		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance, null, null);
 		IPCProcess ipcProcess = ipcProcessFactory.createIPCProcess(apNamingInfo);
-		
-		WhatevercastName dan = new WhatevercastName();
-		dan.setName(difName);
-		dan.setRule("All members");
+		if (difName != null){
+			WhatevercastName dan = new WhatevercastName();
+			dan.setName(difName);
+			dan.setRule("All members");
 
-		RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-		ribDaemon.create(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
-				RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "1", 0, dan);
+			RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+			ribDaemon.create(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
+					RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "all", 0, dan);
+			
+			ApplicationProcessNameSynonym synonym = new ApplicationProcessNameSynonym();
+			synonym.setApplicationProcessName(applicationProcessName);
+			synonym.setApplicationProcessInstance(applicationProcessInstance);
+			synonym.setSynonym(new byte[]{0x01});
+			ribDaemon.write(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0, synonym);
+			
+			DataTransferConstants dataTransferConstants = new DataTransferConstants();
+			dataTransferConstants.setAddressLength(2);
+			dataTransferConstants.setCepIdLength(2);
+			dataTransferConstants.setDIFConcatenation(true);
+			dataTransferConstants.setDIFFragmentation(false);
+			dataTransferConstants.setDIFIntegrity(false);
+			dataTransferConstants.setLengthLength(2);
+			dataTransferConstants.setMaxPDUSize(1950);
+			dataTransferConstants.setPortIdLength(2);
+			dataTransferConstants.setQosIdLength(1);
+			dataTransferConstants.setSequenceNumberLength(2);
+			ribDaemon.write(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DIF + RIBObjectNames.SEPARATOR + RIBObjectNames.IPC + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.DATA_TRANSFER+ RIBObjectNames.SEPARATOR + RIBObjectNames.CONSTANTS, 0, dataTransferConstants);
+			
+			QoSCube qosCube = new QoSCube();
+			qosCube.setAverageBandwidth(0);
+			qosCube.setAverageSDUBandwidth(0);
+			qosCube.setDelay(0);
+			qosCube.setJitter(0);
+			qosCube.setMaxAllowableGapSdu(-1);
+			qosCube.setOrder(false);
+			qosCube.setPartialDelivery(true);
+			qosCube.setPeakBandwidthDuration(0);
+			qosCube.setPeakSDUBandwidthDuration(0);
+			qosCube.setQosId(new byte[]{0x01});
+			qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
+			ribDaemon.create(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DIF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.FLOW_ALLOCATOR + RIBObjectNames.SEPARATOR + RIBObjectNames.QOS_CUBES 
+					+ RIBObjectNames.SEPARATOR + "unreliable", 0, qosCube);
+			
+			qosCube = new QoSCube();
+			qosCube.setAverageBandwidth(0);
+			qosCube.setAverageSDUBandwidth(0);
+			qosCube.setDelay(0);
+			qosCube.setJitter(0);
+			qosCube.setMaxAllowableGapSdu(0);
+			qosCube.setOrder(true);
+			qosCube.setPartialDelivery(false);
+			qosCube.setPeakBandwidthDuration(0);
+			qosCube.setPeakSDUBandwidthDuration(0);
+			qosCube.setQosId(new byte[]{0x02});
+			qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
+			ribDaemon.create(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DIF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.FLOW_ALLOCATOR + RIBObjectNames.SEPARATOR + RIBObjectNames.QOS_CUBES 
+					+ RIBObjectNames.SEPARATOR + "reliable", 0, qosCube);
+		}
 	}
 	
 	public void destroyIPCProcesses(String applicationProcessName, String applicationProcessInstance) throws Exception{

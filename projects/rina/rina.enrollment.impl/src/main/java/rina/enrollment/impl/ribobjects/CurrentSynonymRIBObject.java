@@ -40,7 +40,7 @@ public class CurrentSynonymRIBObject extends BaseRIBObject{
 		EnrollmentStateMachine enrollmentStateMachine = null;
 		
 		try{
-			enrollmentStateMachine = enrollmentTask.getEnrollmentStateMachine(cdapSessionDescriptor);
+			enrollmentStateMachine = enrollmentTask.getEnrollmentStateMachine(cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo());
 		}catch(Exception ex){
 			log.error(ex);
 			try{

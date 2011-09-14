@@ -205,10 +205,18 @@ public class CDAPSessionDescriptor {
 		this.portId = portId;
 	}
 	
+	/**
+	 * The source naming information is always the naming information of the local Application process
+	 * @return
+	 */
 	public ApplicationProcessNamingInfo getSourceApplicationProcessNamingInfo(){
 		return new ApplicationProcessNamingInfo(this.getSrcApName(), this.getSrcApInst(), this.getSrcAEName(), this.getSrcAEInst());
 	}
 	
+	/**
+	 * The destination naming information is always the naming information of the remote application process
+	 * @return
+	 */
 	public ApplicationProcessNamingInfo getDestinationApplicationProcessNamingInfo(){
 		return new ApplicationProcessNamingInfo(this.getDestApName(), this.getDestApInst(), this.getDestAEName(), this.getDestAEInst());
 	}

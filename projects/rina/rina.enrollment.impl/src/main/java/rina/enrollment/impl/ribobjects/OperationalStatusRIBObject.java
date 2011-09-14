@@ -5,12 +5,14 @@ import java.util.Calendar;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.applicationprocess.api.ApplicationProcessNameSynonym;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.enrollment.impl.EnrollmentTaskImpl;
 import rina.enrollment.impl.statemachines.EnrollmentStateMachine;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
+import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObjectNames;
 
 /**
@@ -36,7 +38,7 @@ public class OperationalStatusRIBObject extends BaseRIBObject{
 		EnrollmentStateMachine enrollmentStateMachine = null;
 		
 		try{
-			enrollmentStateMachine = enrollmentTask.getEnrollmentStateMachine(cdapSessionDescriptor);
+			enrollmentStateMachine = enrollmentTask.getEnrollmentStateMachine(cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo());
 		}catch(Exception ex){
 			log.error(ex);
 			try{

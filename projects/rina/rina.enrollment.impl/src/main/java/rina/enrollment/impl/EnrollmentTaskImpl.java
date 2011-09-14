@@ -94,25 +94,21 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	}
 	
 	/**
-	 * Returns the enrollment state machine associated to the cdap descriptor. If none can be found a new one is created.
+	 * Returns the enrollment state machine associated to the cdap descriptor.
 	 * @param cdapSessionDescriptor
 	 * @return
 	 */
-	public EnrollmentStateMachine getEnrollmentStateMachine(CDAPSessionDescriptor cdapSessionDescriptor) throws Exception{
+	private EnrollmentStateMachine getEnrollmentStateMachine(CDAPSessionDescriptor cdapSessionDescriptor) throws Exception{
 		try{
 			ApplicationProcessNamingInfo myNamingInfo = (ApplicationProcessNamingInfo) ribDaemon.read(null, 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + 
 					RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME, 0);
 			ApplicationProcessNamingInfo sourceNamingInfo = cdapSessionDescriptor.getSourceApplicationProcessNamingInfo();
 			ApplicationProcessNamingInfo destinationNamingInfo = cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo();
-			EnrollmentStateMachine enrollmentStateMachine = null;
-			List<WhatevercastName> whatevercastNames = (List<WhatevercastName>) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR +
-					RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES, 0);
 			
-			if (myNamingInfo.getApplicationProcessName().equals(destinationNamingInfo.getApplicationProcessName()) && 
-					myNamingInfo.getApplicationProcessInstance().equals(destinationNamingInfo.getApplicationEntityInstance()) || 
-					this.containsWhatevercastName(whatevercastNames, destinationNamingInfo.getApplicationProcessName())){
-				return getEnrollmentStateMachine(sourceNamingInfo);
+			if (myNamingInfo.getApplicationProcessName().equals(sourceNamingInfo.getApplicationProcessName()) && 
+					myNamingInfo.getApplicationProcessInstance().equals(sourceNamingInfo.getApplicationProcessInstance())){
+				return getEnrollmentStateMachine(destinationNamingInfo);
 			}else{
 				throw new Exception("This IPC process is not the intended recipient of the CDAP message");
 			}
@@ -122,7 +118,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		}
 	}
 	
-	private EnrollmentStateMachine getEnrollmentStateMachine(ApplicationProcessNamingInfo apNamingInfo){
+	public EnrollmentStateMachine getEnrollmentStateMachine(ApplicationProcessNamingInfo apNamingInfo){
 		return enrollmentStateMachines.get(apNamingInfo.getApplicationProcessName()+
 				apNamingInfo.getApplicationProcessInstance()+apNamingInfo.getApplicationEntityName());
 	}
@@ -285,12 +281,12 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 */
 	public void connect(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) {
 		log.debug("Received M_CONNECT cdapMessage from portId "+cdapSessionDescriptor.getPortId());
-		cdapSessionDescriptor.setSrcAEName(cdapSessionDescriptor.getDestAEName());
+		cdapSessionDescriptor.setDestAEName(cdapSessionDescriptor.getSrcAEName());
 
 		try{
 			EnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor);
 			if (enrollmentStateMachine == null){
-				enrollmentStateMachine = this.createEnrollmentStateMachine(cdapSessionDescriptor.getSourceApplicationProcessNamingInfo());
+				enrollmentStateMachine = this.createEnrollmentStateMachine(cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo());
 			}
 			enrollmentStateMachine.connect(cdapMessage, cdapSessionDescriptor.getPortId());
 		}catch(Exception ex){
@@ -299,7 +295,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 			try{
 				ribDaemon.sendMessage(
 						CDAPMessage.getOpenConnectionResponseMessage(cdapMessage.getAuthMech(), null, cdapMessage.getSrcAEInst(), cdapMessage.getSrcAEName(), 
-								cdapMessage.getDestApInst(), cdapMessage.getDestApName(), cdapMessage.getInvokeID(), -2, ex.getMessage(), 
+								cdapMessage.getSrcApInst(), cdapMessage.getSrcApName(), cdapMessage.getInvokeID(), -2, ex.getMessage(), 
 								null, cdapMessage.getDestAEName(), cdapMessage.getDestApInst(), cdapMessage.getDestApName()), cdapSessionDescriptor.getPortId(), null);
 			}catch(Exception e){
 				log.error(e);

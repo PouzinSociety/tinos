@@ -191,4 +191,21 @@ public class QoSCube {
 			Map<String, String> policyDefaultParameters) {
 		this.policyDefaultParameters = policyDefaultParameters;
 	}
+	
+	@Override
+	public String toString(){
+		String result = "";
+		result = result + "QoS id: " + this.getQosId() +  "\n";
+		result = result + "Average bandwidth: " + this.getAverageBandwidth() +  "\n";
+		result = result + "Average SDU bandwidth: " + this.getAverageSDUBandwidth() +  "\n";
+		result = result + "Peak bandwidth duration: " + this.getPeakBandwidthDuration() +  "\n";
+		result = result + "Peak SDU bandwidth duration: " + this.getPeakSDUBandwidthDuration() +  "\n";
+		result = result + "Undetected bit error rate: " + this.getUndetectedBitErrorRate()+  "\n";
+		result = result + "Partial Delivery: " + this.isPartialDelivery() +  "\n";
+		result = result + "Order: " + this.isOrder() +  "\n";
+		result = result + "Max allowable gap SDU: " + this.getMaxAllowableGapSdu() +  "\n";
+		result = result + "Delay: " + this.getDelay() +  "\n";
+		result = result + "Jitter: " + this.getJitter() +  "\n";
+		return result;
+	}
 }

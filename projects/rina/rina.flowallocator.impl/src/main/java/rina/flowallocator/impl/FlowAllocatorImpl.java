@@ -6,24 +6,9 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.ipcprocess.api.IPCProcess;
-import rina.ipcservice.api.AllocateRequest;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
-import rina.ipcservice.api.IPCException;
-import rina.ribdaemon.api.BaseRIBDaemon;
-import rina.ribdaemon.api.MessageSubscriber;
-import rina.ribdaemon.api.MessageSubscription;
-import rina.ribdaemon.api.RIBDaemon;
-import rina.ribdaemon.api.RIBDaemonException;
-import rina.ribdaemon.api.RIBObject;
-import rina.ribdaemon.api.RIBObjectNames;
 import rina.applicationprocess.api.ApplicationProcessNameSynonym;
-import rina.cdap.api.BaseCDAPSessionManager;
-import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPSessionDescriptor;
-import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
-import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.cdap.api.message.ObjectValue;
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
@@ -31,9 +16,16 @@ import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.flowallocator.api.message.Flow;
-import rina.flowallocator.impl.FlowAllocatorInstanceImpl;
-import rina.flowallocator.impl.ribobjects.FlowAllocatorRIBObject;
+import rina.flowallocator.impl.ribobjects.QoSCubesSetRIBObject;
 import rina.flowallocator.impl.validation.AllocateRequestValidator;
+import rina.ipcprocess.api.IPCProcess;
+import rina.ipcservice.api.AllocateRequest;
+import rina.ipcservice.api.IPCException;
+import rina.ribdaemon.api.BaseRIBDaemon;
+import rina.ribdaemon.api.RIBDaemon;
+import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBObject;
+import rina.ribdaemon.api.RIBObjectNames;
 
 /** 
  * Implements the Flow Allocator
@@ -84,7 +76,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	
 	private void populateRIB(IPCProcess ipcProcess){
 		try{
-			RIBObject ribObject = new FlowAllocatorRIBObject(this, ipcProcess);
+			RIBObject ribObject = new QoSCubesSetRIBObject(ipcProcess);
 			ribDaemon.addRIBObject(ribObject);
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();

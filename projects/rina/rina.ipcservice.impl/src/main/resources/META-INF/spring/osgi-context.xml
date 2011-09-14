@@ -16,6 +16,8 @@
     <osgi:reference id="encoderFactoryService" interface="rina.encoding.api.EncoderFactory"/>
     <osgi:reference id="delimiterFactoryService" interface="rina.delimiting.api.DelimiterFactory" />
     <osgi:reference id="enrollmentTaskFactoryService" interface="rina.enrollment.api.EnrollmentTaskFactory" />
+    <osgi:reference id="dataTransferAEFactoryService" interface="rina.efcp.api.DataTransferAEFactory" />
+    <osgi:reference id="flowAllocatorFactoryService" interface="rina.flowallocator.api.FlowAllocatorFactory" />
           
     <!--  Export the IPCProcessFactoryImpl to the OSGi registry-->
     <osgi:service id="ipcProcessFactory" ref="ipcProcessFactoryImpl">

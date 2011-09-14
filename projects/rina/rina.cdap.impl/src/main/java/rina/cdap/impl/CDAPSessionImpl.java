@@ -157,7 +157,7 @@ public class CDAPSessionImpl implements CDAPSession{
 		switch(cdapMessage.getOpCode()){
 		case M_CONNECT:
 			connectionStateMachine.connectSentOrReceived(cdapMessage, sent);
-			populateSessionDescriptor(cdapMessage);
+			populateSessionDescriptor(cdapMessage, sent);
 			break;
 		case M_CONNECT_R:
 			connectionStateMachine.connectResponseSentOrReceived(cdapMessage, sent);
@@ -372,18 +372,29 @@ public class CDAPSessionImpl implements CDAPSession{
 		return sessionDescriptor.getPortId();
 	}
 	
-	private void populateSessionDescriptor(CDAPMessage cdapMessage){
+	private void populateSessionDescriptor(CDAPMessage cdapMessage, boolean send){
 		sessionDescriptor.setAbsSyntax(cdapMessage.getAbsSyntax());
 		sessionDescriptor.setAuthMech(cdapMessage.getAuthMech());
 		sessionDescriptor.setAuthValue(cdapMessage.getAuthValue());
-		sessionDescriptor.setDestAEInst(cdapMessage.getDestAEInst());
-		sessionDescriptor.setDestAEName(cdapMessage.getDestAEName());
-		sessionDescriptor.setDestApInst(cdapMessage.getDestApInst());
-		sessionDescriptor.setDestApName(cdapMessage.getDestApName());
-		sessionDescriptor.setSrcAEInst(cdapMessage.getSrcAEInst());
-		sessionDescriptor.setSrcAEName(cdapMessage.getSrcAEName());
-		sessionDescriptor.setSrcApInst(cdapMessage.getSrcApInst());
-		sessionDescriptor.setSrcApName(cdapMessage.getSrcApName());
+		if (send){
+			sessionDescriptor.setDestAEInst(cdapMessage.getDestAEInst());
+			sessionDescriptor.setDestAEName(cdapMessage.getDestAEName());
+			sessionDescriptor.setDestApInst(cdapMessage.getDestApInst());
+			sessionDescriptor.setDestApName(cdapMessage.getDestApName());
+			sessionDescriptor.setSrcAEInst(cdapMessage.getSrcAEInst());
+			sessionDescriptor.setSrcAEName(cdapMessage.getSrcAEName());
+			sessionDescriptor.setSrcApInst(cdapMessage.getSrcApInst());
+			sessionDescriptor.setSrcApName(cdapMessage.getSrcApName());
+		}else{
+			sessionDescriptor.setDestAEInst(cdapMessage.getSrcAEInst());
+			sessionDescriptor.setDestAEName(cdapMessage.getSrcAEName());
+			sessionDescriptor.setDestApInst(cdapMessage.getSrcApInst());
+			sessionDescriptor.setDestApName(cdapMessage.getSrcApName());
+			sessionDescriptor.setSrcAEInst(cdapMessage.getDestAEInst());
+			sessionDescriptor.setSrcAEName(cdapMessage.getDestAEName());
+			sessionDescriptor.setSrcApInst(cdapMessage.getDestApInst());
+			sessionDescriptor.setSrcApName(cdapMessage.getDestApName());
+		}
 		sessionDescriptor.setVersion(cdapMessage.getVersion());
 	}
 	

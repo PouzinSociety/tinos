@@ -17,8 +17,10 @@ import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.AuthTypes;
 import rina.cdap.api.message.CDAPMessage.Flags;
+import rina.efcp.api.DataTransferConstants;
 import rina.encoding.api.Encoder;
 import rina.enrollment.impl.EnrollmentTaskImpl;
+import rina.flowallocator.api.QoSCube;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
@@ -490,9 +492,9 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 				ApplicationProcessNamingInfo apNamingInfo = (ApplicationProcessNamingInfo) this.getRIBDaemon().read(null, 
 						RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 						RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME, 0);
-				CDAPMessage requestMessage = CDAPMessage.getOpenConnectionRequestMessage(AuthTypes.AUTH_NONE, null, null, null, candidate.getApplicationProcessInstance(), 
-						candidate.getApplicationProcessName(), 1, null, DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT, apNamingInfo.getApplicationProcessInstance(), 
-						apNamingInfo.getApplicationProcessName());
+				CDAPMessage requestMessage = CDAPMessage.getOpenConnectionRequestMessage(AuthTypes.AUTH_NONE, null, null, DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT, 
+						candidate.getApplicationProcessInstance(), candidate.getApplicationProcessName(), 1, null, DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT, 
+						apNamingInfo.getApplicationProcessInstance(), apNamingInfo.getApplicationProcessName());
 				ribDaemon.sendMessage(requestMessage, portId, null);
 				this.portId = portId;
 				//todo set Timer
@@ -593,8 +595,26 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			}catch(Exception ex){
 				log.error(ex);
 			}
+		}else if (cdapMessage.getObjName().equals(RIBObjectNames.SEPARATOR + RIBObjectNames.DIF + RIBObjectNames.SEPARATOR + RIBObjectNames.IPC + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.DATA_TRANSFER+ RIBObjectNames.SEPARATOR + RIBObjectNames.CONSTANTS)){
+			try{
+				DataTransferConstants constants = (DataTransferConstants) encoder.decode(
+						cdapMessage.getObjValue().getByteval(), DataTransferConstants.class.toString());
+				ribDaemon.write(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), constants);
+			}catch(Exception ex){
+				log.error(ex);
+			}
+		}else if (cdapMessage.getObjName().startsWith(RIBObjectNames.SEPARATOR + RIBObjectNames.DIF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.FLOW_ALLOCATOR + RIBObjectNames.SEPARATOR + RIBObjectNames.QOS_CUBES)){
+			try{
+				QoSCube cube = (QoSCube) encoder.decode(
+						cdapMessage.getObjValue().getByteval(), QoSCube.class.toString());
+				ribDaemon.create(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), cube);
+			}catch(Exception ex){
+				log.error(ex);
+			}
 		}
-		//TODO add DIF constants and QoS cubes info
+		//TODO add QoS cubes info
 		
 		if (cdapMessage.getFlags() != null && cdapMessage.getFlags().equals(Flags.F_RD_INCOMPLETE)){
 			//TODO set timer, more read response messages to come

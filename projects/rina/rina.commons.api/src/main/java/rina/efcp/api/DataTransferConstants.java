@@ -11,37 +11,37 @@ public class DataTransferConstants {
 	/**
 	 * The length of QoS-id field in the DTP PCI, in bytes
 	 */
-	private int qosIdLength = 1;
+	private int qosIdLength = 0;
 	
 	/**
 	 * The length of the Port-id field in the DTP PCI, in bytes
 	 */
-	private int portIdLength = 2;
+	private int portIdLength = 0;
 	
 	/**
 	 * The length of the CEP-id field in the DTP PCI, in bytes
 	 */
-	private int cepIdLength = 2;
+	private int cepIdLength = 0;
 	
 	/**
 	 * The length of the sequence number field in the DTP PCI, in bytes
 	 */
-	private int sequenceNumberLength = 2;
+	private int sequenceNumberLength = 0;
 	
 	/**
 	 * The length of the address field in the DTP PCI, in bytes
 	 */
-	private int addressLength = 2;
+	private int addressLength = 0;
 	
 	/**
 	 * The length of the length field in the DTP PCI, in bytes
 	 */
-	private int lengthLength = 2;
+	private int lengthLength = 0;
 	
 	/**
 	 * The maximum length allowed for a PDU in this DIF, in bytes
 	 */
-	private int maxPDUSize = 1500;
+	private int maxPDUSize = 0;
 	
 	/**
 	 * True if the PDUs in this DIF have CRC, TTL, and/or encryption. Since 
@@ -56,7 +56,7 @@ public class DataTransferConstants {
 	 * This is true if multiple SDUs can be delimited and concatenated within 
 	 * a single PDU.
 	 */
-	private boolean DIFConcatenation = true;
+	private boolean DIFConcatenation = false;
 	
 	/**
 	 * This is true if multiple SDUs can be fragmented and reassembled within 
@@ -241,5 +241,22 @@ public class DataTransferConstants {
 
 	public void setMaxPDULifetime(int maxPDULifetime) {
 		this.maxPDULifetime = maxPDULifetime;
+	}
+	
+	@Override
+	public String toString(){
+		String result = "";
+		result = result + "Max PDU size: " + this.getMaxPDUSize() + "\n";
+		result = result + "Address length: " + this.getAddressLength() + "\n";
+		result = result + "Port id length: " + this.getPortIdLength()+ "\n";
+		result = result + "Connection endpoint id length: " + this.getCepIdLength() + "\n";
+		result = result + "QoS id length: " + this.getQosIdLength() + "\n";
+		result = result + "Sequence number length: " + this.getSequenceNumberLength() + "\n";
+		result = result + "Packet length length: " + this.getLengthLength() + "\n";
+		result = result + "Max PDU Lifetime: " + this.getMaxPDULifetime() + "\n";
+		result = result + "DIF concatenation: " + this.isDIFConcatenation() + "\n";
+		result = result + "DIF fragmentation: " + this.isDIFFragmentation() + "\n";
+		result = result + "DIF integrity: " + this.isDIFIntegrity() + "\n";
+		return result;
 	}
 }

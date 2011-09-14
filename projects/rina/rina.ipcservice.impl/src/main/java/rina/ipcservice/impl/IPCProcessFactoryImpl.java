@@ -123,8 +123,8 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		ipcProcess.addIPCProcessComponent(rmtFactory.createRMT(ipcProcessNamingInfo));
 		ipcProcess.addIPCProcessComponent(cdapSessionManagerFactory.createCDAPSessionManager());
 		ipcProcess.addIPCProcessComponent(enrollmentTaskFactory.createEnrollmentTask(ipcProcessNamingInfo));
-		//ipcProcess.addIPCProcessComponent(flowAllocatorFactory.createFlowAllocator(ipcProcessNamingInfo));
-		//ipcProcess.addIPCProcessComponent(dataTransferAEFactory.createDataTransferAE(ipcProcessNamingInfo));
+		ipcProcess.addIPCProcessComponent(dataTransferAEFactory.createDataTransferAE(ipcProcessNamingInfo));
+		ipcProcess.addIPCProcessComponent(flowAllocatorFactory.createFlowAllocator(ipcProcessNamingInfo));
 		
 		ipcProcesses.put(ipcProcessNamingInfo.getProcessKey(), ipcProcess);
 		return ipcProcess;
@@ -141,6 +141,8 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		ribDaemonFactory.destroyRIBDaemon(ipcProcessNamingInfo);
 		rmtFactory.destroyRMT(ipcProcessNamingInfo);
 		enrollmentTaskFactory.destroyEnrollmentTask(ipcProcessNamingInfo);
+		dataTransferAEFactory.destroyDataTransferAE(ipcProcessNamingInfo);
+		flowAllocatorFactory.destroyFlowAllocator(ipcProcessNamingInfo);
 		ipcProcess.destroy();
 	}
 
