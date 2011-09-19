@@ -5,14 +5,12 @@ import java.util.Calendar;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applicationprocess.api.ApplicationProcessNameSynonym;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.enrollment.impl.EnrollmentTaskImpl;
 import rina.enrollment.impl.statemachines.EnrollmentStateMachine;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
-import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObjectNames;
 
 /**
@@ -25,11 +23,11 @@ public class OperationalStatusRIBObject extends BaseRIBObject{
 	private static final Log log = LogFactory.getLog(OperationalStatusRIBObject.class);
 
 	private EnrollmentTaskImpl enrollmentTask = null;
-	private boolean started = false;
+	private Boolean started = false;
 
 	public OperationalStatusRIBObject(EnrollmentTaskImpl enrollmentTaskImpl, IPCProcess ipcProcess){
 		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.OPERATIONAL_STATUS, null, Calendar.getInstance().getTimeInMillis());
+					RIBObjectNames.SEPARATOR + RIBObjectNames.OPERATIONAL_STATUS, "operationstatus", Calendar.getInstance().getTimeInMillis());
 		this.enrollmentTask = enrollmentTaskImpl;
 	}
 	

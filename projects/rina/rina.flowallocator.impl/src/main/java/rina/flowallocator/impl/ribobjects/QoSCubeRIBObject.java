@@ -6,19 +6,20 @@ import rina.flowallocator.api.QoSCube;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
 import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBObject;
 
 public class QoSCubeRIBObject extends BaseRIBObject{
 
 	private QoSCube qosCube = null;
 	
 	public QoSCubeRIBObject(IPCProcess ipcProcess, String objectName, QoSCube qosCube) {
-		super(ipcProcess, objectName, null, Calendar.getInstance().getTimeInMillis());
+		super(ipcProcess, objectName, "qoscube", Calendar.getInstance().getTimeInMillis());
 		this.qosCube = qosCube;
 	}
 	
 	@Override
-	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
-		return qosCube;
+	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
+		return this;
 	}
 	
 	@Override

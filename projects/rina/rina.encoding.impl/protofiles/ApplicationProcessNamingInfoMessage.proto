@@ -1,9 +1,13 @@
 package rina.messages;
 option java_package="rina.encoding.impl.googleprotobuf.apnaminginfo";
 
-message applicationProcessNamingInfo_t {	 // carries naming information of an application process
-	required string	applicationProcessName = 1;
-	optional string	applicationProcessInstance = 2;
-	optional string	applicationEntityName = 3;
-	optional string	applicationEntityInstance = 4;
+message applicationEntityNamingInfo_t {
+       required string applicationEntityName = 1;
+       optional string applicationEntityInstance = 2;
+}
+
+message applicationProcessNamingInfo_t {         // carries the naming information of an application process
+        required string applicationProcessName = 1;
+        optional string applicationProcessInstance = 2;
+        repeated applicationEntityNamingInfo_t applicationEntities = 3;
 }

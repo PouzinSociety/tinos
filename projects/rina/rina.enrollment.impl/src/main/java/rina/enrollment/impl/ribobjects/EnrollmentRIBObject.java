@@ -27,7 +27,7 @@ public class EnrollmentRIBObject extends BaseRIBObject{
 	
 	public EnrollmentRIBObject(EnrollmentTaskImpl enrollmentTaskImpl, IPCProcess ipcProcess){
 		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT, null, Calendar.getInstance().getTimeInMillis());
+					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT, "enrollment", Calendar.getInstance().getTimeInMillis());
 		this.enrollmentTask = enrollmentTaskImpl;
 	}
 	

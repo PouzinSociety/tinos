@@ -1,5 +1,8 @@
 package rina.ipcservice.api;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * All the elements needed to name an application process.
  */
@@ -7,15 +10,17 @@ public class ApplicationProcessNamingInfo {
 	
 	private String applicationProcessName = null;
 	private String applicationProcessInstance = null;
-	private String applicationEntityName = null;
-	private String applicationEntityInstance = null;
+	private List<ApplicationEntityNamingInfo> applicationEntities = null;
 	
 	
-	public ApplicationProcessNamingInfo(String applicationProcessName, String applicationProcessInstance, String applicationEntityName, String applicationEntityInstance){
+	public ApplicationProcessNamingInfo(){
+		applicationEntities = new ArrayList<ApplicationEntityNamingInfo>();
+	}
+	
+	public ApplicationProcessNamingInfo(String applicationProcessName, String applicationProcessInstance){
+		this();
 		this.applicationProcessName = applicationProcessName;
 		this.applicationProcessInstance = applicationProcessInstance;
-		this.applicationEntityName = applicationEntityName;
-		this.applicationEntityInstance = applicationEntityInstance;
 	}
 	
 	public String getApplicationProcessName() {
@@ -33,23 +38,15 @@ public class ApplicationProcessNamingInfo {
 	public void setApplicationProcessInstance(String applicationProcessInstance) {
 		this.applicationProcessInstance = applicationProcessInstance;
 	}
-
-	public String getApplicationEntityName() {
-		return applicationEntityName;
-	}
-
-	public void setApplicationEntityName(String applicationEntityName) {
-		this.applicationEntityName = applicationEntityName;
-	}
-
-	public String getApplicationEntityInstance() {
-		return applicationEntityInstance;
-	}
-
-	public void setApplicationEntityInstance(String applicationEntityInstance) {
-		this.applicationEntityInstance = applicationEntityInstance;
-	}
 	
+	public List<ApplicationEntityNamingInfo> getApplicationEntities() {
+		return applicationEntities;
+	}
+
+	public void setApplicationEntities(List<ApplicationEntityNamingInfo> applicationEntities) {
+		this.applicationEntities = applicationEntities;
+	}
+
 	public String getProcessKey(){
 		return this.applicationProcessName + "-" + this.getApplicationProcessInstance();
 	}
@@ -76,18 +73,6 @@ public class ApplicationProcessNamingInfo {
 			}
 		}
 		
-		if (this.getApplicationEntityName() != null){
-			if (!(this.getApplicationEntityName().equals(namingInfo.getApplicationEntityName()))){
-				return false;
-			}
-		}
-		
-		if (this.getApplicationEntityInstance() != null){
-			if (!(this.getApplicationEntityInstance().equals(namingInfo.getApplicationEntityInstance()))){
-				return false;
-			}
-		}
-		
 		return true;
 	}
 	
@@ -95,8 +80,11 @@ public class ApplicationProcessNamingInfo {
 	public String toString(){
 		String result = "Application Process Name: " + this.applicationProcessName + "\n";
 		result = result + "Application Process Instance: " + this.getApplicationProcessInstance() + "\n";
-		result = result + "Application Entity Name: " + this.getApplicationEntityName() + "\n";
-		result = result + "Applciation Entity Instance: " + this.getApplicationEntityInstance() + "\n";
+		result = result + "Application Entities: + \n";
+		for(int i=0; i<applicationEntities.size(); i++){
+			result = result + "Application Entity name: " + applicationEntities.get(i).getApplicationEntityName() + " ";
+			result = result + "Application Entity instance: " + applicationEntities.get(i).getApplicationEntityInstance() + "\n";
+		}
 		return result;
 	}
 	

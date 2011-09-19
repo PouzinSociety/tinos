@@ -5,7 +5,7 @@ package rina.applicationprocess.api;
  * @author eduardgrasa
  *
  */
-public class ApplicationProcessNameSynonym {
+public class DAFMember {
 
 	/**
 	 * The application process name that is synonym refers to
@@ -20,7 +20,7 @@ public class ApplicationProcessNameSynonym {
 	/**
 	 * The synonym
 	 */
-	private byte[] synonym = null;
+	private long synonym = 0;
 
 	public String getApplicationProcessName() {
 		return applicationProcessName;
@@ -38,11 +38,11 @@ public class ApplicationProcessNameSynonym {
 		this.applicationProcessInstance = applicationProcessInstance;
 	}
 
-	public byte[] getSynonym() {
+	public long getSynonym() {
 		return synonym;
 	}
 
-	public void setSynonym(byte[] synonym) {
+	public void setSynonym(long synonym) {
 		this.synonym = synonym;
 	}
 	
@@ -50,16 +50,7 @@ public class ApplicationProcessNameSynonym {
 	public String toString(){
 		String result = "Application Process Name: " + this.applicationProcessName + "\n";
 		result = result + "Application Process Instance: " + this.applicationProcessInstance + "\n";
-		result = result + "Synonym: " + printBytes(this.synonym);
-		
-		return result;
-	}
-
-	private String printBytes(byte[] synonym) {
-		String result = "";
-		for(int i=0; i<synonym.length; i++){
-			result = result + String.format("%02X", synonym[i]) + " ";
-		}
+		result = result + "Synonym: " + this.synonym;
 		
 		return result;
 	}

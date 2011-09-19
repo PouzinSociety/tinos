@@ -6,19 +6,20 @@ import rina.applicationprocess.api.WhatevercastName;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
 import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBObject;
 
 public class WhatevercastNameRIBObject extends BaseRIBObject{
 
 	private WhatevercastName whatevercastName = null;
 	
 	public WhatevercastNameRIBObject(IPCProcess ipcProcess, String objectName, WhatevercastName whatevercastName) {
-		super(ipcProcess, objectName, null, Calendar.getInstance().getTimeInMillis());
+		super(ipcProcess, objectName, "whatname", Calendar.getInstance().getTimeInMillis());
 		this.whatevercastName = whatevercastName;
 	}
 	
 	@Override
-	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
-		return whatevercastName;
+	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
+		return this;
 	}
 	
 	@Override

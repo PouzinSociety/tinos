@@ -9,6 +9,7 @@ import rina.efcp.api.DataTransferConstants;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
 import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
 
 /**
@@ -25,12 +26,12 @@ public class DataTransferConstantsRIBObject extends BaseRIBObject{
 	public DataTransferConstantsRIBObject(IPCProcess ipcProcess){
 		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DIF + RIBObjectNames.SEPARATOR + RIBObjectNames.IPC + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.DATA_TRANSFER+ RIBObjectNames.SEPARATOR + RIBObjectNames.CONSTANTS, 
-				null, Calendar.getInstance().getTimeInMillis());
+				"datatransfercons", Calendar.getInstance().getTimeInMillis());
 	}
 
 	@Override
-	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
-		return dataTransferConstants;
+	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
+		return this;
 	}
 
 	@Override

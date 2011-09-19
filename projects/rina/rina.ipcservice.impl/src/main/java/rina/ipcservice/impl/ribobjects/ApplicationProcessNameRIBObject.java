@@ -6,6 +6,7 @@ import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.BaseRIBObject;
 import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
 
 /**
@@ -20,12 +21,12 @@ public class ApplicationProcessNameRIBObject extends BaseRIBObject{
 	public ApplicationProcessNameRIBObject(IPCProcess ipcProcess){
 		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME, 
-				null, Calendar.getInstance().getTimeInMillis());
+				"apnaminginfo", Calendar.getInstance().getTimeInMillis());
 	}
 
 	@Override
-	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
-		return apNamingInfo;
+	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
+		return this;
 	}
 
 	@Override

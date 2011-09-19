@@ -10,7 +10,6 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applicationprocess.api.ApplicationProcessNameSynonym;
 import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
@@ -153,8 +152,7 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 	
 	private CDAPMessage processReadAddressState(CDAPMessage cdapMessage) throws CDAPException{
 		CDAPMessage outgoingCDAPMessage = null;
-		byte[] serializedAddress = null;
-		ApplicationProcessNameSynonym address = null;
+		long address = 0;
 		boolean allocated = true;
 		boolean expired = true;
 		
@@ -177,18 +175,10 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		
 		//Deserialize the address, if not null
 		if (cdapMessage.getObjValue() != null){
-			serializedAddress = cdapMessage.getObjValue().getByteval();
-			if (serializedAddress != null){
-				try {
-					address = (ApplicationProcessNameSynonym) encoder.decode(serializedAddress, ApplicationProcessNameSynonym.class.getName());
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
+			address = cdapMessage.getObjValue().getInt64val();
 		}
 		
-		if (address == null || (address  != null && allocated && expired)){
+		if (address == 0 || (address  != 0 && allocated && expired)){
 			//Set timer and wait for READ
 			readInitializationDataTimer = getDisconnectTimerTask();
 			timer.schedule(readInitializationDataTimer, TIME_TO_WAIT_FOR_READ_INITIALIZATION_DATA);
@@ -196,14 +186,14 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 			return null;
 		}
 		
-		if (address != null && !allocated){
+		if (address != 0 && !allocated){
 			outgoingCDAPMessage = CDAPMessage.getReleaseConnectionRequestMessage(null, 0);
 			this.setState(State.NULL);
 			end = true;
 			return outgoingCDAPMessage;
 		}
 		
-		if (address != null && allocated && !expired){
+		if (address != 0 && allocated && !expired){
 			outgoingCDAPMessage = CDAPMessage.getStartObjectRequestMessage(null, null, 25, 
 					"rina.messages.operationalStatus", null, 0, "/dif/management/operationalStatus", 0);
 			this.setState(State.WAITING_FOR_STARTUP);

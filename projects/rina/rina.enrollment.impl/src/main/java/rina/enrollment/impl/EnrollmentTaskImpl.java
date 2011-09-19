@@ -1,14 +1,12 @@
 package rina.enrollment.impl;
 
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applicationprocess.api.ApplicationProcessNameSynonym;
-import rina.applicationprocess.api.WhatevercastName;
+import rina.applicationprocess.api.DAFMember;
 import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
@@ -23,6 +21,7 @@ import rina.enrollment.impl.ribobjects.OperationalStatusRIBObject;
 import rina.enrollment.impl.statemachines.DefaultEnrollmentStateMachine;
 import rina.enrollment.impl.statemachines.EnrollmentStateMachine;
 import rina.ipcprocess.api.IPCProcess;
+import rina.ipcservice.api.ApplicationEntityNamingInfo;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
@@ -102,7 +101,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		try{
 			ApplicationProcessNamingInfo myNamingInfo = (ApplicationProcessNamingInfo) ribDaemon.read(null, 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + 
-					RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME, 0);
+					RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME, 0).getObjectValue();
 			ApplicationProcessNamingInfo sourceNamingInfo = cdapSessionDescriptor.getSourceApplicationProcessNamingInfo();
 			ApplicationProcessNamingInfo destinationNamingInfo = cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo();
 			
@@ -120,7 +119,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	
 	public EnrollmentStateMachine getEnrollmentStateMachine(ApplicationProcessNamingInfo apNamingInfo){
 		return enrollmentStateMachines.get(apNamingInfo.getApplicationProcessName()+
-				apNamingInfo.getApplicationProcessInstance()+apNamingInfo.getApplicationEntityName());
+				apNamingInfo.getApplicationProcessInstance()+apNamingInfo.getApplicationEntities().get(0).getApplicationEntityName());
 	}
 	
 	private boolean isEnrolledTo(String applicationProcessName, String applicationProcessInstance){
@@ -146,27 +145,17 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		Encoder encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
 		EnrollmentStateMachine enrollmentStateMachine = null;
 		
-		if (apNamingInfo.getApplicationEntityName().equals(DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT)){
+		if (apNamingInfo.getApplicationEntities().get(0).getApplicationEntityName().equals(DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT)){
 			enrollmentStateMachine = new DefaultEnrollmentStateMachine(ribDaemon, cdapSessionManager, encoder, apNamingInfo, this);
 			enrollmentStateMachines.put(apNamingInfo.getApplicationProcessName() + 
-					apNamingInfo.getApplicationProcessInstance() + apNamingInfo.getApplicationEntityName(), enrollmentStateMachine);
+					apNamingInfo.getApplicationProcessInstance() + apNamingInfo.getApplicationEntities().get(0).getApplicationEntityName(), enrollmentStateMachine);
 			log.debug("Created a new Enrollment state machine for remote IPC process: "
 					+ apNamingInfo.getApplicationProcessName()+" "+apNamingInfo.getApplicationProcessInstance() 
-					+ " " + apNamingInfo.getApplicationEntityName());
+					+ " " + apNamingInfo.getApplicationEntities().get(0).getApplicationEntityName());
 			return enrollmentStateMachine;
 		}
 		
-		throw new Exception("Unknown application entity for enrollment: "+apNamingInfo.getApplicationEntityName());
-	}
-	
-	private boolean containsWhatevercastName(List<WhatevercastName> whatevercastNames, String name){
-		for(int i=0; i<whatevercastNames.size(); i++){
-			if (whatevercastNames.get(i).getName().equals(name)){
-				return true;
-			}
-		}
-
-		return false;
+		throw new Exception("Unknown application entity for enrollment: "+apNamingInfo.getApplicationEntities().get(0).getApplicationEntityName());
 	}
 	
 	/**
@@ -176,7 +165,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 */
 	public synchronized void initiateEnrollment(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor){
 		//TODO
-		ApplicationProcessNameSynonym candidate = null;
+		DAFMember candidate = null;
 		ApplicationProcessNamingInfo candidateNamingInfo = null;
 		EnrollmentStateMachine enrollmentStateMachine = null;
 		PendingEnrollmentRequest pendingEnrollmentRequest = null;
@@ -184,7 +173,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		
 		//1 Check that we're not already enrolled to the IPC Process
 		try{
-			candidate = (ApplicationProcessNameSynonym) encoder.decode(cdapMessage.getObjValue().getByteval(), ApplicationProcessNameSynonym.class.toString());
+			candidate = (DAFMember) encoder.decode(cdapMessage.getObjValue().getByteval(), DAFMember.class.toString());
 		}catch(Exception ex){
 			log.error(ex);
 			//TODO return M_CREATE_R with error code answer.
@@ -199,8 +188,10 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		
 		
 		//2 Tell the RMT to allocate a new flow to the IPC process  (will return a port Id)
-		candidateNamingInfo = new ApplicationProcessNamingInfo(candidate.getApplicationProcessName(), candidate.getApplicationProcessInstance(), 
-				DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT, null);
+		candidateNamingInfo = new ApplicationProcessNamingInfo(candidate.getApplicationProcessName(), candidate.getApplicationProcessInstance());
+		ApplicationEntityNamingInfo aeNamingInfo = new ApplicationEntityNamingInfo();
+		aeNamingInfo.setApplicationEntityName(DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT);
+		candidateNamingInfo.getApplicationEntities().add(aeNamingInfo);
 		try{
 			portId = rmt.allocateFlow(candidateNamingInfo, null);
 		}catch(Exception ex){
@@ -235,7 +226,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 * @param result the result of the operation (0 = successful, >0 errors)
 	 * @param resultReason if result >0, a String explaining what was the problem
 	 */
-	public synchronized void enrollmentCompleted(ApplicationProcessNameSynonym candidate, int result, String resultReason){
+	public synchronized void enrollmentCompleted(DAFMember candidate, int result, String resultReason){
 		CDAPMessage responseMessage = null;
 		CDAPMessage requestMessage = null;
 		PendingEnrollmentRequest pendingEnrollmentRequest = ongoingInitiateEnrollmentRequests.remove(

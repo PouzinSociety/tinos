@@ -10,7 +10,6 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applicationprocess.api.ApplicationProcessNameSynonym;
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.DataTransferAEInstance;
 import rina.flowallocator.api.FlowAllocator;
@@ -80,7 +79,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 */
 	private void populateRIB(String applicationProcessName, String applicationProcessInstance){
 		try{
-			ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance, null, null);
+			ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance);
 			RIBObject ribObject = new ApplicationProcessNameRIBObject(this);
 			ribObject.write(null, null, 0, apNamingInfo);
 			ribDaemon.addRIBObject(ribObject);
@@ -231,10 +230,11 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	public synchronized void register(ApplicationProcessNamingInfo apNamingInfo) {
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
 		try{
-			ApplicationProcessNameSynonym currentSynonym = (ApplicationProcessNameSynonym) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
+			Long currentSynonym = (Long) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
-					RIBObjectNames.CURRENT_SYNONYM, 0);
-			flowAllocator.getDirectoryForwardingTable().addEntry(apNamingInfo, currentSynonym.getSynonym());
+					RIBObjectNames.CURRENT_SYNONYM, 0).getObjectValue();
+			//TODO fix this
+			//flowAllocator.getDirectoryForwardingTable().addEntry(apNamingInfo, currentSynonym.);
 			//TODO tell the RIB Daemon to disseminate this
 		}catch(RIBDaemonException ex){
 			log.error(ex);

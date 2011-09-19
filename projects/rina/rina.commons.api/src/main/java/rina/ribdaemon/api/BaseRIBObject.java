@@ -169,7 +169,7 @@ public abstract class BaseRIBObject implements RIBObject{
 				"Operation DELETE not allowed for objectName "+objectName);
 	}
 
-	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
+	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
 		throw new RIBDaemonException(RIBDaemonException.OPERATION_NOT_ALLOWED_AT_THIS_OBJECT, 
 				"Operation READ not allowed for objectName "+objectName);
 	}

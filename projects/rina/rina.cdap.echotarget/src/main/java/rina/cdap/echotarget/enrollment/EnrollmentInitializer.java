@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import rina.applicationprocess.api.ApplicationProcessNameSynonym;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.cdap.api.CDAPException;
 import rina.cdap.api.message.CDAPMessage;
@@ -82,16 +81,11 @@ public class EnrollmentInitializer implements Runnable{
 	}
 	
 	private void sendAddress() throws CDAPException, IOException{
-		byte[] serializedAddress = null;
 		ObjectValue objectValue = null;
-		
-		ApplicationProcessNameSynonym address = new ApplicationProcessNameSynonym();
-		address.setApplicationProcessName("B");
-		address.setSynonym(new byte[]{0x02});
+
 		try{
-			serializedAddress = cdapEnrollmentWorker.getEncoder().encode(address);
 			objectValue = new ObjectValue();
-			objectValue.setByteval(serializedAddress);
+			objectValue.setInt64val(2);
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}

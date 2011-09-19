@@ -26,7 +26,7 @@ public class QoSCubesSetRIBObject extends BaseRIBObject{
 	public QoSCubesSetRIBObject(IPCProcess ipcProcess){
 		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DIF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.FLOW_ALLOCATOR + RIBObjectNames.SEPARATOR + RIBObjectNames.QOS_CUBES, 
-				null, Calendar.getInstance().getTimeInMillis());
+				"qoscube set", Calendar.getInstance().getTimeInMillis());
 	}
 
 	@Override
@@ -58,16 +58,8 @@ public class QoSCubesSetRIBObject extends BaseRIBObject{
 	}
 
 	@Override
-	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
-		List<QoSCube> qosCubes = new ArrayList<QoSCube>();
-		
-		for(int i=0; i<this.getChildren().size(); i++){
-			RIBObject ribObject = this.getChildren().get(i);
-			QoSCube qosCube = (QoSCube) ribObject.read(ribObject.getObjectClass(), ribObject.getObjectName(), ribObject.getObjectInstance());
-			qosCubes.add(qosCube);
-		}
-		
-		return qosCubes;
+	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
+		return this;
 	}
 	
 	@Override

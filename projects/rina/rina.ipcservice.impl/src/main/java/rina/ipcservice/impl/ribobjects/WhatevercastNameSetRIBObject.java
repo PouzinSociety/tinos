@@ -26,7 +26,7 @@ public class WhatevercastNameSetRIBObject extends BaseRIBObject{
 	public WhatevercastNameSetRIBObject(IPCProcessImpl ipcProcess){
 		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES, 
-				null, Calendar.getInstance().getTimeInMillis());
+				"whatname set", Calendar.getInstance().getTimeInMillis());
 	}
 
 	@Override
@@ -58,16 +58,8 @@ public class WhatevercastNameSetRIBObject extends BaseRIBObject{
 	}
 
 	@Override
-	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
-		List<WhatevercastName> whatevercastNames = new ArrayList<WhatevercastName>();
-		
-		for(int i=0; i<this.getChildren().size(); i++){
-			RIBObject ribObject = this.getChildren().get(i);
-			WhatevercastName whatevercastName = (WhatevercastName) ribObject.read(ribObject.getObjectClass(), ribObject.getObjectName(), ribObject.getObjectInstance());
-			whatevercastNames.add(whatevercastName);
-		}
-		
-		return whatevercastNames;
+	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
+		return this;
 	}
 	
 	@Override

@@ -1,6 +1,6 @@
 package rina.enrollment.impl.statemachines;
 
-import rina.applicationprocess.api.ApplicationProcessNameSynonym;
+import rina.applicationprocess.api.DAFMember;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 
@@ -57,7 +57,7 @@ public interface EnrollmentStateMachine {
 	 * @param cdapMessage
 	 * @param portId
 	 */
-	public void initiateEnrollment(ApplicationProcessNameSynonym candidate, int portId);
+	public void initiateEnrollment(DAFMember candidate, int portId);
 	
 	/**
 	 * Called by the EnrollmentTask when it receives an M_READ CDAP mesasge 

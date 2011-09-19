@@ -1,8 +1,7 @@
 package rina.cdap.echotarget.enrollment;
 
-import rina.applicationprocess.api.ApplicationProcessNameSynonym;
+import rina.applicationprocess.api.DAFMember;
 import rina.applicationprocess.api.WhatevercastName;
-import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
 import rina.cdap.impl.CDAPSessionManagerImpl;
@@ -10,14 +9,12 @@ import rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory
 import rina.delimiting.api.Delimiter;
 import rina.delimiting.impl.DIFDelimiter;
 import rina.efcp.api.DataTransferConstants;
-import rina.encoding.api.Encoder;
 import rina.encoding.impl.EncoderImpl;
-import rina.encoding.impl.googleprotobuf.apnamesynonim.ApplicationProcessNameSynonymEncoder;
+import rina.encoding.impl.googleprotobuf.dafmember.DafMemberEncoder;
 import rina.encoding.impl.googleprotobuf.datatransferconstants.DataTransferConstantsEncoder;
 import rina.encoding.impl.googleprotobuf.flow.FlowEncoder;
 import rina.encoding.impl.googleprotobuf.qoscube.QoSCubeEncoder;
 import rina.encoding.impl.googleprotobuf.whatevercast.WhatevercastNameEncoder;
-import rina.enrollment.api.EnrollmentTask;
 import rina.enrollment.impl.EnrollmentTaskImpl;
 import rina.flowallocator.api.QoSCube;
 import rina.flowallocator.api.message.Flow;
@@ -38,7 +35,7 @@ public class EnrollingIPCProcess {
 		Delimiter delimiter = new DIFDelimiter();
 		joiningIPCProcess.addIPCProcessComponent(delimiter);
 		EncoderImpl encoder = new EncoderImpl();
-		encoder.addEncoder(ApplicationProcessNameSynonym.class.toString(), new ApplicationProcessNameSynonymEncoder());
+		encoder.addEncoder(DAFMember.class.toString(), new DafMemberEncoder());
 		encoder.addEncoder(DataTransferConstants.class.toString(), new DataTransferConstantsEncoder());
 		encoder.addEncoder(Flow.class.toString(), new FlowEncoder());
 		encoder.addEncoder(QoSCube.class.toString(), new QoSCubeEncoder());
@@ -54,7 +51,7 @@ public class EnrollingIPCProcess {
 		
 		try{
 			ObjectValue objectValue = new ObjectValue();
-			ApplicationProcessNameSynonym newMember = new ApplicationProcessNameSynonym();
+			DAFMember newMember = new DAFMember();
 			newMember.setApplicationProcessName("i2CAT-Barcelona");
 			newMember.setApplicationProcessInstance("1");
 			byte[] encodedObject = encoder.encode(newMember);

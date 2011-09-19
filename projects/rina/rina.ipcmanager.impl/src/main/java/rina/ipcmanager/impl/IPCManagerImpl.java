@@ -8,7 +8,7 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applicationprocess.api.ApplicationProcessNameSynonym;
+import rina.applicationprocess.api.DAFMember;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
@@ -57,7 +57,7 @@ public class IPCManagerImpl {
 	}
 	
 	public void createIPCProcess(String applicationProcessName, String applicationProcessInstance, String difName) throws Exception{
-		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance, null, null);
+		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance);
 		IPCProcess ipcProcess = ipcProcessFactory.createIPCProcess(apNamingInfo);
 		if (difName != null){
 			WhatevercastName dan = new WhatevercastName();
@@ -69,12 +69,8 @@ public class IPCManagerImpl {
 					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
 					RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "all", 0, dan);
 			
-			ApplicationProcessNameSynonym synonym = new ApplicationProcessNameSynonym();
-			synonym.setApplicationProcessName(applicationProcessName);
-			synonym.setApplicationProcessInstance(applicationProcessInstance);
-			synonym.setSynonym(new byte[]{0x01});
 			ribDaemon.write(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0, synonym);
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0, new Long(1));
 			
 			DataTransferConstants dataTransferConstants = new DataTransferConstants();
 			dataTransferConstants.setAddressLength(2);
@@ -125,7 +121,7 @@ public class IPCManagerImpl {
 	}
 	
 	public void destroyIPCProcesses(String applicationProcessName, String applicationProcessInstance) throws Exception{
-		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance, null, null);
+		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance);
 		ipcProcessFactory.destroyIPCProcess(apNamingInfo);
 	}
 	
@@ -158,7 +154,7 @@ public class IPCManagerImpl {
 	}
 	
 	public List<String> getPrintedRIB(String applicationProcessName, String applicationProcessInstance) throws Exception{
-		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance, null, null));
+		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance));
 		RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		List<RIBObject> ribObjects = ribDaemon.getRIBObjects();
 		List<String> result = new ArrayList<String>();
@@ -180,17 +176,16 @@ public class IPCManagerImpl {
 	public void enroll(String sourceApplicationProcessName, String sourceApplicationProcessInstance, 
 			String destinationApplicationProcessName, String destinationApplicationProcessInstance) throws Exception{
 		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(
-				new ApplicationProcessNamingInfo(sourceApplicationProcessName, sourceApplicationProcessInstance, null, null));
+				new ApplicationProcessNamingInfo(sourceApplicationProcessName, sourceApplicationProcessInstance));
 		EnrollmentTask enrollmentTask = (EnrollmentTask) ipcProcess.getIPCProcessComponent(BaseEnrollmentTask.getComponentName());
 		Encoder encoder = (Encoder) ipcProcess.getIPCProcessComponent(BaseEncoder.getComponentName());
 		
-		ApplicationProcessNameSynonym apNameSynonym = new ApplicationProcessNameSynonym();
-		apNameSynonym.setApplicationProcessName(destinationApplicationProcessName);
-		apNameSynonym.setApplicationProcessInstance(destinationApplicationProcessInstance);
-		byte[] encodedApNamesynonym = encoder.encode(apNameSynonym);
+		DAFMember dafMember = new DAFMember();
+		dafMember.setApplicationProcessName(destinationApplicationProcessName);
+		dafMember.setApplicationProcessInstance(destinationApplicationProcessInstance);
+		byte[] encodedDafMember = encoder.encode(dafMember);
 		ObjectValue objectValue = new ObjectValue();
-		objectValue.setByteval(encodedApNamesynonym);
-		
+		objectValue.setByteval(encodedDafMember);
 		
 		CDAPMessage cdapMessage = CDAPMessage.getCreateObjectRequestMessage(null, null, 3, "", 0, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + 

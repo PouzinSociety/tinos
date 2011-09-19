@@ -7,7 +7,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applicationprocess.api.ApplicationProcessNameSynonym;
+import rina.applicationprocess.api.DAFMember;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.enrollment.impl.EnrollmentTaskImpl;
@@ -30,22 +30,13 @@ public class DIFMemberSetRIBObject extends BaseRIBObject{
 	public DIFMemberSetRIBObject(EnrollmentTaskImpl enrollmentTask, IPCProcess ipcProcess){
 		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS, 
-				null, Calendar.getInstance().getTimeInMillis());
+				"dafmember set", Calendar.getInstance().getTimeInMillis());
 		this.enrollmentTask = enrollmentTask;
 	}
 	
 	@Override
-	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
-		List<ApplicationProcessNameSynonym> members = new ArrayList<ApplicationProcessNameSynonym>();
-		
-		for(int i=0; i<this.getChildren().size(); i++){
-			RIBObject ribObject = this.getChildren().get(i);
-			ApplicationProcessNameSynonym member = 
-				(ApplicationProcessNameSynonym) ribObject.read(ribObject.getObjectClass(), ribObject.getObjectName(), ribObject.getObjectInstance());
-			members.add(member);
-		}
-		
-		return members;
+	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
+		return this;
 	}
 	
 	/**
@@ -68,12 +59,12 @@ public class DIFMemberSetRIBObject extends BaseRIBObject{
 	
 	@Override
 	public void create(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException{
-		if (!(object instanceof ApplicationProcessNameSynonym)){
+		if (!(object instanceof DAFMember)){
 			throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME, 
 					"Object class ("+object.getClass().getName()+") does not match object name "+objectName);
 		}
 		
-		DIFMemberRIBObject ribObject = new DIFMemberRIBObject(this.getIPCProcess(), objectName, (ApplicationProcessNameSynonym) object);
+		DIFMemberRIBObject ribObject = new DIFMemberRIBObject(this.getIPCProcess(), objectName, (DAFMember) object);
 		this.addChild(ribObject);
 		getRIBDaemon().addRIBObject(ribObject);
 	}

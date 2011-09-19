@@ -77,7 +77,7 @@ public interface RIBDaemon extends IPCProcessComponent{
 	
 	public void delete(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
 	
-	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException;
+	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException;
 	
 	public void write(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
 	

@@ -438,11 +438,10 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		this.rib.removeRIBObject(objectName);
 	}
 
-	public synchronized Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
+	public synchronized RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
 		log.debug("Local operation read called on object "+objectName);
 		validateObjectArguments(objectClass, objectName, objectInstance);
-		RIBObject ribObject = getRIBObject(objectName, objectClass, objectInstance);
-		return ribObject.read(objectClass, objectName, objectInstance);
+		return getRIBObject(objectName, objectClass, objectInstance);
 	}
 
 	public synchronized void start(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {

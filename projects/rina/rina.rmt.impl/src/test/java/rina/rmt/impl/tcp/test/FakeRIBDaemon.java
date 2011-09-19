@@ -144,7 +144,7 @@ public class FakeRIBDaemon implements RIBDaemon {
 		
 	}
 
-	public Object read(String arg0, String arg1, long arg2)
+	public RIBObject read(String arg0, String arg1, long arg2)
 			throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		return null;

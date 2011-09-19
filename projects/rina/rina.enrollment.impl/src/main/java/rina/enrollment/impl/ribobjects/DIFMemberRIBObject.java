@@ -2,35 +2,36 @@ package rina.enrollment.impl.ribobjects;
 
 import java.util.Calendar;
 
-import rina.applicationprocess.api.ApplicationProcessNameSynonym;
+import rina.applicationprocess.api.DAFMember;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
 import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBObject;
 
 public class DIFMemberRIBObject extends BaseRIBObject{
 
-	private ApplicationProcessNameSynonym member = null;
+	private DAFMember member = null;
 	
-	public DIFMemberRIBObject(IPCProcess ipcProcess, String objectName, ApplicationProcessNameSynonym member) {
-		super(ipcProcess, objectName, null, Calendar.getInstance().getTimeInMillis());
+	public DIFMemberRIBObject(IPCProcess ipcProcess, String objectName, DAFMember member) {
+		super(ipcProcess, objectName, "dafmember", Calendar.getInstance().getTimeInMillis());
 		this.member = member;
 	}
 	
 	@Override
-	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
-		return member;
+	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
+		return this;
 	}
 	
 	@Override
 	public void write(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
-		if (!(object instanceof ApplicationProcessNameSynonym)){
+		if (!(object instanceof DAFMember)){
 			throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME, 
 					"Object class ("+object.getClass().getName()+") does not match object name "+objectName);
 		}
 		
-		this.member = (ApplicationProcessNameSynonym) object;
+		this.member = (DAFMember) object;
 	}
 	
 	@Override

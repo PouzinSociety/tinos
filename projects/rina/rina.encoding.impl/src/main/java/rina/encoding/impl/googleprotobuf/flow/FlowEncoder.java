@@ -74,10 +74,8 @@ public class FlowEncoder extends BaseEncoder{
 	private ApplicationProcessNamingInfo getApplicationProcessNamingInfo(applicationProcessNamingInfo_t apNamingInfo) {
 		String apName = GPBUtils.getString(apNamingInfo.getApplicationProcessName());
 		String apInstance = GPBUtils.getString(apNamingInfo.getApplicationProcessInstance());
-		String aeName = GPBUtils.getString(apNamingInfo.getApplicationEntityName());
-		String aeInstance = GPBUtils.getString(apNamingInfo.getApplicationEntityInstance());
 		
-		ApplicationProcessNamingInfo result = new ApplicationProcessNamingInfo(apName, apInstance, aeName, aeInstance);
+		ApplicationProcessNamingInfo result = new ApplicationProcessNamingInfo(apName, apInstance);
 		return result;
 	}
 
@@ -152,13 +150,9 @@ public class FlowEncoder extends BaseEncoder{
 	private applicationProcessNamingInfo_t getApplicationProcessNamingInfoT(ApplicationProcessNamingInfo apNamingInfo){
 		String apName = GPBUtils.getGPBString(apNamingInfo.getApplicationProcessName());
 		String apInstance = GPBUtils.getGPBString(apNamingInfo.getApplicationProcessInstance());
-		String aeName = GPBUtils.getGPBString(apNamingInfo.getApplicationEntityName());
-		String aeInstance = GPBUtils.getGPBString(apNamingInfo.getApplicationEntityInstance());
 		applicationProcessNamingInfo_t result = ApplicationProcessNamingInfoMessage.applicationProcessNamingInfo_t.newBuilder().
 													setApplicationProcessName(apName).
 													setApplicationProcessInstance(apInstance).
-													setApplicationEntityName(aeName).
-													setApplicationEntityInstance(aeInstance).
 													build();
 		return result;
 	}

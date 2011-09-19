@@ -6,7 +6,6 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applicationprocess.api.ApplicationProcessNameSynonym;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
@@ -139,13 +138,14 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		}
 		
 		byte[] address = directoryForwardingTable.getAddress(flow.getDestinationNamingInfo());
-		try{
-			myAddress = ((ApplicationProcessNameSynonym) ribDaemon.read(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0)).getSynonym();
+		//TODO fix this
+		/*try{
+			myAddress = (Long) ribDaemon.read(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0).getObjectValue();
 		}catch(RIBDaemonException ex){
 			log.error(ex);
 			//TODO
-		}
+		}*/
 		
 		if (address == null){
 			//error, the table should have at least returned a default IPC process address to continue looking for the application process

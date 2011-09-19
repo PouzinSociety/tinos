@@ -56,8 +56,8 @@ public class EFCPTest {
 		connectionA.setSourceAddress(new byte[]{0x00, 0x01});
 		connectionA.setDestinationAddress(new byte[]{0x00, 0x02});
 		//source application name = "A" destination application name = "B"
-		connectionA.setSourceNamingInfo(new ApplicationProcessNamingInfo("A", null, null, null));
-		connectionA.setDestinationNamingInfo(new ApplicationProcessNamingInfo("B", null, null, null));
+		connectionA.setSourceNamingInfo(new ApplicationProcessNamingInfo("A", null));
+		connectionA.setDestinationNamingInfo(new ApplicationProcessNamingInfo("B", null));
 		connectionA.setMaxGapAllowed(50);
 		//source port id = 3, destination port id = 4;
 		connectionA.setSourcePortId(new Unsigned(dataTransferConstants.getPortIdLength(), 0x03));
@@ -76,8 +76,8 @@ public class EFCPTest {
 		connectionB.setSourceAddress(new byte[]{0x02});
 		connectionB.setDestinationAddress(new byte[]{0x01});
 		//source application name = "B" destination application name = "A"
-		connectionB.setSourceNamingInfo(new ApplicationProcessNamingInfo("B", null, null, null));
-		connectionB.setDestinationNamingInfo(new ApplicationProcessNamingInfo("A", null, null, null));
+		connectionB.setSourceNamingInfo(new ApplicationProcessNamingInfo("B", null));
+		connectionB.setDestinationNamingInfo(new ApplicationProcessNamingInfo("A", null));
 		connectionB.setMaxGapAllowed(50);
 		//source port id = 4, destination port id = 2;
 		connectionB.setSourcePortId(new Unsigned(dataTransferConstants.getPortIdLength(), 0x04));
