@@ -1,10 +1,9 @@
 package rina.ipcservice.impl.ribobjects;
 
-import java.util.Calendar;
-
 import rina.applicationprocess.api.WhatevercastName;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
+import rina.ribdaemon.api.ObjectInstanceGenerator;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 
@@ -13,7 +12,7 @@ public class WhatevercastNameRIBObject extends BaseRIBObject{
 	private WhatevercastName whatevercastName = null;
 	
 	public WhatevercastNameRIBObject(IPCProcess ipcProcess, String objectName, WhatevercastName whatevercastName) {
-		super(ipcProcess, objectName, "whatname", Calendar.getInstance().getTimeInMillis());
+		super(ipcProcess, objectName, "whatname", ObjectInstanceGenerator.getObjectInstance());
 		this.whatevercastName = whatevercastName;
 	}
 	

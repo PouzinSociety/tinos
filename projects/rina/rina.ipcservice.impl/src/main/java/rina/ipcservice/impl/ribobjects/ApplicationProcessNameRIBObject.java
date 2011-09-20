@@ -1,10 +1,9 @@
 package rina.ipcservice.impl.ribobjects;
 
-import java.util.Calendar;
-
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.BaseRIBObject;
+import rina.ribdaemon.api.ObjectInstanceGenerator;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
@@ -21,7 +20,7 @@ public class ApplicationProcessNameRIBObject extends BaseRIBObject{
 	public ApplicationProcessNameRIBObject(IPCProcess ipcProcess){
 		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME, 
-				"apnaminginfo", Calendar.getInstance().getTimeInMillis());
+				"apnaminginfo", ObjectInstanceGenerator.getObjectInstance());
 	}
 
 	@Override

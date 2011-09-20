@@ -22,7 +22,9 @@ import rina.flowallocator.api.QoSCube;
 import rina.ipcmanager.impl.console.IPCManagerConsole;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
+import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.IPCService;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
@@ -193,6 +195,16 @@ public class IPCManagerImpl {
 				destinationApplicationProcessInstance, objectValue, 0);
 		CDAPSessionDescriptor cdapSessionDescriptor = new CDAPSessionDescriptor();
 		enrollmentTask.initiateEnrollment(cdapMessage, cdapSessionDescriptor);
+	}
+	
+	public void allocateFlow(String sourceIPCProcessName, String sourceIPCProcessInstance, 
+			String destinationApplicationProcessName, String destinationApplicationProcessInstance) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(
+				new ApplicationProcessNamingInfo(sourceIPCProcessName, sourceIPCProcessInstance));
+		IPCService ipcService = (IPCService) ipcProcess;
+		AllocateRequest allocateRequest = new AllocateRequest();
+		allocateRequest.setRequestedAPinfo(new ApplicationProcessNamingInfo(destinationApplicationProcessName, destinationApplicationProcessInstance));
+		ipcService.submitAllocateRequest(allocateRequest, null);
 	}
 
 }

@@ -1,10 +1,9 @@
 package rina.flowallocator.impl.ribobjects;
 
-import java.util.Calendar;
-
 import rina.flowallocator.api.QoSCube;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
+import rina.ribdaemon.api.ObjectInstanceGenerator;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 
@@ -13,7 +12,7 @@ public class QoSCubeRIBObject extends BaseRIBObject{
 	private QoSCube qosCube = null;
 	
 	public QoSCubeRIBObject(IPCProcess ipcProcess, String objectName, QoSCube qosCube) {
-		super(ipcProcess, objectName, "qoscube", Calendar.getInstance().getTimeInMillis());
+		super(ipcProcess, objectName, "qoscube", ObjectInstanceGenerator.getObjectInstance());
 		this.qosCube = qosCube;
 	}
 	

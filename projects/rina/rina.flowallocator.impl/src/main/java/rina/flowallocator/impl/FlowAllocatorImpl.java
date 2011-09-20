@@ -15,6 +15,8 @@ import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.flowallocator.api.message.Flow;
+import rina.flowallocator.impl.ribobjects.DirectoryForwardingTableRIBObject;
+import rina.flowallocator.impl.ribobjects.FlowSetRIBObject;
 import rina.flowallocator.impl.ribobjects.QoSCubesSetRIBObject;
 import rina.flowallocator.impl.validation.AllocateRequestValidator;
 import rina.ipcprocess.api.IPCProcess;
@@ -44,12 +46,6 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	private AllocateRequestValidator allocateRequestValidator = null;
 	
 	/**
-	 * The directory forwarding table. It will be in another place maybe (RIB Daemon),
-	 * but meanwhile it is here.
-	 */
-	private DirectoryForwardingTable directoryForwardingTable = null;
-	
-	/**
 	 * The RIB Daemon
 	 */
 	private RIBDaemon ribDaemon = null;
@@ -59,10 +55,14 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 */
 	private Encoder encoder = null;
 	
+	/**
+	 * Shortcut to the directory forwarding table, only for use when reading
+	 */
+	private DirectoryForwardingTable directoryForwardingTable = null;
+	
 	public FlowAllocatorImpl(){
 		allocateRequestValidator = new AllocateRequestValidator();
 		flowAllocatorInstances = new HashMap<Integer, FlowAllocatorInstance>();
-		directoryForwardingTable = new DirectoryForwardingTableImpl();
 	}
 	
 	@Override
@@ -77,14 +77,19 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		try{
 			RIBObject ribObject = new QoSCubesSetRIBObject(ipcProcess);
 			ribDaemon.addRIBObject(ribObject);
+			ribObject = new FlowSetRIBObject(this, ipcProcess);
+			ribDaemon.addRIBObject(ribObject);
+			directoryForwardingTable = new DirectoryForwardingTableImpl();
+			ribObject = new DirectoryForwardingTableRIBObject(ipcProcess, directoryForwardingTable);
+			ribDaemon.addRIBObject(ribObject);
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();
 			log.error("Could not subscribe to RIB Daemon:" +ex.getMessage());
 		}
 	}
-
-	public DirectoryForwardingTable getDirectoryForwardingTable(){
-		return directoryForwardingTable;
+	
+	public DirectoryForwardingTable getDirectoryForwardingTable() {
+		return this.directoryForwardingTable;
 	}
 	
 	/**
@@ -127,7 +132,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 */
 	public void createFlowRequestMessageReceived(CDAPMessage cdapMessage, int portId){
 		Flow flow = null;
-		byte[] myAddress = null;
+		long myAddress = 0;
 		
 		try{
 			flow = (Flow) encoder.decode(cdapMessage.getObjValue().getByteval(), Flow.class.toString());
@@ -137,21 +142,21 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			return;
 		}
 		
-		byte[] address = directoryForwardingTable.getAddress(flow.getDestinationNamingInfo());
-		//TODO fix this
-		/*try{
+		long address = directoryForwardingTable.getAddress(flow.getDestinationNamingInfo());
+		
+		try{
 			myAddress = (Long) ribDaemon.read(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0).getObjectValue();
 		}catch(RIBDaemonException ex){
 			log.error(ex);
 			//TODO
-		}*/
+		}
 		
-		if (address == null){
+		if (address == 0){
 			//error, the table should have at least returned a default IPC process address to continue looking for the application process
 			log.error("The directory forwarding table returned no entries when looking up " + flow.getDestinationNamingInfo().toString());
 		}else{
-			if (address.equals(myAddress)){
+			if (address == myAddress){
 				//TODO there is an entry and the address is this IPC Process, create a FAI, extract the Flow object from the CDAP message and
 				//call the FAI
 			}else{

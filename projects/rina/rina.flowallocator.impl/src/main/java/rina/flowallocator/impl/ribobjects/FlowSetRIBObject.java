@@ -1,23 +1,22 @@
 package rina.flowallocator.impl.ribobjects;
 
-import java.util.Calendar;
-
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
-import rina.flowallocator.api.FlowAllocator;
 import rina.flowallocator.impl.FlowAllocatorImpl;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
+import rina.ribdaemon.api.ObjectInstanceGenerator;
 import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
 
-public class FlowAllocatorRIBObject extends BaseRIBObject{
+public class FlowSetRIBObject extends BaseRIBObject{
 	
 	private FlowAllocatorImpl flowAllocator = null;
 	
-	public FlowAllocatorRIBObject(FlowAllocatorImpl flowAllocator, IPCProcess ipcProcess){
+	public FlowSetRIBObject(FlowAllocatorImpl flowAllocator, IPCProcess ipcProcess){
 		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DIF + RIBObjectNames.SEPARATOR + RIBObjectNames.RESOURCE_ALLOCATION + RIBObjectNames.SEPARATOR +
-				RIBObjectNames.FLOW_ALLOCATOR, null, Calendar.getInstance().getTimeInMillis());
+				RIBObjectNames.FLOW_ALLOCATOR + RIBObjectNames.SEPARATOR + RIBObjectNames.FLOWS, "flow set", ObjectInstanceGenerator.getObjectInstance());
 		this.flowAllocator = flowAllocator;
 	}
 	
@@ -34,5 +33,8 @@ public class FlowAllocatorRIBObject extends BaseRIBObject{
 		return null;
 	}
 	
-
+	@Override
+	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
+		return this;
+	}
 }

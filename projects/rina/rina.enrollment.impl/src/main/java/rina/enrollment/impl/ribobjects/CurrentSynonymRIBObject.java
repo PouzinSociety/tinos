@@ -1,7 +1,5 @@
 package rina.enrollment.impl.ribobjects;
 
-import java.util.Calendar;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -12,6 +10,7 @@ import rina.enrollment.impl.statemachines.EnrollmentStateMachine.State;
 import rina.enrollment.impl.statemachines.EnrollmentStateMachine;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
+import rina.ribdaemon.api.ObjectInstanceGenerator;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
@@ -31,7 +30,7 @@ public class CurrentSynonymRIBObject extends BaseRIBObject{
 	public CurrentSynonymRIBObject(IPCProcess ipcProcess, EnrollmentTaskImpl enrollmentTask){
 		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 
-				"synonym", Calendar.getInstance().getTimeInMillis());
+				"synonym", ObjectInstanceGenerator.getObjectInstance());
 		this.enrollmentTask = enrollmentTask;
 	}
 	

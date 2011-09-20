@@ -8,6 +8,8 @@ public class AllocateRequest {
 	private QoSParameters cube = null;
 	private boolean result = false;
 	
+	public AllocateRequest(){
+	}
 
 	public AllocateRequest(ApplicationProcessNamingInfo requestedAPinfo, int port_id, QoSParameters cube, boolean result) {
 		this.requestedAPinfo = requestedAPinfo;

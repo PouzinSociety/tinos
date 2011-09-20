@@ -11,7 +11,9 @@ public interface RIBObjectNames {
 	public static final String DATA_TRANSFER = "datatransfer";
 	public static final String DAF = "daf";
 	public static final String DIF = "dif";
+	public static final String DIRECTORY_FORWARDING_TABLE = "directoryforwardingtable";
 	public static final String ENROLLMENT = "enrollment";
+	public static final String FLOWS = "flows";
 	public static final String FLOW_ALLOCATOR = "flowallocator";
 	public static final String IPC = "ipc";
 	public static final String MANAGEMENT = "management";

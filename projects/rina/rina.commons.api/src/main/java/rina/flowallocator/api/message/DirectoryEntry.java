@@ -18,7 +18,7 @@ public class DirectoryEntry {
 	 * The address of the IPC process from where the applicationProcesName can be reached, or of the 
 	 * IPC Process that may know where the application process is
 	 */
-	private byte[] address = null;
+	private long address = 0;
 	
 	/**
 	 * The naming information of the application (at least it will contain the application process name)
@@ -33,11 +33,11 @@ public class DirectoryEntry {
 		this.age = age;
 	}
 
-	public byte[] getAddress() {
+	public long getAddress() {
 		return address;
 	}
 
-	public void setAddress(byte[] address) {
+	public void setAddress(long address) {
 		this.address = address;
 	}
 

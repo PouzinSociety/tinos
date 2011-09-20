@@ -42,6 +42,7 @@ public class IPCManagerConsole implements Runnable{
 		commands.put(EnrollCommand.ID, new EnrollCommand(ipcManagerImpl));
 		commands.put(DestroyIPCProcessCommand.ID, new DestroyIPCProcessCommand(ipcManagerImpl));
 		commands.put(CreateIPCProcessCommand.ID, new CreateIPCProcessCommand(ipcManagerImpl));
+		commands.put(AllocateFlowCommand.ID, new AllocateFlowCommand(ipcManagerImpl));
 	}
 	
 	public void run() {

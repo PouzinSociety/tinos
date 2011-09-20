@@ -1,13 +1,12 @@
 package rina.efcp.impl.ribobjects;
 
-import java.util.Calendar;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.efcp.api.DataTransferConstants;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
+import rina.ribdaemon.api.ObjectInstanceGenerator;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
@@ -26,7 +25,7 @@ public class DataTransferConstantsRIBObject extends BaseRIBObject{
 	public DataTransferConstantsRIBObject(IPCProcess ipcProcess){
 		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DIF + RIBObjectNames.SEPARATOR + RIBObjectNames.IPC + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.DATA_TRANSFER+ RIBObjectNames.SEPARATOR + RIBObjectNames.CONSTANTS, 
-				"datatransfercons", Calendar.getInstance().getTimeInMillis());
+				"datatransfercons", ObjectInstanceGenerator.getObjectInstance());
 	}
 
 	@Override

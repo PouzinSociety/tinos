@@ -1,12 +1,11 @@
 package rina.enrollment.impl.ribobjects;
 
-import java.util.Calendar;
-
 import rina.applicationprocess.api.DAFMember;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
+import rina.ribdaemon.api.ObjectInstanceGenerator;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 
@@ -15,7 +14,7 @@ public class DIFMemberRIBObject extends BaseRIBObject{
 	private DAFMember member = null;
 	
 	public DIFMemberRIBObject(IPCProcess ipcProcess, String objectName, DAFMember member) {
-		super(ipcProcess, objectName, "dafmember", Calendar.getInstance().getTimeInMillis());
+		super(ipcProcess, objectName, "dafmember", ObjectInstanceGenerator.getObjectInstance());
 		this.member = member;
 	}
 	

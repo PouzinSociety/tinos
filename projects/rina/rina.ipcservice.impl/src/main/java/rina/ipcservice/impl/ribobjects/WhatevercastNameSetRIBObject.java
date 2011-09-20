@@ -1,7 +1,6 @@
 package rina.ipcservice.impl.ribobjects;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -10,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.ipcservice.impl.IPCProcessImpl;
 import rina.ribdaemon.api.BaseRIBObject;
+import rina.ribdaemon.api.ObjectInstanceGenerator;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
@@ -26,7 +26,7 @@ public class WhatevercastNameSetRIBObject extends BaseRIBObject{
 	public WhatevercastNameSetRIBObject(IPCProcessImpl ipcProcess){
 		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES, 
-				"whatname set", Calendar.getInstance().getTimeInMillis());
+				"whatname set", ObjectInstanceGenerator.getObjectInstance());
 	}
 
 	@Override

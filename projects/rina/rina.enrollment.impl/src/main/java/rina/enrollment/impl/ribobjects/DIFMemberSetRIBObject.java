@@ -1,7 +1,6 @@
 package rina.enrollment.impl.ribobjects;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -13,6 +12,7 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.enrollment.impl.EnrollmentTaskImpl;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
+import rina.ribdaemon.api.ObjectInstanceGenerator;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
@@ -30,7 +30,7 @@ public class DIFMemberSetRIBObject extends BaseRIBObject{
 	public DIFMemberSetRIBObject(EnrollmentTaskImpl enrollmentTask, IPCProcess ipcProcess){
 		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS, 
-				"dafmember set", Calendar.getInstance().getTimeInMillis());
+				"dafmember set", ObjectInstanceGenerator.getObjectInstance());
 		this.enrollmentTask = enrollmentTask;
 	}
 	

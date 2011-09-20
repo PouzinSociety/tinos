@@ -12,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.DataTransferAEInstance;
+import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.FlowAllocator;
 import rina.ipcprocess.api.BaseIPCProcess;
 import rina.ipcservice.api.APService;
@@ -116,7 +117,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 		int portId = choosePortId();
 		allocationPendingApplicationProcesses.put(new Integer(portId), applicationProcess);
 		try{
-			FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
+			FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(BaseFlowAllocator.getComponentName());
 			flowAllocator.submitAllocateRequest(allocateRequest, portId);
 		}catch(IPCException ex){
 			//Something in the validation request was not valid or there are not enough 
