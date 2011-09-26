@@ -1,0 +1,1583 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+<meta name="generator" content="AsciiDoc 8.6.5" />
+<title>Build System Guide</title>
+<style type="text/css">
+/* Shared CSS for AsciiDoc xhtml11 and html5 backends */
+
+/* Default font. */
+body {
+  font-family: Georgia,serif;
+}
+
+/* Title font. */
+h1, h2, h3, h4, h5, h6,
+div.title, caption.title,
+thead, p.table.header,
+#toctitle,
+#author, #revnumber, #revdate, #revremark,
+#footer {
+  font-family: Arial,Helvetica,sans-serif;
+}
+
+body {
+  margin: 1em 5% 1em 5%;
+}
+
+a {
+  color: blue;
+  text-decoration: underline;
+}
+a:visited {
+  color: fuchsia;
+}
+
+em {
+  font-style: italic;
+  color: navy;
+}
+
+strong {
+  font-weight: bold;
+  color: #083194;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #527bbd;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+
+h1, h2, h3 {
+  border-bottom: 2px solid silver;
+}
+h2 {
+  padding-top: 0.5em;
+}
+h3 {
+  float: left;
+}
+h3 + * {
+  clear: left;
+}
+h5 {
+  font-size: 1.0em;
+}
+
+div.sectionbody {
+  margin-left: 0;
+}
+
+hr {
+  border: 1px solid silver;
+}
+
+p {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+ul, ol, li > p {
+  margin-top: 0;
+}
+ul > li     { color: #aaa; }
+ul > li > * { color: black; }
+
+pre {
+  padding: 0;
+  margin: 0;
+}
+
+#author {
+  color: #527bbd;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+#email {
+}
+#revnumber, #revdate, #revremark {
+}
+
+#footer {
+  font-size: small;
+  border-top: 2px solid silver;
+  padding-top: 0.5em;
+  margin-top: 4.0em;
+}
+#footer-text {
+  float: left;
+  padding-bottom: 0.5em;
+}
+#footer-badges {
+  float: right;
+  padding-bottom: 0.5em;
+}
+
+#preamble {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+div.imageblock, div.exampleblock, div.verseblock,
+div.quoteblock, div.literalblock, div.listingblock, div.sidebarblock,
+div.admonitionblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+div.admonitionblock {
+  margin-top: 2.0em;
+  margin-bottom: 2.0em;
+  margin-right: 10%;
+  color: #606060;
+}
+
+div.content { /* Block element content. */
+  padding: 0;
+}
+
+/* Block element titles. */
+div.title, caption.title {
+  color: #527bbd;
+  font-weight: bold;
+  text-align: left;
+  margin-top: 1.0em;
+  margin-bottom: 0.5em;
+}
+div.title + * {
+  margin-top: 0;
+}
+
+td div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content + div.title {
+  margin-top: 0.0em;
+}
+
+div.sidebarblock > div.content {
+  background: #ffffee;
+  border: 1px solid #dddddd;
+  border-left: 4px solid #f0f0f0;
+  padding: 0.5em;
+}
+
+div.listingblock > div.content {
+  border: 1px solid #dddddd;
+  border-left: 5px solid #f0f0f0;
+  background: #f8f8f8;
+  padding: 0.5em;
+}
+
+div.quoteblock, div.verseblock {
+  padding-left: 1.0em;
+  margin-left: 1.0em;
+  margin-right: 10%;
+  border-left: 5px solid #f0f0f0;
+  color: #777777;
+}
+
+div.quoteblock > div.attribution {
+  padding-top: 0.5em;
+  text-align: right;
+}
+
+div.verseblock > pre.content {
+  font-family: inherit;
+  font-size: inherit;
+}
+div.verseblock > div.attribution {
+  padding-top: 0.75em;
+  text-align: left;
+}
+/* DEPRECATED: Pre version 8.2.7 verse style literal block. */
+div.verseblock + div.attribution {
+  text-align: left;
+}
+
+div.admonitionblock .icon {
+  vertical-align: top;
+  font-size: 1.1em;
+  font-weight: bold;
+  text-decoration: underline;
+  color: #527bbd;
+  padding-right: 0.5em;
+}
+div.admonitionblock td.content {
+  padding-left: 0.5em;
+  border-left: 3px solid #dddddd;
+}
+
+div.exampleblock > div.content {
+  border-left: 3px solid #dddddd;
+  padding-left: 0.5em;
+}
+
+div.imageblock div.content { padding-left: 0; }
+span.image img { border-style: none; }
+a.image:visited { color: white; }
+
+dl {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+dt {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+  font-style: normal;
+  color: navy;
+}
+dd > *:first-child {
+  margin-top: 0.1em;
+}
+
+ul, ol {
+    list-style-position: outside;
+}
+ol.arabic {
+  list-style-type: decimal;
+}
+ol.loweralpha {
+  list-style-type: lower-alpha;
+}
+ol.upperalpha {
+  list-style-type: upper-alpha;
+}
+ol.lowerroman {
+  list-style-type: lower-roman;
+}
+ol.upperroman {
+  list-style-type: upper-roman;
+}
+
+div.compact ul, div.compact ol,
+div.compact p, div.compact p,
+div.compact div, div.compact div {
+  margin-top: 0.1em;
+  margin-bottom: 0.1em;
+}
+
+tfoot {
+  font-weight: bold;
+}
+td > div.verse {
+  white-space: pre;
+}
+
+div.hdlist {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+div.hdlist tr {
+  padding-bottom: 15px;
+}
+dt.hdlist1.strong, td.hdlist1.strong {
+  font-weight: bold;
+}
+td.hdlist1 {
+  vertical-align: top;
+  font-style: normal;
+  padding-right: 0.8em;
+  color: navy;
+}
+td.hdlist2 {
+  vertical-align: top;
+}
+div.hdlist.compact tr {
+  margin: 0;
+  padding-bottom: 0;
+}
+
+.comment {
+  background: yellow;
+}
+
+.footnote, .footnoteref {
+  font-size: 0.8em;
+}
+
+span.footnote, span.footnoteref {
+  vertical-align: super;
+}
+
+#footnotes {
+  margin: 20px 0 20px 0;
+  padding: 7px 0 0 0;
+}
+
+#footnotes div.footnote {
+  margin: 0 0 5px 0;
+}
+
+#footnotes hr {
+  border: none;
+  border-top: 1px solid silver;
+  height: 1px;
+  text-align: left;
+  margin-left: 0;
+  width: 20%;
+  min-width: 100px;
+}
+
+div.colist td {
+  padding-right: 0.5em;
+  padding-bottom: 0.3em;
+  vertical-align: top;
+}
+div.colist td img {
+  margin-top: 0.3em;
+}
+
+@media print {
+  #footer-badges { display: none; }
+}
+
+#toc {
+  margin-bottom: 2.5em;
+}
+
+#toctitle {
+  color: #527bbd;
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-top: 1.0em;
+  margin-bottom: 0.1em;
+}
+
+div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+div.toclevel2 {
+  margin-left: 2em;
+  font-size: 0.9em;
+}
+div.toclevel3 {
+  margin-left: 4em;
+  font-size: 0.9em;
+}
+div.toclevel4 {
+  margin-left: 6em;
+  font-size: 0.9em;
+}
+
+span.aqua { color: aqua; }
+span.black { color: black; }
+span.blue { color: blue; }
+span.fuchsia { color: fuchsia; }
+span.gray { color: gray; }
+span.green { color: green; }
+span.lime { color: lime; }
+span.maroon { color: maroon; }
+span.navy { color: navy; }
+span.olive { color: olive; }
+span.purple { color: purple; }
+span.red { color: red; }
+span.silver { color: silver; }
+span.teal { color: teal; }
+span.white { color: white; }
+span.yellow { color: yellow; }
+
+span.aqua-background { background: aqua; }
+span.black-background { background: black; }
+span.blue-background { background: blue; }
+span.fuchsia-background { background: fuchsia; }
+span.gray-background { background: gray; }
+span.green-background { background: green; }
+span.lime-background { background: lime; }
+span.maroon-background { background: maroon; }
+span.navy-background { background: navy; }
+span.olive-background { background: olive; }
+span.purple-background { background: purple; }
+span.red-background { background: red; }
+span.silver-background { background: silver; }
+span.teal-background { background: teal; }
+span.white-background { background: white; }
+span.yellow-background { background: yellow; }
+
+span.big { font-size: 2em; }
+span.small { font-size: 0.6em; }
+
+span.underline { text-decoration: underline; }
+span.overline { text-decoration: overline; }
+span.line-through { text-decoration: line-through; }
+
+
+/*
+ * xhtml11 specific
+ *
+ * */
+
+tt {
+  font-family: monospace;
+  font-size: inherit;
+  color: navy;
+}
+
+div.tableblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+div.tableblock > table {
+  border: 3px solid #527bbd;
+}
+thead, p.table.header {
+  font-weight: bold;
+  color: #527bbd;
+}
+p.table {
+  margin-top: 0;
+}
+/* Because the table frame attribute is overriden by CSS in most browsers. */
+div.tableblock > table[frame="void"] {
+  border-style: none;
+}
+div.tableblock > table[frame="hsides"] {
+  border-left-style: none;
+  border-right-style: none;
+}
+div.tableblock > table[frame="vsides"] {
+  border-top-style: none;
+  border-bottom-style: none;
+}
+
+
+/*
+ * html5 specific
+ *
+ * */
+
+.monospaced {
+  font-family: monospace;
+  font-size: inherit;
+  color: navy;
+}
+
+table.tableblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+thead, p.tableblock.header {
+  font-weight: bold;
+  color: #527bbd;
+}
+p.tableblock {
+  margin-top: 0;
+}
+table.tableblock {
+  border-width: 3px;
+  border-spacing: 0px;
+  border-style: solid;
+  border-color: #527bbd;
+  border-collapse: collapse;
+}
+th.tableblock, td.tableblock {
+  border-width: 1px;
+  padding: 4px;
+  border-style: solid;
+  border-color: #527bbd;
+}
+
+table.tableblock.frame-topbot {
+  border-left-style: hidden;
+  border-right-style: hidden;
+}
+table.tableblock.frame-sides {
+  border-top-style: hidden;
+  border-bottom-style: hidden;
+}
+table.tableblock.frame-none {
+  border-style: hidden;
+}
+
+th.tableblock.halign-left, td.tableblock.halign-left {
+  text-align: left;
+}
+th.tableblock.halign-center, td.tableblock.halign-center {
+  text-align: center;
+}
+th.tableblock.halign-right, td.tableblock.halign-right {
+  text-align: right;
+}
+
+th.tableblock.valign-top, td.tableblock.valign-top {
+  vertical-align: top;
+}
+th.tableblock.valign-middle, td.tableblock.valign-middle {
+  vertical-align: middle;
+}
+th.tableblock.valign-bottom, td.tableblock.valign-bottom {
+  vertical-align: bottom;
+}
+</style>
+<script type="text/javascript">
+/*<![CDATA[*/
+var asciidoc = {  // Namespace.
+
+/////////////////////////////////////////////////////////////////////
+// Table Of Contents generator
+/////////////////////////////////////////////////////////////////////
+
+/* Author: Mihai Bazon, September 2002
+ * http://students.infoiasi.ro/~mishoo
+ *
+ * Table Of Content generator
+ * Version: 0.4
+ *
+ * Feel free to use this script under the terms of the GNU General Public
+ * License, as long as you do not remove or alter this notice.
+ */
+
+ /* modified by Troy D. Hanson, September 2006. License: GPL */
+ /* modified by Stuart Rackham, 2006, 2009. License: GPL */
+
+// toclevels = 1..4.
+toc: function (toclevels) {
+
+  function getText(el) {
+    var text = "";
+    for (var i = el.firstChild; i != null; i = i.nextSibling) {
+      if (i.nodeType == 3 /* Node.TEXT_NODE */) // IE doesn't speak constants.
+        text += i.data;
+      else if (i.firstChild != null)
+        text += getText(i);
+    }
+    return text;
+  }
+
+  function TocEntry(el, text, toclevel) {
+    this.element = el;
+    this.text = text;
+    this.toclevel = toclevel;
+  }
+
+  function tocEntries(el, toclevels) {
+    var result = new Array;
+    var re = new RegExp('[hH]([2-'+(toclevels+1)+'])');
+    // Function that scans the DOM tree for header elements (the DOM2
+    // nodeIterator API would be a better technique but not supported by all
+    // browsers).
+    var iterate = function (el) {
+      for (var i = el.firstChild; i != null; i = i.nextSibling) {
+        if (i.nodeType == 1 /* Node.ELEMENT_NODE */) {
+          var mo = re.exec(i.tagName);
+          if (mo && (i.getAttribute("class") || i.getAttribute("className")) != "float") {
+            result[result.length] = new TocEntry(i, getText(i), mo[1]-1);
+          }
+          iterate(i);
+        }
+      }
+    }
+    iterate(el);
+    return result;
+  }
+
+  var toc = document.getElementById("toc");
+  if (!toc) {
+    return;
+  }
+
+  // Delete existing TOC entries in case we're reloading the TOC.
+  var tocEntriesToRemove = [];
+  var i;
+  for (i = 0; i < toc.childNodes.length; i++) {
+    var entry = toc.childNodes[i];
+    if (entry.nodeName == 'DIV'
+     && entry.getAttribute("class")
+     && entry.getAttribute("class").match(/^toclevel/))
+      tocEntriesToRemove.push(entry);
+  }
+  for (i = 0; i < tocEntriesToRemove.length; i++) {
+    toc.removeChild(tocEntriesToRemove[i]);
+  }
+
+  // Rebuild TOC entries.
+  var entries = tocEntries(document.getElementById("content"), toclevels);
+  for (var i = 0; i < entries.length; ++i) {
+    var entry = entries[i];
+    if (entry.element.id == "")
+      entry.element.id = "_toc_" + i;
+    var a = document.createElement("a");
+    a.href = "#" + entry.element.id;
+    a.appendChild(document.createTextNode(entry.text));
+    var div = document.createElement("div");
+    div.appendChild(a);
+    div.className = "toclevel" + entry.toclevel;
+    toc.appendChild(div);
+  }
+  if (entries.length == 0)
+    toc.parentNode.removeChild(toc);
+},
+
+
+/////////////////////////////////////////////////////////////////////
+// Footnotes generator
+/////////////////////////////////////////////////////////////////////
+
+/* Based on footnote generation code from:
+ * http://www.brandspankingnew.net/archive/2005/07/format_footnote.html
+ */
+
+footnotes: function () {
+  // Delete existing footnote entries in case we're reloading the footnodes.
+  var i;
+  var noteholder = document.getElementById("footnotes");
+  if (!noteholder) {
+    return;
+  }
+  var entriesToRemove = [];
+  for (i = 0; i < noteholder.childNodes.length; i++) {
+    var entry = noteholder.childNodes[i];
+    if (entry.nodeName == 'DIV' && entry.getAttribute("class") == "footnote")
+      entriesToRemove.push(entry);
+  }
+  for (i = 0; i < entriesToRemove.length; i++) {
+    noteholder.removeChild(entriesToRemove[i]);
+  }
+
+  // Rebuild footnote entries.
+  var cont = document.getElementById("content");
+  var spans = cont.getElementsByTagName("span");
+  var refs = {};
+  var n = 0;
+  for (i=0; i<spans.length; i++) {
+    if (spans[i].className == "footnote") {
+      n++;
+      var note = spans[i].getAttribute("data-note");
+      if (!note) {
+        // Use [\s\S] in place of . so multi-line matches work.
+        // Because JavaScript has no s (dotall) regex flag.
+        note = spans[i].innerHTML.match(/\s*\[([\s\S]*)]\s*/)[1];
+        spans[i].innerHTML =
+          "[<a id='_footnoteref_" + n + "' href='#_footnote_" + n +
+          "' title='View footnote' class='footnote'>" + n + "</a>]";
+        spans[i].setAttribute("data-note", note);
+      }
+      noteholder.innerHTML +=
+        "<div class='footnote' id='_footnote_" + n + "'>" +
+        "<a href='#_footnoteref_" + n + "' title='Return to text'>" +
+        n + "</a>. " + note + "</div>";
+      var id =spans[i].getAttribute("id");
+      if (id != null) refs["#"+id] = n;
+    }
+  }
+  if (n == 0)
+    noteholder.parentNode.removeChild(noteholder);
+  else {
+    // Process footnoterefs.
+    for (i=0; i<spans.length; i++) {
+      if (spans[i].className == "footnoteref") {
+        var href = spans[i].getElementsByTagName("a")[0].getAttribute("href");
+        href = href.match(/#.*/)[0];  // Because IE return full URL.
+        n = refs[href];
+        spans[i].innerHTML =
+          "[<a href='#_footnote_" + n +
+          "' title='View footnote' class='footnote'>" + n + "</a>]";
+      }
+    }
+  }
+},
+
+install: function(toclevels) {
+  var timerId;
+
+  function reinstall() {
+    asciidoc.footnotes();
+    if (toclevels) {
+      asciidoc.toc(toclevels);
+    }
+  }
+
+  function reinstallAndRemoveTimer() {
+    clearInterval(timerId);
+    reinstall();
+  }
+
+  timerId = setInterval(reinstall, 500);
+  if (document.addEventListener)
+    document.addEventListener("DOMContentLoaded", reinstallAndRemoveTimer, false);
+  else
+    window.onload = reinstallAndRemoveTimer;
+}
+
+}
+asciidoc.install(2);
+/*]]>*/
+</script>
+</head>
+<body class="article">
+<div id="header">
+<h1>Build System Guide</h1>
+<span id="author">Patsy Phelan</span><br />
+<span id="email"><tt>&lt;<a href="mailto:pphelan@tssg.org">pphelan@tssg.org</a>&gt;</tt></span><br />
+<span id="revnumber">version 0.1</span>
+<div id="toc">
+  <div id="toctitle">Table of Contents</div>
+  <noscript><p><b>JavaScript must be enabled in your browser to display the table of contents.</b></p></noscript>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_version_history">1. Version History</h2>
+<div class="sectionbody">
+<div class="tableblock">
+<table rules="all"
+width="100%"
+frame="border"
+cellspacing="0" cellpadding="4">
+<caption class="title">Table 1. Revision History</caption>
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+<thead>
+<tr>
+<th align="left" valign="top">NUMBER </th>
+<th align="left" valign="top">DATE        </th>
+<th align="left" valign="top">DESCRIPTION                           </th>
+<th align="left" valign="top">NAME</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" valign="top"><p class="table">0.1</p></td>
+<td align="left" valign="top"><p class="table">Aug, 2011</p></td>
+<td align="left" valign="top"><p class="table">Initial Draft</p></td>
+<td align="left" valign="top"><p class="table">PP</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_prerequisite">2. Prerequisite</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>It is recommended that you follow the Setup Guide steps before you
+start to use the build system. The installation steps will provide
+the run-time dependencies that will allow the build system to
+function. The installation steps will also configure a default
+directory structure that is required by IVY and other parts of the
+build system.</p></div>
+<div class="paragraph"><p>Ruby is required as the project templates are generated using a
+ruby script. As this parses command line options it also needs
+a rubygem called choice. So these must be installed before you
+use the project templates.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>$&gt; sudo apt-get install ruby
+$&gt; sudo gem install choice</tt></pre>
+</div></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_build_system">3. Build System</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>In order to get up and running quickly, we are re-using the Build
+System deployed within the Tinos Open Source project <a id="TINOS"></a> which
+itself is originally from SpringSource and now core to the Virgo
+project. This provides all the functionality that is required from
+a build system.  It is also proven and works well. So we have adopted
+it and use it to drive our prototype.</p></div>
+<div class="paragraph"><p>Some small modifications have been done to the Spring-Build directories
+to add additional support to construct template projects and setups
+for Bundle projects. This however is minor and all credit
+goes to the Spring Framework guys for the build system.</p></div>
+<div class="paragraph"><p>An outline of the relevant directory structure is shown below:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt># Directory Structure
+$GIT_HOME
+- settings                        (Quick Start Templates)
+- documentation                   (Documentation)
+- repository                      (Build Artifacts / dependencies)
+  - downloaded                    (Local SVN Dependency Repo)
+  - ivy-cache                     (IVY Resolution Cache)
+  - integration-repo              (Integration Repository)
+- projects
+  - build-distro                  (Distribution Target)
+  - sub-projects..                (Passive Components)
+  - spring-build                  (Active Build System)
+  - build.versions                (Dependency Versions)
+  - ivysettings.xml               (IVY Configuration)
+  - build.properties              (Build Properties)
+- build
+  - README
+  - sed                           (SED)
+  - code-style                    (Eclipse Code Style Templates)
+  - snippets                      (Code snippets)
+  - tinos                         (project templates)
+  - spring-build                  (Archive/Original Reference - see README)
+  - scripts                       (Ruby based Template Generator)
+     - create                     (Template-Generation Script)
+     - project-gen                (templates)</tt></pre>
+</div></div>
+<div class="paragraph"><p>In order to emphasize modularity within the build system, bundles
+are built as standalone units separate from the application deployments
+(Plan).  All bundles are sub-projects within the "projects" folder.
+The build-distro folder is a high-level build-wrapper project which
+encompasses the sub-projects to be included in the overall distribution.
+A PLAN project represents a deployment plan for a specific application,
+it will list the required bundles for a given application to be
+deployed within the Virgo Application server.</p></div>
+<div class="paragraph"><p>This sub-project unit structures allow the selection and construction
+of application by simply the selection of the bundles you require
+either as binary or code projects.  Binary bundle includes can
+simply be referenced via IVY and the bundle repository. Source code
+bundles to be included (i.e. code under development bundles) can
+be either extracted within the projects directory, or checked out
+into the projects directory from a source code repository.</p></div>
+<div class="sect2">
+<h3 id="_ivy">3.1. IVY</h3>
+<div class="paragraph"><p>Ivy is a tool for managing (recording, tracking, resolving and reporting) project
+dependencies. It is characterized by the following:</p></div>
+<div class="ulist"><ul>
+<li>
+<p>
+Flexibility and configurability - Ivy is essentially process agnostic and is
+not tied to any methodology or structure. Instead it provides the necessary flexibility
+and configurability to be adapted to a broad range of dependency management and build
+processes.
+</p>
+</li>
+<li>
+<p>
+Tight integration with Apache Ant - while available as a standalone tool, Ivy
+works particularly well with Apache Ant providing a number of powerful Ant tasks ranging
+from dependency resolution to dependency reporting and publication.
+</p>
+</li>
+</ul></div>
+<div class="paragraph"><p>Ivy is open source and released under a very permissive Apache License.</p></div>
+<div class="paragraph"><p>Ivy has a lot of powerful Features, the most popular and useful being its flexibility,
+integration with ant, and its strong transitive dependencies management engine.</p></div>
+<div class="paragraph"><p>The transitive dependencies management is a feature which let you get dependencies
+of your dependencies, transitively. In order to address this problematic ivy needs
+to find metadata about your modules, usually in an ivy file. To find these metadata
+and your dependencies artifacts (usually jars), Ivy can be configured to use a lot
+of different repositories.</p></div>
+<div class="sect3">
+<h4 id="_ivy_cache">3.1.1. Ivy Cache</h4>
+<div class="paragraph"><p>An ivy cache is composed of two different parts:
+ * Repository Cache: The repository cache is where Ivy stores data downloaded
+from module repositories, along with some meta information. This part of the cache
+can be shared if you use an ad hoc lock strategy.
+ * Resolution Cache: This part of the cache is used to store resolution data,
+which is used by Ivy to reuse the results of a resolve process. This part of the
+cache is overwritten each time a new resolve is performed, and should never be
+used by multiple processes at the same time.</p></div>
+<div class="paragraph"><p>A repository in Ivy is a distribution site location where Ivy is able to find your
+required modules' artifacts and descriptors (i.e. Ivy files in most cases).</p></div>
+</div>
+<div class="sect3">
+<h4 id="_assumptions">3.1.2. Assumptions</h4>
+<div class="paragraph"><p>The template generator assumes you have an ivy-cache and an ivy-local-repository
+available for the build process. It assumes these are located in a folder called
+ivy in the users home directory. You can change these locations using the
+"build.properties" file.</p></div>
+<div class="paragraph"><p>By default, an empty local repository can be used. As you build bundles and execute
+the "ant publish-ivy" commands, ivy will add you bundle to the local repository
+with the correct structure and files. The local repository is primarily a local
+storage area for your home-grown bundles.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>- repository
+  - ivy-cache                         (Ivy Cache - Ivy will create this automatically)
+  - downloaded                        (Local File System Repository)
+    - "BundleGroupName String"
+      - "Organisation String"
+        - "Version String"
+          - "BundleName-version".jar                  (Bundle)
+          - "BundleName-version".jar.sha1             (Security)
+          - "BundleName-sources-version".jar          (Bundle Source)
+          - "BundleName-sources-version".jar.sha1     (Security)
+          - ivy-"version".xml              (Ivy dependencies for this version)</tt></pre>
+</div></div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_template_generator">4. Template Generator</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>The template generator script is in the "build/scripts" folder. This script and
+the build scripts in general have more functionality than is currently need within the
+Prototype environment. So only the relevant options and project types needed as described.</p></div>
+<div class="sect2">
+<h3 id="_bundle_project_template">4.1. Bundle Project Template</h3>
+<div class="paragraph"><p>The bundle template when invoked will create a bundle directory and an associated osgi
+integration test bundle. These project structures require that they be placed within
+an over-arching projects folder and associated build-distro target to interact correctly
+with the build system. The bundle templates are constructed in such a way as to expect to
+be placed within the "projects" folder so they "know" where build scripts are located.</p></div>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<img src="./images/icons/note.png" alt="Note" />
+</td>
+<td class="content">This is the most commonly used template and probably the only needed during this
+project.</td>
+</tr></table>
+</div>
+<div class="paragraph"><p>The command required to create a bundle template is invoked in the following format:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>FORMAT: ruby create -n Name -t TargetDirectory -o OrganizationString -a ProjectTemplate
+
+$&gt; ruby create -n pouzin-sample-bundle -t $GIT_HOME/projects -o org.pouzinsociety.sample.bundle -a bundle</tt></pre>
+</div></div>
+<div class="paragraph"><p>The resulting project structure created looks like the following:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt># Directory Structure
+$GIT_HOME
+ - projects
+   - org.pouzinsociety.sample.bundle                      (Bundle Project)
+   - org.pouzinsociety.sample.bundle.integration.test     (Bundle Test Project - Optional)</tt></pre>
+</div></div>
+<div class="sect3">
+<h4 id="_bundle_project_layout">4.1.1. Bundle Project Layout</h4>
+<div class="paragraph"><p>The project structure of a bundle will follow the format below.
+This is generated automatically by the templates and will allow
+immediate integration with the build system. The is the general
+layout - it is modified slighty in the integration.test bundle, in
+that the test bundle has only code within the test folder of the
+project.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt># Directory Structure of Bundle Project
+- bundle-root
+  - src
+    - main                                     (application code tree)
+      - java                                   (java code - organised as packages)
+        - org
+          - pouzinsociety
+            - sample
+              - bundle
+                - BundleInterface.java          (Java Interface Definition)
+                - impl
+                  - BundleInterfaceImpl.java    (Java Interface Implementation)
+      - resources
+        - META-INF
+           - MANIFEST.MF                        (Package-Bundle Specifications)
+           - spring                             (Spring Specific OSGi Configuration)
+             - module-context.xml
+             - osgi-context.xml
+    - test                                      (test code tree)
+      - java                                    (java test code - organised as packages)
+        - org
+          - pouzinsociety
+            - sample
+              - bundle
+                - impl
+                  - BundleServiceImplTests.java (Java JUnit Tests)
+      - resources                               (Minimum config supplied)
+        - log4j.properties                      (Logging configuration)
+  - ivy.xml                                     (build dependencies)
+  - build.xml                                   (build system integration)</tt></pre>
+</div></div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_plan_project_template">4.2. Plan Project Template</h3>
+<div class="paragraph"><p>A plan encapsulates all of the artifacts of your application in a
+single deployment unit. A plan is simply an XML file that lists the
+artifacts of your application.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;plan name="sample.deploy.plan" version="1.0.0" scoped="true" atomic="true"
+        xmlns="http://www.springsource.org/schema/dm-server/plan"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springsource.org/schema/dm-server/plan
+                            http://www.springsource.org/schema/dm-server/plan/springsource-dm-server-plan.xsd"&gt;
+&lt;!-- Simple Test --&gt;
+        &lt;artifact type="bundle" name="org.pouzinsociety.sample" version="[1, 2)"&gt;
+        &lt;/artifact&gt;
+&lt;/plan&gt;</tt></pre>
+</div></div>
+<div class="paragraph"><p>The basic structure of a PLAN project looks like the following:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>- plan-root
+  - src
+    - plan-root.plan                            (Plan file)
+  - ivy.xml                                     (build dependencies)
+  - build.xml                                   (build configuration)</tt></pre>
+</div></div>
+<div class="paragraph"><p>This is a much smaller and simpler project template than normal. It is
+essentially a container for the .plan file.</p></div>
+<div class="paragraph"><p>The command required to create a plan template is invoked in the following format:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>FORMAT: ruby create -n Name -t TargetDirectory -o OrganizationString -a ProjectTemplate
+
+$&gt; ruby create -n sample.deploy -t $GIT_HOME/projects -o org.pouzinsociety -a plan</tt></pre>
+</div></div>
+<div class="paragraph"><p>The resulting project structure created looks like the following:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt># Directory Structure
+$GIT_HOME
+ - projects
+   - org.pouzinsociety.sample.deploy                      (Plan Project)</tt></pre>
+</div></div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_building_from_code">5. Building From Code</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>The following covers the basics of getting up and running with the build system from the
+command line.</p></div>
+<div class="sect2">
+<h3 id="_bundles">5.1. Bundles</h3>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<img src="./images/icons/note.png" alt="Note" />
+</td>
+<td class="content">These build commands are executed in the folder of the bundle project (bundle-root).</td>
+</tr></table>
+</div>
+<div class="paragraph"><p>The following ant commands are available and applicable to all bundle projects within a
+projects folder. This is quick start guide which covers the most commonly used options, to
+get a full listing of what is available run the following ant command</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt> $&gt; ant -p
+
+Main targets:
+
+ clean                   Removes the target directory.
+ clean-integration       Removes the integration repository directory.
+ clean-ivy               Removes the ivy cache directory.
+ clover                  Executes all tests resulting from a compilation of the test tree returning test coverage metrics.
+ copy-dist-jar           Copies the distributable jar to a location
+ copy-ext-jars           Copies the external jars to a location
+ copy-provided-jars      Copies the provided jars to a location
+ copy-provided-libs      Copies the provided libs to a location
+ eclipse                 Updates eclipse classpath.
+ findbugs                Checks all code from the source tree for bugs.
+ jar                     Creates a JAR file containing the output of a compilation of the source tree.
+ javadoc-all             Creates javadoc documentation for all classes.
+ javadoc-api             Creates javadoc documentation for all classes.
+ osgi-validate           Validates that a bundle can resolve against it's dependencies.
+ package-common.package  Copies all external and created artifacts to a packaging location.  Unless overriden, copies nothing.
+ publish                 Publishes all artifacts to remote repositories
+ resolve                 Retrieves all external dependencies for this project.
+ test                    Executes all tests resulting from a compilation of the test tree returning test success metrics.</tt></pre>
+</div></div>
+<div class="sect3">
+<h4 id="_clean">5.1.1. Clean</h4>
+<div class="paragraph"><p>Clean out any build artifacts and bring the project to a clean
+state. This removes the target directory from the project folder
+in order to avoid any future build artifact conflicts.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt> $&gt;
+ $&gt; ant clean
+ $&gt;</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_clean_integration">5.1.2. Clean-Integration</h4>
+<div class="paragraph"><p>Wipes the integration repository clean. This is a seldom used task
+as it can take a considerable amount of effort to regenerate the
+integration repository depending on the number of projects using
+it.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt> $&gt; ant clean-integration
+ $&gt;</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_clean_ivy">5.1.3. Clean-Ivy</h4>
+<div class="paragraph"><p>Wipes the integration repository clean. This is a seldom used task
+as it can take a considerable amount of effort to regenerate the
+integration repository depending on the number of projects using
+it.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt> $&gt; ant clean-ivy</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_eclipse">5.1.4. Eclipse</h4>
+<div class="paragraph"><p>Generate a .classpath file to allow eclipse integration.  This will
+link the project dependencies specified in the ivy.xml file to the
+actual jars (ivy cache) into the eclipse environment.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt> $&gt; ant eclipse</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_build">5.1.5. Build</h4>
+<div class="paragraph"><p>This will build the bundle. As a side effect the bundle is copied
+into the ivy-cache so that it can be used by other bundles that are
+being built. A target folder is also produced in the root of the
+project and the build artifacts are placed within it.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt> $&gt; ant jar</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_test">5.1.6. Test</h4>
+<div class="paragraph"><p>This will build the bundle if required. And it will then execute
+any test that are present within the project outputting the results
+in the target/test-results folder at the project root.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt> $&gt; ant test
+
+# Directory Structure after "jar"
+ - target                                    (build artifacts)
+   - artifacts
+     - "bundle-name".jar                     (compiled source)
+     - "bundle-name"-sources.jar             (source code)
+     - ivy.xml                               (dependencies)
+   - classes                                 (class files to generate bundle)
+     - xxxxx                                 (class files in org structure)
+   - test-classes                            (class files for tests)
+     - xxxxx                                 (class files in org structure)
+   - test-results                            (test results)
+     - xml                                   (results in xml format)
+     - html                                  (results in html format)</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_findbugs">5.1.7. Findbugs</h4>
+<div class="paragraph"><p>This runs the findbugs toolset against your code base.  This process
+will generate a report of possible bugs based on the examination
+of the codebase. A findbugs folder is created in the target folder.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt> $&gt; ant findbugs</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_javadoc">5.1.8. Javadoc</h4>
+<div class="paragraph"><p>This runs javadoc against your code base.  This process will generate
+javadoc listings of the codebase. These listings are output in the
+javadoc-all folder in the target directory.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt> $&gt; ant javadoc-all</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_osgi_validate">5.1.9. OSGi Validate</h4>
+<div class="paragraph"><p>This task attempts to resolve all the dependencies of your bundle
+in an OSGi environment. If it is not successful, it means that you
+are missing a dependency for your bundle and it will cause errors
+when you try and load it within the application server. This task
+will create a directory "org.eclipse.osgi" in the target directory
+which it uses during its execution.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt> $&gt; ant osgi-validate</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_publish">5.1.10. Publish</h4>
+<div class="paragraph"><p>This will publish the jar (bundle), source code, SHA keys for
+this project into your local ivy repository. The published bundle
+can then be stored in your local source/build storage system.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt> $&gt; ant publish-ivy</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_project_target_directory_structure">5.1.11. Project Target Directory Structure</h4>
+<div class="listingblock">
+<div class="content">
+<pre><tt> - target                                    (build artifacts)
+   - artifacts                               ("jar" task output)
+     - "bundle-name".jar                     (compiled source)
+     - "bundle-name"-sources.jar             (source code)
+     - ivy.xml                               (dependencies)
+   - classes                                 ("jar" task output)
+     - xxxxx                                 (class files in org structure)
+   - test-classes                            ("test" task output)
+     - xxxxx                                 (class files in org structure)
+   - test-results                            ("test" task output)
+     - xml                                   (results in xml format)
+     - html                                  (results in html format)
+   - findbugs                                ("findbugs" task output)
+     - "bundle-name".xml                     (Findbugs report)
+   - javadoc-all                             ("javadoc-all" task output)
+     - xxxxx                                 (javadocs)
+   - org.eclipse.osgi                        ("osgi-validate" task output)
+     - xxxxx                                 (OSGi Startup artifacts)</tt></pre>
+</div></div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_plan_projects">5.2. Plan Projects</h3>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<img src="./images/icons/note.png" alt="Note" />
+</td>
+<td class="content">Most ant tasks available here are supplied by default (same as a bundle),
+however there is only three targets that are relevant: clean, jar, publish-ivy</td>
+</tr></table>
+</div>
+<div class="paragraph"><p>This is quick start guide which covers the most commonly
+used options, to get a full listing of what is available run the
+following ant command:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt> $&gt; ant -p
+
+Main targets:
+
+ clean                   Removes the target directory.
+ clean-integration       Removes the integration repository directory.
+ clean-ivy               Removes the ivy cache directory.
+ clover                  Does nothing.
+ clover.do               Does nothing.
+ copy-dist-jar           Copies the distributable jar to a location
+ copy-ext-jars           Copies the external jars to a location
+ copy-provided-jars      Copies the provided jars to a location
+ copy-provided-libs      Copies the provided libs to a location
+ eclipse                 Updates eclipse classpath.
+ findbugs                Does nothing.
+ findbugs.do             Does nothing.
+ jar                     Creates a libd file with the proper versions substituted.
+ javadoc-all             Does nothing
+ javadoc-api             Does nothing.
+ osgi-validate           Does nothing.
+ package-common.package  Copies all external and created artifacts to a packaging location.  Unless overriden, copies nothing.
+ publish                 Publishes all artifacts to remote repositories
+ resolve                 Retrieves all external dependencies for this project.
+ test                    Does nothing.
+ test.do                 Does nothing.</tt></pre>
+</div></div>
+<div class="sect3">
+<h4 id="_clean_2">5.2.1. Clean</h4>
+<div class="paragraph"><p>Clean out any build artifacts and bring the project to a clean
+state. This removes the target directory from the project folder
+in order to avoid any future build artifact conflicts.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt> $&gt;
+ $&gt; ant clean
+ $&gt;</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_clean_integration_2">5.2.2. Clean-Integration</h4>
+<div class="paragraph"><p>Wipes the integration repository clean. This is a seldom used task
+as it can take a considerable amount of effort to regenerate the
+integration repository depending on the number of projects using
+it.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt> $&gt; ant clean-integration
+ $&gt;</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_clean_ivy_2">5.2.3. Clean-Ivy</h4>
+<div class="paragraph"><p>Wipes the integration repository clean. This is a seldom used task
+as it can take a considerable amount of effort to regenerate the
+integration repository depending on the number of projects using
+it.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt> $&gt; ant clean-ivy</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_build_2">5.2.4. Build</h4>
+<div class="paragraph"><p>This will build the plan project. As a side effect the bundle is copied
+into the ivy-cache so that it can be used by other bundles that are
+being built. A target folder is also produced in the root of the
+project and the build artifacts are placed within it.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt> $&gt; ant jar</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_publish_2">5.2.5. Publish</h4>
+<div class="paragraph"><p>This will publish the plan file, SHA keys for this project into
+your local ivy repository. The published plan can then be stored
+in your local source/build storage system.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt> $&gt; ant publish-ivy</tt></pre>
+</div></div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_project_wrapper_distribution_overall_passive_project">5.3. Project Wrapper - Distribution (Overall PASSIVE Project)</h3>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<img src="./images/icons/note.png" alt="Note" />
+</td>
+<td class="content">These build commands are executed in the "build-distro" folder within the projects folder.</td>
+</tr></table>
+</div>
+<div class="paragraph"><p>The Project Build Wrapper is simply a wrapper which contains all the build
+dependencies for your project. The ant command that are executed within this
+project recursively enter all the dependent projects and invoke that ant task
+at the sub-project level.</p></div>
+<div class="paragraph"><p>This is quick start guide which covers the most commonly
+used options, to get a full listing of what is available run the
+following ant command:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt> $&gt; ant -p
+
+Main targets:
+
+ clean                         Removes the target directory.
+ clean-integration             Removes the integration repository directory.
+ clean-ivy                     Removes the ivy cache directory.
+ clover                        Executes all tests resulting from a compilation of the test tree returning test coverage metrics.
+ findbugs                      Checks all code from the source tree for bugs.
+ jar                           Creates a JAR file containing the output of a compilation of the source tree.
+ javadoc-all                   Creates javadoc documentation for all classes.
+ javadoc-api                   Creates javadoc documentation for all classes.
+ osgi-validate                 Checks all code from the source tree for bugs.
+ package-multi-bundle.package  Creates a packaged distributable of the project.  Unless overridden, delegates to sub-bundles.
+ publish-ivy                   Publishes all ivy artifacts to remote repositories
+ publish-maven                 Publishes all maven artifacts to remote repositories
+ publish-multi-bundle.publish  Publishes all artifacts to remote repositories
+ test                          Executes all tests resulting from a compilation of the test tree returning test success metrics.</tt></pre>
+</div></div>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<img src="./images/icons/note.png" alt="Note" />
+</td>
+<td class="content">There is also a locally defined target specified within the build.xml
+file. This target is call "distro" and is purely a convience for
+users. Internally it executes the following ant tasks in order:
+clean, jar, javadoc-all, package. This is also probably going to be the
+most commonly used target for the duration of this project.</td>
+</tr></table>
+</div>
+<div class="sect3">
+<h4 id="_distro">5.3.1. Distro</h4>
+<div class="listingblock">
+<div class="content">
+<pre><tt> # A one stop shop for the project, it will perform the following targets
+ # in sequence : clean, jar, javadoc-all, package.
+ $&gt;
+ $&gt; ant distro
+ $&gt;</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_clean_3">5.3.2. Clean</h4>
+<div class="listingblock">
+<div class="content">
+<pre><tt> # This will recursively perform a clean of all the sub-projects and the
+ # target of this high-level project.
+ $&gt;
+ $&gt; ant clean
+ $&gt;</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_eclipse_2">5.3.3. Eclipse</h4>
+<div class="listingblock">
+<div class="content">
+<pre><tt> # This will recursively perform an ant "eclipse" of all the sub-projects.
+ # This updates the .classpath files for Eclipse users.
+ $&gt;
+ $&gt; ant eclipse
+ $&gt;</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_build_3">5.3.4. Build</h4>
+<div class="listingblock">
+<div class="content">
+<pre><tt> # This will recursively perform the build task "jar" for all of the sub-projects
+ # included in this high-level project.
+ $&gt;
+ $&gt; ant jar
+ $&gt;</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_javadoc_2">5.3.5. Javadoc</h4>
+<div class="listingblock">
+<div class="content">
+<pre><tt> # This will recursively perform the build task "javadoc" for all of the sub-projects
+ # included in this high-level project. It will then collect the javadoc and build
+ # within the target folder of this project.
+ $&gt;
+ $&gt; ant javadoc-all
+ $&gt;</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_package">5.3.6. Package</h4>
+<div class="listingblock">
+<div class="content">
+<pre><tt> # This will generate a distribution within the target folder. This is dependent on
+ # previous build tasks (such as jar) to place the artifacts in the appropriate locations.
+ # A zip file distribution is produced within the target/artifacts foler.
+ $&gt;
+ $&gt; ant package
+ $&gt;</tt></pre>
+</div></div>
+</div>
+<div class="sect3">
+<h4 id="_directory_structure">5.3.7. Directory Structure</h4>
+<div class="listingblock">
+<div class="content">
+<pre><tt>distro-root
+ - target
+   - artifacts
+     - "ProjectName"-Version.zip                   (Packaged Distribution)
+   - packaged-expanded                             (Expanded version of distribution)
+     - "ProjectName"-Version
+       - dist                                      (Build Artifacts)
+       - docs                                      (Java Documentation)
+       - src                                       (Source Artifacts)</tt></pre>
+</div></div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_configuration_settings">6. Configuration Settings</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_distribution">6.1. Distribution</h3>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<img src="./images/icons/note.png" alt="Note" />
+</td>
+<td class="content">This refers to the inclusion of sub-projects within the build-distro high level project.</td>
+</tr></table>
+</div>
+<div class="sect3">
+<h4 id="_adding_a_new_sub_project">6.1.1. Adding a new sub-project</h4>
+<div class="paragraph"><p>To add a new sub-project to the high-level build distribution, that project needs to be
+added to the following file:</p></div>
+<div class="sect4">
+<h5 id="_build_xml">build.xml</h5>
+<div class="paragraph"><p>Within the &lt;path id="bundles"&gt; element, add a new path element for the specific sub-project.
+These pathelement entries set the build order, so beware of your dependencies. This path is
+iterated over by the build system to generate all the sub-project required for the main
+distribution.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>        &lt;!-- List all the bundles, you wish to include in the build process here --&gt;
+        &lt;!-- NOTE: Beware the build order --&gt;
+        &lt;path id="bundles"&gt;
+                &lt;pathelement location="../org.pouzinsociety.sample.api" /&gt;
+                &lt;pathelement location="../org.pouzinsociety.sample.dao" /&gt;
+                &lt;pathelement location="../sample.deploy.plan" /&gt;
+        &lt;/path&gt;</tt></pre>
+</div></div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_eclipse_styles">6.2. Eclipse Styles</h3>
+<div class="paragraph"><p>A set of eclipse code style templates has been provided for the use
+of partners within the build environment. This allows a standard
+code style throughout all source code within the build system.
+These can be added to your eclipse environment by editing the
+preferences of Eclipse.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>$GIT_HOME
+ - build
+   - code-style
+     - eclipse
+       - eclipse_code-style_clean-up.xml         (Cleanup Template)
+       - eclipse_code-style_formatter.xml        (Format Template)
+       - eclipse_code-style_templates.xml        (Code Generation Template)</tt></pre>
+</div></div>
+</div>
+<div class="sect2">
+<h3 id="_dependency_versions_projects_build_versions">6.3. Dependency Versions (projects/build.versions)</h3>
+<div class="paragraph"><p>This file contains the version numbers of all dependencies for all sub-bundle projects.
+This is a central location for this information instead of having to update
+all bundles in the event of bumping a version number. This file is used in conjunction with
+ivy.xml (dependencies) in every bundle project.</p></div>
+<div class="paragraph"><p>The current provided list contains the minimum set of dependencies to allow the templates as
+generated work. Developers can change these as required (add, update, remove).</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt># Compile
+org.springframework.spring=3.0.0.RELEASE
+org.springframework.osgi=1.2.1
+org.springframework.integration=1.0.3.RELEASE
+org.eclipse.osgi=3.5.0.v20081201-1815
+org.apache.commons.logging=1.1.1
+org.objectweb.asm=2.2.3
+org.aspectj=1.6.3.RELEASE
+org.slf4j=1.5.0
+org.apache.log4j=1.2.15
+org.aopalliance=1.0.0
+
+# Test
+org.antlr=2.7.6
+org.junit=4.4.0</tt></pre>
+</div></div>
+<div class="sect3">
+<h4 id="_dependency_versions_bundle_project_ivy_xml">6.3.1. Dependency Versions (bundle-project/ivy.xml)</h4>
+<div class="paragraph"><p>This is the dependency file for a bundle. All dependencies for a bundle should be included
+in this file in order for the build system to resolve them. This file is closely tied with
+the build.versions file. It is also the file that is used to update the eclipse .classpath
+file via the "ant eclipse" command.</p></div>
+<div class="paragraph"><p>Any update to this file or the "build.versions" file should be followed by an update
+of your .classpath file via "ant eclipse".</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>&lt;dependencies&gt;
+        &lt;dependency org="net.java.dev.jna" name="com.springsource.com.sun.jna" rev="3.2.3" /&gt;
+&lt;!-- Logging --&gt;
+        &lt;dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" conf="compile-&gt;runtime" /&gt;
+&lt;!-- Tests --&gt;
+        &lt;dependency org="org.antlr" name="com.springsource.antlr" rev="${org.antlr}" conf="test-&gt;runtime" /&gt;
+        &lt;dependency org="org.junit" name="com.springsource.org.junit" rev="${org.junit}" conf="test-&gt;runtime" /&gt;
+&lt;/dependencies&gt;</tt></pre>
+</div></div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_references">7. References</h2>
+<div class="sectionbody">
+<div class="ulist"><ul>
+<li>
+<p>
+<a id="TINOS"></a>[TINOS] TINOS Open Source, <a href="https://www.github.com/PouzinSociety/Tinos">https://www.github.com/PouzinSociety/Tinos</a>
+</p>
+</li>
+</ul></div>
+</div>
+</div>
+</div>
+<div id="footnotes"><hr /></div>
+<div id="footer">
+<div id="footer-text">
+Version 0.1<br />
+Last updated 2011-09-26 13:04:41 IST
+</div>
+</div>
+</body>
+</html>
