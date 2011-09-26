@@ -41,6 +41,12 @@
 			<localrepo name="local-external-repository"/>
 			<s3repo name="bundle-external-repository"	bucket="repository.springsource.com" artifact.type="bundles" release.type="external"/>
 			<s3repo name="library-external-repository"	bucket="repository.springsource.com" artifact.type="libraries" release.type="external"/>
+			<url name="spring-milestone-maven" m2compatible="true">
+			  <artifact pattern="http://maven.springframework.org/milestone/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]"/>
+			</url>
+			<url name="last-chance-maven" m2compatible="true">
+			  <artifact pattern="http://repo1.maven.org/maven2/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]"/>
+			</url>
 		</chain>
 
 		<chain name="spring-portfolio-lookup" returnFirst="true">
