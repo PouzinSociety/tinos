@@ -1,0 +1,771 @@
+:Author: Patsy Phelan
+:Email: pphelan@tssg.org
+:Revision: 0.1
+:toc:
+:icons:
+:numbered:
+
+
+
+Build System Guide
+==================
+
+== Version History
+[options="header"]
+.Revision History
+|=================================================================
+|NUMBER |DATE        |DESCRIPTION                           |NAME
+|0.1    |Aug, 2011   |Initial Draft                         |PP
+|================================================================ 
+
+== Prerequisite
+It is recommended that you follow the Setup Guide steps before you
+start to use the build system. The installation steps will provide
+the run-time dependencies that will allow the build system to
+function. The installation steps will also configure a default
+directory structure that is required by IVY and other parts of the
+build system.
+
+Ruby is required as the project templates are generated using a
+ruby script. As this parses command line options it also needs
+a rubygem called choice. So these must be installed before you
+use the project templates.
+
+----
+$> sudo apt-get install ruby
+$> sudo gem install choice
+----
+
+== Build System
+In order to get up and running quickly, we are re-using the Build
+System deployed within the Tinos Open Source project [[TINOS]] which
+itself is originally from SpringSource and now core to the Virgo
+project. This provides all the functionality that is required from
+a build system.  It is also proven and works well. So we have adopted
+it and use it to drive our prototype.
+
+Some small modifications have been done to the Spring-Build directories
+to add additional support to construct template projects and setups
+for Bundle projects. This however is minor and all credit
+goes to the Spring Framework guys for the build system.
+
+An outline of the relevant directory structure is shown below:
+----
+# Directory Structure
+$GIT_HOME
+- settings                        (Quick Start Templates)
+- documentation                   (Documentation)
+- repository                      (Build Artifacts / dependencies)
+  - downloaded                    (Local SVN Dependency Repo)
+  - ivy-cache                     (IVY Resolution Cache)
+  - integration-repo              (Integration Repository)
+- projects
+  - build-distro                  (Distribution Target)
+  - sub-projects..                (Passive Components)
+  - spring-build                  (Active Build System)
+  - build.versions                (Dependency Versions)
+  - ivysettings.xml               (IVY Configuration)
+  - build.properties              (Build Properties)
+- build
+  - README
+  - sed                           (SED)
+  - code-style                    (Eclipse Code Style Templates)
+  - snippets                      (Code snippets)
+  - tinos                         (project templates)
+  - spring-build                  (Archive/Original Reference - see README)
+  - scripts                       (Ruby based Template Generator)
+     - create                     (Template-Generation Script)
+     - project-gen                (templates)
+----
+
+In order to emphasize modularity within the build system, bundles
+are built as standalone units separate from the application deployments
+(Plan).  All bundles are sub-projects within the "projects" folder.
+The build-distro folder is a high-level build-wrapper project which
+encompasses the sub-projects to be included in the overall distribution.
+A PLAN project represents a deployment plan for a specific application,
+it will list the required bundles for a given application to be
+deployed within the Virgo Application server.
+
+This sub-project unit structures allow the selection and construction
+of application by simply the selection of the bundles you require
+either as binary or code projects.  Binary bundle includes can
+simply be referenced via IVY and the bundle repository. Source code
+bundles to be included (i.e. code under development bundles) can
+be either extracted within the projects directory, or checked out
+into the projects directory from a source code repository.
+
+=== IVY
+Ivy is a tool for managing (recording, tracking, resolving and reporting) project
+dependencies. It is characterized by the following:
+
+ * Flexibility and configurability - Ivy is essentially process agnostic and is
+not tied to any methodology or structure. Instead it provides the necessary flexibility
+and configurability to be adapted to a broad range of dependency management and build
+processes.
+ * Tight integration with Apache Ant - while available as a standalone tool, Ivy
+works particularly well with Apache Ant providing a number of powerful Ant tasks ranging
+from dependency resolution to dependency reporting and publication.
+
+Ivy is open source and released under a very permissive Apache License.
+
+Ivy has a lot of powerful Features, the most popular and useful being its flexibility,
+integration with ant, and its strong transitive dependencies management engine.
+
+The transitive dependencies management is a feature which let you get dependencies
+of your dependencies, transitively. In order to address this problematic ivy needs
+to find metadata about your modules, usually in an ivy file. To find these metadata
+and your dependencies artifacts (usually jars), Ivy can be configured to use a lot
+of different repositories.
+
+==== Ivy Cache
+An ivy cache is composed of two different parts:
+ * Repository Cache: The repository cache is where Ivy stores data downloaded
+from module repositories, along with some meta information. This part of the cache
+can be shared if you use an ad hoc lock strategy.
+ * Resolution Cache: This part of the cache is used to store resolution data,
+which is used by Ivy to reuse the results of a resolve process. This part of the
+cache is overwritten each time a new resolve is performed, and should never be
+used by multiple processes at the same time. 
+
+A repository in Ivy is a distribution site location where Ivy is able to find your
+required modules' artifacts and descriptors (i.e. Ivy files in most cases).
+
+==== Assumptions
+The template generator assumes you have an ivy-cache and an ivy-local-repository
+available for the build process. It assumes these are located in a folder called
+ivy in the users home directory. You can change these locations using the
+"build.properties" file.
+
+By default, an empty local repository can be used. As you build bundles and execute
+the "ant publish-ivy" commands, ivy will add you bundle to the local repository
+with the correct structure and files. The local repository is primarily a local
+storage area for your home-grown bundles.
+
+----
+- repository
+  - ivy-cache                         (Ivy Cache - Ivy will create this automatically)
+  - downloaded                        (Local File System Repository)
+    - "BundleGroupName String"
+      - "Organisation String"
+        - "Version String"
+          - "BundleName-version".jar                  (Bundle)
+          - "BundleName-version".jar.sha1             (Security)
+          - "BundleName-sources-version".jar          (Bundle Source)
+          - "BundleName-sources-version".jar.sha1     (Security)
+          - ivy-"version".xml              (Ivy dependencies for this version)
+----
+
+== Template Generator
+The template generator script is in the "build/scripts" folder. This script and
+the build scripts in general have more functionality than is currently need within the
+Prototype environment. So only the relevant options and project types needed as described.
+
+=== Bundle Project Template
+
+The bundle template when invoked will create a bundle directory and an associated osgi
+integration test bundle. These project structures require that they be placed within
+an over-arching projects folder and associated build-distro target to interact correctly
+with the build system. The bundle templates are constructed in such a way as to expect to
+be placed within the "projects" folder so they "know" where build scripts are located.
+
+[NOTE]
+This is the most commonly used template and probably the only needed during this
+project.
+
+
+The command required to create a bundle template is invoked in the following format:
+----
+FORMAT: ruby create -n Name -t TargetDirectory -o OrganizationString -a ProjectTemplate
+
+$> ruby create -n pouzin-sample-bundle -t $GIT_HOME/projects -o org.pouzinsociety.sample.bundle -a bundle 
+----
+
+The resulting project structure created looks like the following:
+----
+# Directory Structure
+$GIT_HOME
+ - projects
+   - org.pouzinsociety.sample.bundle                      (Bundle Project)
+   - org.pouzinsociety.sample.bundle.integration.test     (Bundle Test Project - Optional)
+----
+
+==== Bundle Project Layout
+The project structure of a bundle will follow the format below.
+This is generated automatically by the templates and will allow
+immediate integration with the build system. The is the general
+layout - it is modified slighty in the integration.test bundle, in
+that the test bundle has only code within the test folder of the
+project.
+
+----
+# Directory Structure of Bundle Project
+- bundle-root
+  - src
+    - main                                     (application code tree)
+      - java                                   (java code - organised as packages)
+        - org
+          - pouzinsociety
+            - sample
+              - bundle
+                - BundleInterface.java          (Java Interface Definition)
+                - impl
+                  - BundleInterfaceImpl.java    (Java Interface Implementation)
+      - resources
+        - META-INF
+           - MANIFEST.MF                        (Package-Bundle Specifications)
+           - spring                             (Spring Specific OSGi Configuration)
+             - module-context.xml
+             - osgi-context.xml
+    - test                                      (test code tree)
+      - java                                    (java test code - organised as packages)
+        - org
+          - pouzinsociety
+            - sample
+              - bundle
+                - impl
+                  - BundleServiceImplTests.java (Java JUnit Tests)
+      - resources                               (Minimum config supplied)
+        - log4j.properties                      (Logging configuration)
+  - ivy.xml                                     (build dependencies)
+  - build.xml                                   (build system integration)
+----
+
+
+=== Plan Project Template
+
+A plan encapsulates all of the artifacts of your application in a
+single deployment unit. A plan is simply an XML file that lists the
+artifacts of your application.
+
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<plan name="sample.deploy.plan" version="1.0.0" scoped="true" atomic="true"
+        xmlns="http://www.springsource.org/schema/dm-server/plan"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springsource.org/schema/dm-server/plan 
+                            http://www.springsource.org/schema/dm-server/plan/springsource-dm-server-plan.xsd">
+<!-- Simple Test -->
+	<artifact type="bundle" name="org.pouzinsociety.sample" version="[1, 2)">
+	</artifact>
+</plan>
+
+----
+
+The basic structure of a PLAN project looks like the following:
+
+----
+- plan-root
+  - src
+    - plan-root.plan                            (Plan file)
+  - ivy.xml                                     (build dependencies)
+  - build.xml                                   (build configuration)
+----
+This is a much smaller and simpler project template than normal. It is
+essentially a container for the .plan file.
+
+
+The command required to create a plan template is invoked in the following format:
+----
+FORMAT: ruby create -n Name -t TargetDirectory -o OrganizationString -a ProjectTemplate
+
+$> ruby create -n sample.deploy -t $GIT_HOME/projects -o org.pouzinsociety -a plan 
+----
+
+The resulting project structure created looks like the following:
+----
+# Directory Structure
+$GIT_HOME
+ - projects
+   - org.pouzinsociety.sample.deploy                      (Plan Project)
+----
+
+== Building From Code
+The following covers the basics of getting up and running with the build system from the
+command line.
+
+=== Bundles
+[NOTE]
+These build commands are executed in the folder of the bundle project (bundle-root).
+
+The following ant commands are available and applicable to all bundle projects within a
+projects folder. This is quick start guide which covers the most commonly used options, to
+get a full listing of what is available run the following ant command
+
+----
+ $> ant -p
+
+Main targets:
+
+ clean                   Removes the target directory.
+ clean-integration       Removes the integration repository directory.
+ clean-ivy               Removes the ivy cache directory.
+ clover                  Executes all tests resulting from a compilation of the test tree returning test coverage metrics.
+ copy-dist-jar           Copies the distributable jar to a location
+ copy-ext-jars           Copies the external jars to a location
+ copy-provided-jars      Copies the provided jars to a location
+ copy-provided-libs      Copies the provided libs to a location
+ eclipse                 Updates eclipse classpath.
+ findbugs                Checks all code from the source tree for bugs.
+ jar                     Creates a JAR file containing the output of a compilation of the source tree.
+ javadoc-all             Creates javadoc documentation for all classes.
+ javadoc-api             Creates javadoc documentation for all classes.
+ osgi-validate           Validates that a bundle can resolve against it's dependencies.
+ package-common.package  Copies all external and created artifacts to a packaging location.  Unless overriden, copies nothing.
+ publish                 Publishes all artifacts to remote repositories
+ resolve                 Retrieves all external dependencies for this project.
+ test                    Executes all tests resulting from a compilation of the test tree returning test success metrics.
+
+----
+
+==== Clean
+Clean out any build artifacts and bring the project to a clean
+state. This removes the target directory from the project folder
+in order to avoid any future build artifact conflicts.
+----
+ $>
+ $> ant clean
+ $>
+----
+
+==== Clean-Integration
+Wipes the integration repository clean. This is a seldom used task
+as it can take a considerable amount of effort to regenerate the
+integration repository depending on the number of projects using
+it.
+----
+
+ $> ant clean-integration
+ $>
+----
+
+==== Clean-Ivy
+Wipes the integration repository clean. This is a seldom used task
+as it can take a considerable amount of effort to regenerate the
+integration repository depending on the number of projects using
+it.
+----
+
+ $> ant clean-ivy
+
+----
+
+==== Eclipse
+Generate a .classpath file to allow eclipse integration.  This will
+link the project dependencies specified in the ivy.xml file to the
+actual jars (ivy cache) into the eclipse environment.
+----
+
+ $> ant eclipse
+
+----
+
+==== Build
+This will build the bundle. As a side effect the bundle is copied
+into the ivy-cache so that it can be used by other bundles that are
+being built. A target folder is also produced in the root of the
+project and the build artifacts are placed within it.
+
+----
+
+ $> ant jar
+
+----
+
+==== Test
+This will build the bundle if required. And it will then execute
+any test that are present within the project outputting the results
+in the target/test-results folder at the project root.
+
+----
+
+ $> ant test
+
+# Directory Structure after "jar"
+ - target                                    (build artifacts)
+   - artifacts
+     - "bundle-name".jar                     (compiled source)
+     - "bundle-name"-sources.jar             (source code)
+     - ivy.xml                               (dependencies)
+   - classes                                 (class files to generate bundle)
+     - xxxxx                                 (class files in org structure)
+   - test-classes                            (class files for tests)
+     - xxxxx                                 (class files in org structure)
+   - test-results                            (test results)
+     - xml                                   (results in xml format)
+     - html                                  (results in html format)
+----
+
+==== Findbugs
+This runs the findbugs toolset against your code base.  This process
+will generate a report of possible bugs based on the examination
+of the codebase. A findbugs folder is created in the target folder.
+
+----
+
+ $> ant findbugs
+
+----
+
+==== Javadoc
+This runs javadoc against your code base.  This process will generate
+javadoc listings of the codebase. These listings are output in the
+javadoc-all folder in the target directory.
+
+----
+ $> ant javadoc-all
+----
+
+
+==== OSGi Validate
+This task attempts to resolve all the dependencies of your bundle
+in an OSGi environment. If it is not successful, it means that you
+are missing a dependency for your bundle and it will cause errors
+when you try and load it within the application server. This task
+will create a directory "org.eclipse.osgi" in the target directory
+which it uses during its execution.
+
+----
+
+ $> ant osgi-validate
+
+----
+
+==== Publish
+This will publish the jar (bundle), source code, SHA keys for
+this project into your local ivy repository. The published bundle
+can then be stored in your local source/build storage system.
+----
+
+ $> ant publish-ivy
+
+----
+
+==== Project Target Directory Structure
+----
+ - target                                    (build artifacts)
+   - artifacts                               ("jar" task output)
+     - "bundle-name".jar                     (compiled source)
+     - "bundle-name"-sources.jar             (source code)
+     - ivy.xml                               (dependencies)
+   - classes                                 ("jar" task output)
+     - xxxxx                                 (class files in org structure)
+   - test-classes                            ("test" task output)
+     - xxxxx                                 (class files in org structure)
+   - test-results                            ("test" task output)
+     - xml                                   (results in xml format)
+     - html                                  (results in html format)
+   - findbugs                                ("findbugs" task output)
+     - "bundle-name".xml                     (Findbugs report)
+   - javadoc-all                             ("javadoc-all" task output)
+     - xxxxx                                 (javadocs)
+   - org.eclipse.osgi                        ("osgi-validate" task output)
+     - xxxxx                                 (OSGi Startup artifacts)
+----
+
+=== Plan Projects
+
+[NOTE]
+Most ant tasks available here are supplied by default (same as a bundle),
+however there is only three targets that are relevant: clean, jar, publish-ivy
+
+This is quick start guide which covers the most commonly
+used options, to get a full listing of what is available run the
+following ant command:
+
+----
+ $> ant -p
+
+Main targets:
+
+ clean                   Removes the target directory.
+ clean-integration       Removes the integration repository directory.
+ clean-ivy               Removes the ivy cache directory.
+ clover                  Does nothing.
+ clover.do               Does nothing.
+ copy-dist-jar           Copies the distributable jar to a location
+ copy-ext-jars           Copies the external jars to a location
+ copy-provided-jars      Copies the provided jars to a location
+ copy-provided-libs      Copies the provided libs to a location
+ eclipse                 Updates eclipse classpath.
+ findbugs                Does nothing.
+ findbugs.do             Does nothing.
+ jar                     Creates a libd file with the proper versions substituted.
+ javadoc-all             Does nothing
+ javadoc-api             Does nothing.
+ osgi-validate           Does nothing.
+ package-common.package  Copies all external and created artifacts to a packaging location.  Unless overriden, copies nothing.
+ publish                 Publishes all artifacts to remote repositories
+ resolve                 Retrieves all external dependencies for this project.
+ test                    Does nothing.
+ test.do                 Does nothing.
+
+----
+
+==== Clean
+Clean out any build artifacts and bring the project to a clean
+state. This removes the target directory from the project folder
+in order to avoid any future build artifact conflicts.
+----
+ $>
+ $> ant clean
+ $>
+----
+
+==== Clean-Integration
+Wipes the integration repository clean. This is a seldom used task
+as it can take a considerable amount of effort to regenerate the
+integration repository depending on the number of projects using
+it.
+----
+
+ $> ant clean-integration
+ $>
+----
+
+==== Clean-Ivy
+Wipes the integration repository clean. This is a seldom used task
+as it can take a considerable amount of effort to regenerate the
+integration repository depending on the number of projects using
+it.
+----
+
+ $> ant clean-ivy
+
+----
+
+==== Build
+This will build the plan project. As a side effect the bundle is copied
+into the ivy-cache so that it can be used by other bundles that are
+being built. A target folder is also produced in the root of the
+project and the build artifacts are placed within it.
+
+----
+
+ $> ant jar
+
+----
+
+==== Publish
+This will publish the plan file, SHA keys for this project into
+your local ivy repository. The published plan can then be stored
+in your local source/build storage system.
+----
+
+ $> ant publish-ivy
+
+----
+
+
+
+=== Project Wrapper - Distribution (Overall PASSIVE Project)
+[NOTE]
+These build commands are executed in the "build-distro" folder within the projects folder. 
+
+The Project Build Wrapper is simply a wrapper which contains all the build
+dependencies for your project. The ant command that are executed within this
+project recursively enter all the dependent projects and invoke that ant task
+at the sub-project level.
+
+This is quick start guide which covers the most commonly
+used options, to get a full listing of what is available run the
+following ant command:
+
+----
+ $> ant -p
+
+Main targets:
+
+ clean                         Removes the target directory.
+ clean-integration             Removes the integration repository directory.
+ clean-ivy                     Removes the ivy cache directory.
+ clover                        Executes all tests resulting from a compilation of the test tree returning test coverage metrics.
+ findbugs                      Checks all code from the source tree for bugs.
+ jar                           Creates a JAR file containing the output of a compilation of the source tree.
+ javadoc-all                   Creates javadoc documentation for all classes.
+ javadoc-api                   Creates javadoc documentation for all classes.
+ osgi-validate                 Checks all code from the source tree for bugs.
+ package-multi-bundle.package  Creates a packaged distributable of the project.  Unless overridden, delegates to sub-bundles.
+ publish-ivy                   Publishes all ivy artifacts to remote repositories
+ publish-maven                 Publishes all maven artifacts to remote repositories
+ publish-multi-bundle.publish  Publishes all artifacts to remote repositories
+ test                          Executes all tests resulting from a compilation of the test tree returning test success metrics.
+
+----
+
+[NOTE]
+There is also a locally defined target specified within the build.xml
+file. This target is call "distro" and is purely a convience for
+users. Internally it executes the following ant tasks in order:
+clean, jar, javadoc-all, package. This is also probably going to be the
+most commonly used target for the duration of this project.
+
+==== Distro
+----
+ # A one stop shop for the project, it will perform the following targets
+ # in sequence : clean, jar, javadoc-all, package.
+ $>
+ $> ant distro
+ $>
+----
+
+==== Clean
+----
+ # This will recursively perform a clean of all the sub-projects and the
+ # target of this high-level project.
+ $>
+ $> ant clean
+ $>
+----
+
+==== Eclipse
+----
+ # This will recursively perform an ant "eclipse" of all the sub-projects.
+ # This updates the .classpath files for Eclipse users.
+ $>
+ $> ant eclipse
+ $>
+----
+==== Build
+----
+ # This will recursively perform the build task "jar" for all of the sub-projects
+ # included in this high-level project.
+ $>
+ $> ant jar
+ $>
+----
+
+==== Javadoc
+----
+ # This will recursively perform the build task "javadoc" for all of the sub-projects
+ # included in this high-level project. It will then collect the javadoc and build
+ # within the target folder of this project.
+ $>
+ $> ant javadoc-all
+ $>
+----
+
+==== Package
+----
+ # This will generate a distribution within the target folder. This is dependent on
+ # previous build tasks (such as jar) to place the artifacts in the appropriate locations.
+ # A zip file distribution is produced within the target/artifacts foler.
+ $>
+ $> ant package
+ $>
+----
+
+==== Directory Structure
+
+----
+distro-root
+ - target
+   - artifacts
+     - "ProjectName"-Version.zip                   (Packaged Distribution)
+   - packaged-expanded                             (Expanded version of distribution)
+     - "ProjectName"-Version
+       - dist                                      (Build Artifacts)
+       - docs                                      (Java Documentation)
+       - src                                       (Source Artifacts)
+----
+
+== Configuration Settings
+
+=== Distribution
+[NOTE]
+This refers to the inclusion of sub-projects within the build-distro high level project.
+
+==== Adding a new sub-project
+To add a new sub-project to the high-level build distribution, that project needs to be
+added to the following file:
+
+===== build.xml
+Within the <path id="bundles"> element, add a new path element for the specific sub-project.
+These pathelement entries set the build order, so beware of your dependencies. This path is
+iterated over by the build system to generate all the sub-project required for the main
+distribution.
+
+----
+        <!-- List all the bundles, you wish to include in the build process here -->
+        <!-- NOTE: Beware the build order -->
+        <path id="bundles">
+                <pathelement location="../org.pouzinsociety.sample.api" />
+                <pathelement location="../org.pouzinsociety.sample.dao" />
+                <pathelement location="../sample.deploy.plan" />
+        </path>
+----
+
+=== Eclipse Styles
+A set of eclipse code style templates has been provided for the use
+of partners within the build environment. This allows a standard
+code style throughout all source code within the build system.
+These can be added to your eclipse environment by editing the
+preferences of Eclipse.
+
+----
+$GIT_HOME
+ - build
+   - code-style
+     - eclipse
+       - eclipse_code-style_clean-up.xml         (Cleanup Template)
+       - eclipse_code-style_formatter.xml        (Format Template)
+       - eclipse_code-style_templates.xml        (Code Generation Template)
+----
+
+=== Dependency Versions (projects/build.versions)
+
+This file contains the version numbers of all dependencies for all sub-bundle projects. 
+This is a central location for this information instead of having to update
+all bundles in the event of bumping a version number. This file is used in conjunction with
+ivy.xml (dependencies) in every bundle project.
+
+The current provided list contains the minimum set of dependencies to allow the templates as
+generated work. Developers can change these as required (add, update, remove).
+
+----
+# Compile
+org.springframework.spring=3.0.0.RELEASE
+org.springframework.osgi=1.2.1
+org.springframework.integration=1.0.3.RELEASE
+org.eclipse.osgi=3.5.0.v20081201-1815
+org.apache.commons.logging=1.1.1
+org.objectweb.asm=2.2.3
+org.aspectj=1.6.3.RELEASE
+org.slf4j=1.5.0
+org.apache.log4j=1.2.15
+org.aopalliance=1.0.0
+
+# Test
+org.antlr=2.7.6
+org.junit=4.4.0
+----
+
+==== Dependency Versions (bundle-project/ivy.xml)
+
+This is the dependency file for a bundle. All dependencies for a bundle should be included 
+in this file in order for the build system to resolve them. This file is closely tied with
+the build.versions file. It is also the file that is used to update the eclipse .classpath
+file via the "ant eclipse" command. 
+
+Any update to this file or the "build.versions" file should be followed by an update
+of your .classpath file via "ant eclipse".
+
+----
+<dependencies>
+	<dependency org="net.java.dev.jna" name="com.springsource.com.sun.jna" rev="3.2.3" />
+<!-- Logging -->
+	<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" conf="compile->runtime" />
+<!-- Tests -->
+	<dependency org="org.antlr" name="com.springsource.antlr" rev="${org.antlr}" conf="test->runtime" />
+	<dependency org="org.junit" name="com.springsource.org.junit" rev="${org.junit}" conf="test->runtime" />
+</dependencies>
+----
+
+
+[bibliography]
+== References
+- [[[TINOS]]] TINOS Open Source, https://www.github.com/PouzinSociety/Tinos
+
+
+
+
