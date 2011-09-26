@@ -74,7 +74,7 @@
 								ip_netmask="255.255.255.0"
 								/>
 						<interface node="nodeForward" device="im1"
-								ethernetAddress="DE-AD-BE-EF-00-02"
+								ethernetAddress="DE-AD-BE-EF-00-03"
 								im_server="localhost"
 								im_port="5222"
 								im_buddyId="networkb-user1"
@@ -91,11 +91,19 @@
 <node id="nodeA">
 		<data key="name">nodeA</data>
 		<data key="domain">networkA</data>
+		<data key="routes">
+				<![CDATA[
+				<routes>
+						<route target="10.0.0.0" netmask="255.255.255.0" device="im0" />
+						<route target="10.0.1.0" netmask="255.255.255.0" gateway="10.0.0.1" device="im0" />
+				</routes>
+				]]>
+		</data>
 		<data key="interfaces">
 				<![CDATA[
 				<interfaces>
 						<interface node="nodeA" device="im0"
-								ethernetAddress="DE-AD-BE-EF-00-02"
+								ethernetAddress="DE-AD-BE-EF-00-01"
 								im_server="localhost"
 								im_port="5222"
 								im_buddyId="networka-user2"
@@ -135,6 +143,14 @@
 <node id="nodeC">
 		<data key="name">nodeC</data>
 		<data key="domain">networkB</data>
+		<data key="routes">
+				<![CDATA[
+				<routes>
+						<route target="10.0.1.0" netmask="255.255.255.0" device="im0" />
+						<route target="10.0.0.0" netmask="255.255.255.0" gateway="10.0.1.1" device="im0" />
+				</routes>
+				]]>
+		</data>
 		<data key="interfaces">
 				<![CDATA[
 				<interfaces>
@@ -144,7 +160,7 @@
 								im_port="5222"
 								im_buddyId="networkb-user2"
 								im_buddyPassword="networkb"
-								im_chatroom="networka@conference.localhost"
+								im_chatroom="networkb@conference.localhost"
 								ip_address="10.0.1.2"
 								ip_netmask="255.255.255.0"
 								/>

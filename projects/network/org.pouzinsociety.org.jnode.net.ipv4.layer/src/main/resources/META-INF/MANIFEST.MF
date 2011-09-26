@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: jnode-net-ipv4-layer
 Bundle-SymbolicName: org.pouzinsociety.org.jnode.net.ipv4.layer
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.1
 Bundle-Vendor: TINOS
 Export-Package: org.jnode.net.ipv4.layer;version="1.0.0";
   uses:="org.jnode.net.ethernet,
@@ -13,6 +13,8 @@ Export-Package: org.jnode.net.ipv4.layer;version="1.0.0";
    org.jnode.driver"
 Import-Package: org.apache.commons.logging;version="[1.1.1,1.1.1]",
  org.apache.commons.logging.impl;version="[1.1.1,1.1.1]",
+ org.osgi.framework,
+ org.springframework.osgi.context;version="[1.2.1,1.2.1]",
  org.jnode.driver;version="[1.0.0,1.0.0]",
  org.jnode.driver.net;version="[1.0.0,1.0.0]",
  org.jnode.driver.net.loopback;version="[1.0.0,1.0.0]",
@@ -25,4 +27,5 @@ Import-Bundle: org.pouzinsociety.org.jnode.net.support;version="[1.0.0,1.0.0]",
  org.pouzinsociety.org.jnode.net.ipv4;version="[1.0.0,1.0.0]",
  org.pouzinsociety.org.jnode.net.arp;version="[1.0.0,1.0.0]",
  org.pouzinsociety.org.jnode.driver.net.loopback;version="[1.0.0,1.0.0]"
+Ip-Forward: Off
 

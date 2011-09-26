@@ -45,9 +45,17 @@ public class IPv4Statistics implements Statistics {
             new Counter("nodevaddr", "#received packets not delivered because device address was not set");
     protected final Counter opackets = new Counter("opackets", "total #output packets");
     protected final Counter reassembled = new Counter("reassembled", "#datagrams reassembled");
+    protected final Counter ipcantforward = new Counter("ipcantforward", "#ip cantforward");
+    protected final Counter ipforward = new Counter("ipforward", "#ip forward");
+    protected final Counter ipfredirect = new Counter("ipfredirect", "#ip forward redirect");
+    protected final Counter ipfexceed = new Counter("ipfexceed", "#ip forward exceed");
+    protected final Counter ipfunreach = new Counter("ipfunreach", "#ip forward unreach");
+
+
 
     private final Counter[] list = new Counter[] {
-        badhlen, badlen, badsum, fragments, ipackets, noproto, nodevaddr, opackets};
+        badhlen, badlen, badsum, fragments, ipackets, noproto, nodevaddr, opackets,
+        ipcantforward, ipforward, ipfredirect, ipfexceed, ipfunreach };
 
     /**
      * Gets all statistics

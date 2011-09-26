@@ -16,14 +16,19 @@
 	</publications>
 
 	<dependencies>
+<!-- OSGI -->
+		<dependency org="org.eclipse.osgi" name="org.eclipse.osgi"
+			 rev="${org.eclipse.osgi}" />
+                <dependency org="org.springframework.osgi" name="org.springframework.osgi.core"
+			 rev="${org.springframework.osgi}" />
 	<!-- JNODE -->
-		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.support" rev="1.0.0" conf="compile->runtime" />
-		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ethernet" rev="1.0.0" conf="compile->runtime" />
-		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.arp" rev="1.0.0" conf="compile->runtime" />
-		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4" rev="1.0.0" conf="compile->runtime" />
-		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4.icmp" rev="1.0.0" conf="compile->runtime" />
-		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4.tcp" rev="1.0.0" conf="compile->runtime" />
-		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4.udp" rev="1.0.0" conf="compile->runtime" />
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.support" rev="1.0.0"  />
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ethernet" rev="1.0.0" />
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.arp" rev="1.0.0"  />
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4" rev="1.0.0"  />
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4.icmp" rev="1.0.0"  />
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4.tcp" rev="1.0.0" />
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ipv4.udp" rev="1.0.0"  />
 
 <!-- Spring Framework 
 		<dependency org="org.springframework" name="org.springframework.spring-library" rev="${org.springframework.spring}" conf="dm-server-provided->compile" />

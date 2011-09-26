@@ -14,6 +14,6 @@ Import-Package: org.apache.commons.logging;version="[1.1.1,1.1.1]",
  org.jnode.driver.net;version="[1.0.0,1.0.0]",
  org.jnode.net;version="[1.0.0,1.0.0]",
  org.jnode.net.ipv4;version="[1.0.0,1.0.0]",
- org.jnode.net.ipv4.icmp;version="[1.0.0,1.0.0]",
+ org.jnode.net.ipv4.icmp;version="[1.0.0,2.0.0]",
  org.jnode.util;version="[1.0.0,1.0.0]"
 
