@@ -97,7 +97,7 @@ public class PingCommand implements ICMPListener {
     	}
     	StringBuffer cmdOutput = new StringBuffer();
     	StringBuffer tmp = new StringBuffer();
-    	String hostname = "10.0.0.1";
+    	String hostname = "10.0.1.2";
         try {        	
             this.dst = new IPv4Address(InetAddress.getByName(hostname));
         } catch (UnknownHostException ex) {

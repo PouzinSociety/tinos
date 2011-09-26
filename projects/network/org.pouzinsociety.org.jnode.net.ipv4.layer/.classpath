@@ -1,15 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/main/java" />
-	<classpathentry kind="src" path="src/main/resources" />
-	<classpathentry kind="src" output="target/test-classes" path="src/test/java" />
-	<classpathentry kind="src" output="target/test-classes" path="src/test/resources" />
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" path="src/main/resources"/>
+	<classpathentry kind="src" output="target/test-classes" path="src/test/java"/>
+	<classpathentry kind="src" output="target/test-classes" path="src/test/resources"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER" />
-	<classpathentry kind="con" path="com.springsource.server.ide.jdt.core.MANIFEST_CLASSPATH_CONTAINER" />
-	<classpathentry kind="output" path="target/classes" />
-	<classpathentry ivygen="true" kind="lib" path="/home/pphelan/local-repository/ivy-cache/repository/org.antlr/com.springsource.antlr/2.7.6/com.springsource.antlr-2.7.6.jar" />
-	<classpathentry ivygen="true" kind="lib" path="/home/pphelan/local-repository/ivy-cache/repository/org.junit/com.springsource.org.junit/4.4.0/com.springsource.org.junit-sources-4.4.0.jar" />
-	<classpathentry ivygen="true" kind="lib" path="/home/pphelan/local-repository/ivy-cache/repository/org.junit/com.springsource.org.junit/4.4.0/com.springsource.org.junit-4.4.0.jar" />
-	<classpathentry ivygen="true" kind="lib" path="/home/pphelan/local-repository/ivy-cache/repository/org.junit/com.springsource.org.junit/4.4.0/license-4.4.0.txt" />
-	<classpathentry ivygen="true" kind="lib" path="/home/pphelan/local-repository/ivy-cache/repository/org.antlr/com.springsource.antlr/2.7.6/com.springsource.antlr-sources-2.7.6.jar" />
+	<classpathentry kind="con" path="com.springsource.server.ide.jdt.core.MANIFEST_CLASSPATH_CONTAINER"/>
+	<classpathentry kind="output" path="target/classes"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.springframework.osgi/org.springframework.osgi.core/1.2.1/org.springframework.osgi.core-1.2.1.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.springframework.osgi/org.springframework.osgi.core/1.2.1/org.springframework.osgi.core-sources-1.2.1.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.springframework.osgi/org.springframework.osgi.io/1.2.1/org.springframework.osgi.io-1.2.1.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.springframework/org.springframework.aop/2.5.6.SEC01/org.springframework.aop-2.5.6.SEC01.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/integration-repo/org.pouzinsociety.org.jnode/org.pouzinsociety.org.jnode.net.ipv4.tcp/1.0.0/org.pouzinsociety.org.jnode.net.ipv4.tcp-sources-1.0.0.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.springframework/org.springframework.beans/2.5.6.SEC01/org.springframework.beans-2.5.6.SEC01.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.junit/com.springsource.org.junit/4.4.0/com.springsource.org.junit-4.4.0.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.springframework/org.springframework.core/2.5.6.SEC01/org.springframework.core-2.5.6.SEC01.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/integration-repo/org.pouzinsociety.org.jnode/org.pouzinsociety.org.jnode.net.ipv4.tcp/1.0.0/org.pouzinsociety.org.jnode.net.ipv4.tcp-1.0.0.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.springframework/org.springframework.core/2.5.6.SEC01/org.springframework.core-sources-2.5.6.SEC01.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/integration-repo/org.pouzinsociety.org.jnode/org.pouzinsociety.org.jnode.net.support/1.0.0/org.pouzinsociety.org.jnode.net.support-sources-1.0.0.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.junit/com.springsource.org.junit/4.4.0/license-4.4.0.txt"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/integration-repo/org.pouzinsociety.org.jnode/org.pouzinsociety.org.jnode.net.ipv4.icmp/1.0.0/org.pouzinsociety.org.jnode.net.ipv4.icmp-1.0.0.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/integration-repo/org.pouzinsociety.org.jnode/org.pouzinsociety.org.jnode.net.ethernet/1.0.0/org.pouzinsociety.org.jnode.net.ethernet-sources-1.0.0.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.antlr/com.springsource.antlr/2.7.6/com.springsource.antlr-sources-2.7.6.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.eclipse.osgi/org.eclipse.osgi/3.5.0.v20081201-1815/org.eclipse.osgi-sources-3.5.0.v20081201-1815.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/integration-repo/org.pouzinsociety.org.jnode/org.pouzinsociety.org.jnode.net.ipv4.udp/1.0.0/org.pouzinsociety.org.jnode.net.ipv4.udp-sources-1.0.0.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/integration-repo/org.pouzinsociety.org.jnode/org.pouzinsociety.org.jnode.net.ipv4/1.0.0/org.pouzinsociety.org.jnode.net.ipv4-sources-1.0.0.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/integration-repo/org.pouzinsociety.org.jnode/org.pouzinsociety.org.jnode.net.ipv4/1.0.0/org.pouzinsociety.org.jnode.net.ipv4-1.0.0.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.aopalliance/com.springsource.org.aopalliance/1.0.0/com.springsource.org.aopalliance-sources-1.0.0.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/integration-repo/org.pouzinsociety.org.jnode/org.pouzinsociety.org.jnode.net.arp/1.0.0/org.pouzinsociety.org.jnode.net.arp-1.0.0.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.eclipse.osgi/org.eclipse.osgi/3.5.0.v20081201-1815/org.eclipse.osgi-3.5.0.v20081201-1815.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.springframework/org.springframework.beans/2.5.6.SEC01/org.springframework.beans-sources-2.5.6.SEC01.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/integration-repo/org.pouzinsociety.org.jnode/org.pouzinsociety.org.jnode.net.ipv4.udp/1.0.0/org.pouzinsociety.org.jnode.net.ipv4.udp-1.0.0.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.springframework/org.springframework.context/2.5.6.SEC01/org.springframework.context-sources-2.5.6.SEC01.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.springframework/org.springframework.context/2.5.6.SEC01/org.springframework.context-2.5.6.SEC01.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.springframework.osgi/org.springframework.osgi.io/1.2.1/org.springframework.osgi.io-sources-1.2.1.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/integration-repo/org.pouzinsociety.org.jnode/org.pouzinsociety.org.jnode.net.ipv4.icmp/1.0.0/org.pouzinsociety.org.jnode.net.ipv4.icmp-sources-1.0.0.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.springframework/org.springframework.aop/2.5.6.SEC01/org.springframework.aop-sources-2.5.6.SEC01.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.antlr/com.springsource.antlr/2.7.6/com.springsource.antlr-2.7.6.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.apache.commons/com.springsource.org.apache.commons.logging/1.1.1/com.springsource.org.apache.commons.logging-1.1.1.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.junit/com.springsource.org.junit/4.4.0/com.springsource.org.junit-sources-4.4.0.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.apache.commons/com.springsource.org.apache.commons.logging/1.1.1/com.springsource.org.apache.commons.logging-sources-1.1.1.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/ivy-cache/repository/org.aopalliance/com.springsource.org.aopalliance/1.0.0/com.springsource.org.aopalliance-1.0.0.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/integration-repo/org.pouzinsociety.org.jnode/org.pouzinsociety.org.jnode.net.arp/1.0.0/org.pouzinsociety.org.jnode.net.arp-sources-1.0.0.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/integration-repo/org.pouzinsociety.org.jnode/org.pouzinsociety.org.jnode.net.ethernet/1.0.0/org.pouzinsociety.org.jnode.net.ethernet-1.0.0.jar"/>
+	<classpathentry ivygen="true" kind="lib" path="/Users/pphelan/development/github/tinos/repository/integration-repo/org.pouzinsociety.org.jnode/org.pouzinsociety.org.jnode.net.support/1.0.0/org.pouzinsociety.org.jnode.net.support-1.0.0.jar"/>
 </classpath>

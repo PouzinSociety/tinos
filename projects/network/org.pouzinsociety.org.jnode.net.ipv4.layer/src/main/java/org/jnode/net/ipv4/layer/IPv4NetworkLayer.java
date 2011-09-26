@@ -37,6 +37,7 @@
  */
 package org.jnode.net.ipv4.layer;
 
+import java.net.NoRouteToHostException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -64,21 +65,31 @@ import org.jnode.net.ipv4.IPv4FragmentList;
 import org.jnode.net.ipv4.IPv4Header;
 import org.jnode.net.ipv4.IPv4Protocol;
 import org.jnode.net.ipv4.IPv4ProtocolAddressInfo;
+import org.jnode.net.ipv4.IPv4Route;
 import org.jnode.net.ipv4.IPv4RoutingTable;
 import org.jnode.net.ipv4.IPv4Service;
+import org.jnode.net.ipv4.icmp.ICMPConstants;
+import org.jnode.net.ipv4.icmp.ICMPHeader;
+import org.jnode.net.ipv4.icmp.ICMPRedirectHeader;
+import org.jnode.net.ipv4.icmp.ICMPTimeExceededHeader;
+import org.jnode.net.ipv4.icmp.ICMPUnreachableHeader;
 import org.jnode.net.Resolver;
 import org.jnode.util.NumberUtils;
 import org.jnode.util.Statistics;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.springframework.osgi.context.BundleContextAware;
 
 /**
  * @author epr
  */
-public class IPv4NetworkLayer implements NetworkLayer, IPv4Constants, IPv4Service {
+public class IPv4NetworkLayer implements NetworkLayer, IPv4Constants, IPv4Service, BundleContextAware {
 
     /**
      * My logger
      */
     private static final Log log = LogFactory.getLog(IPv4NetworkLayer.class);
+
 
     private final HashMap<Integer, IPv4Protocol> protocols = new HashMap<Integer, IPv4Protocol>();
 
@@ -109,6 +120,11 @@ public class IPv4NetworkLayer implements NetworkLayer, IPv4Constants, IPv4Servic
     private final IPv4Sender sender;
 
     /**
+     * IP Forwarding
+     */
+    private boolean ipForward = false;
+
+    /**
      * The ARP network layer
      */
     private ARPService arp;
@@ -118,10 +134,17 @@ public class IPv4NetworkLayer implements NetworkLayer, IPv4Constants, IPv4Servic
     private Resolver resolver;
 
     /**
+     * OSGi
+     */
+    private static final String IP_FORWARD_SPECIFIER = "Ip-Forward";
+    private BundleContext bundleContext;
+
+    /**
      * Initialize a new instance
      */
     public IPv4NetworkLayer() throws NetworkException {
         sender = new IPv4Sender(this);
+	// Check if IP Forwarding is enabled.
     }
 
     /**
@@ -199,9 +222,15 @@ public class IPv4NetworkLayer implements NetworkLayer, IPv4Constants, IPv4Servic
             // it is for me, we'll process it, otherwise we'll drop it.
             shouldProcess = !skbuf.getLinkLayerHeader().getDestinationAddress().isBroadcast();
         }
+        
         if (!shouldProcess) {
-            log.debug("IPPacket not for me, ignoring (dst=" + dstAddr + ")");
-            return;
+            if (ipForward == true) {
+                 ip_forward(skbuf);
+                 return;
+            } else {
+                 log.debug("IPPacket not for me, ignoring (dst=" + dstAddr + ")");
+                 return;
+            }
         }
 
         // Is it a fragment?
@@ -421,4 +450,172 @@ public class IPv4NetworkLayer implements NetworkLayer, IPv4Constants, IPv4Servic
     public void setResolver(Resolver resolver) {
 	this.resolver = resolver;
     }
+
+    public void setBundleContext(BundleContext bundleContext) {
+	this.bundleContext = bundleContext;
+	Bundle bundle = this.bundleContext.getBundle();
+	try {
+		String ipForwardMode =
+			(String)bundle.getHeaders().get(IP_FORWARD_SPECIFIER);
+		if (ipForwardMode != null) {
+			if (!ipForwardMode.isEmpty()) {
+				// A setting of "On" enables, everything else disables.
+				ipForward = ipForwardMode.equals("On");
+			}
+		}
+	} catch (Exception e) {
+		ipForward = false;
+		log.error("Cannot determine " + IP_FORWARD_SPECIFIER + " mode - default disabled");
+		log.error(e);
+	}
+	log.info("IPv4 IP Forward : " + ((ipForward == true) ? "On" : "Off"));
+    }
+    
+    public void setIpForward(Boolean setting) {
+    	ipForward = setting;
+    }
+
+   /**
+    * IP Forwarding
+    */
+   private void ip_forward(SocketBuffer skbuf) throws SocketException {       
+       // Gets the original IP header
+       final IPv4Header origIpHdr = (IPv4Header) skbuf.getNetworkLayerHeader();
+       final IPv4Address destIp = origIpHdr.getDestination();
+       IPv4Route route;
+       
+       log.info("IpHdr : " + origIpHdr.toString());
+     
+	   // Do not forward linklayer broadcast messages
+       if (skbuf.getLinkLayerHeader().getDestinationAddress().isBroadcast()) {
+           stat.ipcantforward.inc();
+           return;
+       }
+       
+       // Do not respond to networklayer broadcast/multicast messages
+       if (destIp.isBroadcast() || destIp.isMulticast()) {
+           stat.ipcantforward.inc();
+           return;
+       }
+       
+       // Do not forward Class D, E, 0, loopback Addresses
+       if (destIp.isClassD() || destIp.isClassE() || destIp.isAny() || destIp.equals(new IPv4Address("127.0.0.1"))) {
+           stat.ipcantforward.inc();
+    	   return;
+       }
+       
+       // Decrement TTL
+       if (origIpHdr.getTtl() <= 1) {
+           stat.ipfexceed.inc();
+           log.info("IpHdr : " + origIpHdr.toString() + " = ICMP Time Exceeded");
+    	   icmp_time_exceeded(skbuf, origIpHdr.getSource(), ICMPConstants.ICMP_EXC_TTL);
+    	   return;
+       }
+       
+       // Check if we have a route for this destination
+       try {
+    	   route = rt.search(destIp);
+       } catch (NoRouteToHostException ex) {
+    	   // No Route Available
+           stat.ipfunreach.inc();
+           log.info("IpHdr : " + origIpHdr.toString() + " = ICMP Unreachable");
+    	   icmp_unreachable(skbuf, origIpHdr.getSource(), ICMPConstants.ICMP_HOST_UNREACH);
+    	   return;
+       }
+       
+       // Is the route on the same device as receiver ?
+       if (skbuf.getDevice().equals(route.getDevice())) {
+           stat.ipfredirect.inc();
+           log.info("IpHdr : " + origIpHdr.toString() + " = ICMP Redirect");
+    	   icmp_redirect(skbuf, origIpHdr.getSource(), ICMPConstants.ICMP_REDIR_HOST, route.getGateway());
+    	   return;
+       }
+    
+       // Forward Packet, drop TTL
+       origIpHdr.setTtl(origIpHdr.getTtl() - 1);
+
+       // Select interface based on route
+       skbuf.setDevice(route.getDevice());
+ 
+       log.info("IpHdr : " + origIpHdr.toString() + " = Forwarding - Device : " + route.getDevice().toString());
+       
+       // Transmit it, let the transmit find the route
+       transmit(origIpHdr, skbuf);
+   }
+   
+   private void icmp_unreachable(SocketBuffer srcBuf, IPv4Address dstAddr, int errorCode) throws SocketException {       
+       // Build the response IP header
+       final int tos = 0;
+       final int ttl = 0xFF;
+       final IPv4Header ipHdr = new IPv4Header(tos, ttl, IPv4Constants.IPPROTO_ICMP, dstAddr, 0);
+       
+       // Build the response ICMP header
+       final ICMPHeader icmpHdr = new ICMPUnreachableHeader(errorCode);
+
+       // Unpull the original IP header
+       srcBuf.unpull(srcBuf.getNetworkLayerHeader().getLength());       
+       // Only need the original IP header + 64bits
+       srcBuf.trim(srcBuf.getNetworkLayerHeader().getLength() + 8);
+
+       // Create a response buffer
+       final SocketBuffer skbuf = new SocketBuffer();
+       // Prefix the ICMP header to the response buffer
+       icmpHdr.prefixTo(skbuf);
+       // Append the original message to the response buffer
+       skbuf.append(srcBuf);
+       
+       // Send it
+       transmit(ipHdr, skbuf);
+   }
+   
+   private void icmp_time_exceeded(SocketBuffer srcBuf, IPv4Address dstAddr, int errorCode) throws SocketException {
+       // Build the response IP header
+       final int tos = 0;
+       final int ttl = 0xFF;
+       final IPv4Header ipHdr = new IPv4Header(tos, ttl, IPv4Constants.IPPROTO_ICMP, dstAddr, 0);
+
+       // Build the response ICMP header
+       final ICMPHeader icmpHdr = new ICMPTimeExceededHeader(errorCode);
+ 
+       // Unpull the original IP header
+       srcBuf.unpull(srcBuf.getNetworkLayerHeader().getLength());
+       // Only need the original IP header + 64bits
+       srcBuf.trim(srcBuf.getNetworkLayerHeader().getLength() + 8);
+
+       // Create a response buffer
+       final SocketBuffer skbuf = new SocketBuffer();
+       // Prefix the ICMP header to the response buffer
+       icmpHdr.prefixTo(skbuf);
+       // Append the original message to the response buffer
+       skbuf.append(srcBuf);
+       
+       // Send it
+       transmit(ipHdr, skbuf);
+   }
+   
+   private void icmp_redirect(SocketBuffer srcBuf, IPv4Address dstAddr, int errorCode, IPv4Address gateway) throws SocketException {
+       // Build the response IP header
+       final int tos = 0;
+       final int ttl = 0xFF;
+       final IPv4Header ipHdr = new IPv4Header(tos, ttl, IPv4Constants.IPPROTO_ICMP, dstAddr, 0);
+
+       // Build the response ICMP header
+       final ICMPHeader icmpHdr = new ICMPRedirectHeader(errorCode, gateway);
+ 
+       // Unpull the original IP header
+       srcBuf.unpull(srcBuf.getNetworkLayerHeader().getLength());
+       // Only need the original IP header + 64bits
+       srcBuf.trim(srcBuf.getNetworkLayerHeader().getLength() + 8);
+
+       // Create a response buffer
+       final SocketBuffer skbuf = new SocketBuffer();
+       // Prefix the ICMP header to the response buffer
+       icmpHdr.prefixTo(skbuf);
+       // Append the original message to the response buffer
+       skbuf.append(srcBuf);
+       
+       // Send it
+       transmit(ipHdr, skbuf);
+   }
+
 }
