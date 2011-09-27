@@ -20,6 +20,7 @@ import rina.flowallocator.impl.ribobjects.FlowSetRIBObject;
 import rina.flowallocator.impl.ribobjects.QoSCubesSetRIBObject;
 import rina.flowallocator.impl.validation.AllocateRequestValidator;
 import rina.ipcprocess.api.IPCProcess;
+import rina.ipcservice.api.APService;
 import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.IPCException;
 import rina.ribdaemon.api.BaseRIBDaemon;
@@ -59,6 +60,11 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * Shortcut to the directory forwarding table, only for use when reading
 	 */
 	private DirectoryForwardingTable directoryForwardingTable = null;
+	
+	/**
+	 * Controls the assignment of flow IDs
+	 */
+	private int flowIDCounter = 0;
 	
 	public FlowAllocatorImpl(){
 		allocateRequestValidator = new AllocateRequestValidator();
@@ -217,12 +223,17 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @param portId
 	 * @throws IPCException
 	 */
-	public void submitAllocateRequest(AllocateRequest allocateRequest, int portId) throws IPCException{
-		allocateRequestValidator.validateAllocateRequest(allocateRequest);
-		
-		FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), portId, directoryForwardingTable);
-		flowAllocatorInstance.submitAllocateRequest(allocateRequest, portId);
-		flowAllocatorInstances.put(new Integer(portId), flowAllocatorInstance);
+	public void submitAllocateRequest(AllocateRequest allocateRequest, APService applicationProcess){
+		try {
+			allocateRequestValidator.validateAllocateRequest(allocateRequest);
+			FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), applicationProcess, directoryForwardingTable);
+			flowAllocatorInstance.submitAllocateRequest(allocateRequest, this.flowIDCounter);
+			flowAllocatorInstances.put(new Integer(new Integer(this.flowIDCounter)), flowAllocatorInstance);
+			this.flowIDCounter = flowIDCounter + 1;
+		}catch(IPCException ex){
+			log.error("Problems processing allocate request: "+ex.getMessage());
+			applicationProcess.deliverAllocateResponse(allocateRequest.getRequestedAPinfo(), 0, -1, ex.getMessage());
+		}
 	}
 
 	/**

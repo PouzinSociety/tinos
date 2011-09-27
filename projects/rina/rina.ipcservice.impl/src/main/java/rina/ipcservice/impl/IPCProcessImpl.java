@@ -23,6 +23,7 @@ import rina.ipcservice.api.IPCService;
 import rina.ipcservice.impl.jobs.DeliverAllocateResponseJob;
 import rina.ipcservice.impl.jobs.DeliverDeallocateJob;
 import rina.ipcservice.impl.jobs.DeliverSDUJob;
+import rina.ipcservice.impl.jobs.SubmitAllocateRequestJob;
 import rina.ipcservice.impl.ribobjects.ApplicationProcessNameRIBObject;
 import rina.ipcservice.impl.ribobjects.WhatevercastNameSetRIBObject;
 import rina.ribdaemon.api.RIBDaemon;
@@ -48,11 +49,6 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	private static int MAXWORKERTHREADS = 5;
 
 	/**
-	 * Stores the applications that have a port Id in allocation pending state
-	 */
-	private Map<Integer, APService> allocationPendingApplicationProcesses = null;
-
-	/**
 	 * Stores the applications that have a port Id in transfer state
 	 */
 	private Map<Integer, APService> transferApplicationProcesses = null;
@@ -69,7 +65,6 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 
 	public IPCProcessImpl(String applicationProcessName, String applicationProcessInstance, RIBDaemon ribDaemon){
 		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
-		this.allocationPendingApplicationProcesses = new HashMap<Integer, APService>();
 		this.transferApplicationProcesses = new HashMap<Integer, APService>();
 		this.ribDaemon = ribDaemon;
 		populateRIB(applicationProcessName, applicationProcessInstance);
@@ -114,34 +109,10 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * @param applicationProcess
 	 */
 	public synchronized void submitAllocateRequest(AllocateRequest allocateRequest, APService applicationProcess){
-		int portId = choosePortId();
-		allocationPendingApplicationProcesses.put(new Integer(portId), applicationProcess);
-		try{
-			FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(BaseFlowAllocator.getComponentName());
-			flowAllocator.submitAllocateRequest(allocateRequest, portId);
-		}catch(IPCException ex){
-			//Something in the validation request was not valid or there are not enough 
-			//resources to honour the request. Notify the application process
-			allocationPendingApplicationProcesses.remove(new Integer(portId));
-			executorService.execute(new DeliverAllocateResponseJob(
-					applicationProcess, allocateRequest.getRequestedAPinfo(), -1, ex.getErrorCode(), ex.getMessage()));
-		}
-	}
+		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(BaseFlowAllocator.getComponentName());
+		SubmitAllocateRequestJob job = new SubmitAllocateRequestJob(allocateRequest, flowAllocator, applicationProcess);
+		executorService.execute(job);
 
-	/**
-	 * Select a portId that is available
-	 * @return
-	 */
-	private int choosePortId(){
-		for(int i=1; i<Integer.MAX_VALUE; i++){
-			Integer candidate = new Integer(i);
-			if (!allocationPendingApplicationProcesses.keySet().contains(candidate) && 
-					!transferApplicationProcesses.keySet().contains(candidate)){
-				return i;
-			}
-		}
-
-		return 0;
 	}
 
 	/**
@@ -151,16 +122,6 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 */
 	public synchronized void submitAllocateResponse(int portId, boolean success) throws IPCException{
 		Integer key = new Integer(portId);
-
-		if (!allocationPendingApplicationProcesses.keySet().contains(key)){
-			throw new IPCException(IPCException.PORTID_NOT_IN_ALLOCATION_PENDING_STATE);
-		}
-
-		APService apService = allocationPendingApplicationProcesses.remove(key);
-		if (success){
-			transferApplicationProcesses.put(key, apService);
-		}
-
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
 		flowAllocator.submitAllocateResponse(portId, success);
 	}

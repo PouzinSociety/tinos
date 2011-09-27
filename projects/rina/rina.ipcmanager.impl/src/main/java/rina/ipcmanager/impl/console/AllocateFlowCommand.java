@@ -50,9 +50,9 @@ public class AllocateFlowCommand extends ConsoleCommand{
 		try{
 			this.getIPCManagerImpl().allocateFlow(sourceIPCProcessName, sourceIPCProcessInstance, 
 					destinationApplicationProcessName, destinationApplicationProcessInstance);
-			return "Enrollment process started successfully";
+			return "Allocate Flow process started successfully";
 		}catch(Exception ex){
-			return "Problems starting the enrollment process " +ex.getMessage();
+			return "Problems starting the allocate flow process " +ex.getMessage();
 		}
 	}
 

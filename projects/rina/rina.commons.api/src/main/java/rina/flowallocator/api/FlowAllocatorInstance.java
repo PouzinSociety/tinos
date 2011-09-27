@@ -14,6 +14,7 @@ public interface FlowAllocatorInstance{
 	/**
 	 * Called by the FA to forward an Allocate request to a FAI
 	 * @param request
+	 * @param portId the local port Id associated to this flow
 	 */
 	public void submitAllocateRequest(AllocateRequest request, int portId) throws IPCException;
 	
