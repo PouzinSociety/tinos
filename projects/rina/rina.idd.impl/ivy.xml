@@ -17,20 +17,14 @@
 
 	<dependencies>
 <!-- RINA -->
-		<dependency org="org.pouzinsociety.rina" name="rina.idd.api" rev="1.0.0"  />
-		<dependency org="org.pouzinsociety.rina" name="rina.transport.api" rev="1.0.0" />
+		<dependency org="org.pouzinsociety.rina" name="rina.idd.api" rev="${rina.idd.api}"  />
+<!--
+		<dependency org="org.pouzinsociety.rina" name="rina.transport.api" rev="${rina.transport.api}" />
 		<dependency org="org.pouzinsociety.bootstrap" name="org.pouzinsociety.bootstrap.api" rev="1.0.0"  />
-
-<!-- JNode Support
-		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.support" rev="1.0.0" conf="compile->runtime"/>
-		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.ethernet" rev="1.0.0" conf="compile->runtime" />
 -->
 
-<!-- BootStrap -->
-		<dependency org="org.pouzinsociety.bootstrap" name="org.pouzinsociety.bootstrap.api" rev="1.0.0" conf="compile->runtime" />
-
 <!-- Logging -->
-		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" conf="compile->runtime" />
+		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" />
 <!-- Tests -->
 		<dependency org="org.antlr" name="com.springsource.antlr" rev="${org.antlr}" conf="test->runtime" />
 		<dependency org="org.junit" name="com.springsource.org.junit" rev="${org.junit}" conf="test->runtime" />

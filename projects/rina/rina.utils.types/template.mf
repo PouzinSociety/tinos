@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Custom Types Bundle
+Bundle-SymbolicName: rina.utils.types
+Bundle-Version: ${version}
+Bundle-Vendor: i2CAT
+Export-Template: rina.utils.types;version="${version}"

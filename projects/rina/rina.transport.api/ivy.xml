@@ -16,9 +16,9 @@
 	</publications>
 
 	<dependencies>
-		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.support" rev="1.0.0" conf="compile->runtime"/>
+		<dependency org="org.pouzinsociety.org.jnode" name="org.pouzinsociety.org.jnode.net.support" rev="1.0.0" />
 <!-- Logging -->
-		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" conf="dm-server-provided->runtime" />
+		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" />
 <!-- Tests -->
 		<dependency org="org.antlr" name="com.springsource.antlr" rev="${org.antlr}" conf="test->runtime" />
 		<dependency org="org.junit" name="com.springsource.org.junit" rev="${org.junit}" conf="test->runtime" />

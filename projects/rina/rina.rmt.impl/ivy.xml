@@ -15,32 +15,18 @@
 		<artifact name="${ant.project.name}-sources" type="src" ext="jar"/>
 	</publications>
 
-<!--
- # FIX-ME: Added a few dependencies to get the ball rolling.
- #
- # If you want a bundle to appear in the final "package" add "provided" to the
- # conf e.g conf="test->runtime" -> conf="test->runtime;provided". A conf of
- # "dm-server-provided->runtime" simply means the server will provide this
- # and do not package it.
- #
- # Add a conf setting: conf->"compile->runtime" for internal bundles.
- # of this par.
- #
- # Every entry should have a "conf" setting.
- #
--->
 	<dependencies>
 <!-- IPC Service API -->
-		<dependency org="org.pouzinsociety.rina" name="rina.ipcservice.api" rev="1.0.0"  conf="compile->runtime" />
+		<dependency org="org.pouzinsociety.rina" name="rina.ipcservice.api" rev="${rina.ipcservice.api}"/>
 <!-- RINA Commons API -->
-		<dependency org="org.pouzinsociety.rina" name="rina.commons.api" rev="1.0.0"  conf="compile->runtime" />
+		<dependency org="org.pouzinsociety.rina" name="rina.commons.api" rev="${rina.commons.api}"/>
+<!-- RINA Delimiting Impl -->
+		<dependency org="org.pouzinsociety.rina" name="rina.delimiting.impl" rev="${rina.delimiting.impl}"  conf="test->runtime" />
 <!-- Logging -->
-		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" conf="compile->runtime" />
+		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" />
 <!-- Tests -->
 		<dependency org="org.antlr" name="com.springsource.antlr" rev="${org.antlr}" conf="test->runtime" />
 		<dependency org="org.junit" name="com.springsource.org.junit" rev="${org.junit}" conf="test->runtime" />
-		<!-- RINA Delimiting Impl -->
-		<dependency org="org.pouzinsociety.rina" name="rina.delimiting.impl" rev="1.0.0"  conf="test->runtime" />
 	</dependencies>
 
 </ivy-module>

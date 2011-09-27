@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RINA CDAP Echo Target
+Bundle-SymbolicName: rina.cdap.echotarget
+Bundle-Version: ${version}
+Bundle-Vendor: Pouzin Society
+Import-Template: rina.*;version="[1, 2)",
+ org.apache.commons.logging;version="[${org.apache.commons.logging}, 2)"

@@ -5,14 +5,15 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.pouzinsociety.bootstrap.api.BootStrapCompleteAPI;
-import org.pouzinsociety.bootstrap.api.BootstrapException;
+//import org.pouzinsociety.bootstrap.api.BootStrapCompleteAPI;
+//import org.pouzinsociety.bootstrap.api.BootstrapException;
 import rina.idd.api.IDDConfigDao;
 import rina.idd.api.IDDConsumer;
 import rina.idd.api.IDDProvider;
 import rina.idd.api.IDDRecordRequest;
 
-public class SimpleImpl implements Runnable, BootStrapCompleteAPI, IDDProvider {
+public class SimpleImpl {
+//` implements Runnable, BootStrapCompleteAPI, IDDProvider {
 	private static final Log log = LogFactory.getLog(SimpleImpl.class);
 	boolean readyToProcessIPCRequests = false;
 	List<String> forwardingTable = new ArrayList<String>();
@@ -21,12 +22,12 @@ public class SimpleImpl implements Runnable, BootStrapCompleteAPI, IDDProvider {
 	/**
 	 * Need to fix up the bootstrap process a little more
  	 */
-	public void bootstrapComplete(Object arg0) throws BootstrapException {
-		log.info("IDD BootStrapping..");
-		String jsonConfig = (String)arg0;
-		
-		log.info("IDD BootStrap Complete");
-	}
+//	public void bootstrapComplete(Object arg0) throws BootstrapException {
+//		log.info("IDD BootStrapping..");
+//		String jsonConfig = (String)arg0;
+//		
+//		log.info("IDD BootStrap Complete");
+//	}
 
 	public String getConfigDaoClassName() {
 		return IDDConfigDao.class.toString();

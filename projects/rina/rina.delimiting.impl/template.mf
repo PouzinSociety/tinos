@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RINA Delimiting Impl
+Bundle-SymbolicName: rina.delimiting.impl
+Bundle-Version: ${version}
+Bundle-Vendor: i2CAT
+Export-Template: rina.delimiting.*;version="${version}"
+Import-Template: rina.*;version="[1, 2)"

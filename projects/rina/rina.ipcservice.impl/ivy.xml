@@ -17,11 +17,11 @@
 
 	<dependencies>
 <!-- IPC Service API -->
-		<dependency org="org.pouzinsociety.rina" name="rina.ipcservice.api" rev="1.0.0"  conf="compile->runtime" />
+		<dependency org="org.pouzinsociety.rina" name="rina.ipcservice.api" rev="${rina.ipcservice.api}" />
 <!-- RINA Commons API -->
-		<dependency org="org.pouzinsociety.rina" name="rina.commons.api" rev="1.0.0"  conf="compile->runtime" />
+		<dependency org="org.pouzinsociety.rina" name="rina.commons.api" rev="${rina.commons.api}"/>
 <!-- Logging -->
-		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" conf="compile->runtime" />
+		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" />
 <!-- Tests -->
 		<dependency org="org.antlr" name="com.springsource.antlr" rev="${org.antlr}" conf="test->runtime" />
 		<dependency org="org.junit" name="com.springsource.org.junit" rev="${org.junit}" conf="test->runtime" />

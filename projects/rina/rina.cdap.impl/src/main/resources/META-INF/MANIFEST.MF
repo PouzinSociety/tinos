@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: RINA CDAP Implementation based on Google protocol Buffers
-Bundle-SymbolicName: rina.cdap.impl
-Bundle-Version: 1.0.0
-Bundle-Vendor: Pouzin Society
-Import-Package: org.apache.commons.logging;version="[1.1.1,1.1.1]", rina.cdap.api;version="[1.0.0,1.0.0]", rina.cdap.api.message;version="[1.0.0,1.0.0]", com.google.protobuf;version="2.3.0"
-Export-Package: rina.cdap.impl;version="1.0.0", rina.cdap.impl.googleprotobuf;version="1.0.0"

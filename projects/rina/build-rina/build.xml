@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="build-all" xmlns:ivy="antlib:org.apache.ivy.ant">
+	<!-- List all the bundles, you wish to include in the build process here -->
+	<!-- NOTE: Beware the build order -->
+	<path id="bundles">
+		<pathelement location="../com.google.protobuf"/>
+		<pathelement location="../rina.ipcservice.api"/>
+		<pathelement location="../rina.utils.types"/>
+		<pathelement location="../rina.commons.api"/>
+		<pathelement location="../rina.cdap.impl"/>
+		<pathelement location="../rina.delimiting.impl"/>
+		<pathelement location="../rina.demo.bootstrapper"/>
+		<pathelement location="../rina.efcp.impl"/>
+		<pathelement location="../rina.encoding.impl"/>
+		<pathelement location="../rina.enrollment.impl"/>
+		<pathelement location="../rina.ipcservice.impl"/>
+		<pathelement location="../rina.ribdaemon.impl"/>
+		<pathelement location="../rina.rmt.impl"/>
+		<pathelement location="../rina.cdap.echotarget"/>
+	</path>
+
+	<property environment="env"/>
+	<property file="${env.TINOS_HOME}/projects/build.properties"/>
+	<property file="${env.TINOS_HOME}/projects/build.versions"/>
+	<import file="${env.TINOS_HOME}/projects/spring-build/tinos/package-top-level.xml"/>
+	<import file="${env.TINOS_HOME}/projects/spring-build/multi-bundle/default.xml"/>
+	<target name="precommit" depends="clean, clean-integration, jar, findbugs, clover"/>
+	<target name="publish" depends="publish-package, publish-multi-bundle.publish"/>
+</project>
