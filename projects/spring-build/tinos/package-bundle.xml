@@ -1,11 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="package-bundle">
+
+
  <target name="package" depends="ivy.init">
+  <echo message="package-bundle"/>
   <dist-jar/>
   <src-jar/>
-<!--  <property name="subsystem.dir" value="${package.output.dir}/repository/usr"/>
-  <mkdir dir="${subsystem.dir}"/>
-  <dist-jar output.dir="${subsystem.dir}"/>
--->
  </target>
+
+
+ <target name="runtime.bundle.check">
+    <condition property="runtime.bundle.dir.exists">
+			<available file="${runtime.bundle.dir}" type="dir"/>
+	</condition>
+ </target>
+
+ <target name="clean-deploy" depends="clean,jar,deploy" />
+
+ <target name="deploy" depends="ivy.init,runtime.bundle.check" if="runtime.bundle.dir.exists">
+      <echo message="Copying ${package.jar.output.file} to RunTime directory : ${runtime.bundle.dir}"/>
+      <dist-jar output.dir="${runtime.bundle.dir}"/>
+ </target>
+
 </project>

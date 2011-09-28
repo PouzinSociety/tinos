@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="rina.idd.api" xmlns:ivy="antlib:org.apache.ivy.ant">
 	<property environment="env"/>
-	<property name="version" value="${rina.idd.api}"/>
 	<property file="${env.TINOS_HOME}/projects/build.properties"/>
 	<property file="${env.TINOS_HOME}/projects/build.versions"/>
+
+	<property name="version" value="${rina.idd.api}"/>
+
 	<import file="${env.TINOS_HOME}/projects/spring-build/tinos/package-bundle.xml"/>
 	<import file="${env.TINOS_HOME}/projects/spring-build/standard/default.xml"/>
 </project>

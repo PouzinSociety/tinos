@@ -17,13 +17,17 @@
 		<pathelement location="../rina.ribdaemon.impl"/>
 		<pathelement location="../rina.rmt.impl"/>
 		<pathelement location="../rina.cdap.echotarget"/>
+		<pathelement location="../rina.idd.api"/>
+		<pathelement location="../rina.idd.impl"/>
+		<pathelement location="../rina.config.dao"/>
+		<pathelement location="../rina.policies.impl"/>
 	</path>
 
 	<property environment="env"/>
 	<property file="${env.TINOS_HOME}/projects/build.properties"/>
 	<property file="${env.TINOS_HOME}/projects/build.versions"/>
-	<import file="${env.TINOS_HOME}/projects/spring-build/tinos/package-top-level.xml"/>
+
 	<import file="${env.TINOS_HOME}/projects/spring-build/multi-bundle/default.xml"/>
-	<target name="precommit" depends="clean, clean-integration, jar, findbugs, clover"/>
-	<target name="publish" depends="publish-package, publish-multi-bundle.publish"/>
+	<import file="${env.TINOS_HOME}/projects/spring-build/tinos/package-top-level.xml"/>
+
 </project>

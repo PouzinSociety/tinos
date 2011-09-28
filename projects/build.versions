@@ -35,6 +35,7 @@ rina.idd.impl=1.0.0
 rina.transport.api=1.0.0
 rina.transport.impl=1.0.0
 rina.config.dao=1.0.0
+rina.policies.impl=1.0.0
 
 # Test
 org.antlr=2.7.6

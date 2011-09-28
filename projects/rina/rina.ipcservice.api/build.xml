@@ -3,6 +3,9 @@
 	<property environment="env"/>
 	<property file="${env.TINOS_HOME}/projects/build.properties"/>
 	<property file="${env.TINOS_HOME}/projects/build.versions"/>
+
+	<property name="version" value="${rina.ipcservice.api}"/>
+
 	<import file="${env.TINOS_HOME}/projects/spring-build/tinos/package-bundle.xml"/>
 	<import file="${env.TINOS_HOME}/projects/spring-build/standard/default.xml"/>
 </project>

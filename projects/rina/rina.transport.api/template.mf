@@ -5,4 +5,4 @@ Bundle-SymbolicName: rina.transport.api
 Bundle-Version: ${version}
 Bundle-Vendor: Pouzin Society
 Export-Template: rina.transport.api;version="${version}"
-Import-Template: org.apache.commons.logging;version="${org.apache.commons.logging}"
+Import-Template: org.apache.commons.logging;version="[${org.apache.commons.logging}, 2)"
