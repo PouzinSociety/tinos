@@ -37,3 +37,6 @@ cd ..
 cd rina.rmt.impl
 ant jar
 cd ..
+cd rina.ipcmanager.impl
+ant jar
+cd ..

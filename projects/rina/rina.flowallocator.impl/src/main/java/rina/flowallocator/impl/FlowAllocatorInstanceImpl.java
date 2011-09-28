@@ -23,6 +23,7 @@ import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.flowallocator.api.message.Flow;
 import rina.flowallocator.impl.policies.NewFlowRequestPolicy;
+import rina.flowallocator.impl.policies.NewFlowRequestPolicyImpl;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.AllocateRequest;
@@ -95,6 +96,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		this.directoryForwardingTable = directoryForwardingTable;
 		connections = new ArrayList<Connection>();
 		//TODO initialize the newFlowRequestPolicy
+		newFlowRequestPolicy = new NewFlowRequestPolicyImpl();
 	}
 
 	/**
@@ -108,6 +110,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	public void submitAllocateRequest(AllocateRequest allocateRequest, int portId) throws IPCException {
 		this.portId = portId;
 		flow = newFlowRequestPolicy.generateFlowObject(allocateRequest, portId);
+		log.debug("Generated flow object: "+flow.toString());
 		createDataTransferAEInstance(flow);
 		
 		//Check directory to see to what IPC process the CDAP M_CREATE request has to be delivered

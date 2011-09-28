@@ -49,6 +49,12 @@ public class AllocateRequest {
 	public void setResult(boolean result) {
 		this.result = result;
 	}
+	
+	public String toString(){
+		String result = "";
+		result = result + "Requested application process naming info: " + this.getRequestedAPinfo() + "\n";
+		return result;
+	}
 
 
 }

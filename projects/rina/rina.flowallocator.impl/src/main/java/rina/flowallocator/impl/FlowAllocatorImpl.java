@@ -224,6 +224,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @throws IPCException
 	 */
 	public void submitAllocateRequest(AllocateRequest allocateRequest, APService applicationProcess){
+		log.debug("Received allocate request: "+allocateRequest.toString());
 		try {
 			allocateRequestValidator.validateAllocateRequest(allocateRequest);
 			FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), applicationProcess, directoryForwardingTable);

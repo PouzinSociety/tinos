@@ -228,4 +228,11 @@ public class Flow {
 	public void setHopCount(int hopCount) {
 		this.hopCount = hopCount;
 	}
+	
+	public String toString(){
+		String result = "";
+		result = result + "Source AP Naming Info: "+this.sourceNamingInfo + "\n";
+		result = result + "Destination AP Naming Info: "+ this.getDestinationNamingInfo() + "\n";
+		return result;
+	}
 }

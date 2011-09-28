@@ -20,7 +20,6 @@ import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
-import rina.ipcservice.impl.jobs.DeliverAllocateResponseJob;
 import rina.ipcservice.impl.jobs.DeliverDeallocateJob;
 import rina.ipcservice.impl.jobs.DeliverSDUJob;
 import rina.ipcservice.impl.jobs.SubmitAllocateRequestJob;
@@ -46,7 +45,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	/**
 	 * The maximum number of worker threads in the IPC Process thread pool
 	 */
-	private static int MAXWORKERTHREADS = 5;
+	private static int MAXWORKERTHREADS = 10;
 
 	/**
 	 * Stores the applications that have a port Id in transfer state
@@ -109,10 +108,10 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * @param applicationProcess
 	 */
 	public synchronized void submitAllocateRequest(AllocateRequest allocateRequest, APService applicationProcess){
+		log.debug("Allocate request received, forwarding it to the Flow Allocator");
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(BaseFlowAllocator.getComponentName());
 		SubmitAllocateRequestJob job = new SubmitAllocateRequestJob(allocateRequest, flowAllocator, applicationProcess);
 		executorService.execute(job);
-
 	}
 
 	/**
