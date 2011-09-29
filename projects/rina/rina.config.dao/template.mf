@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RINA Configuration DAO
+Bundle-SymbolicName: rina.config.dao
+Bundle-Version: ${version}
+Bundle-Vendor: Pouzin Society
+Export-Template: rina.config.dao;version="${version}"
+Import-Template: org.apache.commons.logging;version="${org.apache.commons.logging}",
+ org.apache.xmlcommons.*;version="[${org.apache.xmlcommons}, 2)"

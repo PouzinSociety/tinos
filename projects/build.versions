@@ -4,6 +4,7 @@ org.springframework.osgi=1.2.1
 org.springframework.integration=1.0.3.RELEASE
 org.eclipse.osgi=3.5.0.v20081201-1815
 org.apache.commons.logging=1.1.1
+org.apache.xmlcommons=1.3.3
 org.objectweb.asm=2.2.3
 org.aspectj=1.6.3.RELEASE
 org.slf4j=1.5.0
@@ -13,6 +14,29 @@ org.jnode.net=1.0.0
 org.jivesoftware.smack=3.1.0
 org.jivesoftware.smackx=3.1.0
 org.pouzinsociety.samples=1.0.0
+
+# Rina
+rina.release=0.0.1
+com.google.protobuf=2.3.0
+rina.ipcservice.api=1.0.0
+rina.commons.api=1.0.0
+rina.utils.types=1.0.0
+rina.cdap.impl=1.0.0
+rina.delimiting.impl=1.0.0
+rina.demo.bootstrapper=1.0.0
+rina.efcp.impl=1.0.0
+rina.encoding.impl=1.0.0
+rina.enrollment.impl=1.0.0
+rina.ipcservice.impl=1.0.0
+rina.ribdaemon.impl=1.0.0
+rina.rmt.impl=1.0.0
+rina.cdap.echotarget=1.0.0
+rina.idd.api=1.0.0
+rina.idd.impl=1.0.0
+rina.transport.api=1.0.0
+rina.transport.impl=1.0.0
+rina.config.dao=1.0.0
+rina.policies.impl=1.0.0
 
 # Test
 org.antlr=2.7.6

@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: ipcService.api
+Bundle-SymbolicName: rina.ipcservice.api
+Bundle-Version: ${version}
+Bundle-Vendor: Pouzin Society
+Export-Template: rina.ipcservice.api;version="${version}"
+Import-Template: org.apache.commons.logging;version="${org.apache.commons.logging}"
+Import-Bundle: com.springsource.org.apache.commons.logging;version="[${org.apache.commons.logging},${org.apache.commons.logging}]"

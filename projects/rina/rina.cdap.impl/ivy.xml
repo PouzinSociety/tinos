@@ -16,12 +16,10 @@
 	</publications>
 
 	<dependencies>
-<!-- Google protocol buffers -->
-		<dependency org="com.google" name="com.google.protobuf" rev="2.3.0" conf="compile->runtime" />
-<!-- RINA commons API -->
-		<dependency org="org.pouzinsociety.rina" name="rina.commons.api" rev="1.0.0"  conf="compile->runtime" />
-<!-- Spring Framework -->
-		<dependency org="org.springframework" name="org.springframework.spring-library" rev="${org.springframework.spring}" conf="compile->compile" />
+		<dependency org="com.google" name="com.google.protobuf" rev="${com.google.protobuf}" />
+		<dependency org="org.pouzinsociety.rina" name="rina.commons.api" rev="${rina.commons.api}" />
+		<dependency org="org.springframework" name="org.springframework.spring-library"
+				rev="${org.springframework.spring}" />
 <!-- Logging -->
 		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" conf="dm-server-provided->runtime" />
 <!-- Tests -->

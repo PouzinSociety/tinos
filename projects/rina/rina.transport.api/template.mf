@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RINA Transport API
+Bundle-SymbolicName: rina.transport.api
+Bundle-Version: ${version}
+Bundle-Vendor: Pouzin Society
+Export-Template: rina.transport.api;version="${version}"
+Import-Template: org.apache.commons.logging;version="[${org.apache.commons.logging}, 2)"

@@ -17,11 +17,11 @@
 
 	<dependencies>
 <!-- XML Parser -->		
-		<dependency org="org.apache.xmlcommons" name="com.springsource.org.apache.xmlcommons" rev="1.3.3" conf="compile->runtime"/>
+		<dependency org="org.apache.xmlcommons" name="com.springsource.org.apache.xmlcommons" rev="1.3.3" />
 <!-- Spring Framework -->
 		<dependency org="org.springframework" name="org.springframework.spring-library" rev="${org.springframework.spring}" conf="compile->compile" />
 <!-- Logging -->
-		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" conf="dm-server-provided->runtime" />
+		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" />
 <!-- Tests -->
 		<dependency org="org.antlr" name="com.springsource.antlr" rev="${org.antlr}" conf="test->runtime" />
 		<dependency org="org.junit" name="com.springsource.org.junit" rev="${org.junit}" conf="test->runtime" />

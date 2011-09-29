@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RINA Policies
+Bundle-SymbolicName: rina.policies.impl
+Bundle-Version: ${version}
+Bundle-Vendor: Pouzin Society
+Export-Template: rina.policies.impl;version="${version}"
+Excluded-Imports: rina.policies.impl
+Import-Template: org.apache.commons.logging;version="${org.apache.commons.logging}"
+

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="package-top-level">
+
  <target name="package">
   <delete dir="${package.output.dir}" quiet="true"/>
   <mkdir dir="${package.output.dir}"/>
@@ -18,4 +19,17 @@
    <zipfileset dir="${package.dir}"/>
   </zip>
  </target>
+
+ <target name="deploy">
+  <all-bundles target="deploy">
+   <property name="package.output.dir" value="${package.output.dir}"/>
+  </all-bundles>
+ </target>
+
+ <target name="clean-deploy">
+  <all-bundles target="clean-deploy">
+   <property name="package.output.dir" value="${package.output.dir}"/>
+  </all-bundles>
+ </target>
+
 </project>

@@ -17,19 +17,19 @@
 
 	<dependencies>
 <!-- Google protocol buffers -->
-		<dependency org="com.google" name="com.google.protobuf" rev="2.3.0" conf="compile->runtime" />
+		<dependency org="com.google" name="com.google.protobuf" rev="${com.google.protobuf}"/>
 <!-- RINA commons API -->
-		<dependency org="org.pouzinsociety.rina" name="rina.commons.api" rev="1.0.0"  conf="compile->runtime" />
+		<dependency org="org.pouzinsociety.rina" name="rina.commons.api" rev="${rina.commons.api}"/>
 <!-- RINA CDAP Impl-->
-		<dependency org="org.pouzinsociety.rina" name="rina.cdap.impl" rev="1.0.0"  conf="compile->runtime" />
+		<dependency org="org.pouzinsociety.rina" name="rina.cdap.impl" rev="${rina.cdap.impl}"/>
 <!-- RINA Delimiting Impl-->
-		<dependency org="org.pouzinsociety.rina" name="rina.delimiting.impl" rev="1.0.0"  conf="compile->runtime" />
+		<dependency org="org.pouzinsociety.rina" name="rina.delimiting.impl" rev="${rina.delimiting.impl}"/>
 <!-- RINA Utils Serialization-->
-		<dependency org="org.pouzinsociety.rina" name="rina.encoding.impl" rev="1.0.0"  conf="compile->runtime" />
+		<dependency org="org.pouzinsociety.rina" name="rina.encoding.impl" rev="${rina.encoding.impl}"/>
 <!-- Spring Framework -->
 		<dependency org="org.springframework" name="org.springframework.spring-library" rev="${org.springframework.spring}" conf="compile->compile" />
 <!-- Logging -->
-		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" conf="dm-server-provided->runtime" />
+		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" />
 <!-- Tests -->
 		<dependency org="org.antlr" name="com.springsource.antlr" rev="${org.antlr}" conf="test->runtime" />
 		<dependency org="org.junit" name="com.springsource.org.junit" rev="${org.junit}" conf="test->runtime" />
