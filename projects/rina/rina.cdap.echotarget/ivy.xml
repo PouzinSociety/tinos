@@ -26,6 +26,14 @@
 		<dependency org="org.pouzinsociety.rina" name="rina.delimiting.impl" rev="${rina.delimiting.impl}"/>
 <!-- RINA Utils Serialization-->
 		<dependency org="org.pouzinsociety.rina" name="rina.encoding.impl" rev="${rina.encoding.impl}"/>
+<!-- RINA Enrollment Impl-->
+		<dependency org="org.pouzinsociety.rina" name="rina.enrollment.impl" rev="${rina.enrollment.impl}"/>
+<!-- RINA RMT Impl-->
+		<dependency org="org.pouzinsociety.rina" name="rina.rmt.impl" rev="${rina.rmt.impl}"/>
+<!-- RINA RIB Daemon Impl-->
+		<dependency org="org.pouzinsociety.rina" name="rina.ribdaemon.impl" rev="${rina.ribdaemon.impl}"/>
+<!-- RINA IPC Service Impl-->
+		<dependency org="org.pouzinsociety.rina" name="rina.ipcservice.impl" rev="${rina.ipcservice.impl}"/>
 <!-- Spring Framework -->
 		<dependency org="org.springframework" name="org.springframework.spring-library" rev="${org.springframework.spring}" conf="compile->compile" />
 <!-- Logging -->
