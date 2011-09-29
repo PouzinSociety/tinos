@@ -26,4 +26,10 @@
   </all-bundles>
  </target>
 
+ <target name="clean-deploy">
+  <all-bundles target="clean-deploy">
+   <property name="package.output.dir" value="${package.output.dir}"/>
+  </all-bundles>
+ </target>
+
 </project>
