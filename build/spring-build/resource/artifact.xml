@@ -17,7 +17,7 @@
 			<fileset dir="${resource.src.dir}" erroronmissingdir="false"/>
 		</copy>
 
-		<ivy:publish resolver="integration" pubdate="${timestamp}" status="${release.type}">
+		<ivy:publish resolver="integration" pubdate="${timestamp}" status="${release.type}" overwrite="true">
 			<artifacts pattern="${ivy.output.dir}/[artifact].[ext]"/>
 			<artifacts pattern="${artifacts.dir}/[artifact].[ext]"/>
 		</ivy:publish>

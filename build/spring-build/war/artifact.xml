@@ -33,7 +33,7 @@
 		</jar>
 		<antcall target="bundlor"/>
 		<jar destfile="${source-jar.output.file}" basedir="${main.java.dir}" index="true"/>
-		<ivy:publish resolver="integration" pubdate="${timestamp}" status="${release.type}">
+		<ivy:publish resolver="integration" pubdate="${timestamp}" status="${release.type}" overwrite="true">
 			<artifacts pattern="${ivy.output.dir}/[artifact].[ext]"/>
 			<artifacts pattern="${war.output.dir}/[artifact].[ext]"/>
 			<artifacts pattern="${source-jar.output.dir}/[artifact].[ext]"/>
