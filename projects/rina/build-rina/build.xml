@@ -17,6 +17,7 @@
 		<pathelement location="../rina.ribdaemon.impl"/>
 		<pathelement location="../rina.rmt.impl"/>
 		<pathelement location="../rina.cdap.echotarget"/>
+		<pathelement location="../rina.floallocator.impl"/>
 		<pathelement location="../rina.idd.api"/>
 		<pathelement location="../rina.idd.impl"/>
 		<pathelement location="../rina.config.dao"/>
