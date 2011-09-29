@@ -16,6 +16,7 @@ org.jivesoftware.smackx=3.1.0
 org.pouzinsociety.samples=1.0.0
 
 # Rina
+rina.release=0.0.1
 com.google.protobuf=2.3.0
 rina.ipcservice.api=1.0.0
 rina.commons.api=1.0.0

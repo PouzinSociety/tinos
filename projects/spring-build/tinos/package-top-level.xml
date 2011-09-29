@@ -6,15 +6,12 @@
   <mkdir dir="${package.output.dir}"/>
   <delete file="${package.output.file}" quiet="true"/>
   <mkdir dir="${artifacts.dir}"/>
-
   <all-bundles target="package">
    <property name="package.output.dir" value="${package.output.dir}"/>
   </all-bundles>
-
   <copy todir="${package.output.dir}" failonerror="false">
    <fileset dir="resources"/>
   </copy>
-
   <ant target="javadoc-api" inheritAll="false">
    <property name="target.dir" value="${package.docs.dir}"/>
   </ant>

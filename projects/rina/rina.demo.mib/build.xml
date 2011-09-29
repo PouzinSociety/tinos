@@ -2,8 +2,8 @@
 <project name="rina.demo.mib" xmlns:ivy="antlib:org.apache.ivy.ant">
 	<property environment="env"/>
 	<property name="disable.bundlor" value="true"/>
-	<property file="${env.TINOS_HOME}/projects/build.properties"/>
 	<property file="${env.TINOS_HOME}/projects/build.versions"/>
+	<property file="${env.TINOS_HOME}/projects/build.properties"/>
 	<import file="${env.TINOS_HOME}/projects/spring-build/tinos/package-bundle.xml"/>
 	<import file="${env.TINOS_HOME}/projects/spring-build/standard/default.xml"/>
 </project>
