@@ -1,24 +1,24 @@
 package rina.ipcservice.impl.ribobjects;
 
-import java.util.Calendar;
-
 import rina.applicationprocess.api.WhatevercastName;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
+import rina.ribdaemon.api.ObjectInstanceGenerator;
 import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBObject;
 
 public class WhatevercastNameRIBObject extends BaseRIBObject{
 
 	private WhatevercastName whatevercastName = null;
 	
 	public WhatevercastNameRIBObject(IPCProcess ipcProcess, String objectName, WhatevercastName whatevercastName) {
-		super(ipcProcess, objectName, null, Calendar.getInstance().getTimeInMillis());
+		super(ipcProcess, objectName, "whatname", ObjectInstanceGenerator.getObjectInstance());
 		this.whatevercastName = whatevercastName;
 	}
 	
 	@Override
-	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
-		return whatevercastName;
+	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
+		return this;
 	}
 	
 	@Override
@@ -35,5 +35,10 @@ public class WhatevercastNameRIBObject extends BaseRIBObject{
 	public void delete(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
 		this.getParent().removeChild(objectName);
 		this.getRIBDaemon().delete(this.getObjectClass(), this.getObjectName(), this.getObjectInstance(), object);
+	}
+	
+	@Override
+	public Object getObjectValue(){
+		return whatevercastName;
 	}
 }

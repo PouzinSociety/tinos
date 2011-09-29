@@ -235,11 +235,7 @@ public class CDAPMessageValidator{
 	
 	private static void validateSrcAEName(CDAPMessage message) throws CDAPException{
 		if (message.getSrcAEName() == null){
-			if (message.getOpCode().equals(Opcode.M_CONNECT)){ 
-				throw new CDAPException("SrcAEName must be set for M_CONNECT", message);
-			}else if (message.getOpCode().equals(Opcode.M_CONNECT_R)){
-				//TODO not sure what to do
-			}
+			
 		}else{
 			if (!message.getOpCode().equals(Opcode.M_CONNECT) && !message.getOpCode().equals(Opcode.M_CONNECT_R)){
 				throw new CDAPException("SrcAEName can only be set for M_CONNECT and M_CONNECT_R messages", message);

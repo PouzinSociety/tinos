@@ -2,7 +2,7 @@ package rina.ribdaemon.api;
 
 import java.util.List;
 
-import rina.applicationprocess.api.ApplicationProcessNameSynonym;
+import rina.applicationprocess.api.DAFMember;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBObjectNames;
 
@@ -21,7 +21,7 @@ public class ObjectNametoClassMapper {
 		
 		if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM)){
-			return ApplicationProcessNameSynonym.class.getName();
+			return DAFMember.class.getName();
 		}
 		
 		if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 

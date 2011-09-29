@@ -8,6 +8,8 @@ public class AllocateRequest {
 	private QoSParameters cube = null;
 	private boolean result = false;
 	
+	public AllocateRequest(){
+	}
 
 	public AllocateRequest(ApplicationProcessNamingInfo requestedAPinfo, int port_id, QoSParameters cube, boolean result) {
 		this.requestedAPinfo = requestedAPinfo;
@@ -46,6 +48,12 @@ public class AllocateRequest {
 
 	public void setResult(boolean result) {
 		this.result = result;
+	}
+	
+	public String toString(){
+		String result = "";
+		result = result + "Requested application process naming info: " + this.getRequestedAPinfo() + "\n";
+		return result;
 	}
 
 

@@ -4,10 +4,19 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import rina.efcp.api.BaseDataTransferAE;
 import rina.efcp.api.DataTransferAEInstance;
 import rina.efcp.api.DataTransferConstants;
+import rina.efcp.impl.ribobjects.DataTransferConstantsRIBObject;
 import rina.flowallocator.api.Connection;
+import rina.ipcprocess.api.IPCProcess;
+import rina.ribdaemon.api.BaseRIBDaemon;
+import rina.ribdaemon.api.RIBDaemon;
+import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBObject;
 
 /**
  * Simple implementation of DataTransferAEFactory
@@ -15,6 +24,8 @@ import rina.flowallocator.api.Connection;
  *
  */
 public class DataTransferAEImpl extends BaseDataTransferAE{
+	
+	private static final Log log = LogFactory.getLog(DataTransferAEImpl.class);
 	
 	/**
 	 * Stores all the instantiated data transfer application entities
@@ -27,8 +38,27 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	 */
 	private DataTransferConstants dataTransferConstants = null;
 	
+	private RIBDaemon ribDaemon = null;
+	
 	public DataTransferAEImpl(){
 		dataTransferAEInstances = new HashMap<Connection, DataTransferAEInstance>();
+	}
+	
+	@Override
+	public void setIPCProcess(IPCProcess ipcProcess){
+		super.setIPCProcess(ipcProcess);
+		this.ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+		populateRIB(ipcProcess);
+	}
+	
+	private void populateRIB(IPCProcess ipcProcess){
+		try{
+			RIBObject ribObject = new DataTransferConstantsRIBObject(ipcProcess);
+			ribDaemon.addRIBObject(ribObject);
+		}catch(RIBDaemonException ex){
+			ex.printStackTrace();
+			log.error("Could not subscribe to RIB Daemon:" +ex.getMessage());
+		}
 	}
 	
 	public DataTransferConstants getDataTransferConstants(){

@@ -9,10 +9,10 @@ import rina.ribdaemon.api.RIBDaemonFactory;
 
 public class RIBDaemonFactoryImpl implements RIBDaemonFactory{
 
-	private Map<ApplicationProcessNamingInfo, RIBDaemon> ribDaemonRespository = null;
+	private Map<String, RIBDaemon> ribDaemonRespository = null;
 	
 	public RIBDaemonFactoryImpl(){
-		ribDaemonRespository = new HashMap<ApplicationProcessNamingInfo, RIBDaemon>();
+		ribDaemonRespository = new HashMap<String, RIBDaemon>();
 	}
 	
 	public RIBDaemon createRIBDaemon(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
@@ -23,16 +23,16 @@ public class RIBDaemonFactoryImpl implements RIBDaemonFactory{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		ribDaemonRespository.put(ipcProcessNamingInfo, ribDaemon);
+		ribDaemonRespository.put(ipcProcessNamingInfo.getProcessKey(), ribDaemon);
 		return ribDaemon;
 	}
 
 	public void destroyRIBDaemon(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
-		ribDaemonRespository.remove(ipcProcessNamingInfo);
+		ribDaemonRespository.remove(ipcProcessNamingInfo.getProcessKey());
 	}
 
 	public RIBDaemon getRIBDaemon(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
-		return ribDaemonRespository.get(ipcProcessNamingInfo);
+		return ribDaemonRespository.get(ipcProcessNamingInfo.getProcessKey());
 	}
 
 }

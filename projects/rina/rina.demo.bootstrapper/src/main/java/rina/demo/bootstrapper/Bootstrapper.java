@@ -20,19 +20,20 @@ public class Bootstrapper {
 	 * @param ipcProcessFactory
 	 */
 	public void setIPCProcessFactory(IPCProcessFactory ipcProcessFactory){
-		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo("i2CAT-Barcelona", "1", null, null);
-		IPCProcess ipcProcess = ipcProcessFactory.createIPCProcess(apNamingInfo);
-		WhatevercastName dan = new WhatevercastName();
-		dan.setName("RINA-Demo.DIF");
-		dan.setRule("All members");
-		try{
+		/*try{
+			ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo("i2CAT-Barcelona", "1", null, null);
+			IPCProcess ipcProcess = ipcProcessFactory.createIPCProcess(apNamingInfo);
+			WhatevercastName dan = new WhatevercastName();
+			dan.setName("RINA-Demo.DIF");
+			dan.setRule("All members");
+
 			RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-			ribDaemon.create(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
-				RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "1", 0, dan);
+			ribDaemon.create(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
+					RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "1", 0, dan);
 		}catch(Exception ex){
 			ex.printStackTrace();
-		}
+		}*/
 	}
 
 }

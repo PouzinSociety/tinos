@@ -38,7 +38,7 @@ public class FlowEncoderTest {
 		flow.setCreateFlowRetries(2);
 		flow.setCurrentFlowId(0);
 		flow.setDestinationAddress(new byte[]{0x01, 0x00});
-		flow.setDestinationNamingInfo(new ApplicationProcessNamingInfo("b", null, null, null));
+		flow.setDestinationNamingInfo(new ApplicationProcessNamingInfo("b", null));
 		flow.setDestinationPortId(new Unsigned(dataTransferAE.getDataTransferConstants().getPortIdLength(), 8));
 		flow.setHopCount(3);
 		List<ConnectionId> flowIds = new ArrayList<ConnectionId>();
@@ -49,7 +49,7 @@ public class FlowEncoderTest {
 		flowIds.add(connectionId);
 		flow.setFlowIds(flowIds);
 		flow.setSourceAddress(new byte[]{0x00, 0x01});
-		flow.setSourceNamingInfo(new ApplicationProcessNamingInfo("a", null, null, null));
+		flow.setSourceNamingInfo(new ApplicationProcessNamingInfo("a", null));
 		flow.setSourcePortId(new Unsigned(dataTransferAE.getDataTransferConstants().getPortIdLength(), 5));
 	}
 	

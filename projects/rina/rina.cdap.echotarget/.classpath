@@ -13,5 +13,10 @@
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.cdap.impl/1.0.0/rina.cdap.impl-1.0.0.jar"/>
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.delimiting.impl/1.0.0/rina.delimiting.impl-1.0.0.jar"/>
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.encoding.impl/1.0.0/rina.encoding.impl-1.0.0.jar"/>
+	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.ribdaemon.impl/1.0.0/rina.ribdaemon.impl-1.0.0.jar"/>
+	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.ipcservice.impl/1.0.0/rina.ipcservice.impl-1.0.0.jar"/>
+	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.ipcservice.api/1.0.0/rina.ipcservice.api-1.0.0.jar"/>
+	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.rmt.impl/1.0.0/rina.rmt.impl-1.0.0.jar"/>
+	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.enrollment.impl/1.0.0/rina.enrollment.impl-1.0.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

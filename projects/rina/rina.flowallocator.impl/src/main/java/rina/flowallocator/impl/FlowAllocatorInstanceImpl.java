@@ -6,16 +6,33 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.applicationprocess.api.DAFMember;
+import rina.cdap.api.BaseCDAPSessionManager;
+import rina.cdap.api.CDAPException;
+import rina.cdap.api.CDAPMessageHandler;
+import rina.cdap.api.CDAPSessionDescriptor;
+import rina.cdap.api.CDAPSessionManager;
+import rina.cdap.api.message.CDAPMessage;
+import rina.cdap.api.message.ObjectValue;
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.DataTransferAEInstance;
+import rina.encoding.api.BaseEncoder;
+import rina.encoding.api.Encoder;
 import rina.flowallocator.api.Connection;
 import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.flowallocator.api.message.Flow;
 import rina.flowallocator.impl.policies.NewFlowRequestPolicy;
+import rina.flowallocator.impl.policies.NewFlowRequestPolicyImpl;
 import rina.ipcprocess.api.IPCProcess;
+import rina.ipcservice.api.APService;
 import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.IPCException;
+import rina.ribdaemon.api.BaseRIBDaemon;
+import rina.ribdaemon.api.RIBDaemon;
+import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBObject;
+import rina.ribdaemon.api.RIBObjectNames;
 
 /**
  * A flow allocator instance implementation. Its task is to manage the 
@@ -23,7 +40,7 @@ import rina.ipcservice.api.IPCException;
  * @author eduardgrasa
  *
  */
-public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance{
+public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMessageHandler{
 	
 	private static final Log log = LogFactory.getLog(FlowAllocatorInstanceImpl.class);
 	
@@ -63,12 +80,23 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance{
 	 */
 	private DirectoryForwardingTable directoryForwardingTable = null;
 	
-	public FlowAllocatorInstanceImpl(IPCProcess ipcProcess, int portId, DirectoryForwardingTable directoryForwardingTable){
+	/**
+	 * The application process that requested the allocation of the flow
+	 */
+	private APService applicationProcess = null;
+	
+	/**
+	 * The flow object related to this Flow Allocator Instance
+	 */
+	private Flow flow = null;
+	
+	public FlowAllocatorInstanceImpl(IPCProcess ipcProcess, APService applicationProcess, DirectoryForwardingTable directoryForwardingTable){
 		this.ipcProcess = ipcProcess;
-		this.portId = portId;
+		this.applicationProcess = applicationProcess;
 		this.directoryForwardingTable = directoryForwardingTable;
 		connections = new ArrayList<Connection>();
 		//TODO initialize the newFlowRequestPolicy
+		newFlowRequestPolicy = new NewFlowRequestPolicyImpl();
 	}
 
 	/**
@@ -80,18 +108,66 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance{
 	 * @throws IPCException if there are not enough resources to fulfill the allocate request
 	 */
 	public void submitAllocateRequest(AllocateRequest allocateRequest, int portId) throws IPCException {
-		Flow flow = newFlowRequestPolicy.generateFlowObject(allocateRequest, portId);
+		this.portId = portId;
+		flow = newFlowRequestPolicy.generateFlowObject(allocateRequest, portId);
+		log.debug("Generated flow object: "+flow.toString());
 		createDataTransferAEInstance(flow);
 		
 		//Check directory to see to what IPC process the CDAP M_CREATE request has to be delivered
-		byte[] address = directoryForwardingTable.getAddress(allocateRequest.getRequestedAPinfo());
-		if (address == null){
+		long address = directoryForwardingTable.getAddress(allocateRequest.getRequestedAPinfo());
+		if (address == 0){
 			//error, the table should have at least returned a default IPC process address to continue looking for the application process
-			log.error("The directory forwarding table returned no entries when looking up " + allocateRequest.getRequestedAPinfo().toString());
+			String message = "The directory forwarding table returned no entries when looking up " + allocateRequest.getRequestedAPinfo().toString();
+			throw new IPCException(5, message);
 		}
 		
-		//TODO once the destination IPC process is known, create the CDAP message
-		//TODO Now create the EFCP PDU and pass it to the appropriated EFCP instance
+		//Map the address to destination application process name
+		RIBDaemon ribDaemon = (RIBDaemon) this.ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+		CDAPSessionManager cdapSessionManager = (CDAPSessionManager) this.ipcProcess.getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
+		List<RIBObject> members = null;
+		DAFMember dafMember = null;
+		int rmtPortId = 0;
+		
+		try{
+			members = ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS ,0).getChildren();
+			
+			for(int i=0; i<members.size(); i++){
+				dafMember = (DAFMember) members.get(i).getObjectValue();
+				if (dafMember.getSynonym() == address){
+					rmtPortId = cdapSessionManager.getPortId(dafMember.getApplicationProcessName(), dafMember.getApplicationProcessInstance());
+					break;
+				}
+			}
+			
+			if (rmtPortId == 0){
+				String message = "Could not find the application process name of the IPC process whose synonym is "+address;
+				log.error(message);
+				throw new IPCException(5, message);
+			}
+		}catch(RIBDaemonException ex){
+			log.error(ex);
+			throw new IPCException(5, ex.getMessage());
+		}catch(CDAPException ex){
+			log.error(ex);
+			throw new IPCException(5, ex.getMessage());
+		}
+		
+		Encoder encoder = (Encoder) this.ipcProcess.getIPCProcessComponent(BaseEncoder.getComponentName());
+		ObjectValue objectValue = null;
+		CDAPMessage cdapMessage = null;
+		
+		try{
+			objectValue = new ObjectValue();
+			objectValue.setByteval(encoder.encode(flow));
+			cdapMessage = CDAPMessage.getCreateObjectRequestMessage(null, null, this.portId, "flow", 0, RIBObjectNames.SEPARATOR + 
+					RIBObjectNames.DIF + RIBObjectNames.SEPARATOR + RIBObjectNames.RESOURCE_ALLOCATION + RIBObjectNames.SEPARATOR +
+					RIBObjectNames.FLOW_ALLOCATOR + RIBObjectNames.SEPARATOR + RIBObjectNames.FLOWS + RIBObjectNames.SEPARATOR + portId, objectValue, 0);
+			ribDaemon.sendMessage(cdapMessage, rmtPortId, this);
+		}catch(Exception ex){
+			log.error(ex);
+			throw new IPCException(5, ex.getMessage());
+		}
 	}
 	
 	/**
@@ -99,11 +175,12 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance{
 	 * @param flow
 	 */
 	private void createDataTransferAEInstance(Flow flow){
-		Connection connection = new Connection(flow);
+		//TODO, when we have DTP
+		/*Connection connection = new Connection(flow);
 		DataTransferAE dataTransferAE = (DataTransferAE) ipcProcess.getIPCProcessComponent(DataTransferAE.class.getName());
 		dataTransferAEInstance = dataTransferAE.createDataTransferAEInstance(connection);
 		activeConnection = connection;
-		connections.add(connection);
+		connections.add(connection);*/
 	}
 
 	/**
@@ -181,5 +258,47 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance{
 	 */
 	public void deleteFlowResponseMessageReceived(){
 		// TODO implement this
+	}
+
+	public void cancelReadResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void createResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void deleteResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void readResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void startResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void stopResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void writeResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
 	}
 }

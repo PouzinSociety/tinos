@@ -26,7 +26,7 @@ import rina.ipcprocess.api.IPCProcess;
  * @author eduardgrasa
  *
  */
-public class BaseRIBObject implements RIBObject{
+public abstract class BaseRIBObject implements RIBObject{
 	
 	private static final Log log = LogFactory.getLog(BaseRIBObject.class);
 	private IPCProcess ipcProcess = null;
@@ -34,7 +34,7 @@ public class BaseRIBObject implements RIBObject{
 	private RIBDaemon ribDaemon = null;
 	
 	/**
-	 * The attributes of this object: objectName, objectClass, objectInstance
+	 * The attributes of this object: objectName, objectClass, objectInstance, objectValue
 	 */
 	private String objectName = null;
 	private String objectClass = null;
@@ -81,6 +81,8 @@ public class BaseRIBObject implements RIBObject{
 	public void setParent(RIBObject parent){
 		this.parent = parent;
 	}
+	
+	public abstract Object getObjectValue();
 	
 	/**
     * Return the children of RIBObject. The RIB is represented by a single
@@ -167,7 +169,7 @@ public class BaseRIBObject implements RIBObject{
 				"Operation DELETE not allowed for objectName "+objectName);
 	}
 
-	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
+	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
 		throw new RIBDaemonException(RIBDaemonException.OPERATION_NOT_ALLOWED_AT_THIS_OBJECT, 
 				"Operation READ not allowed for objectName "+objectName);
 	}
@@ -192,8 +194,11 @@ public class BaseRIBObject implements RIBObject{
 		
 		try{
 			Object object = this.read(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst());
-			ObjectValue objectValue = new ObjectValue();
-			objectValue.setByteval(getEncoder().encode(object));
+			ObjectValue objectValue = null;
+			if (object != null){
+				objectValue = new ObjectValue();
+				objectValue.setByteval(getEncoder().encode(object));
+			}
 			responseMessage = CDAPMessage.getReadObjectResponseMessage(null, cdapMessage.getInvokeID(), cdapMessage.getObjClass(), 
 					cdapMessage.getObjInst(), cdapMessage.getObjName(), objectValue, 0, null);
 			getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);

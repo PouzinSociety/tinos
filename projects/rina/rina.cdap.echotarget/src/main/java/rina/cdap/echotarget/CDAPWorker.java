@@ -118,7 +118,7 @@ public abstract class CDAPWorker implements Runnable{
 				returnMessage = CDAPMessage.getOpenConnectionResponseMessage(wrongMessage.getAuthMech(), wrongMessage.getAuthValue(), wrongMessage.getSrcAEInst(), 
 						wrongMessage.getSrcAEName(), wrongMessage.getSrcApInst(), wrongMessage.getSrcApName(), wrongMessage.getInvokeID(), cdapException.getResult(), 
 						cdapException.getResultReason(), wrongMessage.getDestAEInst(), wrongMessage.getDestAEName(), wrongMessage.getDestApInst(), 
-						wrongMessage.getDestApName(), (int)wrongMessage.getVersion());
+						wrongMessage.getDestApName());
 			}catch(CDAPException ex){
 				ex.printStackTrace();
 			}

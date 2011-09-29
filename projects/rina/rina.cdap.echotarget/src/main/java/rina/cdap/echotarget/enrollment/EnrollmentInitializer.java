@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import rina.applicationprocess.api.ApplicationProcessNameSynonym;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.cdap.api.CDAPException;
 import rina.cdap.api.message.CDAPMessage;
@@ -82,22 +81,17 @@ public class EnrollmentInitializer implements Runnable{
 	}
 	
 	private void sendAddress() throws CDAPException, IOException{
-		byte[] serializedAddress = null;
 		ObjectValue objectValue = null;
-		
-		ApplicationProcessNameSynonym address = new ApplicationProcessNameSynonym();
-		address.setApplicationProcessName("B");
-		address.setSynonym(new byte[]{0x02});
+
 		try{
-			serializedAddress = cdapEnrollmentWorker.getEncoder().encode(address);
 			objectValue = new ObjectValue();
-			objectValue.setByteval(serializedAddress);
+			objectValue.setInt64val(2);
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
 		
 		CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(Flags.F_RD_INCOMPLETE, invokeId, 
-				"rina.messages.ApplicationProcessNameSynonym", 1, "daf/management/currentSynonym", objectValue, 0, null);
+				"rina.messages.ApplicationProcessNameSynonym", 1, "/daf/management/currentSynonym", objectValue, 0, null);
 		
 		cdapEnrollmentWorker.sendCDAPMessage(cdapMessage);
 		state = State.WHATEVERCAST_NAMES;
@@ -133,7 +127,7 @@ public class EnrollmentInitializer implements Runnable{
 		}
 		
 		CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(Flags.F_RD_INCOMPLETE, invokeId, 
-				"rina.messages.WhatevercastName", 2 + counter, "daf/management/whatevercast", objectValue, 0, null);
+				"rina.messages.WhatevercastName", 2 + counter, "/daf/management/whatevercast", objectValue, 0, null);
 		
 		cdapEnrollmentWorker.sendCDAPMessage(cdapMessage);
 		
@@ -170,7 +164,7 @@ public class EnrollmentInitializer implements Runnable{
 		}
 		
 		CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(Flags.F_RD_INCOMPLETE, invokeId, 
-				"rina.messages.DataTransferConstants", 4, "dif/ipc/datatransfer/constants", objectValue, 0, null);
+				"rina.messages.DataTransferConstants", 4, "/dif/ipc/datatransfer/constants", objectValue, 0, null);
 		
 		cdapEnrollmentWorker.sendCDAPMessage(cdapMessage);
 		state = State.QOS_CUBES;
@@ -218,7 +212,7 @@ public class EnrollmentInitializer implements Runnable{
 		}
 		
 		CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(flags, invokeId, 
-				"rina.messages.qosCube", 5 + counter, "dif/management/flowallocator/qoscube", objectValue, 0, null);
+				"rina.messages.qosCube", 5 + counter, "/dif/management/flowallocator/qoscube", objectValue, 0, null);
 		cdapEnrollmentWorker.sendCDAPMessage(cdapMessage);
 		
 		if (counter == 0){

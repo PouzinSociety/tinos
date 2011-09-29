@@ -15,7 +15,7 @@ public interface DirectoryForwardingTable {
 	 * @param apNamingInfo
 	 * @return
 	 */
-	public byte[] getAddress(ApplicationProcessNamingInfo apNamingInfo);
+	public long getAddress(ApplicationProcessNamingInfo apNamingInfo);
 	
 	/**
 	 * Add a new entry to the directory (AP name to IPC process address mapping). If this AP Name was 
@@ -24,7 +24,7 @@ public interface DirectoryForwardingTable {
 	 * @param apNamingInfo
 	 * @param address
 	 */
-	public void addEntry(ApplicationProcessNamingInfo apNamingInfo, byte[] address);
+	public void addEntry(ApplicationProcessNamingInfo apNamingInfo, long address);
 	
 	/**
 	 * Remove the entries associated to this AP name
@@ -36,7 +36,7 @@ public interface DirectoryForwardingTable {
 	 * Remove the entries associated to this address
 	 * @param address
 	 */
-	public void removeEntry(byte[] address);
+	public void removeEntry(long address);
 	
 	/**
 	 * Set the default IPC process where the requests will be forwarded 
@@ -44,5 +44,5 @@ public interface DirectoryForwardingTable {
 	 * table
 	 * @param address
 	 */
-	public void setDefaultIPCProcess(byte[] address);
+	public void setDefaultIPCProcess(long address);
 }

@@ -39,4 +39,11 @@ public interface EnrollmentTask extends IPCProcessComponent{
 	 * @param cdapSessionDescriptor
 	 */
 	public void releaseResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor);
+	
+	/**
+	 * Called by the DIFMemberSetRIBObject when a CREATE request for a new member is received
+	 * @param cdapMessage
+	 * @param cdapSessionDescriptor
+	 */
+	public void initiateEnrollment(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor);
 }

@@ -16,6 +16,7 @@ public interface RIBObject{
 	public String getObjectName();
 	public String getObjectClass();
 	public long getObjectInstance();
+	public Object getObjectValue();
 
 	/* Tree management operations */
 	public RIBObject getParent();
@@ -29,7 +30,7 @@ public interface RIBObject{
 	/* LOCAL API */
 	public void create(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
 	public void delete(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
-	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException;
+	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException;
 	public void write(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
 	public void start(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
 	public void stop(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;

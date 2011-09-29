@@ -2,6 +2,7 @@ package rina.cdap.api;
 
 import rina.cdap.api.message.AuthValue;
 import rina.cdap.api.message.CDAPMessage.AuthTypes;
+import rina.ipcservice.api.ApplicationEntityNamingInfo;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 /**
@@ -205,11 +206,35 @@ public class CDAPSessionDescriptor {
 		this.portId = portId;
 	}
 	
+	/**
+	 * The source naming information is always the naming information of the local Application process
+	 * @return
+	 */
 	public ApplicationProcessNamingInfo getSourceApplicationProcessNamingInfo(){
-		return new ApplicationProcessNamingInfo(this.getSrcApName(), this.getSrcApInst(), this.getSrcAEName(), this.getSrcAEInst());
+		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(this.getSrcApName(), this.getSrcApInst());
+		if (this.getSrcAEName() != null){
+			ApplicationEntityNamingInfo aeInfo = new ApplicationEntityNamingInfo();
+			aeInfo.setApplicationEntityName(this.getSrcAEName());
+			aeInfo.setApplicationEntityInstance(this.getSrcAEInst());
+			apNamingInfo.getApplicationEntities().add(aeInfo);
+		}
+		
+		return apNamingInfo;
 	}
 	
+	/**
+	 * The destination naming information is always the naming information of the remote application process
+	 * @return
+	 */
 	public ApplicationProcessNamingInfo getDestinationApplicationProcessNamingInfo(){
-		return new ApplicationProcessNamingInfo(this.getDestApName(), this.getDestApInst(), this.getDestAEName(), this.getDestAEInst());
+		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(this.getDestApName(), this.getDestApInst());
+		if (this.getDestAEName() != null){
+			ApplicationEntityNamingInfo aeInfo = new ApplicationEntityNamingInfo();
+			aeInfo.setApplicationEntityName(this.getDestAEName());
+			aeInfo.setApplicationEntityInstance(this.getDestAEInst());
+			apNamingInfo.getApplicationEntities().add(aeInfo);
+		}
+		
+		return apNamingInfo;
 	}
 }

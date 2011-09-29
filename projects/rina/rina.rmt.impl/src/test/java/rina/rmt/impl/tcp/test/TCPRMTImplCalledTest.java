@@ -40,7 +40,7 @@ public class TCPRMTImplCalledTest {
 	
 	@Test
 	public void testConnectionFromRemoteProcess() throws Exception{
-		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo("localhost", "40000", null, null);
+		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo("localhost", "40000");
 		int portId = rmt.allocateFlow(apNamingInfo, null);
 		rmt.sendCDAPMessage(portId, "Request message".getBytes());
 		Thread.sleep(2000);

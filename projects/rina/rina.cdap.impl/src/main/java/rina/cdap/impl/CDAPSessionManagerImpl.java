@@ -182,4 +182,30 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 			
 		cdapSession.messageSent(cdapMessage);
 	}
+	
+	/**
+	 * Return the portId of the (N-1) Flow that supports the CDAP Session
+	 * with the IPC process identified by destinationApplicationProcessName and destinationApplicationProcessInstance
+	 * @param destinationApplicationProcessName
+	 * @param destinationApplicationProcessInstance
+	 * @throws CDAPException
+	 */
+	public synchronized int getPortId(String destinationApplicationProcessName, String destinationApplicationProcessInstance) throws CDAPException{
+		Iterator<Integer> iterator = this.cdapSessions.keySet().iterator();
+		CDAPSession currentSession = null;
+		while(iterator.hasNext()){
+			currentSession = this.cdapSessions.get(iterator.next());
+			if (currentSession.getSessionDescriptor().getDestApName().equals(destinationApplicationProcessName)){
+				if (destinationApplicationProcessInstance != null){
+					if (destinationApplicationProcessInstance.equals(currentSession.getSessionDescriptor().getDestApInst())){
+						return currentSession.getPortId();
+					}
+				}else{
+					return currentSession.getPortId();
+				}
+			}
+		}
+		
+		throw new CDAPException("Don't have a running CDAP sesion to "+ destinationApplicationProcessName + " " + destinationApplicationProcessInstance);
+	}
 }

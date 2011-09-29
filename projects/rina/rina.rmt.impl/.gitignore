@@ -3,4 +3,4 @@
 # target directory
 target/
 .classpath
-.project
+.settings/

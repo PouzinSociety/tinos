@@ -1,7 +1,6 @@
 package rina.ipcservice.impl.ribobjects;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -10,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.ipcservice.impl.IPCProcessImpl;
 import rina.ribdaemon.api.BaseRIBObject;
+import rina.ribdaemon.api.ObjectInstanceGenerator;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
@@ -24,9 +24,9 @@ public class WhatevercastNameSetRIBObject extends BaseRIBObject{
 	private static final Log log = LogFactory.getLog(WhatevercastNameSetRIBObject.class);
 	
 	public WhatevercastNameSetRIBObject(IPCProcessImpl ipcProcess){
-		super(ipcProcess, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES, 
-				null, Calendar.getInstance().getTimeInMillis());
+				"whatname set", ObjectInstanceGenerator.getObjectInstance());
 	}
 
 	@Override
@@ -58,15 +58,12 @@ public class WhatevercastNameSetRIBObject extends BaseRIBObject{
 	}
 
 	@Override
-	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
-		List<WhatevercastName> whatevercastNames = new ArrayList<WhatevercastName>();
-		
-		for(int i=0; i<this.getChildren().size(); i++){
-			RIBObject ribObject = this.getChildren().get(i);
-			WhatevercastName whatevercastName = (WhatevercastName) ribObject.read(ribObject.getObjectClass(), ribObject.getObjectName(), ribObject.getObjectInstance());
-			whatevercastNames.add(whatevercastName);
-		}
-		
-		return whatevercastNames;
+	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
+		return this;
+	}
+	
+	@Override
+	public Object getObjectValue(){
+		return null;
 	}
 }

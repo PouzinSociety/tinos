@@ -3,5 +3,4 @@
 # target directory
 target/
 .classpath
-.project
 .springBeans

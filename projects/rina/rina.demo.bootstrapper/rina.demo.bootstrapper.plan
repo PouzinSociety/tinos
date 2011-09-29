@@ -14,6 +14,8 @@
 	<artifact type="bundle" name="rina.rmt.impl" version="[1, 2)"/>
 	<artifact type="bundle" name="rina.ribdaemon.impl" version="[1, 2)"/>
 	<artifact type="bundle" name="rina.enrollment.impl" version="[1, 2)"/>
+	<artifact type="bundle" name="rina.efcp.impl" version="[1,2)"/>
+	<artifact type="bundle" name="rina.flowallocator.impl" version="[1,2)"/>
 	<artifact type="bundle" name="rina.ipcservice.impl" version="[1, 2)"/>
-	<artifact type="bundle" name="rina.demo.bootstrapper" version="[1, 2)"/>
+	<artifact type="bundle" name="rina.ipcmanager.impl" version="[1, 2)"/>
 </plan>

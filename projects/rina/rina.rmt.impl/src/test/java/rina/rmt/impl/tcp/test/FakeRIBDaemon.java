@@ -1,5 +1,7 @@
 package rina.rmt.impl.tcp.test;
 
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -142,7 +144,7 @@ public class FakeRIBDaemon implements RIBDaemon {
 		
 	}
 
-	public Object read(String arg0, String arg1, long arg2)
+	public RIBObject read(String arg0, String arg1, long arg2)
 			throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		return null;
@@ -175,6 +177,11 @@ public class FakeRIBDaemon implements RIBDaemon {
 			throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public List<RIBObject> getRIBObjects() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

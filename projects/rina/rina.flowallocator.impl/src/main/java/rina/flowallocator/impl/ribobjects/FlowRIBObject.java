@@ -8,7 +8,12 @@ import rina.ribdaemon.api.BaseRIBObject;
 public class FlowRIBObject extends BaseRIBObject{
 	
 	public FlowRIBObject(IPCProcess ipcProcess, String objectName){
-		super(ipcProcess, objectName, null, Calendar.getInstance().getTimeInMillis());
+		super(ipcProcess, objectName, "flow", Calendar.getInstance().getTimeInMillis());
+	}
+	
+	@Override
+	public Object getObjectValue(){
+		return null;
 	}
 
 }

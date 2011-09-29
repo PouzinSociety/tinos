@@ -1,5 +1,7 @@
 package rina.ribdaemon.api;
 
+import java.util.List;
+
 import rina.cdap.api.CDAPMessageHandler;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
@@ -75,11 +77,13 @@ public interface RIBDaemon extends IPCProcessComponent{
 	
 	public void delete(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
 	
-	public Object read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException;
+	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException;
 	
 	public void write(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
 	
 	public void start(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
 	
 	public void stop(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;	
+	
+	public List<RIBObject> getRIBObjects();
 }

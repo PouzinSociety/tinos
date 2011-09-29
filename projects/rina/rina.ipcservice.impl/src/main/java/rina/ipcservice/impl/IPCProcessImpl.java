@@ -10,9 +10,9 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applicationprocess.api.ApplicationProcessNameSynonym;
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.DataTransferAEInstance;
+import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.FlowAllocator;
 import rina.ipcprocess.api.BaseIPCProcess;
 import rina.ipcservice.api.APService;
@@ -20,11 +20,10 @@ import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
-import rina.ipcservice.impl.jobs.DeliverAllocateResponseJob;
 import rina.ipcservice.impl.jobs.DeliverDeallocateJob;
 import rina.ipcservice.impl.jobs.DeliverSDUJob;
+import rina.ipcservice.impl.jobs.SubmitAllocateRequestJob;
 import rina.ipcservice.impl.ribobjects.ApplicationProcessNameRIBObject;
-import rina.ipcservice.impl.ribobjects.CurrentSynonymRIBObject;
 import rina.ipcservice.impl.ribobjects.WhatevercastNameSetRIBObject;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
@@ -46,12 +45,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	/**
 	 * The maximum number of worker threads in the IPC Process thread pool
 	 */
-	private static int MAXWORKERTHREADS = 5;
-
-	/**
-	 * Stores the applications that have a port Id in allocation pending state
-	 */
-	private Map<Integer, APService> allocationPendingApplicationProcesses = null;
+	private static int MAXWORKERTHREADS = 10;
 
 	/**
 	 * Stores the applications that have a port Id in transfer state
@@ -70,7 +64,6 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 
 	public IPCProcessImpl(String applicationProcessName, String applicationProcessInstance, RIBDaemon ribDaemon){
 		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
-		this.allocationPendingApplicationProcesses = new HashMap<Integer, APService>();
 		this.transferApplicationProcesses = new HashMap<Integer, APService>();
 		this.ribDaemon = ribDaemon;
 		populateRIB(applicationProcessName, applicationProcessInstance);
@@ -81,11 +74,9 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 */
 	private void populateRIB(String applicationProcessName, String applicationProcessInstance){
 		try{
-			ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance, null, null);
+			ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance);
 			RIBObject ribObject = new ApplicationProcessNameRIBObject(this);
 			ribObject.write(null, null, 0, apNamingInfo);
-			ribDaemon.addRIBObject(ribObject);
-			ribObject = new CurrentSynonymRIBObject(this);
 			ribDaemon.addRIBObject(ribObject);
 			ribObject = new WhatevercastNameSetRIBObject(this);
 			ribDaemon.addRIBObject(ribObject);
@@ -117,34 +108,10 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * @param applicationProcess
 	 */
 	public synchronized void submitAllocateRequest(AllocateRequest allocateRequest, APService applicationProcess){
-		int portId = choosePortId();
-		allocationPendingApplicationProcesses.put(new Integer(portId), applicationProcess);
-		try{
-			FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
-			flowAllocator.submitAllocateRequest(allocateRequest, portId);
-		}catch(IPCException ex){
-			//Something in the validation request was not valid or there are not enough 
-			//resources to honour the request. Notify the application process
-			allocationPendingApplicationProcesses.remove(new Integer(portId));
-			executorService.execute(new DeliverAllocateResponseJob(
-					applicationProcess, allocateRequest.getRequestedAPinfo(), -1, ex.getErrorCode(), ex.getMessage()));
-		}
-	}
-
-	/**
-	 * Select a portId that is available
-	 * @return
-	 */
-	private int choosePortId(){
-		for(int i=1; i<Integer.MAX_VALUE; i++){
-			Integer candidate = new Integer(i);
-			if (!allocationPendingApplicationProcesses.keySet().contains(candidate) && 
-					!transferApplicationProcesses.keySet().contains(candidate)){
-				return i;
-			}
-		}
-
-		return 0;
+		log.debug("Allocate request received, forwarding it to the Flow Allocator");
+		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(BaseFlowAllocator.getComponentName());
+		SubmitAllocateRequestJob job = new SubmitAllocateRequestJob(allocateRequest, flowAllocator, applicationProcess);
+		executorService.execute(job);
 	}
 
 	/**
@@ -154,16 +121,6 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 */
 	public synchronized void submitAllocateResponse(int portId, boolean success) throws IPCException{
 		Integer key = new Integer(portId);
-
-		if (!allocationPendingApplicationProcesses.keySet().contains(key)){
-			throw new IPCException(IPCException.PORTID_NOT_IN_ALLOCATION_PENDING_STATE);
-		}
-
-		APService apService = allocationPendingApplicationProcesses.remove(key);
-		if (success){
-			transferApplicationProcesses.put(key, apService);
-		}
-
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
 		flowAllocator.submitAllocateResponse(portId, success);
 	}
@@ -234,9 +191,11 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	public synchronized void register(ApplicationProcessNamingInfo apNamingInfo) {
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
 		try{
-			ApplicationProcessNameSynonym currentSynonym = (ApplicationProcessNameSynonym) ribDaemon.read(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0);
-			flowAllocator.getDirectoryForwardingTable().addEntry(apNamingInfo, currentSynonym.getSynonym());
+			Long currentSynonym = (Long) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
+					RIBObjectNames.CURRENT_SYNONYM, 0).getObjectValue();
+			//TODO fix this
+			//flowAllocator.getDirectoryForwardingTable().addEntry(apNamingInfo, currentSynonym.);
 			//TODO tell the RIB Daemon to disseminate this
 		}catch(RIBDaemonException ex){
 			log.error(ex);
