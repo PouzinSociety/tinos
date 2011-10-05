@@ -1,7 +1,5 @@
 package rina.flowallocator.api;
 
-import rina.utils.types.Unsigned;
-
 /**
  * Encapsulates the data that identifies a connection
  * @author eduardgrasa
@@ -12,41 +10,41 @@ public class ConnectionId {
 	 * A DIF-assigned identifier only known within the DIF that stands for a 
 	 * particular QoS hypercube.
 	 */
-	private Unsigned qosId = null;
+	private long qosId = 0;
 	
 	/**
 	 * An identifier unique within the DT-AEI of the source IPC Process that identifies 
 	 * the source endpoint of this connection
 	 */
-	private Unsigned sourceCEPId = null;
+	private long sourceCEPId = 0;
 	
 	/**
 	 * An identifier unique within the DT-AEI of the destination IPC Process that identifies 
 	 * the destination endpoint of this connection
 	 */
-	private Unsigned destinationCEPId = null;
+	private long destinationCEPId = 0;
 
-	public Unsigned getQosId() {
+	public long getQosId() {
 		return qosId;
 	}
 
-	public void setQosId(Unsigned qosId) {
+	public void setQosId(long qosId) {
 		this.qosId = qosId;
 	}
 
-	public Unsigned getSourceCEPId() {
+	public long getSourceCEPId() {
 		return sourceCEPId;
 	}
 
-	public void setSourceCEPId(Unsigned sourceCEPId) {
+	public void setSourceCEPId(long sourceCEPId) {
 		this.sourceCEPId = sourceCEPId;
 	}
 
-	public Unsigned getDestinationCEPId() {
+	public long getDestinationCEPId() {
 		return destinationCEPId;
 	}
 
-	public void setDestinationCEPId(Unsigned destinationCEPId) {
+	public void setDestinationCEPId(long destinationCEPId) {
 		this.destinationCEPId = destinationCEPId;
 	}
 	
@@ -62,8 +60,8 @@ public class ConnectionId {
 		
 		ConnectionId connectionId = (ConnectionId) candidate;
 		
-		return (connectionId.getDestinationCEPId().equals(this.getDestinationCEPId()) &&
-				connectionId.getSourceCEPId().equals(this.getSourceCEPId()) && 
-				connectionId.getQosId().equals(this.getQosId()));
+		return (connectionId.getDestinationCEPId() == this.getDestinationCEPId() &&
+				connectionId.getSourceCEPId() == this.getSourceCEPId() && 
+				connectionId.getQosId() == this.getQosId());
 	}
 }

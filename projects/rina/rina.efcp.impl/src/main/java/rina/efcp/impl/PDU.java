@@ -24,13 +24,13 @@ public class PDU {
 	 * A synonym for the application process name designating an IPC process 
 	 * with scope limited to the DIF and a binding to the source application process
 	 */
-	private byte[] sourceAddress = null;
+	private long sourceAddress = 0;
 	
 	/**
 	 * A synonym for the application process name designating an IPC process 
 	 * with scope limited to the DIF and a binding to the destination application process
 	 */
-	private byte[] destinationAddress = null;
+	private long destinationAddress = 0;
 	
 	/**
 	 * A three part identifier unambiguous within the scope of two communicating 
@@ -102,7 +102,8 @@ public class PDU {
 		unsigned = new Unsigned(value);
 		pdu.setVersion(unsigned);
 		
-		value = new byte[dataTransferConstants.getAddressLength()];
+		//TODO fix this
+		/*value = new byte[dataTransferConstants.getAddressLength()];
 		index = readFieldFromPCI(value, index, buffer);
 		pdu.setSourceAddress(value);
 		
@@ -113,7 +114,7 @@ public class PDU {
 		value = new byte[dataTransferConstants.getQosIdLength()];
 		index = readFieldFromPCI(value, index, buffer);
 		unsigned = new Unsigned(value);
-		connectionId.setQosId(unsigned);
+		connectionId.setQosId(value);
 		
 		value = new byte[dataTransferConstants.getPortIdLength()];
 		index = readFieldFromPCI(value, index, buffer);
@@ -124,7 +125,7 @@ public class PDU {
 		index = readFieldFromPCI(value, index, buffer);
 		unsigned = new Unsigned(value);
 		connectionId.setDestinationCEPId(unsigned);
-		pdu.setConnectionId(connectionId);
+		pdu.setConnectionId(connectionId);*/
 		
 		value = new byte[1];
 		index = readFieldFromPCI(value, index, buffer);
@@ -191,19 +192,19 @@ public class PDU {
 		this.version = version;
 	}
 
-	public byte[] getSourceAddress() {
+	public long getSourceAddress() {
 		return sourceAddress;
 	}
 
-	public void setSourceAddress(byte[] sourceAddress) {
+	public void setSourceAddress(long sourceAddress) {
 		this.sourceAddress = sourceAddress;
 	}
 
-	public byte[] getDestinationAddress() {
+	public long getDestinationAddress() {
 		return destinationAddress;
 	}
 
-	public void setDestinationAddress(byte[] destinationAddress) {
+	public void setDestinationAddress(long destinationAddress) {
 		this.destinationAddress = destinationAddress;
 	}
 
@@ -279,12 +280,13 @@ public class PDU {
 		length.setValue(this.getPduLength());
 		int index = 0;
 		
+		//TODO fix this
 		index = addBytesToPCI(pci, index, version.getBytes());
-		index = addBytesToPCI(pci, index, sourceAddress);
+		/*index = addBytesToPCI(pci, index, sourceAddress);
 		index = addBytesToPCI(pci, index, destinationAddress);
-		index = addBytesToPCI(pci, index, connectionId.getQosId().getBytes());
-		index = addBytesToPCI(pci, index, connectionId.getSourceCEPId().getBytes());
-		index = addBytesToPCI(pci, index, connectionId.getDestinationCEPId().getBytes());
+		index = addBytesToPCI(pci, index, connectionId.getQosId());
+		index = addBytesToPCI(pci, index, connectionId.getSourceCEPId());
+		index = addBytesToPCI(pci, index, connectionId.getDestinationCEPId();*/
 		index = addBytesToPCI(pci, index, pduType.getBytes());
 		index = addBytesToPCI(pci, index, flags.getBytes());
 		index = addBytesToPCI(pci, index, length.getBytes());

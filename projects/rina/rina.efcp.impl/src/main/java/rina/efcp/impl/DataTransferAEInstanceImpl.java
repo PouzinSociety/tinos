@@ -196,7 +196,7 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 		}
 		
 		ipcProcess.deliverSDUsToApplicationProcess(sdus, 
-				new Long(stateVector.getConnection().getSourcePortId().getValue()).intValue());
+				new Long(stateVector.getConnection().getSourcePortId()).intValue());
 		
 		//We have delivered some SDUs. That satisfies the gap timer - for now.
 		if (stateVector.getConnection().getSduGapTimer() != null){

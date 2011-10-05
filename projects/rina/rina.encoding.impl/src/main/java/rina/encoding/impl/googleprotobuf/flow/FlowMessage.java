@@ -756,19 +756,19 @@ public final class FlowMessage {
     public boolean hasDestinationPortId() { return hasDestinationPortId; }
     public long getDestinationPortId() { return destinationPortId_; }
     
-    // optional bytes sourceAddress = 5;
+    // optional uint64 sourceAddress = 5;
     public static final int SOURCEADDRESS_FIELD_NUMBER = 5;
     private boolean hasSourceAddress;
-    private com.google.protobuf.ByteString sourceAddress_ = com.google.protobuf.ByteString.EMPTY;
+    private long sourceAddress_ = 0L;
     public boolean hasSourceAddress() { return hasSourceAddress; }
-    public com.google.protobuf.ByteString getSourceAddress() { return sourceAddress_; }
+    public long getSourceAddress() { return sourceAddress_; }
     
-    // optional bytes destinationAddress = 6;
+    // optional uint64 destinationAddress = 6;
     public static final int DESTINATIONADDRESS_FIELD_NUMBER = 6;
     private boolean hasDestinationAddress;
-    private com.google.protobuf.ByteString destinationAddress_ = com.google.protobuf.ByteString.EMPTY;
+    private long destinationAddress_ = 0L;
     public boolean hasDestinationAddress() { return hasDestinationAddress; }
-    public com.google.protobuf.ByteString getDestinationAddress() { return destinationAddress_; }
+    public long getDestinationAddress() { return destinationAddress_; }
     
     // repeated .rina.messages.connectionId_t connectionIds = 7;
     public static final int CONNECTIONIDS_FIELD_NUMBER = 7;
@@ -879,10 +879,10 @@ public final class FlowMessage {
         output.writeUInt64(4, getDestinationPortId());
       }
       if (hasSourceAddress()) {
-        output.writeBytes(5, getSourceAddress());
+        output.writeUInt64(5, getSourceAddress());
       }
       if (hasDestinationAddress()) {
-        output.writeBytes(6, getDestinationAddress());
+        output.writeUInt64(6, getDestinationAddress());
       }
       for (rina.encoding.impl.googleprotobuf.flow.FlowMessage.connectionId_t element : getConnectionIdsList()) {
         output.writeMessage(7, element);
@@ -938,11 +938,11 @@ public final class FlowMessage {
       }
       if (hasSourceAddress()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(5, getSourceAddress());
+          .computeUInt64Size(5, getSourceAddress());
       }
       if (hasDestinationAddress()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(6, getDestinationAddress());
+          .computeUInt64Size(6, getDestinationAddress());
       }
       for (rina.encoding.impl.googleprotobuf.flow.FlowMessage.connectionId_t element : getConnectionIdsList()) {
         size += com.google.protobuf.CodedOutputStream
@@ -1260,12 +1260,12 @@ public final class FlowMessage {
               setDestinationPortId(input.readUInt64());
               break;
             }
-            case 42: {
-              setSourceAddress(input.readBytes());
+            case 40: {
+              setSourceAddress(input.readUInt64());
               break;
             }
-            case 50: {
-              setDestinationAddress(input.readBytes());
+            case 48: {
+              setDestinationAddress(input.readUInt64());
               break;
             }
             case 58: {
@@ -1423,45 +1423,39 @@ public final class FlowMessage {
         return this;
       }
       
-      // optional bytes sourceAddress = 5;
+      // optional uint64 sourceAddress = 5;
       public boolean hasSourceAddress() {
         return result.hasSourceAddress();
       }
-      public com.google.protobuf.ByteString getSourceAddress() {
+      public long getSourceAddress() {
         return result.getSourceAddress();
       }
-      public Builder setSourceAddress(com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  result.hasSourceAddress = true;
+      public Builder setSourceAddress(long value) {
+        result.hasSourceAddress = true;
         result.sourceAddress_ = value;
         return this;
       }
       public Builder clearSourceAddress() {
         result.hasSourceAddress = false;
-        result.sourceAddress_ = getDefaultInstance().getSourceAddress();
+        result.sourceAddress_ = 0L;
         return this;
       }
       
-      // optional bytes destinationAddress = 6;
+      // optional uint64 destinationAddress = 6;
       public boolean hasDestinationAddress() {
         return result.hasDestinationAddress();
       }
-      public com.google.protobuf.ByteString getDestinationAddress() {
+      public long getDestinationAddress() {
         return result.getDestinationAddress();
       }
-      public Builder setDestinationAddress(com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  result.hasDestinationAddress = true;
+      public Builder setDestinationAddress(long value) {
+        result.hasDestinationAddress = true;
         result.destinationAddress_ = value;
         return this;
       }
       public Builder clearDestinationAddress() {
         result.hasDestinationAddress = false;
-        result.destinationAddress_ = getDefaultInstance().getDestinationAddress();
+        result.destinationAddress_ = 0L;
         return this;
       }
       
@@ -1768,8 +1762,8 @@ public final class FlowMessage {
       "Info_t\022L\n\025destinationNamingInfo\030\002 \002(\0132-." +
       "rina.messages.applicationProcessNamingIn",
       "fo_t\022\024\n\014sourcePortId\030\003 \001(\004\022\031\n\021destinatio" +
-      "nPortId\030\004 \001(\004\022\025\n\rsourceAddress\030\005 \001(\014\022\032\n\022" +
-      "destinationAddress\030\006 \001(\014\0224\n\rconnectionId" +
+      "nPortId\030\004 \001(\004\022\025\n\rsourceAddress\030\005 \001(\004\022\032\n\022" +
+      "destinationAddress\030\006 \001(\004\0224\n\rconnectionId" +
       "s\030\007 \003(\0132\035.rina.messages.connectionId_t\022\033" +
       "\n\023currentConnectionId\030\010 \001(\r\022\r\n\005state\030\t \001" +
       "(\014\0224\n\rqosParameters\030\n \003(\0132\035.rina.message" +

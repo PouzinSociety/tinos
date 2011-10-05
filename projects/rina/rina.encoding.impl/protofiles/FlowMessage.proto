@@ -18,8 +18,8 @@ message Flow{  //Contains the information to setup a new flow
 	required rina.messages.applicationProcessNamingInfo_t destinationNamingInfo = 2; 		//The naming information of the destination application process
 	optional uint64 sourcePortId = 3; 										//The port id allocated to this flow by the source IPC process
 	optional uint64 destinationPortId = 4; 									//The port id allocated to this flow by the destination IPC process
-	optional bytes sourceAddress = 5; 										//The address of the source IPC process for this flow
-	optional bytes destinationAddress = 6; 									//The address of the destination IPC process for this flow
+	optional uint64 sourceAddress = 5; 										//The address of the source IPC process for this flow
+	optional uint64 destinationAddress = 6; 									//The address of the destination IPC process for this flow
 	repeated connectionId_t connectionIds = 7; 								//The identifiers of all the connections associated to this flow
 	optional uint32 currentConnectionId = 8;								//Identifies the index of the current active connection in the flow
 	optional bytes state = 9; 												//

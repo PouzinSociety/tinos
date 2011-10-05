@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import rina.efcp.api.BaseDataTransferAE;
-import rina.efcp.api.DataTransferAE;
 import rina.encoding.api.BaseEncoder;
 import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.message.Flow;
@@ -19,7 +17,6 @@ import rina.encoding.impl.googleprotobuf.apnaminginfo.ApplicationProcessNamingIn
 import rina.encoding.impl.googleprotobuf.apnaminginfo.ApplicationProcessNamingInfoMessage.applicationProcessNamingInfo_t;
 import rina.encoding.impl.googleprotobuf.flow.FlowMessage.connectionId_t;
 import rina.encoding.impl.googleprotobuf.flow.FlowMessage.qosParameter_t;
-import rina.utils.types.Unsigned;
 
 /**
  * Serializes, unserializes Flow objects using the GPB encoding
@@ -35,35 +32,28 @@ public class FlowEncoder extends BaseEncoder{
 		
 		FlowMessage.Flow gpbFlow = FlowMessage.Flow.parseFrom(serializedObject);
 		
-		DataTransferAE dataTransferAE = (DataTransferAE) getIPCProcess().getIPCProcessComponent(BaseDataTransferAE.getComponentName());
 		byte[] accessControl = GPBUtils.getByteArray(gpbFlow.getAccessControl());
-		byte[] destinationAddress = GPBUtils.getByteArray(gpbFlow.getDestinationAddress());
 		ApplicationProcessNamingInfo destinationAPName = getApplicationProcessNamingInfo(gpbFlow.getDestinationNamingInfo());
-		Unsigned destinationPortId = new Unsigned(dataTransferAE.getDataTransferConstants().getPortIdLength(), 
-											gpbFlow.getDestinationPortId());
 		List<ConnectionId> flowIds = getConnectionIds(gpbFlow.getConnectionIdsList());
 		QoSParameters qosParameters = getQoSParameters(gpbFlow.getQosParametersList());
-		byte[] sourceAddress = GPBUtils.getByteArray(gpbFlow.getSourceAddress());
 		ApplicationProcessNamingInfo sourceAPName = getApplicationProcessNamingInfo(gpbFlow.getSourceNamingInfo());
-		Unsigned sourcePortId = new Unsigned(dataTransferAE.getDataTransferConstants().getPortIdLength(), 
-				gpbFlow.getSourcePortId());
 		byte[] status = GPBUtils.getByteArray(gpbFlow.getState());
 		
 		Flow flow = new Flow();
 		flow.setAccessControl(accessControl);
 		flow.setCreateFlowRetries(gpbFlow.getCreateFlowRetries());
 		flow.setCurrentFlowId(gpbFlow.getCurrentConnectionId());
-		flow.setDestinationAddress(destinationAddress);
+		flow.setDestinationAddress(gpbFlow.getDestinationAddress());
 		flow.setDestinationNamingInfo(destinationAPName);
-		flow.setDestinationPortId(destinationPortId);
+		flow.setDestinationPortId(gpbFlow.getDestinationPortId());
 		flow.setFlowIds(flowIds);
 		flow.setHopCount(gpbFlow.getHopCount());
 		flow.setMaxCreateFlowRetries(gpbFlow.getMaxCreateFlowRetries());
 		flow.setPolicies(gpbFlow.getPoliciesList());
 		flow.setQosParameters(qosParameters);
-		flow.setSourceAddress(sourceAddress);
+		flow.setSourceAddress(gpbFlow.getSourceAddress());
 		flow.setSourceNamingInfo(sourceAPName);
-		flow.setSourcePortId(sourcePortId);
+		flow.setSourcePortId(gpbFlow.getSourcePortId());
 		if (status != null){
 			flow.setStatus(status[0]);
 		}
@@ -91,14 +81,10 @@ public class FlowEncoder extends BaseEncoder{
 	
 	private ConnectionId getConnectionId(connectionId_t connectionId){
 		ConnectionId result = new ConnectionId();
-		DataTransferAE dataTransferAE = (DataTransferAE) getIPCProcess().getIPCProcessComponent(BaseDataTransferAE.getComponentName());
 		
-		result.setDestinationCEPId(new Unsigned(dataTransferAE.getDataTransferConstants().getCepIdLength(), 
-				connectionId.getDestinationCEPId()));
-		result.setQosId(new Unsigned(dataTransferAE.getDataTransferConstants().getQosIdLength(), 
-				connectionId.getQosId()));
-		result.setSourceCEPId(new Unsigned(dataTransferAE.getDataTransferConstants().getCepIdLength(), 
-				connectionId.getSourceCEPId()));
+		result.setDestinationCEPId(connectionId.getDestinationCEPId());
+		result.setQosId(connectionId.getQosId());
+		result.setSourceCEPId(connectionId.getSourceCEPId());
 		return result;
 	}
 	
@@ -131,16 +117,16 @@ public class FlowEncoder extends BaseEncoder{
 										setCreateFlowRetries(flow.getCreateFlowRetries()).
 										setCurrentConnectionId(flow.getCurrentFlowId()).
 										addAllConnectionIds(connectionIds).
-										setDestinationAddress(GPBUtils.getByteString(flow.getDestinationAddress())).
+										setDestinationAddress(flow.getDestinationAddress()).
 										setDestinationNamingInfo(getApplicationProcessNamingInfoT(flow.getDestinationNamingInfo())).
-										setDestinationPortId(flow.getDestinationPortId().getValue()).
+										setDestinationPortId(flow.getDestinationPortId()).
 										setHopCount(flow.getHopCount()).
 										addAllPolicies(flowPolicies).
 										addAllQosParameters(qosParametersList).
 										setMaxCreateFlowRetries(flow.getMaxCreateFlowRetries()).
-										setSourceAddress(GPBUtils.getByteString(flow.getSourceAddress())).
+										setSourceAddress(flow.getSourceAddress()).
 										setSourceNamingInfo(getApplicationProcessNamingInfoT(flow.getSourceNamingInfo())).
-										setSourcePortId(flow.getSourcePortId().getValue()).
+										setSourcePortId(flow.getSourcePortId()).
 										setState(GPBUtils.getByteString(new byte[]{flow.getStatus()})).
 										build();
 		
@@ -173,9 +159,9 @@ public class FlowEncoder extends BaseEncoder{
 	
 	private connectionId_t getConnectionIdType(ConnectionId connectionId){
 		connectionId_t result = FlowMessage.connectionId_t.newBuilder().
-									setDestinationCEPId(connectionId.getDestinationCEPId().getValue()).
-									setQosId(connectionId.getQosId().getValue()).
-									setSourceCEPId(connectionId.getSourceCEPId().getValue()).
+									setDestinationCEPId(connectionId.getDestinationCEPId()).
+									setQosId(connectionId.getQosId()).
+									setSourceCEPId(connectionId.getSourceCEPId()).
 									build();
 		
 		return result;

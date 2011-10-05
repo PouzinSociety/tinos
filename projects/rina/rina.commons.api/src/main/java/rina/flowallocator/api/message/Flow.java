@@ -6,7 +6,6 @@ import java.util.Map;
 import rina.flowallocator.api.ConnectionId;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QoSParameters;
-import rina.utils.types.Unsigned;
 
 /**
  * Encapsulates all the information required to manage a Flow
@@ -29,23 +28,23 @@ public class Flow {
 	 * The port-id returned to the Application process that requested the flow. This port-id is used for 
 	 * the life of the flow.
 	 */
-	private Unsigned sourcePortId = null;
+	private long sourcePortId = 0;
 	
 	/**
 	 * The port-id returned to the destination Application process. This port-id is used for 
 	 * the life of the flow.
 	 */
-	private Unsigned destinationPortId = null;
+	private long destinationPortId = 0;
 	
 	/**
 	 * The address of the IPC process that is the source of this flow
 	 */
-	private byte[] sourceAddress = null;
+	private long sourceAddress = 0;
 	
 	/**
 	 * The address of the IPC process that is the destination of this flow
 	 */
-	private byte[] destinationAddress = null;
+	private long destinationAddress = 0;
 	
 	/**
 	 * All the possible flowIds of this flow
@@ -117,35 +116,35 @@ public class Flow {
 		this.destinationNamingInfo = destinationNamingInfo;
 	}
 
-	public Unsigned getSourcePortId() {
+	public long getSourcePortId() {
 		return sourcePortId;
 	}
 
-	public void setSourcePortId(Unsigned sourcePortId) {
+	public void setSourcePortId(long sourcePortId) {
 		this.sourcePortId = sourcePortId;
 	}
 
-	public Unsigned getDestinationPortId() {
+	public long getDestinationPortId() {
 		return destinationPortId;
 	}
 
-	public void setDestinationPortId(Unsigned destinationPortId) {
+	public void setDestinationPortId(long destinationPortId) {
 		this.destinationPortId = destinationPortId;
 	}
 
-	public byte[] getSourceAddress() {
+	public long getSourceAddress() {
 		return sourceAddress;
 	}
 
-	public void setSourceAddress(byte[] sourceAddress) {
+	public void setSourceAddress(long sourceAddress) {
 		this.sourceAddress = sourceAddress;
 	}
 
-	public byte[] getDestinationAddress() {
+	public long getDestinationAddress() {
 		return destinationAddress;
 	}
 
-	public void setDestinationAddress(byte[] destinationAddress) {
+	public void setDestinationAddress(long destinationAddress) {
 		this.destinationAddress = destinationAddress;
 	}
 

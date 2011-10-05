@@ -112,7 +112,7 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		
 		while(iterator.hasNext()){
 			connection = iterator.next();
-			if (connection.getSourcePortId().getValue() == portId){
+			if (connection.getSourcePortId() == portId){
 				return dataTransferAEInstances.get(connection);
 			}
 		}

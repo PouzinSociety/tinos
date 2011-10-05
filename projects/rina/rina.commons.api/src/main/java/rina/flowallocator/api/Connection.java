@@ -7,7 +7,6 @@ import java.util.Timer;
 import rina.flowallocator.api.message.Flow;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QoSParameters;
-import rina.utils.types.Unsigned;
 
 /**
  * Captures the state of a single connection
@@ -22,13 +21,13 @@ public class Connection {
 	/**
 	 * The address of the IPC process that is the source of this connection
 	 */
-	private byte[] sourceAddress = null;
+	private long sourceAddress = 0;
 	
 	/**
 	 * The port-id returned to the Application process that requested the flow. This port-id is used for 
 	 * the life of the connection.
 	 */
-	private Unsigned sourcePortId = null;
+	private long sourcePortId = 0;
 	
 	/**
 	 * The destination application of the flow
@@ -38,13 +37,13 @@ public class Connection {
 	/**
 	 * The address of the IPC process that is the destination of this connection
 	 */
-	private byte[] destinationAddress = null;
+	private long destinationAddress = 0;
 	
 	/**
 	 * The port-id returned to the destination Application process. This port-id is used for 
 	 * the life of the connection.
 	 */
-	private Unsigned destinationPortId = null;
+	private long destinationPortId = 0;
 	
 	/**
 	 * Identification of the QoS cube associated with this connection
@@ -141,19 +140,19 @@ public class Connection {
 		this.sourceNamingInfo = sourceNamingInfo;
 	}
 
-	public byte[] getSourceAddress() {
+	public long getSourceAddress() {
 		return sourceAddress;
 	}
 
-	public void setSourceAddress(byte[] sourceAddress) {
+	public void setSourceAddress(long sourceAddress) {
 		this.sourceAddress = sourceAddress;
 	}
 
-	public Unsigned getSourcePortId() {
+	public long getSourcePortId() {
 		return sourcePortId;
 	}
 
-	public void setSourcePortId(Unsigned sourcePortId) {
+	public void setSourcePortId(long sourcePortId) {
 		this.sourcePortId = sourcePortId;
 	}
 
@@ -165,19 +164,19 @@ public class Connection {
 		this.destinationNamingInfo = destinationNamingInfo;
 	}
 
-	public byte[] getDestinationAddress() {
+	public long getDestinationAddress() {
 		return destinationAddress;
 	}
 
-	public void setDestinationAddress(byte[] destinationAddress) {
+	public void setDestinationAddress(long destinationAddress) {
 		this.destinationAddress = destinationAddress;
 	}
 
-	public Unsigned getDestinationPortId() {
+	public long getDestinationPortId() {
 		return destinationPortId;
 	}
 
-	public void setDestinationPortId(Unsigned destinationPortId) {
+	public void setDestinationPortId(long destinationPortId) {
 		this.destinationPortId = destinationPortId;
 	}
 
@@ -289,11 +288,11 @@ public class Connection {
 		
 		Connection connection = (Connection) candidate;
 		
-		if (!(connection.getSourceAddress().equals(this.getSourceAddress()))){
+		if (!(connection.getSourceAddress() == this.getSourceAddress())){
 			return false;
 		}
 		
-		if (!(connection.getDestinationAddress().equals(this.getDestinationAddress()))){
+		if (!(connection.getDestinationAddress() == this.getDestinationAddress())){
 			return false;
 		}
 		
