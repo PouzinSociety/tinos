@@ -1,5 +1,7 @@
 package rina.flowallocator.api.message;
 
+import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
@@ -98,6 +100,12 @@ public class Flow {
 	 * natural termination condition, it seems wise to have the means to enforce termination.
 	 */  
 	private int hopCount = 0;
+	
+	public Flow(){
+		flowIds = new ArrayList<ConnectionId>();
+		policies = new ArrayList<String>();
+		policyParameters = new Hashtable<String, String>();
+	}
 
 	public ApplicationProcessNamingInfo getSourceNamingInfo() {
 		return sourceNamingInfo;

@@ -114,45 +114,35 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		createDataTransferAEInstance(flow);
 		
 		//Check directory to see to what IPC process the CDAP M_CREATE request has to be delivered
-		long address = directoryForwardingTable.getAddress(allocateRequest.getRequestedAPinfo());
-		if (address == 0){
+		long destinationAddress = directoryForwardingTable.getAddress(allocateRequest.getRequestedAPinfo());
+		flow.setDestinationAddress(destinationAddress);
+		if (destinationAddress == 0){
 			//error, the table should have at least returned a default IPC process address to continue looking for the application process
 			String message = "The directory forwarding table returned no entries when looking up " + allocateRequest.getRequestedAPinfo().toString();
 			throw new IPCException(5, message);
 		}
 		
-		//Map the address to destination application process name
+		//Check if the destination address is this IPC process (then invoke degenerated form of IPC)
 		RIBDaemon ribDaemon = (RIBDaemon) this.ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-		CDAPSessionManager cdapSessionManager = (CDAPSessionManager) this.ipcProcess.getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
-		List<RIBObject> members = null;
-		DAFMember dafMember = null;
-		int rmtPortId = 0;
+		long sourceAddress = 0;
 		
 		try{
-			members = ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS ,0).getChildren();
-			
-			for(int i=0; i<members.size(); i++){
-				dafMember = (DAFMember) members.get(i).getObjectValue();
-				if (dafMember.getSynonym() == address){
-					rmtPortId = cdapSessionManager.getPortId(dafMember.getApplicationProcessName(), dafMember.getApplicationProcessInstance());
-					break;
-				}
-			}
-			
-			if (rmtPortId == 0){
-				String message = "Could not find the application process name of the IPC process whose synonym is "+address;
-				log.error(message);
-				throw new IPCException(5, message);
+			sourceAddress = (Long) ribDaemon.read(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT +
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0).getObjectValue();
+			flow.setSourceAddress(sourceAddress);
+			if (destinationAddress == sourceAddress){
+				//TODO The destination application is here, special case
+				return;
 			}
 		}catch(RIBDaemonException ex){
 			log.error(ex);
 			throw new IPCException(5, ex.getMessage());
-		}catch(CDAPException ex){
-			log.error(ex);
-			throw new IPCException(5, ex.getMessage());
 		}
 		
+		//Map the address to the port id through which I can reach the destination application process name
+		int rmtPortId = Utils.mapAddressToPortId(destinationAddress, this.ipcProcess);
+		
+		//Encode the flow object and send it to the destination IPC process
 		Encoder encoder = (Encoder) this.ipcProcess.getIPCProcessComponent(BaseEncoder.getComponentName());
 		ObjectValue objectValue = null;
 		CDAPMessage cdapMessage = null;
@@ -165,6 +155,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 					RIBObjectNames.FLOW_ALLOCATOR + RIBObjectNames.SEPARATOR + RIBObjectNames.FLOWS + RIBObjectNames.SEPARATOR + portId, objectValue, 0);
 			ribDaemon.sendMessage(cdapMessage, rmtPortId, this);
 		}catch(Exception ex){
+			ex.printStackTrace();
 			log.error(ex);
 			throw new IPCException(5, ex.getMessage());
 		}
@@ -195,8 +186,14 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 * to be instantiated.)
 	 * @param flow
 	 */
-	public void createFlowRequestMessageReceived(Flow flow) {
-		// TODO implement this
+	public void createFlowRequestMessageReceived(Flow flow, int portId) {
+		this.flow = flow;
+		this.portId = portId;
+		
+		//1 Check if the source application process has access to the destination application process
+		//2 If not send negative M_CREATE_R back to the sender IPC process, and housekeeping
+		//3 If it has, determine if the proposed policies for the flow are acceptable (invoke NewFlowREquestPolicy)
+		//4 If they are acceptable, the FAI will invoke the Allocate_Request.deliver operation of the destination application process
 	}
 
 	/**

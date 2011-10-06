@@ -23,7 +23,7 @@ public interface FlowAllocatorInstance{
 	 * is received by the Flow Allocator
 	 * @param flow
 	 */
-	public void createFlowRequestMessageReceived(Flow flow);
+	public void createFlowRequestMessageReceived(Flow flow, int portId);
 	
 	/**
 	 * When the FAI gets a Allocate_Response from the destination application, it formulates a Create_Response 

@@ -134,12 +134,15 @@ public class FlowEncoder extends BaseEncoder{
 	}
 	
 	private applicationProcessNamingInfo_t getApplicationProcessNamingInfoT(ApplicationProcessNamingInfo apNamingInfo){
-		String apName = GPBUtils.getGPBString(apNamingInfo.getApplicationProcessName());
-		String apInstance = GPBUtils.getGPBString(apNamingInfo.getApplicationProcessInstance());
-		applicationProcessNamingInfo_t result = ApplicationProcessNamingInfoMessage.applicationProcessNamingInfo_t.newBuilder().
-													setApplicationProcessName(apName).
-													setApplicationProcessInstance(apInstance).
-													build();
+		applicationProcessNamingInfo_t result = null;
+		if (apNamingInfo != null){
+			String apName = GPBUtils.getGPBString(apNamingInfo.getApplicationProcessName());
+			String apInstance = GPBUtils.getGPBString(apNamingInfo.getApplicationProcessInstance());
+			result = ApplicationProcessNamingInfoMessage.applicationProcessNamingInfo_t.newBuilder().
+			setApplicationProcessName(apName).
+			setApplicationProcessInstance(apInstance).
+			build();
+		}
 		return result;
 	}
 	

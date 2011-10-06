@@ -165,26 +165,29 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			if (address == myAddress){
 				//TODO there is an entry and the address is this IPC Process, create a FAI, extract the Flow object from the CDAP message and
 				//call the FAI
+				log.debug("The destination application process is reachable through me");
+				FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), null, directoryForwardingTable);
+				flowAllocatorInstance.createFlowRequestMessageReceived(flow, flowIDCounter);
+				flowAllocatorInstances.put(new Integer(new Integer(this.flowIDCounter)), flowAllocatorInstance);
+				this.flowIDCounter = flowIDCounter + 1;
 			}else{
 				//The address is not this IPC process, forward the CDAP message to that address increment the hop count of the Flow object
 				//extract the flow object from the CDAP message
 				flow.setHopCount(flow.getHopCount() - 1);
-				if (flow.getHopCount()  == 0){
+				if (flow.getHopCount()  <= 0){
 					//TODO send negative create Flow response CDAP message to the source IPC process, specifying that the application process
 					//could not be found before the hop count expired
 				}
 				
-				ObjectValue objectValue = new ObjectValue();
-				
 				try{
+					int destinationPortId = Utils.mapAddressToPortId(address, this.getIPCProcess());
+					ObjectValue objectValue = new ObjectValue();
 					objectValue.setByteval(encoder.encode(flow));
 				}catch(Exception ex){
 					//Error that has to be fixed, we cannot continue, log it and return
 					log.error("Fatal error when serializing a Flow object. " +ex.getMessage());
 					return;
 				}
-				//TODO
-				//TODO ipcProcess.getRmt().sendCDAPMessage(address, serializedCDAPMesasge);
 			}
 		}
 	}
@@ -232,7 +235,8 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			flowAllocatorInstances.put(new Integer(new Integer(this.flowIDCounter)), flowAllocatorInstance);
 			this.flowIDCounter = flowIDCounter + 1;
 		}catch(IPCException ex){
-			log.error("Problems processing allocate request: "+ex.getMessage());
+			ex.printStackTrace();
+			log.error("Problems processing allocate request: "+ex);
 			applicationProcess.deliverAllocateResponse(allocateRequest.getRequestedAPinfo(), 0, -1, ex.getMessage());
 		}
 	}
