@@ -31,7 +31,7 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * @param portId the portId associated to the allocate response
 	 * @param success successful or unsucessful allocate request
 	 */
-	public void submitAllocateResponse(int portId, boolean success);
+	public void submitAllocateResponse(int portId, boolean success, String reason);
 	
 	/**
 	 * Forward the deallocate request to the Flow Allocator Instance.

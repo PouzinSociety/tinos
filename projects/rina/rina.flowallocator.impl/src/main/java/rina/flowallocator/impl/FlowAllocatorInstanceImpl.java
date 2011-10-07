@@ -90,6 +90,11 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 */
 	private Flow flow = null;
 	
+	/**
+	 * The invokeID of the incoming CDAPMessage
+	 */
+	private int invokeID = 0;
+	
 	public FlowAllocatorInstanceImpl(IPCProcess ipcProcess, APService applicationProcess, DirectoryForwardingTable directoryForwardingTable){
 		this.ipcProcess = ipcProcess;
 		this.applicationProcess = applicationProcess;
@@ -127,7 +132,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		long sourceAddress = 0;
 		
 		try{
-			sourceAddress = (Long) ribDaemon.read(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT +
+			sourceAddress = (Long) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT +
 					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0).getObjectValue();
 			flow.setSourceAddress(sourceAddress);
 			if (destinationAddress == sourceAddress){
@@ -135,6 +140,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 				return;
 			}
 		}catch(RIBDaemonException ex){
+			ex.printStackTrace();
 			log.error(ex);
 			throw new IPCException(5, ex.getMessage());
 		}
@@ -186,14 +192,18 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 * to be instantiated.)
 	 * @param flow
 	 */
-	public void createFlowRequestMessageReceived(Flow flow, int portId) {
+	public void createFlowRequestMessageReceived(Flow flow, int portId, int invokeID) {
 		this.flow = flow;
 		this.portId = portId;
+		this.invokeID = invokeID;
+		flow.setDestinationPortId(portId);
 		
-		//1 Check if the source application process has access to the destination application process
-		//2 If not send negative M_CREATE_R back to the sender IPC process, and housekeeping
-		//3 If it has, determine if the proposed policies for the flow are acceptable (invoke NewFlowREquestPolicy)
-		//4 If they are acceptable, the FAI will invoke the Allocate_Request.deliver operation of the destination application process
+		//1 TODO Check if the source application process has access to the destination application process
+		//2 TODO If not send negative M_CREATE_R back to the sender IPC process, and housekeeping
+		//3 TODO If it has, determine if the proposed policies for the flow are acceptable (invoke NewFlowREquestPolicy)
+		//4 TODO If they are acceptable, the FAI will invoke the Allocate_Request.deliver operation of the destination application process
+		//TODO:Fix this. Right now this is a hack. I've short-circuited this and called submitAllocateResponse to avoid calling the destination App
+		this.submitAllocateResponse(portId, true, null);
 	}
 
 	/**
@@ -207,8 +217,34 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 * @param portId
 	 * @param success
 	 */
-	public void submitAllocateResponse(int portId, boolean success){
-		// TODO implement this
+	public void submitAllocateResponse(int portId, boolean success, String reason){
+		Encoder encoder = (Encoder) this.ipcProcess.getIPCProcessComponent(BaseEncoder.getComponentName());
+		CDAPMessage cdapMessage = null;
+		
+		if (success){
+			//1 TODO Create DTP and DTCP instances
+			//2 Create CDAP response message
+			try{
+				ObjectValue objectValue = new ObjectValue();
+				objectValue.setByteval(encoder.encode(flow));
+				cdapMessage = CDAPMessage.getCreateObjectResponseMessage(null, this.invokeID, "flow", 0, "TODO", objectValue, 0, null);
+			}catch(Exception ex){
+				ex.printStackTrace();
+				log.error("Error when allocating flow: "+ex.getMessage());
+			}
+		}else{
+			//Create CDAP response message
+			try{
+				cdapMessage = CDAPMessage.getCreateObjectResponseMessage(null, this.invokeID, "flow", 0, "TODO", null, -1, reason);
+			}catch(Exception ex){
+				ex.printStackTrace();
+				log.error("Error when allocating flow: "+ex.getMessage());
+			}
+		}
+		
+		if (cdapMessage != null){
+			
+		}
 	}
 	
 	/**

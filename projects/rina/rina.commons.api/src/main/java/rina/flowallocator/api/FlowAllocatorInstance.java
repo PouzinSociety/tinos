@@ -22,8 +22,10 @@ public interface FlowAllocatorInstance{
 	 * Called by the Flow Allocator when an M_CREATE CDAP PDU with a Flow object 
 	 * is received by the Flow Allocator
 	 * @param flow
+	 * @param the destination portid as decided by the Flow allocator
+	 * @param the invokeID of the M_CRETE flow message
 	 */
-	public void createFlowRequestMessageReceived(Flow flow, int portId);
+	public void createFlowRequestMessageReceived(Flow flow, int portId, int invokeId);
 	
 	/**
 	 * When the FAI gets a Allocate_Response from the destination application, it formulates a Create_Response 
@@ -35,8 +37,9 @@ public interface FlowAllocatorInstance{
 	 * If the response was negative, the FAI does any necessary housekeeping and terminates.
 	 * @param portId
 	 * @param success
+	 * @param reason
 	 */
-	public void submitAllocateResponse(int portId, boolean success);
+	public void submitAllocateResponse(int portId, boolean success, String reason);
 	
 	/**
 	 * If the response to the allocate request is negative 

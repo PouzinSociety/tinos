@@ -119,10 +119,10 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * @param portId
 	 * @param success
 	 */
-	public synchronized void submitAllocateResponse(int portId, boolean success) throws IPCException{
+	public synchronized void submitAllocateResponse(int portId, boolean success, String reason) throws IPCException{
 		Integer key = new Integer(portId);
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
-		flowAllocator.submitAllocateResponse(portId, success);
+		flowAllocator.submitAllocateResponse(portId, success, reason);
 	}
 
 	/**

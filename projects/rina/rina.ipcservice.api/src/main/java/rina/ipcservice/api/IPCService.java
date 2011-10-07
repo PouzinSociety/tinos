@@ -45,8 +45,9 @@ public interface IPCService {
 	 * request from IPC. 
 	 * @param port_id
 	 * @param result
+	 * @param reason
 	 */
-	public void submitAllocateResponse(int portId, boolean result) throws IPCException;
+	public void submitAllocateResponse(int portId, boolean result, String reason) throws IPCException;
 	
 	/**
 	 * Used by an application process to specify that it is available through this IPC process

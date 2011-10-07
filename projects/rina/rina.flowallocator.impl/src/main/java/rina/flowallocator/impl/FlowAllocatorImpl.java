@@ -151,7 +151,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		long address = directoryForwardingTable.getAddress(flow.getDestinationNamingInfo());
 		
 		try{
-			myAddress = (Long) ribDaemon.read(null, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+			myAddress = (Long) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0).getObjectValue();
 		}catch(RIBDaemonException ex){
 			log.error(ex);
@@ -167,7 +167,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 				//call the FAI
 				log.debug("The destination application process is reachable through me");
 				FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), null, directoryForwardingTable);
-				flowAllocatorInstance.createFlowRequestMessageReceived(flow, flowIDCounter);
+				flowAllocatorInstance.createFlowRequestMessageReceived(flow, flowIDCounter, cdapMessage.getInvokeID());
 				flowAllocatorInstances.put(new Integer(new Integer(this.flowIDCounter)), flowAllocatorInstance);
 				this.flowIDCounter = flowIDCounter + 1;
 			}else{
@@ -248,14 +248,14 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @param portId
 	 * @param success
 	 */
-	public void submitAllocateResponse(int portId, boolean success) {
+	public void submitAllocateResponse(int portId, boolean success, String reason) {
 		FlowAllocatorInstance flowAllocatorInstance = flowAllocatorInstances.get(portId);
 		if (flowAllocatorInstance == null){
 			log.error("Could not find the Flow Allocator Instance associated to the portId "+portId);
 			return;
 		}
 		
-		flowAllocatorInstance.submitAllocateResponse(portId, success);
+		flowAllocatorInstance.submitAllocateResponse(portId, success, reason);
 		if (!success){
 			flowAllocatorInstances.remove(portId);
 		}
