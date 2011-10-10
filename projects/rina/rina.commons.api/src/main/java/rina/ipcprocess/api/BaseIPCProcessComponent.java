@@ -16,5 +16,9 @@ public abstract class BaseIPCProcessComponent implements IPCProcessComponent{
 	public IPCProcess getIPCProcess(){
 		return this.ipcProcess;
 	}
+	
+	public void stop(){
+		//Default implementation: do nothing
+	}
 
 }

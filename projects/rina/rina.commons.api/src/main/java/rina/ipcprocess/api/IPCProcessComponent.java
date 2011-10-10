@@ -17,5 +17,9 @@ public interface IPCProcessComponent {
 	 * @return
 	 */
 	public String getName();
-
+	
+	/**
+	 * Called to stop this component
+	 */
+	public void stop();
 }

@@ -333,4 +333,9 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	public void stop() {
+		// TODO Auto-generated method stub
+		
+	}
 }

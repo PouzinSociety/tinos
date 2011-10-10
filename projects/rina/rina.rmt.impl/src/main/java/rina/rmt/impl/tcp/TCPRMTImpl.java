@@ -63,6 +63,18 @@ public class TCPRMTImpl extends BaseRMT{
 
 	public TCPRMTImpl(){
 		this(RMTServer.DEFAULT_PORT);
+	}
+
+	
+	public TCPRMTImpl(int port){
+		this.flowTable = new Hashtable<Integer, Socket>();
+		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
+		this.rmtServer = new RMTServer(this, port);
+		executorService.execute(rmtServer);
+		readConfigurationFile();
+	}
+	
+	private void readConfigurationFile(){
 		try{
 			apToHostnameMappings = new Hashtable<String, String>();
 			FileInputStream fstream = new FileInputStream(CONFIG_FILE_NAME);
@@ -70,7 +82,7 @@ public class TCPRMTImpl extends BaseRMT{
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine = null;
 			String[] tokens = null;
-			log.debug("Reading configuration file to lean IPC processes AP naming to host mappings");
+			log.debug("Reading configuration file to learn IPC processes AP naming to host mappings");
 			while ((strLine = br.readLine()) != null)   {
 				if (strLine.startsWith("#")){
 					continue;
@@ -88,18 +100,26 @@ public class TCPRMTImpl extends BaseRMT{
 			log.error("Error initializing application process name to host mappings: " + e.getMessage());
 		}
 	}
-
 	
-	public TCPRMTImpl(int port){
-		this.flowTable = new Hashtable<Integer, Socket>();
-		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
-		this.rmtServer = new RMTServer(this, port);
-		executorService.execute(rmtServer);
+	/**
+	 * Returns the IP address of the IPC process identified by the tuple ipcProcessName, ipcProcessInstance
+	 * @param ipcProcessName
+	 * @param ipcProcessInstance
+	 * @return
+	 */
+	public String getIPAddressFromApplicationNamingInformation(String ipcProcessName, String ipcProcessInstance){
+		String result = apToHostnameMappings.get(ipcProcessName + ipcProcessInstance);
+		if (result != null){
+			return result.split("#")[0];
+		}else{
+			return null;
+		}
 	}
 	
 	/**
 	 * Close all the sockets and stop
 	 */
+	@Override
 	public void stop(){
 		Iterator<Integer> iterator = flowTable.keySet().iterator();
 		Socket socket = null;

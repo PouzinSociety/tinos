@@ -129,4 +129,15 @@ public class FakeRMT implements RMT{
 		// TODO Auto-generated method stub
 		
 	}
+
+	public void stop() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public String getIPAddressFromApplicationNamingInformation(String arg0,
+			String arg1) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

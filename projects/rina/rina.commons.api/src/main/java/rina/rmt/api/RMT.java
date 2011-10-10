@@ -47,4 +47,12 @@ public interface RMT extends IPCProcessComponent{
 	 * @throws Exception if the flow is not allocated or there are problems deallocating the flow
 	 */
 	public void deallocateFlow(int portId) throws Exception;
+	
+	/**
+	 * Returns the IP address of the IPC process identified by the tuple ipcProcessName, ipcProcessInstance
+	 * @param ipcProcessName
+	 * @param ipcProcessInstance
+	 * @return
+	 */
+	public String getIPAddressFromApplicationNamingInformation(String ipcProcessName, String ipcProcessInstance);
 }

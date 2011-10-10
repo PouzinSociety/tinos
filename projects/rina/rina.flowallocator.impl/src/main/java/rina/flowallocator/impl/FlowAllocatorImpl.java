@@ -1,7 +1,10 @@
 package rina.flowallocator.impl;
 
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,6 +21,7 @@ import rina.flowallocator.api.message.Flow;
 import rina.flowallocator.impl.ribobjects.DirectoryForwardingTableRIBObject;
 import rina.flowallocator.impl.ribobjects.FlowSetRIBObject;
 import rina.flowallocator.impl.ribobjects.QoSCubesSetRIBObject;
+import rina.flowallocator.impl.tcp.TCPServer;
 import rina.flowallocator.impl.validation.AllocateRequestValidator;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.APService;
@@ -28,6 +32,7 @@ import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
+import rina.utils.types.Unsigned;
 
 /** 
  * Implements the Flow Allocator
@@ -66,9 +71,29 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 */
 	private int flowIDCounter = 0;
 	
+	/**
+	 * Will wait for incoming data connections
+	 */
+	private TCPServer tcpServer = null;
+	
+	/**
+	 * The thread pool implementation
+	 */
+	private ExecutorService executorService = null;
+	
+	/**
+	 * The maximum number of worker threads in the Flow Allocator Thread pool
+	 * (1 for listening to incoming connections + MAX-1 for reading 
+	 * data from sockets)
+	 */
+	private static int MAXWORKERTHREADS = 10;
+	
 	public FlowAllocatorImpl(){
 		allocateRequestValidator = new AllocateRequestValidator();
 		flowAllocatorInstances = new HashMap<Integer, FlowAllocatorInstance>();
+		tcpServer = new TCPServer(this);
+		executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
+		executorService.execute(tcpServer);
 	}
 	
 	@Override
@@ -77,6 +102,14 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		this.ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		this.encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
 		populateRIB(ipcProcess);
+	}
+	
+	/**
+	 * Closes all the sockets and stops
+	 */
+	@Override
+	public void stop(){
+		this.tcpServer.setEnd(true);
 	}
 	
 	private void populateRIB(IPCProcess ipcProcess){
@@ -96,6 +129,30 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	
 	public DirectoryForwardingTable getDirectoryForwardingTable() {
 		return this.directoryForwardingTable;
+	}
+	
+	/**
+	 * The Flow Allocator TCP server notifies that a new TCP 
+	 * data flow has been accepted. This operation has to read the remote 
+	 * port id and either create a Flow Allocator instance or pass the 
+	 * information to an existing one.
+	 * @param socket
+	 */
+	public void newConnectionAccepted(Socket socket){
+		byte[] buffer = new byte[2];
+		int portId = -1;
+		try{
+			int dataRead = socket.getInputStream().read(buffer);
+			if (dataRead <1){
+				throw new Exception();
+			}
+			Unsigned unsigned = new Unsigned(2);
+			unsigned.setValue(buffer);
+			portId = new Long(unsigned.getValue()).intValue();
+			log.debug("The source portId is: "+portId);
+		}catch(Exception ex){
+			log.error("Accepted incoming TCP connection, but could not read remote portId");
+		}
 	}
 	
 	/**
@@ -166,7 +223,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 				//TODO there is an entry and the address is this IPC Process, create a FAI, extract the Flow object from the CDAP message and
 				//call the FAI
 				log.debug("The destination application process is reachable through me");
-				FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), null, directoryForwardingTable);
+				FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), null, directoryForwardingTable, null);
 				flowAllocatorInstance.createFlowRequestMessageReceived(flow, flowIDCounter, cdapMessage.getInvokeID());
 				flowAllocatorInstances.put(new Integer(new Integer(this.flowIDCounter)), flowAllocatorInstance);
 				this.flowIDCounter = flowIDCounter + 1;
@@ -230,7 +287,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		log.debug("Received allocate request: "+allocateRequest.toString());
 		try {
 			allocateRequestValidator.validateAllocateRequest(allocateRequest);
-			FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), applicationProcess, directoryForwardingTable);
+			FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), applicationProcess, directoryForwardingTable, null);
 			flowAllocatorInstance.submitAllocateRequest(allocateRequest, this.flowIDCounter);
 			flowAllocatorInstances.put(new Integer(new Integer(this.flowIDCounter)), flowAllocatorInstance);
 			this.flowIDCounter = flowIDCounter + 1;

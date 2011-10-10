@@ -1,5 +1,7 @@
 package rina.flowallocator.api;
 
+import java.net.Socket;
+
 import rina.ipcprocess.api.IPCProcessComponent;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.AllocateRequest;
@@ -44,4 +46,13 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * @return
 	 */
 	public DirectoryForwardingTable getDirectoryForwardingTable();
+	
+	/**
+	 * The Flow Allocator TCP server notifies that a new TCP 
+	 * data flow has been accepted. This operation has to read the remote 
+	 * port id and either create a Flow Allocator instance or pass the 
+	 * information to an existing one.
+	 * @param socket
+	 */
+	public void newConnectionAccepted(Socket socket);
 }

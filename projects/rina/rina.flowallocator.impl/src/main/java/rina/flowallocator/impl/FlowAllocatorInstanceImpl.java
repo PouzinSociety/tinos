@@ -1,5 +1,6 @@
 package rina.flowallocator.impl;
 
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +25,7 @@ import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.flowallocator.api.message.Flow;
 import rina.flowallocator.impl.policies.NewFlowRequestPolicy;
 import rina.flowallocator.impl.policies.NewFlowRequestPolicyImpl;
+import rina.flowallocator.impl.tcp.TCPServer;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.AllocateRequest;
@@ -33,6 +35,9 @@ import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
+import rina.rmt.api.BaseRMT;
+import rina.rmt.api.RMT;
+import rina.utils.types.Unsigned;
 
 /**
  * A flow allocator instance implementation. Its task is to manage the 
@@ -95,13 +100,28 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 */
 	private int invokeID = 0;
 	
-	public FlowAllocatorInstanceImpl(IPCProcess ipcProcess, APService applicationProcess, DirectoryForwardingTable directoryForwardingTable){
+	/**
+	 * The data socket associated to this flow. For the current prototype a 
+	 * flow is directly associated to a TCP socket.
+	 */
+	private Socket socket = null;
+	
+	public FlowAllocatorInstanceImpl(IPCProcess ipcProcess, APService applicationProcess, DirectoryForwardingTable directoryForwardingTable, Socket socket){
 		this.ipcProcess = ipcProcess;
 		this.applicationProcess = applicationProcess;
 		this.directoryForwardingTable = directoryForwardingTable;
+		this.socket = socket;
 		connections = new ArrayList<Connection>();
 		//TODO initialize the newFlowRequestPolicy
 		newFlowRequestPolicy = new NewFlowRequestPolicyImpl();
+	}
+	
+	public Socket getSocket(){
+		return this.socket;
+	}
+	
+	public void setSocket(Socket socket){
+		this.socket = socket;
 	}
 
 	/**
@@ -165,6 +185,32 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			log.error(ex);
 			throw new IPCException(5, ex.getMessage());
 		}
+	}
+	
+	/**
+	 * Establishes a TCP flow to a remote flow allocator and sends the portid as data over the flow
+	 * @param applicationProcessName
+	 * @param applicationProcessInstance
+	 * @return
+	 */
+	private Socket connectToRemoteFlowAllocator(String applicationProcessName, String applicationProcessInstance){
+		RMT rmt = (RMT) ipcProcess.getIPCProcessComponent(BaseRMT.getComponentName());
+		String ipAddress = rmt.getIPAddressFromApplicationNamingInformation(applicationProcessName, applicationProcessInstance);
+		Socket socket = null;
+		
+		try{
+			socket = new Socket(ipAddress, TCPServer.DEFAULT_PORT);
+			Unsigned unsigned = new Unsigned(2);
+			unsigned.setValue(new Integer(socket.getLocalPort()).longValue());
+			socket.getOutputStream().write(unsigned.getBytes());
+			log.debug("Started a socket to "+ipAddress+":"+TCPServer.DEFAULT_PORT+". The local socket number is "+socket.getLocalPort());
+			return socket;
+		}catch(Exception ex){
+			ex.printStackTrace();
+			log.error("Problems connecting to remote Flow Allocator at: "+ipAddress+":"+TCPServer.DEFAULT_PORT);
+		}
+		
+		return null;
 	}
 	
 	/**

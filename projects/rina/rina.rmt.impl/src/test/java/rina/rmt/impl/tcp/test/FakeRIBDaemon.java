@@ -184,4 +184,9 @@ public class FakeRIBDaemon implements RIBDaemon {
 		return null;
 	}
 
+	public void stop() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
