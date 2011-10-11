@@ -1,5 +1,8 @@
 package rina.flowallocator.api;
 
+import java.net.Socket;
+
+import rina.cdap.api.message.CDAPMessage;
 import rina.flowallocator.api.message.Flow;
 import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.IPCException;
@@ -10,22 +13,43 @@ import rina.ipcservice.api.IPCException;
  *
  */
 public interface FlowAllocatorInstance{
+	
+	/**
+	 * Returns the portId associated to this Flow Allocator Instance
+	 * @return
+	 */
+	public int getPortId();
+	
+	/**
+	 * Return the Flow object associated to this Flow Allocator Instance
+	 * @return
+	 */
+	public Flow getFlow();
+	
+	
+	/**
+	 * Set the socket associated to this Flow Allocator Instance, will make the 
+	 * Flow Allocation process continue
+	 * @param Socket
+	 */
+	public void setSocket(Socket socket);
 
 	/**
 	 * Called by the FA to forward an Allocate request to a FAI
 	 * @param request
 	 * @param portId the local port Id associated to this flow
 	 */
-	public void submitAllocateRequest(AllocateRequest request, int portId) throws IPCException;
+	public void submitAllocateRequest(AllocateRequest request) throws IPCException;
 	
 	/**
 	 * Called by the Flow Allocator when an M_CREATE CDAP PDU with a Flow object 
 	 * is received by the Flow Allocator
 	 * @param flow
-	 * @param the destination portid as decided by the Flow allocator
-	 * @param the invokeID of the M_CRETE flow message
+	 * @param portId the destination portid as decided by the Flow allocator
+	 * @param requestMessate the CDAP request message
+	 * @param underlyingPortId the port id to reply later on
 	 */
-	public void createFlowRequestMessageReceived(Flow flow, int portId, int invokeId);
+	public void createFlowRequestMessageReceived(Flow flow, int portId, CDAPMessage requestMessage, int underlyingPortId);
 	
 	/**
 	 * When the FAI gets a Allocate_Response from the destination application, it formulates a Create_Response 

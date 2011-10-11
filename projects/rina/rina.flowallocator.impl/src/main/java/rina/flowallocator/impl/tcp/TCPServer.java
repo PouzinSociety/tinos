@@ -66,7 +66,8 @@ public class TCPServer implements Runnable{
 			log.info("Flow Allocator waiting for incoming TCP connections on port "+port);
 			while (!end){
 				Socket socket = serverSocket.accept();
-				log.info("Got a new request from "+socket.getInetAddress().getHostAddress());
+				log.info("Got a new request from "+socket.getInetAddress().getHostAddress() + 
+						". Local port: "+socket.getLocalPort()+"; Remote port: "+socket.getPort());
 				flowAllocator.newConnectionAccepted(socket);
 			}
 		}catch(IOException e){

@@ -2,6 +2,7 @@ package rina.flowallocator.api;
 
 import java.net.Socket;
 
+import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcessComponent;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.AllocateRequest;
@@ -46,6 +47,15 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * @return
 	 */
 	public DirectoryForwardingTable getDirectoryForwardingTable();
+	
+	/**
+	 * When an Flow Allocator receives a Create_Request PDU for a Flow object, it consults its local Directory to see if it has an entry.
+	 * If there is an entry and the address is this IPC Process, it creates an FAI and passes the Create_request to it.If there is an 
+	 * entry and the address is not this IPC Process, it forwards the Create_Request to the IPC Process designated by the address.
+	 * @param cdapMessage
+	 * @param underlyingPortId
+	 */
+	public void createFlowRequestMessageReceived(CDAPMessage cdapMessage, int underlyingPortId);
 	
 	/**
 	 * The Flow Allocator TCP server notifies that a new TCP 

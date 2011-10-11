@@ -7,13 +7,12 @@ import rina.ipcservice.api.IPCException;
 
 public class NewFlowRequestPolicyImpl implements NewFlowRequestPolicy{
 
-	public Flow generateFlowObject(AllocateRequest allocateRequest, int portId) throws IPCException {
+	public Flow generateFlowObject(AllocateRequest allocateRequest) throws IPCException {
 		Flow flow = new Flow();
 		flow.setDestinationNamingInfo(allocateRequest.getRequestedAPinfo());
 		flow.setSourceNamingInfo(new ApplicationProcessNamingInfo("test", "1")); //change this for the real source application naming information
 		flow.setHopCount(3);
 		flow.setMaxCreateFlowRetries(1);
-		//flow.setSourcePortId();
 		
 		return flow;
 	}

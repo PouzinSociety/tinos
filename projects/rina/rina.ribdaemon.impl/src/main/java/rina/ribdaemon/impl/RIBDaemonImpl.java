@@ -335,8 +335,17 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 			throw new RIBDaemonException(RIBDaemonException.PROBLEMS_SENDING_CDAP_MESSAGE, ex);
 		}
 		
-		if (cdapMessage.getInvokeID() != 0 && !cdapMessage.getOpCode().equals(Opcode.M_CONNECT) && 
-				!cdapMessage.getOpCode().equals(Opcode.M_RELEASE)){
+		if (cdapMessage.getInvokeID() != 0 && !cdapMessage.getOpCode().equals(Opcode.M_CONNECT) 
+				&& !cdapMessage.getOpCode().equals(Opcode.M_RELEASE)
+				&& !cdapMessage.getOpCode().equals(Opcode.M_CANCELREAD_R)
+				&& !cdapMessage.getOpCode().equals(Opcode.M_CONNECT_R)
+				&& !cdapMessage.getOpCode().equals(Opcode.M_CREATE_R) 
+				&& !cdapMessage.getOpCode().equals(Opcode.M_READ_R)
+				&& !cdapMessage.getOpCode().equals(Opcode.M_DELETE_R)
+				&& !cdapMessage.getOpCode().equals(Opcode.M_RELEASE_R)
+				&& !cdapMessage.getOpCode().equals(Opcode.M_START_R)
+				&& !cdapMessage.getOpCode().equals(Opcode.M_STOP_R)
+				&& !cdapMessage.getOpCode().equals(Opcode.M_WRITE_R)){
 			messageHandlersWaitingForReply.put(portId+"-"+cdapMessage.getInvokeID(), cdapMessageHandler);
 		}
 	}
