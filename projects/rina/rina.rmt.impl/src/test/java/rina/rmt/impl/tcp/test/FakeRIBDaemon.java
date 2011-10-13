@@ -189,4 +189,9 @@ public class FakeRIBDaemon implements RIBDaemon {
 		
 	}
 
+	public IPCProcess getIPCProcess() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

@@ -101,6 +101,11 @@ public class Flow {
 	 */  
 	private int hopCount = 0;
 	
+	 /**
+	  * The port number that has to match the one sent over the TCP connection
+	  */
+	private int tcpRendezvousId = 0;
+	
 	public Flow(){
 		flowIds = new ArrayList<ConnectionId>();
 		policies = new ArrayList<String>();
@@ -236,10 +241,25 @@ public class Flow {
 		this.hopCount = hopCount;
 	}
 	
+	public int getTcpRendezvousId() {
+		return tcpRendezvousId;
+	}
+
+	public void setTcpRendezvousId(int tcpRendezvousId) {
+		this.tcpRendezvousId = tcpRendezvousId;
+	}
+
 	public String toString(){
 		String result = "";
-		result = result + "Source AP Naming Info: "+this.sourceNamingInfo + "\n";
-		result = result + "Destination AP Naming Info: "+ this.getDestinationNamingInfo() + "\n";
+		result = result + "Max create flow retries: " + this.getMaxCreateFlowRetries() + "\n";
+		result = result + "Hop count: " + this.getHopCount() + "\n";
+		result = result + "Source AP Naming Info: "+this.sourceNamingInfo;
+		result = result + "Source address: " + this.getSourceAddress() + "\n";
+		result = result + "Source port id: " + this.getSourcePortId() + "\n";
+		result = result + "Destination AP Naming Info: "+ this.getDestinationNamingInfo();
+		result = result + "Destination addres: " + this.getDestinationAddress() + "\n";
+		result = result + "Destination port id: "+ this.getDestinationPortId() + "\n";
+		result = result + "TCP Rendez-vous id: " + this.getTcpRendezvousId() + "\n";
 		return result;
 	}
 }

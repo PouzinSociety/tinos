@@ -54,6 +54,7 @@ public class FlowEncoder extends BaseEncoder{
 		flow.setSourceAddress(gpbFlow.getSourceAddress());
 		flow.setSourceNamingInfo(sourceAPName);
 		flow.setSourcePortId(gpbFlow.getSourcePortId());
+		flow.setTcpRendezvousId(gpbFlow.getTcprendezvousid());
 		if (status != null){
 			flow.setStatus(status[0]);
 		}
@@ -128,6 +129,7 @@ public class FlowEncoder extends BaseEncoder{
 										setSourceNamingInfo(getApplicationProcessNamingInfoT(flow.getSourceNamingInfo())).
 										setSourcePortId(flow.getSourcePortId()).
 										setState(GPBUtils.getByteString(new byte[]{flow.getStatus()})).
+										setTcprendezvousid(flow.getTcpRendezvousId()).
 										build();
 		
 		return gpbFlow.toByteArray();

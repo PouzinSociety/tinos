@@ -40,7 +40,7 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * Forward the deallocate request to the Flow Allocator Instance.
 	 * @param portId
 	 */
-	public void submitDeallocate(int portId);
+	public void submitDeallocateRequest(int portId, APService applicationProcess);
 	
 	/**
 	 * Returns the directory
@@ -65,4 +65,16 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * @param socket
 	 */
 	public void newConnectionAccepted(Socket socket);
+	
+	/**
+	 * Executes a runnable in a separate Thread. The process is controlled by the flow allocator
+	 * @param runnable
+	 */
+	public void executeRunnable(Runnable runnable);
+	
+	/**
+	 * Called by the flow allocator instance when it finishes to cleanup the state.
+	 * @param portId
+	 */
+	public void removeFlowAllocatorInstance(int portId);
 }

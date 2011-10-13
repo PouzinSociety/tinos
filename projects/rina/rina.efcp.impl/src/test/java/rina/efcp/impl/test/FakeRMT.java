@@ -140,4 +140,9 @@ public class FakeRMT implements RMT{
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	public IPCProcess getIPCProcess() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

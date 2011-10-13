@@ -4,6 +4,7 @@ import java.net.Socket;
 
 import rina.cdap.api.message.CDAPMessage;
 import rina.flowallocator.api.message.Flow;
+import rina.ipcservice.api.APService;
 import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.IPCException;
 
@@ -33,6 +34,12 @@ public interface FlowAllocatorInstance{
 	 * @param Socket
 	 */
 	public void setSocket(Socket socket);
+	
+	/**
+	 * When the TCP Socket Reader detects that the socket is closed, 
+	 * it will notify the Flow Allocator instance
+	 */
+	public void socketClosed();
 
 	/**
 	 * Called by the FA to forward an Allocate request to a FAI
@@ -66,37 +73,18 @@ public interface FlowAllocatorInstance{
 	public void submitAllocateResponse(int portId, boolean success, String reason);
 	
 	/**
-	 * If the response to the allocate request is negative 
-	 * the Allocation invokes the AllocateRetryPolicy. If the AllocateRetryPolicy returns a positive result, a new Create_Flow Request 
-	 * is sent and the CreateFlowTimer is reset.  Otherwise, if the AllocateRetryPolicy returns a negative result or the MaxCreateRetries has been exceeded, 
-	 * an Allocate_Request.deliver primitive to notify the Application that the flow could not be created. (If the reason was 
-	 * ÒApplication Not Found,Ó the primitive will be delivered to the Inter-DIF Directory to search elsewhere.The FAI deletes the DTP and DTCP instances 
-	 * it created and does any other housekeeping necessary, before terminating.  If the response is positive, it completes the binding of the DTP-instance 
-	 * with this connection-endpoint-id to the requesting Application and invokes a Allocate_Request.submit primitive to notify the requesting Application 
-	 * that its allocation request has been satisfied.
-	 * @param flow
-	 * @param success
-	 * @param reason
-	 */
-	public void createFlowResponseMessageReceived(Flow flow, boolean success, String reason);
-	
-	/**
 	 * When a deallocate primitive is invoked, it is passed to the FAI responsible for that port-id.  
-	 * The FAI sends a Delete_Request referencing the destination port-id, deletes the local 
+	 * The FAI sends an M_DELETE request CDAP PDU on the Flow object referencing the destination port-id, deletes the local 
 	 * binding between the Application and the DTP-instance and waits for a response.  (Note that 
 	 * the DTP and DTCP if it exists will be deleted automatically after 2MPL)
 	 * @param portId
+	 * @param applicationProcess
 	 */
-	public void submitDeallocate(int portId);
+	public void submitDeallocateRequest(int portId, APService applicationProcess);
 	
 	/**
 	 * When this PDU is received by the FAI with this port-id, the FAI invokes a Deallocate.deliver to notify the local Application, 
 	 * deletes the binding between the Application and the local DTP-instance, and sends a Delete_Response indicating the result.
 	 */
-	public void deleteFlowRequestMessageReceived();
-	
-	/**
-	 * When a Delete_Response PDU is received, the FAI completes any housekeeping and terminates.
-	 */
-	public void deleteFlowResponseMessageReceived();
+	public void deleteFlowRequestMessageReceived(CDAPMessage requestMessage, int underlyingPortId);
 }

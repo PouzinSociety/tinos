@@ -27,10 +27,11 @@ public interface APService {
 	/**
 	 * Invoked in any state by an AAEI to notify the local application process that the release 
 	 * of all the resources allocated to this instance are released 
-	 * @param port_id
+	 * @param portId
 	 * @param result
+	 * @param resultReason
 	 */
-	public void deliverDeallocate(int port_id, boolean result);
+	public void deliverDeallocateResponse(int portId, int result, String resultReason);
 	
 	/**
 	 * This primitive is invoked in response to a sumbitStatus to report the current status of 

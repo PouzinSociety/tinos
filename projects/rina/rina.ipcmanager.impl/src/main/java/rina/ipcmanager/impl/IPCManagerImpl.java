@@ -206,5 +206,12 @@ public class IPCManagerImpl {
 		allocateRequest.setRequestedAPinfo(new ApplicationProcessNamingInfo(destinationApplicationProcessName, destinationApplicationProcessInstance));
 		ipcService.submitAllocateRequest(allocateRequest, null);
 	}
+	
+	public void deallocateFlow(String sourceIPCProcessName, String sourceIPCProcessInstance, int portId) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(
+				new ApplicationProcessNamingInfo(sourceIPCProcessName, sourceIPCProcessInstance));
+		IPCService ipcService = (IPCService) ipcProcess;
+		ipcService.submitDeallocateRequest(portId, null);
+	}
 
 }

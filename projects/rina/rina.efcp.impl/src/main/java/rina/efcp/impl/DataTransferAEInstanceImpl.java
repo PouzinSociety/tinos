@@ -7,11 +7,12 @@ import java.util.Timer;
 import rina.efcp.api.DataTransferAEInstance;
 import rina.efcp.api.DataTransferConstants;
 import rina.flowallocator.api.Connection;
+import rina.ipcprocess.api.BaseIPCProcessComponent;
 import rina.ipcprocess.api.IPCProcess;
 import rina.rmt.api.RMT;
 import rina.utils.types.Unsigned;
 
-public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
+public class DataTransferAEInstanceImpl extends BaseIPCProcessComponent implements DataTransferAEInstance {
 	
 	/**
 	 * The Data Transfer state vector
@@ -332,10 +333,5 @@ public class DataTransferAEInstanceImpl implements DataTransferAEInstance{
 	public String getName() {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	public void stop() {
-		// TODO Auto-generated method stub
-		
 	}
 }

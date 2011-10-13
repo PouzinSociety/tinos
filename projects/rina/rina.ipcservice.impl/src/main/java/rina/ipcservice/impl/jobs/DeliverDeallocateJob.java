@@ -18,7 +18,7 @@ public class DeliverDeallocateJob implements Runnable{
 	}
 	
 	public void run(){
-		applicationProcess.deliverDeallocate(portId, true);
+		applicationProcess.deliverDeallocateResponse(portId, 0, null);
 	}
 
 }

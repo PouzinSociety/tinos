@@ -13,7 +13,7 @@ public abstract class BaseIPCProcessComponent implements IPCProcessComponent{
 		this.ipcProcess = ipcProcess;
 	}
 	
-	public IPCProcess getIPCProcess(){
+	public synchronized IPCProcess getIPCProcess(){
 		return this.ipcProcess;
 	}
 	

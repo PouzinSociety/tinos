@@ -31,7 +31,7 @@ public interface IPCService {
 	 * resources allocated to this instance. 
 	 * @param port_id
 	 */
-	public void submitDeallocate(int port_id) throws IPCException;
+	public void submitDeallocateRequest(int portId, APService applicationProcess);
 	
 	/**
 	 * This primitive is invoked at any time by the Application any time it wishes to 

@@ -13,6 +13,12 @@ public interface IPCProcessComponent {
 	public void setIPCProcess(IPCProcess ipcProcess);
 	
 	/**
+	 * Returns the ipc process this component is a part of
+	 * @return
+	 */
+	public IPCProcess getIPCProcess();
+	
+	/**
 	 * Return the name of this IPC Process Component
 	 * @return
 	 */

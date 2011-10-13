@@ -23,6 +23,7 @@ import rina.ipcservice.api.IPCService;
 import rina.ipcservice.impl.jobs.DeliverDeallocateJob;
 import rina.ipcservice.impl.jobs.DeliverSDUJob;
 import rina.ipcservice.impl.jobs.SubmitAllocateRequestJob;
+import rina.ipcservice.impl.jobs.SubmitDeallocateRequestJob;
 import rina.ipcservice.impl.ribobjects.ApplicationProcessNameRIBObject;
 import rina.ipcservice.impl.ribobjects.WhatevercastNameSetRIBObject;
 import rina.ribdaemon.api.RIBDaemon;
@@ -129,17 +130,11 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * Forward the deallocate call to the Flow Allocator
 	 * @param portId 
 	 */
-	public synchronized void submitDeallocate(int portId) throws IPCException{
-		Integer key = new Integer(portId);
-
-		if (!transferApplicationProcesses.keySet().contains(key)){
-			throw new IPCException(IPCException.PORTID_NOT_IN_TRANSFER_STATE);
-		}
-
-		transferApplicationProcesses.remove(key);
-
+	public synchronized void submitDeallocateRequest(int portId, APService applicationProcess){
+		log.debug("Deallocate request received, forwarding it to the Flow Allocator");
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
-		flowAllocator.submitDeallocate(portId);
+		SubmitDeallocateRequestJob job = new SubmitDeallocateRequestJob(portId, flowAllocator, applicationProcess);
+		executorService.execute(job);
 	}
 
 	/**

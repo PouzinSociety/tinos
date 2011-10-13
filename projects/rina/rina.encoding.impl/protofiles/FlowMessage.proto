@@ -28,5 +28,6 @@ message Flow{  //Contains the information to setup a new flow
 	optional bytes accessControl = 12; 										// ?
 	optional uint32 maxCreateFlowRetries = 13; 								//Maximum number of retries to create the flow before giving up
 	optional uint32 createFlowRetries = 14; 								//The current number of retries
-	optional uint32 hopCount = 15; 											//While the search rules that generate the forwarding table should allow for a natural termination condition, it seems wise to have the means to enforce termination
+	optional uint32 hopCount = 15; 									//While the search rules that generate the forwarding table should allow for a natural termination condition, it seems wise to have the means to enforce termination
+	optional uint32 tcprendezvousid = 16;   						//the port number that has to match the one sent over the TCP connection
 }

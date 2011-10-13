@@ -11,7 +11,6 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
 import rina.encoding.api.BaseEncoder;
@@ -120,6 +119,18 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		populateRIB(ipcProcess);
 	}
 	
+	public synchronized void executeRunnable(Runnable runnable){
+		executorService.execute(runnable);
+	}
+	
+	/**
+	 * Called by the flow allocator instance when it finishes to cleanup the state.
+	 * @param portId
+	 */
+	public synchronized void removeFlowAllocatorInstance(int portId){
+		this.flowAllocatorInstances.remove(new Integer(portId));
+	}
+	
 	/**
 	 * Closes all the sockets and stops
 	 */
@@ -196,7 +207,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		
 		while(iterator.hasNext()){
 			flowAllocatorInstance = flowAllocatorInstances.get(iterator.next());
-			if (flowAllocatorInstance.getFlow().getSourcePortId() == portId){
+			if (flowAllocatorInstance.getFlow().getTcpRendezvousId() == portId){
 				flowAllocatorInstance.setSocket(socket);
 			}
 		}
@@ -272,11 +283,11 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 				//call the FAI
 				int portId = generatePortId();
 				log.debug("The destination application process is reachable through me. Assigning the local portId "+portId+" to the flow allocation.");
-				FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), null, directoryForwardingTable);
+				FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(null, this);
 				flowAllocatorInstance.createFlowRequestMessageReceived(flow, portId, cdapMessage, underlyingPortId);
 				flowAllocatorInstances.put(new Integer(new Integer(portId)), flowAllocatorInstance);
 				//Check if the socket was already established
-				Socket socket = pendingSockets.remove(new Integer((int)flow.getSourcePortId()));
+				Socket socket = pendingSockets.remove(new Integer((int)flow.getTcpRendezvousId()));
 				if (socket != null){
 					flowAllocatorInstance.setSocket(socket);
 				}
@@ -342,7 +353,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		log.debug("Received allocate request: "+allocateRequest.toString());
 		try {
 			allocateRequestValidator.validateAllocateRequest(allocateRequest);
-			FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), applicationProcess, directoryForwardingTable);
+			FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(applicationProcess, this);
 			flowAllocatorInstance.submitAllocateRequest(allocateRequest);
 			flowAllocatorInstances.put(new Integer(new Integer(flowAllocatorInstance.getPortId())), flowAllocatorInstance);
 		}catch(IPCException ex){
@@ -376,13 +387,15 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * Forward the deallocate request to the Flow Allocator Instance.
 	 * @param portId
 	 */
-	public void submitDeallocate(int portId) {
-		FlowAllocatorInstance flowAllocatorInstance = flowAllocatorInstances.get(portId);
+	public void submitDeallocateRequest(int portId, APService applicationProcess) {
+		FlowAllocatorInstance flowAllocatorInstance = flowAllocatorInstances.get(new Integer(portId));
 		if (flowAllocatorInstance == null){
-			log.error("Could not find the Flow Allocator Instance associated to the portId "+portId);
+			String message = "Could not find the Flow Allocator Instance associated to the portId "+portId;
+			log.error(message);
+			applicationProcess.deliverDeallocateResponse(portId, -1, message);
 			return;
 		}
 		
-		flowAllocatorInstance.submitDeallocate(portId);
+		flowAllocatorInstance.submitDeallocateRequest(portId, applicationProcess);
 	}
 }

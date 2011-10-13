@@ -21,7 +21,7 @@ public class SubmitAllocateRequestJob implements Runnable {
 	}
 
 	public void run() {
-		log.debug("Executing..." + flowAllocator.toString());
+		log.debug("Executing..." + allocateRequest.toString());
 		flowAllocator.submitAllocateRequest(allocateRequest, applicationProcess);
 	}
 
