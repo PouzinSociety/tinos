@@ -20,6 +20,7 @@ import rina.enrollment.api.BaseEnrollmentTask;
 import rina.enrollment.api.EnrollmentTask;
 import rina.flowallocator.api.QoSCube;
 import rina.ipcmanager.impl.console.IPCManagerConsole;
+import rina.ipcmanager.impl.server.IPCManagerTCPServer;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
 import rina.ipcservice.api.AllocateRequest;
@@ -33,14 +34,16 @@ import rina.ribdaemon.api.RIBObjectNames;
 
 public class IPCManagerImpl {
 	private static final Log log = LogFactory.getLog(IPCManagerImpl.class);
+	private static final int MAXWORKERTHREADS = 10;
 	
 	private IPCManagerConsole console = null;
+	
+	private IPCManagerTCPServer tcpServer = null;
 	
 	/**
 	 * The thread pool implementation
 	 */
 	private ExecutorService executorService = null;
-	private static int MAXWORKERTHREADS = 10;
 	
 	/**
 	 * The IPC Process factory
@@ -49,8 +52,10 @@ public class IPCManagerImpl {
 	
 	public IPCManagerImpl(){
 		console = new IPCManagerConsole(this);
+		tcpServer = new IPCManagerTCPServer(this);
 		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
 		executorService.execute(console);
+		executorService.execute(tcpServer);
 		log.debug("IPC Manager started");
 	}
 	
@@ -189,10 +194,11 @@ public class IPCManagerImpl {
 		ObjectValue objectValue = new ObjectValue();
 		objectValue.setByteval(encodedDafMember);
 		
-		CDAPMessage cdapMessage = CDAPMessage.getCreateObjectRequestMessage(null, null, 3, "", 0, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
+		CDAPMessage cdapMessage = CDAPMessage.getCreateObjectRequestMessage(null, null, "", 0, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS + RIBObjectNames.SEPARATOR + destinationApplicationProcessName + "-" + 
 				destinationApplicationProcessInstance, objectValue, 0);
+		cdapMessage.setInvokeID(3);
 		CDAPSessionDescriptor cdapSessionDescriptor = new CDAPSessionDescriptor();
 		enrollmentTask.initiateEnrollment(cdapMessage, cdapSessionDescriptor);
 	}

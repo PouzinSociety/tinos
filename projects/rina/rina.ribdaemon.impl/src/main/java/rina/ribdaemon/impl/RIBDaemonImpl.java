@@ -170,50 +170,51 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		switch(wrongMessage.getOpCode()){
 		case M_CONNECT:
 			try{
-				returnMessage = CDAPMessage.getOpenConnectionResponseMessage(wrongMessage.getAuthMech(), wrongMessage.getAuthValue(), wrongMessage.getSrcAEInst(), 
-						wrongMessage.getSrcAEName(), wrongMessage.getSrcApInst(), wrongMessage.getSrcApName(), wrongMessage.getInvokeID(), cdapException.getResult(), 
+				returnMessage = cdapSessionManager.getOpenConnectionResponseMessage(portId, wrongMessage.getAuthMech(), wrongMessage.getAuthValue(), wrongMessage.getSrcAEInst(), 
+						wrongMessage.getSrcAEName(), wrongMessage.getSrcApInst(), wrongMessage.getSrcApName(), cdapException.getResult(), 
 						cdapException.getResultReason(), wrongMessage.getDestAEInst(), wrongMessage.getDestAEName(), wrongMessage.getDestApInst(), 
-						wrongMessage.getDestApName());
+						wrongMessage.getDestApName(), wrongMessage.getInvokeID());
 			}catch(CDAPException ex){
 				ex.printStackTrace();
 			}
 			break;
 		case M_CREATE:
 			try{
-				returnMessage = CDAPMessage.getCreateObjectResponseMessage(wrongMessage.getFlags(), 
-						wrongMessage.getInvokeID(), wrongMessage.getObjClass(), wrongMessage.getObjInst(), wrongMessage.getObjName(), wrongMessage.getObjValue(), 
-						cdapException.getResult(), cdapException.getResultReason());
+				returnMessage = cdapSessionManager.getCreateObjectResponseMessage(portId, wrongMessage.getFlags(), 
+						wrongMessage.getObjClass(), wrongMessage.getObjInst(), wrongMessage.getObjName(), wrongMessage.getObjValue(), 
+						cdapException.getResult(), cdapException.getResultReason(), wrongMessage.getInvokeID());
 			}catch(CDAPException ex){
 				ex.printStackTrace();
 			}
 			break;
 		case M_DELETE:
 			try{
-				returnMessage = CDAPMessage.getDeleteObjectResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), wrongMessage.getObjClass(), 
-						wrongMessage.getObjInst(), wrongMessage.getObjName(), cdapException.getResult(), cdapException.getResultReason());
+				returnMessage = cdapSessionManager.getDeleteObjectResponseMessage(portId, wrongMessage.getFlags(), wrongMessage.getObjClass(), 
+						wrongMessage.getObjInst(), wrongMessage.getObjName(), cdapException.getResult(), cdapException.getResultReason(), wrongMessage.getInvokeID());
 			}catch(CDAPException ex){
 				ex.printStackTrace();
 			}
 			break;
 		case M_READ:
 			try{
-				returnMessage = CDAPMessage.getReadObjectResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), wrongMessage.getObjClass(), 
-						wrongMessage.getObjInst(), wrongMessage.getObjName(), wrongMessage.getObjValue(), cdapException.getResult(), cdapException.getResultReason());
+				returnMessage = cdapSessionManager.getReadObjectResponseMessage(portId, wrongMessage.getFlags(), wrongMessage.getObjClass(), 
+						wrongMessage.getObjInst(), wrongMessage.getObjName(), wrongMessage.getObjValue(), cdapException.getResult(), 
+						cdapException.getResultReason(), wrongMessage.getInvokeID());
 			}catch(CDAPException ex){
 				ex.printStackTrace();
 			}
 			break;
 		case M_WRITE:
 			try{
-				returnMessage = CDAPMessage.getWriteObjectResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), cdapException.getResult(), 
-						cdapException.getResultReason());
+				returnMessage = cdapSessionManager.getWriteObjectResponseMessage(portId, wrongMessage.getFlags(), cdapException.getResult(), 
+						cdapException.getResultReason(), wrongMessage.getInvokeID());
 			}catch(CDAPException ex){
 				ex.printStackTrace();
 			}
 			break;
 		case M_CANCELREAD:
 			try{
-				returnMessage = CDAPMessage.getCancelReadResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), cdapException.getResult(), 
+				returnMessage = cdapSessionManager.getCancelReadResponseMessage(portId, wrongMessage.getFlags(), wrongMessage.getInvokeID(), cdapException.getResult(), 
 						cdapException.getResultReason());
 			}catch(CDAPException ex){
 				ex.printStackTrace();
@@ -221,24 +222,24 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 			break;
 		case M_START:
 			try{
-				returnMessage = CDAPMessage.getStartObjectResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), cdapException.getResult(), 
-						cdapException.getResultReason());
+				returnMessage = cdapSessionManager.getStartObjectResponseMessage(portId, wrongMessage.getFlags(), cdapException.getResult(), 
+						cdapException.getResultReason(), wrongMessage.getInvokeID());
 			}catch(CDAPException ex){
 				ex.printStackTrace();
 			}
 			break;
 		case M_STOP:
 			try{
-				returnMessage = CDAPMessage.getStopObjectResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), cdapException.getResult(), 
-						cdapException.getResultReason());
+				returnMessage = cdapSessionManager.getStopObjectResponseMessage(portId, wrongMessage.getFlags(), cdapException.getResult(), 
+						cdapException.getResultReason(), wrongMessage.getInvokeID());
 			}catch(CDAPException ex){
 				ex.printStackTrace();
 			}
 			break;
 		case M_RELEASE:
 			try{
-				returnMessage = CDAPMessage.getReleaseConnectionResponseMessage(wrongMessage.getFlags(), wrongMessage.getInvokeID(), cdapException.getResult(), 
-						cdapException.getResultReason());
+				returnMessage = cdapSessionManager.getReleaseConnectionResponseMessage(portId, wrongMessage.getFlags(), cdapException.getResult(), 
+						cdapException.getResultReason(), wrongMessage.getInvokeID());
 			}catch(CDAPException ex){
 				ex.printStackTrace();
 			}
@@ -268,7 +269,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		//Inform the enrollment task
 		EnrollmentTask enrollmentTask = (EnrollmentTask) this.getIPCProcess().getIPCProcessComponent(BaseEnrollmentTask.getComponentName());
 		try {
-			enrollmentTask.release(CDAPMessage.getReleaseConnectionRequestMessage(null, 0), cdapSessionDescriptor);
+			enrollmentTask.release(cdapSessionManager.getReleaseConnectionRequestMessage(portId, null, false), cdapSessionDescriptor);
 		} catch (Exception ex) {
 			log.error(ex);
 			ex.printStackTrace();

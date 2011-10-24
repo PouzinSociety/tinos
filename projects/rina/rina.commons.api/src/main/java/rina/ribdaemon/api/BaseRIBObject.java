@@ -199,13 +199,13 @@ public abstract class BaseRIBObject implements RIBObject{
 				objectValue = new ObjectValue();
 				objectValue.setByteval(getEncoder().encode(object));
 			}
-			responseMessage = CDAPMessage.getReadObjectResponseMessage(null, cdapMessage.getInvokeID(), cdapMessage.getObjClass(), 
-					cdapMessage.getObjInst(), cdapMessage.getObjName(), objectValue, 0, null);
+			responseMessage = CDAPMessage.getReadObjectResponseMessage(null, cdapMessage.getObjClass(), 
+					cdapMessage.getObjInst(), cdapMessage.getObjName(), objectValue, 0, null, cdapMessage.getInvokeID());
 			getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
 		}catch(RIBDaemonException ex){
 			try{
-				responseMessage = CDAPMessage.getReadObjectResponseMessage(null, cdapMessage.getInvokeID(), cdapMessage.getObjClass(), 
-						cdapMessage.getObjInst(), cdapMessage.getObjName(), null, 1, ex.getMessage());
+				responseMessage = CDAPMessage.getReadObjectResponseMessage(null, cdapMessage.getObjClass(), 
+						cdapMessage.getObjInst(), cdapMessage.getObjName(), null, 1, ex.getMessage(), cdapMessage.getInvokeID());
 				getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
 			}catch(CDAPException cdapEx){
 				log.error(cdapEx);
@@ -242,14 +242,14 @@ public abstract class BaseRIBObject implements RIBObject{
 			Object object = getEncoder().decode(cdapMessage.getObjValue().getByteval(), ObjectNametoClassMapper.getObjectClass(cdapMessage.getObjName()));
 			this.create(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), object);
 			if (cdapMessage.getInvokeID() != 0){
-				responseMessage = CDAPMessage.getCreateObjectResponseMessage(null, cdapMessage.getInvokeID(), 
-						cdapMessage.getObjClass(), 0, cdapMessage.getObjName(), cdapMessage.getObjValue(), 0, null);
+				responseMessage = CDAPMessage.getCreateObjectResponseMessage(null, cdapMessage.getObjClass(), 0, cdapMessage.getObjName(),
+						cdapMessage.getObjValue(), 0, null, cdapMessage.getInvokeID());
 				getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
 			}
 		}catch(Exception ex){
 			try{
-				responseMessage = CDAPMessage.getCreateObjectResponseMessage(null, cdapMessage.getInvokeID(), 
-						cdapMessage.getObjClass(), 0, cdapMessage.getObjName(), cdapMessage.getObjValue(), 1, ex.getMessage());
+				responseMessage = CDAPMessage.getCreateObjectResponseMessage(null, cdapMessage.getObjClass(), 0, cdapMessage.getObjName(), 
+						cdapMessage.getObjValue(), 1, ex.getMessage(), cdapMessage.getInvokeID());
 				getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
 			}catch(CDAPException cdapEx){
 				log.error(ex);
@@ -263,14 +263,14 @@ public abstract class BaseRIBObject implements RIBObject{
 		try{
 			this.delete(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), null);
 			if (cdapMessage.getInvokeID() != 0){
-				responseMessage = CDAPMessage.getDeleteObjectResponseMessage(null, cdapMessage.getInvokeID(), 
-						cdapMessage.getObjClass(), 0, cdapMessage.getObjName(), 0, null);
+				responseMessage = CDAPMessage.getDeleteObjectResponseMessage(null, cdapMessage.getObjClass(), 0, cdapMessage.getObjName(), 0, 
+						null, cdapMessage.getInvokeID());
 				getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
 			}
 		}catch(Exception ex){
 			try{
-				responseMessage = CDAPMessage.getDeleteObjectResponseMessage(null, cdapMessage.getInvokeID(), 
-						cdapMessage.getObjClass(), 0, cdapMessage.getObjName(), 1, ex.getMessage());
+				responseMessage = CDAPMessage.getDeleteObjectResponseMessage(null, cdapMessage.getObjClass(), 0, cdapMessage.getObjName(), 
+						1, ex.getMessage(), cdapMessage.getInvokeID());
 				getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
 			}catch(CDAPException cdapEx){
 				log.error(ex);
@@ -292,7 +292,7 @@ public abstract class BaseRIBObject implements RIBObject{
 	public void start(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
 		try{
 			CDAPMessage responseMessage = CDAPMessage.getStartObjectResponseMessage(null, 
-					cdapMessage.getInvokeID(), 1, "Operation START not allowed for objectName "+cdapMessage.getObjName());
+					1, "Operation START not allowed for objectName "+cdapMessage.getObjName(), cdapMessage.getInvokeID());
 			getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
 		}catch(CDAPException ex){
 			log.error("Error generating START response message. Details:");
@@ -303,7 +303,7 @@ public abstract class BaseRIBObject implements RIBObject{
 	public void stop(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
 		try{
 			CDAPMessage responseMessage = CDAPMessage.getStopObjectResponseMessage(null, 
-					cdapMessage.getInvokeID(), 1, "Operation STOP not allowed for objectName "+cdapMessage.getObjName());
+					1, "Operation STOP not allowed for objectName "+cdapMessage.getObjName(), cdapMessage.getInvokeID());
 			getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
 		}catch(CDAPException ex){
 			log.error("Error generating STOP response message. Details:");

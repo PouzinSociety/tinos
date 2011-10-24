@@ -11,6 +11,8 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.cdap.api.BaseCDAPSessionManager;
+import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
 import rina.encoding.api.BaseEncoder;
@@ -102,6 +104,8 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 */
 	private Map<Integer, Socket> pendingSockets = null;
 	
+	private CDAPSessionManager cdapSessionManager = null;
+	
 	public FlowAllocatorImpl(){
 		allocateRequestValidator = new AllocateRequestValidator();
 		flowAllocatorInstances = new HashMap<Integer, FlowAllocatorInstance>();
@@ -116,6 +120,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		super.setIPCProcess(ipcProcess);
 		this.ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		this.encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
+		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 		populateRIB(ipcProcess);
 	}
 	
@@ -283,7 +288,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 				//call the FAI
 				int portId = generatePortId();
 				log.debug("The destination application process is reachable through me. Assigning the local portId "+portId+" to the flow allocation.");
-				FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(null, this);
+				FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(null, this, cdapSessionManager);
 				flowAllocatorInstance.createFlowRequestMessageReceived(flow, portId, cdapMessage, underlyingPortId);
 				flowAllocatorInstances.put(new Integer(new Integer(portId)), flowAllocatorInstance);
 				//Check if the socket was already established
@@ -353,7 +358,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		log.debug("Received allocate request: "+allocateRequest.toString());
 		try {
 			allocateRequestValidator.validateAllocateRequest(allocateRequest);
-			FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(applicationProcess, this);
+			FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(applicationProcess, this, cdapSessionManager);
 			flowAllocatorInstance.submitAllocateRequest(allocateRequest);
 			flowAllocatorInstances.put(new Integer(new Integer(flowAllocatorInstance.getPortId())), flowAllocatorInstance);
 		}catch(IPCException ex){

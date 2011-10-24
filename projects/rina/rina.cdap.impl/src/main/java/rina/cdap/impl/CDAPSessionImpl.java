@@ -8,6 +8,7 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.CDAPMessageValidator;
 import rina.cdap.api.CDAPSession;
 import rina.cdap.api.CDAPSessionDescriptor;
+import rina.cdap.api.CDAPSessionInvokeIdManager;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage.Flags;
 import rina.cdap.api.message.CDAPMessage.Opcode;
@@ -40,11 +41,18 @@ public class CDAPSessionImpl implements CDAPSession{
 	
 	private CDAPSessionManager cdapSessionManager = null;
 	
-	public CDAPSessionImpl(CDAPSessionManager cdapSessionManager){
+	private CDAPSessionInvokeIdManager invokeIdManager = null;
+	
+	public CDAPSessionImpl(CDAPSessionManager cdapSessionManager, CDAPSessionInvokeIdManager invokeIdManager){
 		this.cdapSessionManager = cdapSessionManager;
+		this.invokeIdManager = invokeIdManager;
 		pendingMessages = new HashMap<Integer, CDAPOperationState>();
 		this.cancelReadPendingMessages = new HashMap<Integer, CDAPOperationState>();
 		this.connectionStateMachine = new ConnectionStateMachine(this);
+	}
+	
+	public CDAPSessionInvokeIdManager getInvokeIdManager(){
+		return invokeIdManager;
 	}
 	
 	public void setWireMessageProvider(WireMessageProvider wireMessageProvider){
@@ -142,6 +150,12 @@ public class CDAPSessionImpl implements CDAPSession{
 	
 	public void messageSent(CDAPMessage cdapMessage) throws CDAPException{
 		messageSentOrReceived(cdapMessage, true);
+		Opcode opcode = cdapMessage.getOpCode();
+		if (opcode.equals(Opcode.M_CONNECT_R) || opcode.equals(Opcode.M_RELEASE_R) || opcode.equals(Opcode.M_CREATE_R) || opcode.equals(Opcode.M_DELETE_R) 
+				|| opcode.equals(Opcode.M_START_R) || opcode.equals(Opcode.M_STOP_R) || opcode.equals(Opcode.M_WRITE_R) || opcode.equals(Opcode.M_CANCELREAD_R) || 
+				(opcode.equals(Opcode.M_READ_R) && !cdapMessage.getFlags().equals(Flags.F_RD_INCOMPLETE))){
+			invokeIdManager.freeInvokeId(new Integer(cdapMessage.getInvokeID()));
+		}
 	}
 	
 	public CDAPMessage messageReceived(byte[] message) throws CDAPException{

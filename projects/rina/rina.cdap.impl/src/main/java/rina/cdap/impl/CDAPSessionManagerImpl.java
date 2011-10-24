@@ -14,7 +14,11 @@ import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPSession;
 import rina.cdap.api.CDAPSessionDescriptor;
+import rina.cdap.api.message.AuthValue;
 import rina.cdap.api.message.CDAPMessage;
+import rina.cdap.api.message.ObjectValue;
+import rina.cdap.api.message.CDAPMessage.AuthTypes;
+import rina.cdap.api.message.CDAPMessage.Flags;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 
 public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
@@ -35,7 +39,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	}
 
 	public synchronized CDAPSession createCDAPSession(int portId) {
-		CDAPSessionImpl cdapSession = new CDAPSessionImpl(this);
+		CDAPSessionImpl cdapSession = new CDAPSessionImpl(this, new CDAPSessionInvokeIdManagerImpl());
 		cdapSession.setWireMessageProvider(wireMessageProviderFactory.createWireMessageProvider());
 		CDAPSessionDescriptor descriptor = new CDAPSessionDescriptor();
 		descriptor.setPortId(portId);
@@ -207,5 +211,345 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 		}
 		
 		throw new CDAPException("Don't have a running CDAP sesion to "+ destinationApplicationProcessName + " " + destinationApplicationProcessInstance);
+	}
+	
+	/**
+	 * Create a M_CONNECT CDAP Message
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param authMech
+	 * @param authValue
+	 * @param destAEInst
+	 * @param destAEName
+	 * @param destApInst
+	 * @param destApName
+	 * @param srcAEInst
+	 * @param srcAEName
+	 * @param srcApInst
+	 * @param srcApName
+	 * @param invokeId true if one is requested, false otherwise
+	 * @return
+	 * @throws CDAPException
+	 */
+	public synchronized CDAPMessage getOpenConnectionRequestMessage(int portId, AuthTypes authMech, AuthValue authValue, String destAEInst, String destAEName, String destApInst,
+			String destApName, String srcAEInst, String srcAEName, String srcApInst, String srcApName) throws CDAPException{
+		CDAPSession cdapSession = this.getCDAPSession(portId);
+		return CDAPMessage.getOpenConnectionRequestMessage(authMech, authValue, destAEInst, destAEName, 
+				destApInst, destApName, srcAEInst, srcAEName, srcApInst, srcApName, cdapSession.getInvokeIdManager().getInvokeId());
+	}
+	
+	/**
+	 * Create a M_CONNECT_R CDAP Message
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param authMech
+	 * @param authValue
+	 * @param destAEInst
+	 * @param destAEName
+	 * @param destApInst
+	 * @param destApName
+	 * @param result
+	 * @param resultReason
+	 * @param srcAEInst
+	 * @param srcAEName
+	 * @param srcApInst
+	 * @param srcApName
+	 * @param invokeId
+	 * @return
+	 * @throws CDAPException
+	 */
+	public synchronized CDAPMessage getOpenConnectionResponseMessage(int portId, AuthTypes authMech, AuthValue authValue, String destAEInst, String destAEName, String destApInst,
+			String destApName, int result, String resultReason, String srcAEInst, String srcAEName, String srcApInst, String srcApName, 
+			int invokeId) throws CDAPException{
+		return CDAPMessage.getOpenConnectionResponseMessage(authMech, authValue, destAEInst, destAEName, destApInst, destApName, result, 
+				resultReason, srcAEInst, srcAEName, srcApInst, srcApName, invokeId);
+	}
+	
+	/**
+	 * Create an M_RELEASE CDAP Message
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param flags
+	 * @param invokeID
+	 * @return
+	 * @throws CDAPException
+	 */
+	public synchronized CDAPMessage getReleaseConnectionRequestMessage(int portId, Flags flags, boolean invokeID) throws CDAPException{
+		CDAPMessage cdapMessage = CDAPMessage.getReleaseConnectionRequestMessage(flags);
+		assignInvokeId(cdapMessage, invokeID, portId);
+		
+		return cdapMessage;
+	}
+	
+	/**
+	 * Create a M_RELEASE_R CDAP Message
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param flags
+	 * @param result
+	 * @param resultReason
+	 * @param invokeId
+	 * @return
+	 * @throws CDAPException
+	 */
+	public synchronized CDAPMessage getReleaseConnectionResponseMessage(int portId, Flags flags, int result, String resultReason, 
+			int invokeId) throws CDAPException{
+		return CDAPMessage.getReleaseConnectionResponseMessage(flags, result, resultReason, invokeId);
+	}
+	
+	/**
+	 * Create a M_CREATE CDAP Message
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param filter
+	 * @param flags
+	 * @param objClass
+	 * @param objInst
+	 * @param objName
+	 * @param objValue
+	 * @param scope
+	 * @param invokeId
+	 * @return
+	 * @throws CDAPException
+	 */
+	public synchronized CDAPMessage getCreateObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, long objInst, String objName, ObjectValue objValue, 
+			int scope, boolean invokeId) throws CDAPException{
+		CDAPMessage cdapMessage = CDAPMessage.getCreateObjectRequestMessage(filter, flags, objClass, objInst, objName, objValue, scope);
+		assignInvokeId(cdapMessage, invokeId, portId);
+		return cdapMessage;
+	}
+	
+	/**
+	 * Crate a M_CREATE_R CDAP Message
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param flags
+	 * @param objClass
+	 * @param objInst
+	 * @param objName
+	 * @param objValue
+	 * @param result
+	 * @param resultReason
+	 * @param invokeId
+	 * @return
+	 * @throws CDAPException
+	 */
+	public synchronized CDAPMessage getCreateObjectResponseMessage(int portId, Flags flags, String objClass, long objInst, String objName, ObjectValue objValue, int result,
+			String resultReason, int invokeId) throws CDAPException{
+		return CDAPMessage.getCreateObjectResponseMessage(flags, objClass, objInst, objName, objValue, result, resultReason, invokeId);
+	}
+	
+	/**
+	 * Create a M_DELETE CDAP Message
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param filter
+	 * @param flags
+	 * @param objClass
+	 * @param objInst
+	 * @param objName
+	 * @param scope
+	 * @param invokeId
+	 * @return
+	 * @throws CDAPException
+	 */
+	public synchronized CDAPMessage getDeleteObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, long objInst, String objName, 
+			int scope, boolean invokeId) throws CDAPException{
+		CDAPMessage cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(filter, flags, objClass, objInst, objName, scope);
+		assignInvokeId(cdapMessage, invokeId, portId);
+		
+		return cdapMessage;
+	}
+	
+	/**
+	 * Create a M_DELETE_R CDAP MESSAGE
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param flags
+	 * @param objClass
+	 * @param objInst
+	 * @param objName
+	 * @param result
+	 * @param resultReason
+	 * @param invokeId
+	 * @return
+	 * @throws CDAPException
+	 */
+	public synchronized CDAPMessage getDeleteObjectResponseMessage(int portId, Flags flags, String objClass, long objInst, String objName, int result, String resultReason, 
+			int invokeId) throws CDAPException{
+		return CDAPMessage.getDeleteObjectResponseMessage(flags, objClass, objInst, objName, result, resultReason, invokeId);
+	}
+	
+	/**
+	 * Create a M_START CDAP Message
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param filter
+	 * @param flags
+	 * @param objClass
+	 * @param objValue
+	 * @param objInst
+	 * @param objName
+	 * @param scope
+	 * @param invokeId
+	 * @return
+	 * @throws CDAPException
+	 */
+	public synchronized CDAPMessage getStartObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, ObjectValue objValue, long objInst, String objName, 
+			int scope, boolean invokeId) throws CDAPException{
+		CDAPMessage cdapMessage = CDAPMessage.getStartObjectRequestMessage(filter, flags, objClass, objValue, objInst, objName, scope);
+		assignInvokeId(cdapMessage, invokeId, portId);
+		
+		return cdapMessage;
+	}
+	
+	/**
+	 * Create a M_START_R CDAP Message
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param flags
+	 * @param result
+	 * @param resultReason
+	 * @param invokeId
+	 * @return
+	 * @throws CDAPException
+	 */
+	public synchronized CDAPMessage getStartObjectResponseMessage(int portId, Flags flags, int result, String resultReason, int invokeId) throws CDAPException{
+		return CDAPMessage.getStartObjectResponseMessage(flags, result, resultReason, invokeId);
+	}
+	
+	/**
+	 * Create a M_STOP CDAP Message
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param filter
+	 * @param flags
+	 * @param objClass
+	 * @param objValue
+	 * @param objInst
+	 * @param objName
+	 * @param scope
+	 * @param invokeId
+	 * @return
+	 * @throws CDAPException
+	 */
+	public synchronized CDAPMessage getStopObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, ObjectValue objValue, long objInst, 
+			String objName, int scope, boolean invokeId) throws CDAPException{
+		CDAPMessage cdapMessage = CDAPMessage.getStopObjectRequestMessage(filter, flags, objClass, objValue, objInst, objName, scope);
+		assignInvokeId(cdapMessage, invokeId, portId);
+		
+		return cdapMessage;
+	}
+	
+	/**
+	 * Create a M_STOP_R CDAP Message
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param flags
+	 * @param result
+	 * @param resultReason
+	 * @param invokeId
+	 * @return
+	 * @throws CDAPException
+	 */
+	public synchronized CDAPMessage getStopObjectResponseMessage(int portId, Flags flags, int result, String resultReason, int invokeId) throws CDAPException{
+		return CDAPMessage.getStopObjectResponseMessage(flags, result, resultReason, invokeId);
+	}
+	
+	/**
+	 * Create a M_READ CDAP Message
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param filter
+	 * @param flags
+	 * @param objClass
+	 * @param objInst
+	 * @param objName
+	 * @param scope
+	 * @param invokeId
+	 * @return
+	 * @throws CDAPException
+	 */
+	public synchronized CDAPMessage getReadObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, long objInst, String objName, int scope, 
+			boolean invokeId) throws CDAPException{
+		CDAPMessage cdapMessage = CDAPMessage.getReadObjectRequestMessage(filter, flags, objClass, objInst, objName, scope);
+		assignInvokeId(cdapMessage, invokeId, portId);
+		
+		return cdapMessage;
+	}
+	
+	/**
+	 * Crate a M_READ_R CDAP Message
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param flags
+	 * @param objClass
+	 * @param objInst
+	 * @param objName
+	 * @param objValue
+	 * @param result
+	 * @param resultReason
+	 * @param invokeId
+	 * @return
+	 * @throws CDAPException
+	 */
+	public synchronized CDAPMessage getReadObjectResponseMessage(int portId, Flags flags, String objClass, long objInst, String objName, ObjectValue objValue, 
+			int result, String resultReason, int invokeId) throws CDAPException{
+		return CDAPMessage.getReadObjectResponseMessage(flags, objClass, objInst, objName, objValue, result, resultReason, invokeId);
+	}
+	
+	/**
+	 * Create a M_WRITE CDAP Message
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param filter
+	 * @param flags
+	 * @param objClass
+	 * @param objInst
+	 * @param objValue
+	 * @param objName
+	 * @param scope
+	 * @param invokeId
+	 * @return
+	 * @throws CDAPException
+	 */
+	public synchronized CDAPMessage getWriteObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, long objInst, ObjectValue objValue, 
+			String objName, int scope, boolean invokeId) throws CDAPException{
+		CDAPMessage cdapMessage = CDAPMessage.getWriteObjectRequestMessage(filter, flags, objClass, objInst, objValue, objName, scope);
+		assignInvokeId(cdapMessage, invokeId, portId);
+		
+		return cdapMessage;
+	}
+	
+	/**
+	 * Create a M_WRITE_R CDAP Message
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param flags
+	 * @param result
+	 * @param resultReason
+	 * @param invokeId
+	 * @return
+	 * @throws CDAPException
+	 */
+	public synchronized CDAPMessage getWriteObjectResponseMessage(int portId, Flags flags, int result, String resultReason, int invokeId) throws CDAPException{
+		return CDAPMessage.getWriteObjectResponseMessage(flags, result, invokeId, resultReason);
+	}
+	
+	/**
+	 * Create a M_CANCELREAD CDAP Message
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param flags
+	 * @param invokeID
+	 * @return
+	 * @throws CDAPException
+	 */
+	public synchronized CDAPMessage getCancelReadRequestMessage(int portId, Flags flags, int invokeID) throws CDAPException{
+		return CDAPMessage.getCancelReadRequestMessage(flags, invokeID);
+	}
+	
+	/**
+	 * Create a M_CANCELREAD_R CDAP Message
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param flags
+	 * @param invokeID
+	 * @param result
+	 * @param resultReason
+	 * @return
+	 * @throws CDAPException
+	 */
+	public synchronized CDAPMessage getCancelReadResponseMessage(int portId, Flags flags, int invokeID, int result, String resultReason) throws CDAPException{
+		return CDAPMessage.getCancelReadResponseMessage(flags, invokeID, result, resultReason);
+	}
+	
+	private void assignInvokeId(CDAPMessage cdapMessage, boolean invokeId,  int portId){
+		if(invokeId){
+			CDAPSession cdapSession = this.getCDAPSession(portId);
+			cdapMessage.setInvokeID(cdapSession.getInvokeIdManager().getInvokeId());
+		}
 	}
 }

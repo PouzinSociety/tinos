@@ -54,6 +54,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	private RIBDaemon ribDaemon = null;
 	private Encoder encoder = null;
 	private RMT rmt = null;
+	private CDAPSessionManager cdapSessionManager = null;
 
 	public EnrollmentTaskImpl(){
 		enrollmentStateMachines = new Hashtable<String, EnrollmentStateMachine>();
@@ -66,6 +67,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		this.ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		this.encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
 		this.rmt = (RMT) getIPCProcess().getIPCProcessComponent(BaseRMT.getComponentName());
+		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 		populateRIB(ipcProcess);
 	}
 	
@@ -257,9 +259,10 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		}
 		
 		try{
-			responseMessage = CDAPMessage.getCreateObjectResponseMessage(null, requestMessage.getInvokeID(), requestMessage.getObjClass(), 
-					requestMessage.getObjInst(), requestMessage.getObjName(), null, result, resultReason);
-			ribDaemon.sendMessage(responseMessage, pendingEnrollmentRequest.getCdapSessionDescriptor().getPortId(), null);
+			int portId = pendingEnrollmentRequest.getCdapSessionDescriptor().getPortId();
+			responseMessage = cdapSessionManager.getCreateObjectResponseMessage(portId, null, requestMessage.getObjClass(), 
+					requestMessage.getObjInst(), requestMessage.getObjName(), null, result, resultReason, requestMessage.getInvokeID());
+			ribDaemon.sendMessage(responseMessage, portId, null);
 		}catch(Exception ex){
 			log.error(ex);
 		}
@@ -284,10 +287,11 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 			//Error creating or getting the enrollment state machine
 			log.error(ex.getMessage());
 			try{
+				int portId = cdapMessage.getInvokeID();
 				ribDaemon.sendMessage(
-						CDAPMessage.getOpenConnectionResponseMessage(cdapMessage.getAuthMech(), null, cdapMessage.getSrcAEInst(), cdapMessage.getSrcAEName(), 
-								cdapMessage.getSrcApInst(), cdapMessage.getSrcApName(), cdapMessage.getInvokeID(), -2, ex.getMessage(), 
-								null, cdapMessage.getDestAEName(), cdapMessage.getDestApInst(), cdapMessage.getDestApName()), cdapSessionDescriptor.getPortId(), null);
+						cdapSessionManager.getOpenConnectionResponseMessage(portId, cdapMessage.getAuthMech(), null, cdapMessage.getSrcAEInst(), cdapMessage.getSrcAEName(), 
+								cdapMessage.getSrcApInst(), cdapMessage.getSrcApName(), -2, ex.getMessage(), null, cdapMessage.getDestAEName(), cdapMessage.getDestApInst(), 
+								cdapMessage.getDestApName(), cdapMessage.getInvokeID()), portId, null);
 			}catch(Exception e){
 				log.error(e);
 			}
@@ -309,7 +313,8 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 			//Error getting the enrollment state machine
 			log.error(ex.getMessage());
 			try{
-				ribDaemon.sendMessage(CDAPMessage.getReleaseConnectionRequestMessage(null, 0), cdapSessionDescriptor.getPortId(), null);
+				int portId = cdapSessionDescriptor.getPortId();
+				ribDaemon.sendMessage(cdapSessionManager.getReleaseConnectionRequestMessage(portId, null, false), portId, null);
 			}catch(Exception e){
 				log.error(e);
 			}
@@ -331,7 +336,8 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 			//Error getting the enrollment state machine
 			log.error(ex.getMessage());
 			try{
-				ribDaemon.sendMessage(CDAPMessage.getReleaseConnectionRequestMessage(null, 0), cdapSessionDescriptor.getPortId(), null);
+				int portId = cdapSessionDescriptor.getPortId();
+				ribDaemon.sendMessage(cdapSessionManager.getReleaseConnectionRequestMessage(portId, null, false), portId, null);
 			}catch(Exception e){
 				log.error(e);
 			}
@@ -353,7 +359,8 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 			//Error getting the enrollment state machine
 			log.error(ex.getMessage());
 			try{
-				ribDaemon.sendMessage(CDAPMessage.getReleaseConnectionRequestMessage(null, 0), cdapSessionDescriptor.getPortId(), null);
+				int portId = cdapSessionDescriptor.getPortId();
+				ribDaemon.sendMessage(cdapSessionManager.getReleaseConnectionRequestMessage(portId, null, false), portId, null);
 			}catch(Exception e){
 				log.error(e);
 			}

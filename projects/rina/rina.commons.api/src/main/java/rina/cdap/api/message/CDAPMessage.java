@@ -203,8 +203,8 @@ public class CDAPMessage implements Serializable{
 	
 	public static CDAPMessage getOpenConnectionRequestMessage(AuthTypes authMech, 
 			AuthValue authValue, String destAEInst, String destAEName, String destApInst,
-			String destApName, int invokeID, String srcAEInst, String srcAEName, String srcApInst,
-			String srcApName) throws CDAPException{
+			String destApName, String srcAEInst, String srcAEName, String srcApInst,
+			String srcApName, int invokeID) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setAbsSyntax(ABSTRACT_SYNTAX_VERSION);
 		cdapMessage.setAuthMech(authMech);
@@ -227,8 +227,8 @@ public class CDAPMessage implements Serializable{
 	
 	public static CDAPMessage getOpenConnectionResponseMessage(AuthTypes authMech, 
 			AuthValue authValue, String destAEInst, String destAEName, String destApInst,
-			String destApName, int invokeID, int result, String resultReason, String srcAEInst, String srcAEName, 
-			String srcApInst, String srcApName) throws CDAPException{
+			String destApName, int result, String resultReason, String srcAEInst, String srcAEName, 
+			String srcApInst, String srcApName, int invokeID) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setAbsSyntax(ABSTRACT_SYNTAX_VERSION);
 		cdapMessage.setAuthMech(authMech);
@@ -238,8 +238,8 @@ public class CDAPMessage implements Serializable{
 		cdapMessage.setDestApInst(destApInst);
 		cdapMessage.setDestApInst(destApInst);
 		cdapMessage.setDestApName(destApName);
-		cdapMessage.setInvokeID(invokeID);
 		cdapMessage.setOpCode(Opcode.M_CONNECT_R);
+		cdapMessage.setInvokeID(invokeID);
 		cdapMessage.setResult(result);
 		cdapMessage.setResultReason(resultReason);
 		cdapMessage.setSrcAEInst(srcAEInst);
@@ -251,17 +251,15 @@ public class CDAPMessage implements Serializable{
 		return cdapMessage;
 	}
 	
-	public static CDAPMessage getReleaseConnectionRequestMessage(Flags flags, int invokeID) throws CDAPException{
+	public static CDAPMessage getReleaseConnectionRequestMessage(Flags flags) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFlags(flags);
-		cdapMessage.setInvokeID(invokeID);
 		cdapMessage.setOpCode(Opcode.M_RELEASE);
 		CDAPMessageValidator.validate(cdapMessage);
 		return cdapMessage;
 	}
 	
-	public static CDAPMessage getReleaseConnectionResponseMessage(Flags flags, int invokeID,  
-			int result, String resultReason) throws CDAPException{
+	public static CDAPMessage getReleaseConnectionResponseMessage(Flags flags, int result, String resultReason, int invokeID) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFlags(flags);
 		cdapMessage.setInvokeID(invokeID);
@@ -273,12 +271,10 @@ public class CDAPMessage implements Serializable{
 	}
 	
 	public static CDAPMessage getCreateObjectRequestMessage(byte[] filter, Flags flags, 
-			int invokeID, String objClass, long objInst, String objName, ObjectValue objValue, 
-			int scope) throws CDAPException{
+			String objClass, long objInst, String objName, ObjectValue objValue, int scope) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFilter(filter);
 		cdapMessage.setFlags(flags);
-		cdapMessage.setInvokeID(invokeID);
 		cdapMessage.setObjClass(objClass);
 		cdapMessage.setObjInst(objInst);
 		cdapMessage.setObjName(objName);
@@ -289,9 +285,8 @@ public class CDAPMessage implements Serializable{
 		return cdapMessage;
 	}
 	
-	public static CDAPMessage getCreateObjectResponseMessage(Flags flags, int invokeID, 
-			String objClass, long objInst, String objName, ObjectValue objValue, int result,
-			String resultReason) throws CDAPException{
+	public static CDAPMessage getCreateObjectResponseMessage(Flags flags, String objClass, long objInst, String objName, ObjectValue objValue, int result,
+			String resultReason, int invokeID) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFlags(flags);
 		cdapMessage.setInvokeID(invokeID);
@@ -306,12 +301,10 @@ public class CDAPMessage implements Serializable{
 		return cdapMessage;
 	}
 	
-	public static CDAPMessage getDeleteObjectRequestMessage(byte[] filter, Flags flags, int invokeID,
-			String objClass, long objInst, String objName, int scope) throws CDAPException{
+	public static CDAPMessage getDeleteObjectRequestMessage(byte[] filter, Flags flags, String objClass, long objInst, String objName, int scope) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFilter(filter);
 		cdapMessage.setFlags(flags);
-		cdapMessage.setInvokeID(invokeID);
 		cdapMessage.setObjClass(objClass);
 		cdapMessage.setObjInst(objInst);
 		cdapMessage.setObjName(objName);
@@ -321,8 +314,8 @@ public class CDAPMessage implements Serializable{
 		return cdapMessage;
 	}
 	
-	public static CDAPMessage getDeleteObjectResponseMessage(Flags flags, int invokeID,  
-			String objClass, long objInst, String objName, int result, String resultReason) throws CDAPException{
+	public static CDAPMessage getDeleteObjectResponseMessage(Flags flags, String objClass, long objInst, String objName, int result, String resultReason, 
+			int invokeID) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFlags(flags);
 		cdapMessage.setInvokeID(invokeID);
@@ -336,12 +329,11 @@ public class CDAPMessage implements Serializable{
 		return cdapMessage;
 	}
 	
-	public static CDAPMessage getStartObjectRequestMessage(byte[] filter, Flags flags, int invokeID,
-			String objClass, ObjectValue objValue, long objInst, String objName, int scope) throws CDAPException{
+	public static CDAPMessage getStartObjectRequestMessage(byte[] filter, Flags flags, String objClass, ObjectValue objValue, long objInst, String objName, 
+			int scope) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFilter(filter);
 		cdapMessage.setFlags(flags);
-		cdapMessage.setInvokeID(invokeID);
 		cdapMessage.setObjClass(objClass);
 		cdapMessage.setObjInst(objInst);
 		cdapMessage.setObjName(objName);
@@ -352,8 +344,7 @@ public class CDAPMessage implements Serializable{
 		return cdapMessage;
 	}
 	
-	public static CDAPMessage getStartObjectResponseMessage(Flags flags, int invokeID, 
-			int result, String resultReason) throws CDAPException{
+	public static CDAPMessage getStartObjectResponseMessage(Flags flags, int result, String resultReason, int invokeID) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFlags(flags);
 		cdapMessage.setInvokeID(invokeID);
@@ -364,12 +355,11 @@ public class CDAPMessage implements Serializable{
 		return cdapMessage;
 	}
 	
-	public static CDAPMessage getStopObjectRequestMessage(byte[] filter, Flags flags, int invokeID,
+	public static CDAPMessage getStopObjectRequestMessage(byte[] filter, Flags flags,
 			String objClass, ObjectValue objValue, long objInst, String objName, int scope) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFilter(filter);
 		cdapMessage.setFlags(flags);
-		cdapMessage.setInvokeID(invokeID);
 		cdapMessage.setObjClass(objClass);
 		cdapMessage.setObjInst(objInst);
 		cdapMessage.setObjName(objName);
@@ -380,8 +370,7 @@ public class CDAPMessage implements Serializable{
 		return cdapMessage;
 	}
 	
-	public static CDAPMessage getStopObjectResponseMessage(Flags flags, int invokeID, 
-			int result, String resultReason) throws CDAPException{
+	public static CDAPMessage getStopObjectResponseMessage(Flags flags, int result, String resultReason, int invokeID) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFlags(flags);
 		cdapMessage.setInvokeID(invokeID);
@@ -392,12 +381,10 @@ public class CDAPMessage implements Serializable{
 		return cdapMessage;
 	}
 	
-	public static CDAPMessage getReadObjectRequestMessage(byte[] filter, Flags flags, int invokeID,
-			String objClass, long objInst, String objName, int scope) throws CDAPException{
+	public static CDAPMessage getReadObjectRequestMessage(byte[] filter, Flags flags, String objClass, long objInst, String objName, int scope) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFilter(filter);
 		cdapMessage.setFlags(flags);
-		cdapMessage.setInvokeID(invokeID);
 		cdapMessage.setObjClass(objClass);
 		cdapMessage.setObjInst(objInst);
 		cdapMessage.setObjName(objName);
@@ -407,8 +394,8 @@ public class CDAPMessage implements Serializable{
 		return cdapMessage;
 	}
 	
-	public static CDAPMessage getReadObjectResponseMessage(Flags flags, int invokeID, String objClass, 
-			long objInst, String objName, ObjectValue objValue, int result, String resultReason) throws CDAPException{
+	public static CDAPMessage getReadObjectResponseMessage(Flags flags, String objClass, long objInst, String objName, ObjectValue objValue, 
+			int result, String resultReason, int invokeID) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFlags(flags);
 		cdapMessage.setInvokeID(invokeID);
@@ -423,12 +410,11 @@ public class CDAPMessage implements Serializable{
 		return cdapMessage;
 	}
 	
-	public static CDAPMessage getWriteObjectRequestMessage(byte[] filter, Flags flags, int invokeID,
-			String objClass, long objInst, ObjectValue objValue, String objName, int scope) throws CDAPException{
+	public static CDAPMessage getWriteObjectRequestMessage(byte[] filter, Flags flags, String objClass, long objInst, ObjectValue objValue, String objName, 
+			int scope) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFilter(filter);
 		cdapMessage.setFlags(flags);
-		cdapMessage.setInvokeID(invokeID);
 		cdapMessage.setObjClass(objClass);
 		cdapMessage.setObjInst(objInst);
 		cdapMessage.setObjName(objName);
@@ -439,14 +425,13 @@ public class CDAPMessage implements Serializable{
 		return cdapMessage;
 	}
 	
-	public static CDAPMessage getWriteObjectResponseMessage(Flags flags, int invokeID, 
-			int result, String resultReason) throws CDAPException{
+	public static CDAPMessage getWriteObjectResponseMessage(Flags flags, int result, int invokeID, String resultReason) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFlags(flags);
-		cdapMessage.setInvokeID(invokeID);
 		cdapMessage.setOpCode(Opcode.M_WRITE_R);
 		cdapMessage.setResult(result);
 		cdapMessage.setResultReason(resultReason);
+		cdapMessage.setInvokeID(invokeID);
 		CDAPMessageValidator.validate(cdapMessage);
 		return cdapMessage;
 	}
@@ -460,8 +445,7 @@ public class CDAPMessage implements Serializable{
 		return cdapMessage;
 	}
 	
-	public static CDAPMessage getCancelReadResponseMessage(Flags flags, int invokeID,
-			int result, String resultReason) throws CDAPException{
+	public static CDAPMessage getCancelReadResponseMessage(Flags flags, int invokeID, int result, String resultReason) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFlags(flags);
 		cdapMessage.setInvokeID(invokeID);

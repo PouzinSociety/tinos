@@ -25,15 +25,17 @@ public class CreateDeleteTest extends BaseCDAPTest{
 	public void testSingleCreateWithResponse() throws CDAPException{
 		CDAPMessage cdapMessage = null;
 		byte[] message = null;
+		int invokeId = 0;
 		
-		cdapMessage = CDAPMessage.getCreateObjectRequestMessage(null, null, 25, "org.pouzinsociety.flow.Flow", 0, "123", null, 0);
+		cdapMessage = cdapSessionManager.getCreateObjectRequestMessage(32768, null, null, "org.pouzinsociety.flow.Flow", 0, "123", null, 0, true);
+		invokeId = cdapMessage.getInvokeID();
 		message = sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 		
 		receivingCDAPSession.messageReceived(message);
 		
 		boolean failed = false;
-		cdapMessage = CDAPMessage.getCreateObjectResponseMessage(null, 24, "org.pouzinsociety.flow.Flow", 0, "123", new ObjectValue(), 0, null);
+		cdapMessage = cdapSessionManager.getCreateObjectResponseMessage(32769, null, "org.pouzinsociety.flow.Flow", 0, "123", new ObjectValue(), 0, null, invokeId + 1);
 		try{
 			message = receivingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		}catch(CDAPException ex){
@@ -43,7 +45,7 @@ public class CreateDeleteTest extends BaseCDAPTest{
 
 		Assert.assertTrue(failed);
 		
-		cdapMessage = CDAPMessage.getCreateObjectResponseMessage(null, 25, "org.pouzinsociety.flow.Flow", 0, "123", new ObjectValue(), 0, null);
+		cdapMessage = cdapSessionManager.getCreateObjectResponseMessage(32769, null, "org.pouzinsociety.flow.Flow", 0, "123", new ObjectValue(), 0, null, invokeId);
 		message = receivingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		receivingCDAPSession.messageSent(cdapMessage);
 		
@@ -55,14 +57,14 @@ public class CreateDeleteTest extends BaseCDAPTest{
 		CDAPMessage cdapMessage = null;
 		byte[] message = null;
 
-		cdapMessage = CDAPMessage.getCreateObjectRequestMessage(null, null, 0, "org.pouzinsociety.flow.Flow", 0, "123", null, 0);
+		cdapMessage = cdapSessionManager.getCreateObjectRequestMessage(32768, null, null, "org.pouzinsociety.flow.Flow", 0, "123", null, 0, false);
 		message = sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 
 		receivingCDAPSession.messageReceived(message);
 
 		boolean failed = false;
-		cdapMessage = CDAPMessage.getCreateObjectResponseMessage(null, 25, "org.pouzinsociety.flow.Flow", 0, "123", new ObjectValue(), 0, null);
+		cdapMessage = cdapSessionManager.getCreateObjectResponseMessage(32769, null, "org.pouzinsociety.flow.Flow", 0, "123", new ObjectValue(), 0, null, 25);
 		try{
 			message = receivingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		}catch(CDAPException ex){

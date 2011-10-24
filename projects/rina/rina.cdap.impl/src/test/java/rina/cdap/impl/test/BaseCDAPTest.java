@@ -6,6 +6,7 @@ import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.AuthTypes;
+import rina.cdap.impl.CDAPSessionInvokeIdManagerImpl;
 import rina.cdap.impl.CDAPSessionManagerImpl;
 import rina.cdap.impl.CDAPSessionImpl;
 import rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory;
@@ -27,12 +28,12 @@ public abstract class BaseCDAPTest {
 		byte[] message = null;
 		CDAPMessage cdapMessage = null;
 		
-		cdapMessage = CDAPMessage.getOpenConnectionRequestMessage(AuthTypes.AUTH_NONE, null, null, "mock", null, "B", 23, "234", "mock", "123", "A");
+		cdapMessage = cdapSessionManager.getOpenConnectionRequestMessage(32768, AuthTypes.AUTH_NONE, null, null, "mock", null, "B", "234", "mock", "123", "A");
 		message = sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 		
 		cdapMessage = receivingCDAPSession.messageReceived(message);
-		cdapMessage = CDAPMessage.getOpenConnectionResponseMessage(AuthTypes.AUTH_NONE, null, "234", "mock", "123", "A", 23, 0, null, "899", "mock", "677", "B");
+		cdapMessage = cdapSessionManager.getOpenConnectionResponseMessage(32769, AuthTypes.AUTH_NONE, null, "234", "mock", "123", "A", 0, null, "899", "mock", "677", "B", cdapMessage.getInvokeID());
 		message = receivingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		receivingCDAPSession.messageSent(cdapMessage);
 		
@@ -43,12 +44,12 @@ public abstract class BaseCDAPTest {
 		byte[] message = null;
 		CDAPMessage cdapMessage = null;
 		
-		cdapMessage = CDAPMessage.getReleaseConnectionRequestMessage(null, 1);
+		cdapMessage = cdapSessionManager.getReleaseConnectionRequestMessage(32768, null, true);
 		message = sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 		
 		cdapMessage = receivingCDAPSession.messageReceived(message);
-		cdapMessage = CDAPMessage.getReleaseConnectionResponseMessage(null, 1, 0, null);
+		cdapMessage = cdapSessionManager.getReleaseConnectionResponseMessage(32769, null, 0, null, cdapMessage.getInvokeID());
 		message = receivingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		receivingCDAPSession.messageSent(cdapMessage);
 		
@@ -59,7 +60,7 @@ public abstract class BaseCDAPTest {
 		byte[] message = null;
 		CDAPMessage cdapMessage = null;
 		
-		cdapMessage = CDAPMessage.getReleaseConnectionRequestMessage(null, 0);
+		cdapMessage = cdapSessionManager.getReleaseConnectionRequestMessage(32768, null, false);
 		message = sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 		

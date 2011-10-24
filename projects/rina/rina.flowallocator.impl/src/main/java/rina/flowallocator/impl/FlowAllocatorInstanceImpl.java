@@ -10,9 +10,9 @@ import org.apache.commons.logging.LogFactory;
 
 import rina.cdap.api.CDAPMessageHandler;
 import rina.cdap.api.CDAPSessionDescriptor;
+import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
-import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.DataTransferAEInstance;
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
@@ -116,10 +116,13 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 */
 	private Timer timer = null;
 	
-	public FlowAllocatorInstanceImpl(APService applicationProcess, FlowAllocator flowAllocator){
+	private CDAPSessionManager cdapSessionManager = null;
+	
+	public FlowAllocatorInstanceImpl(APService applicationProcess, FlowAllocator flowAllocator, CDAPSessionManager cdapSessionManager){
 		this.applicationProcess = applicationProcess;
 		this.flowAllocator = flowAllocator;
 		this.timer = new Timer();
+		this.cdapSessionManager = cdapSessionManager;
 		connections = new ArrayList<Connection>();
 		//TODO initialize the newFlowRequestPolicy
 		newFlowRequestPolicy = new NewFlowRequestPolicyImpl();
@@ -199,9 +202,9 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		try{
 			objectValue = new ObjectValue();
 			objectValue.setByteval(encoder.encode(flow));
-			cdapMessage = CDAPMessage.getCreateObjectRequestMessage(null, null, socket.getLocalPort(), "flow", 0, RIBObjectNames.SEPARATOR + 
+			cdapMessage = cdapSessionManager.getCreateObjectRequestMessage(rmtPortId, null, null, "flow", 0, RIBObjectNames.SEPARATOR + 
 					RIBObjectNames.DIF + RIBObjectNames.SEPARATOR + RIBObjectNames.RESOURCE_ALLOCATION + RIBObjectNames.SEPARATOR +
-					RIBObjectNames.FLOW_ALLOCATOR + RIBObjectNames.SEPARATOR + RIBObjectNames.FLOWS + RIBObjectNames.SEPARATOR + flowName, objectValue, 0);
+					RIBObjectNames.FLOW_ALLOCATOR + RIBObjectNames.SEPARATOR + RIBObjectNames.FLOWS + RIBObjectNames.SEPARATOR + flowName, objectValue, 0, true);
 			ribDaemon.sendMessage(cdapMessage, rmtPortId, this);
 			this.underlyingPortId = rmtPortId;
 			this.requestMessage = cdapMessage;
@@ -315,8 +318,8 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			try{
 				ObjectValue objectValue = new ObjectValue();
 				objectValue.setByteval(encoder.encode(flow));
-				cdapMessage = CDAPMessage.getCreateObjectResponseMessage(null, requestMessage.getInvokeID(), requestMessage.getObjClass(), 
-						0, requestMessage.getObjName(), objectValue, 0, null);
+				cdapMessage = cdapSessionManager.getCreateObjectResponseMessage(underlyingPortId, null, requestMessage.getObjClass(), 
+						0, requestMessage.getObjName(), objectValue, 0, null, requestMessage.getInvokeID());
 				ribDaemon.sendMessage(cdapMessage, underlyingPortId, null);
 				ribDaemon.create(requestMessage.getObjClass(), requestMessage.getObjName(), 0, this);
 				tcpSocketReader = new TCPSocketReader(socket);
@@ -328,8 +331,8 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		}else{
 			//Create CDAP response message
 			try{
-				cdapMessage = CDAPMessage.getCreateObjectResponseMessage(null, requestMessage.getInvokeID(), requestMessage.getObjClass(), 
-						0, requestMessage.getObjName(), null, -1, reason);
+				cdapMessage = cdapSessionManager.getCreateObjectResponseMessage(underlyingPortId, null, requestMessage.getObjClass(), 
+						0, requestMessage.getObjName(), null, -1, reason, requestMessage.getInvokeID());
 				ribDaemon.sendMessage(cdapMessage, underlyingPortId, null);
 			}catch(Exception ex){
 				ex.printStackTrace();
@@ -354,7 +357,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		try{
 			ObjectValue objectValue = new ObjectValue();
 			objectValue.setByteval(encoder.encode(flow));
-			requestMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, portId, "flow", 0, requestMessage.getObjName(), 0); 
+			requestMessage = cdapSessionManager.getDeleteObjectRequestMessage(underlyingPortId, null, null, "flow", 0, requestMessage.getObjName(), 0, true); 
 			ribDaemon.sendMessage(requestMessage, underlyingPortId, this);
 			//TODO set timer to wait for M_DELETE_R message. If the message is not reveived before timer expiration, remove
 			//the Flow object from the RIB and notify the application process (.deliverDeallocateResponse)
@@ -378,8 +381,8 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		RIBDaemon ribDaemon = (RIBDaemon) flowAllocator.getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		
 		try{
-			CDAPMessage responseMessage = CDAPMessage.getDeleteObjectResponseMessage(null, 
-					cdapMessage.getInvokeID(), cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName(), 0, null);
+			CDAPMessage responseMessage = cdapSessionManager.getDeleteObjectResponseMessage(underlyingPortId, null, 
+					cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName(), 0, null, cdapMessage.getInvokeID());
 			ribDaemon.sendMessage(responseMessage, underlyingPortId, null);
 			ribDaemon.delete(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), null);
 		}catch(Exception ex){

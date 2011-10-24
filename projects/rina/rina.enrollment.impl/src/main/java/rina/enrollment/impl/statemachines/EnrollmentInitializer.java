@@ -7,6 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.cdap.api.CDAPException;
+import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Flags;
 import rina.cdap.api.message.ObjectValue;
@@ -34,10 +35,16 @@ public class EnrollmentInitializer implements Runnable{
 	private State state = State.ADDRESS;
 	
 	private int invokeId = 0;
+	
+	private CDAPSessionManager cdapSessionManager = null;
+	
+	private int portId = 0;
 
-	public EnrollmentInitializer(DefaultEnrollmentStateMachine enrollmentStateMachine, int invokeId, int portId){
+	public EnrollmentInitializer(DefaultEnrollmentStateMachine enrollmentStateMachine, int invokeId, int portId, CDAPSessionManager cdapSessionManager){
 		this.enrollmentStateMachine = enrollmentStateMachine;
 		this.invokeId = invokeId;
+		this.portId = portId;
+		this.cdapSessionManager = cdapSessionManager;
 	}
 	
 	public void cancelread(){
@@ -93,9 +100,9 @@ public class EnrollmentInitializer implements Runnable{
 			ex.printStackTrace();
 		}
 		
-		CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(Flags.F_RD_INCOMPLETE, invokeId, 
+		CDAPMessage cdapMessage = cdapSessionManager.getReadObjectResponseMessage(portId, Flags.F_RD_INCOMPLETE, 
 				"synonym", 1, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, objectValue, 0, null);
+				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, objectValue, 0, null, invokeId);
 		
 		enrollmentStateMachine.sendCDAPMessage(cdapMessage);
 		enrollmentStateMachine.setRemoteAddress(address);
@@ -115,8 +122,8 @@ public class EnrollmentInitializer implements Runnable{
 				serializedObject = enrollmentStateMachine.getEncoder().encode(whatevercastNames.get(i).getObjectValue());
 				objectValue = new ObjectValue();
 				objectValue.setByteval(serializedObject);
-				CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(Flags.F_RD_INCOMPLETE, invokeId, whatevercastNames.get(i).getObjectClass(), 
-						whatevercastNames.get(i).getObjectInstance(), whatevercastNames.get(i).getObjectName(), objectValue, 0, null);
+				CDAPMessage cdapMessage = cdapSessionManager.getReadObjectResponseMessage(portId, Flags.F_RD_INCOMPLETE, whatevercastNames.get(i).getObjectClass(), 
+						whatevercastNames.get(i).getObjectInstance(), whatevercastNames.get(i).getObjectName(), objectValue, 0, null, invokeId);
 				enrollmentStateMachine.sendCDAPMessage(cdapMessage);
 			}catch(Exception ex){
 				log.error(ex);
@@ -142,8 +149,8 @@ public class EnrollmentInitializer implements Runnable{
 			ex.printStackTrace();
 		}
 		
-		CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(Flags.F_RD_INCOMPLETE, invokeId, dataTransferConstants.getObjectClass(), 
-				dataTransferConstants.getObjectInstance(), dataTransferConstants.getObjectName(), objectValue, 0, null);
+		CDAPMessage cdapMessage = cdapSessionManager.getReadObjectResponseMessage(portId, Flags.F_RD_INCOMPLETE, dataTransferConstants.getObjectClass(), 
+				dataTransferConstants.getObjectInstance(), dataTransferConstants.getObjectName(), objectValue, 0, null, invokeId);
 		
 		enrollmentStateMachine.sendCDAPMessage(cdapMessage);
 		state = State.QOS_CUBES;
@@ -168,8 +175,8 @@ public class EnrollmentInitializer implements Runnable{
 				}else{
 					flags = Flags.F_RD_INCOMPLETE;
 				}
-				CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(flags, invokeId, qosCubes.get(i).getObjectClass(), 
-						qosCubes.get(i).getObjectInstance(), qosCubes.get(i).getObjectName(), objectValue, 0, null);
+				CDAPMessage cdapMessage = cdapSessionManager.getReadObjectResponseMessage(portId, flags, qosCubes.get(i).getObjectClass(), 
+						qosCubes.get(i).getObjectInstance(), qosCubes.get(i).getObjectName(), objectValue, 0, null, invokeId);
 				enrollmentStateMachine.sendCDAPMessage(cdapMessage);
 			}catch(Exception ex){
 				log.error(ex);

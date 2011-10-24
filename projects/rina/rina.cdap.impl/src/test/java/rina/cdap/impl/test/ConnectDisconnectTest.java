@@ -94,7 +94,7 @@ public class ConnectDisconnectTest extends BaseCDAPTest{
 		boolean failed = false;
 		CDAPMessage cdapMessage = null;
 		
-		cdapMessage = CDAPMessage.getReleaseConnectionResponseMessage(null, 1, 0, null);
+		cdapMessage = cdapSessionManager.getReleaseConnectionResponseMessage(32769, null, 0, null, 1);
 		try{
 			receivingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		}catch(Exception ex){

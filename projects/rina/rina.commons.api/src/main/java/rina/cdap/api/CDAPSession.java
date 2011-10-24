@@ -62,4 +62,6 @@ public interface CDAPSession {
 	 * authentication type, version, ...)
 	 */
 	public CDAPSessionDescriptor getSessionDescriptor();
+	
+	public CDAPSessionInvokeIdManager getInvokeIdManager();
 }
