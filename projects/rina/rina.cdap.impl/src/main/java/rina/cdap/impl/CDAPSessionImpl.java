@@ -150,12 +150,6 @@ public class CDAPSessionImpl implements CDAPSession{
 	
 	public void messageSent(CDAPMessage cdapMessage) throws CDAPException{
 		messageSentOrReceived(cdapMessage, true);
-		Opcode opcode = cdapMessage.getOpCode();
-		if (opcode.equals(Opcode.M_CONNECT_R) || opcode.equals(Opcode.M_RELEASE_R) || opcode.equals(Opcode.M_CREATE_R) || opcode.equals(Opcode.M_DELETE_R) 
-				|| opcode.equals(Opcode.M_START_R) || opcode.equals(Opcode.M_STOP_R) || opcode.equals(Opcode.M_WRITE_R) || opcode.equals(Opcode.M_CANCELREAD_R) || 
-				(opcode.equals(Opcode.M_READ_R) && !cdapMessage.getFlags().equals(Flags.F_RD_INCOMPLETE))){
-			invokeIdManager.freeInvokeId(new Integer(cdapMessage.getInvokeID()));
-		}
 	}
 	
 	public CDAPMessage messageReceived(byte[] message) throws CDAPException{
@@ -230,7 +224,18 @@ public class CDAPSessionImpl implements CDAPSession{
 		}
 
 		CDAPMessageValidator.validate(cdapMessage);
+		freeInvokeId(cdapMessage);
+		
 		return cdapMessage;
+	}
+	
+	private void freeInvokeId(CDAPMessage cdapMessage){
+		Opcode opcode = cdapMessage.getOpCode();
+		if (opcode.equals(Opcode.M_CONNECT_R) || opcode.equals(Opcode.M_RELEASE_R) || opcode.equals(Opcode.M_CREATE_R) || opcode.equals(Opcode.M_DELETE_R) 
+				|| opcode.equals(Opcode.M_START_R) || opcode.equals(Opcode.M_STOP_R) || opcode.equals(Opcode.M_WRITE_R) || opcode.equals(Opcode.M_CANCELREAD_R) || 
+				(opcode.equals(Opcode.M_READ_R) && (cdapMessage.getFlags() == null || !cdapMessage.getFlags().equals(Flags.F_RD_INCOMPLETE)))){
+			invokeIdManager.freeInvokeId(new Integer(cdapMessage.getInvokeID()));
+		}
 	}
 	
 	private void checkIsConnected() throws CDAPException{

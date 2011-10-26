@@ -25,15 +25,17 @@ public class ReadCancelReadWriteTest extends BaseCDAPTest{
 	public void testSingleWriteWithResponse() throws CDAPException{
 		CDAPMessage cdapMessage = null;
 		byte[] message = null;
+		int invokeId = 0;
 		
 		cdapMessage = cdapSessionManager.getWriteObjectRequestMessage(32768, null, null, "org.pouzinsociety.flow.Flow", 0, new ObjectValue(), "123", 0, true);
+		invokeId = cdapMessage.getInvokeID();
 		message = sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 		
 		receivingCDAPSession.messageReceived(message);
 		
 		boolean failed = false;
-		cdapMessage = cdapSessionManager.getWriteObjectResponseMessage(32769, null, 0, null, cdapMessage.getInvokeID());
+		cdapMessage = cdapSessionManager.getWriteObjectResponseMessage(32769, null, 0, null, 234);
 		try{
 			message = receivingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		}catch(CDAPException ex){
@@ -43,7 +45,7 @@ public class ReadCancelReadWriteTest extends BaseCDAPTest{
 
 		Assert.assertTrue(failed);
 		
-		cdapMessage = CDAPMessage.getWriteObjectResponseMessage(null, 25, 0, null);
+		cdapMessage = cdapSessionManager.getWriteObjectResponseMessage(32769, null, 0, null, invokeId);
 		message = receivingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		receivingCDAPSession.messageSent(cdapMessage);
 		

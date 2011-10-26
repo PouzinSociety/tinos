@@ -233,6 +233,9 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	public synchronized CDAPMessage getOpenConnectionRequestMessage(int portId, AuthTypes authMech, AuthValue authValue, String destAEInst, String destAEName, String destApInst,
 			String destApName, String srcAEInst, String srcAEName, String srcApInst, String srcApName) throws CDAPException{
 		CDAPSession cdapSession = this.getCDAPSession(portId);
+		if (cdapSession == null){
+			cdapSession = this.createCDAPSession(portId);
+		}
 		return CDAPMessage.getOpenConnectionRequestMessage(authMech, authValue, destAEInst, destAEName, 
 				destApInst, destApName, srcAEInst, srcAEName, srcApInst, srcApName, cdapSession.getInvokeIdManager().getInvokeId());
 	}
