@@ -96,7 +96,7 @@ public class CDAPEnrollmentClient extends CDAPClient{
 	private CDAPMessage processWaitingConnectionState(CDAPMessage cdapMessage) throws CDAPException{
 		if (!cdapMessage.getOpCode().equals(Opcode.M_CONNECT_R) || cdapMessage.getResult() != 0){
 			end = true;
-			return CDAPMessage.getReleaseConnectionRequestMessage(null, 0);
+			return cdapSessionManager.getReleaseConnectionRequestMessage(clientSocket.getLocalPort(), null, false);
 		}
 		
 		//TODO set timer
@@ -110,16 +110,16 @@ public class CDAPEnrollmentClient extends CDAPClient{
 		
 		if (!cdapMessage.getOpCode().equals(Opcode.M_READ) || !cdapMessage.getObjName().equals("/daf/management/naming/currentsynonym")){
 			end = true;
-			return CDAPMessage.getReleaseConnectionRequestMessage(null, 0);
+			return cdapSessionManager.getReleaseConnectionRequestMessage(clientSocket.getLocalPort(), null, false);
 		}
 		
-		CDAPMessage outgoingCDAPMessage = CDAPMessage.getReadObjectResponseMessage(null, cdapMessage.getInvokeID(), 
-				"rina.messages.ApplicationProcessNameSynonym", 0, "/daf/management/naming/currentsynonym", null, 0, null);
+		CDAPMessage outgoingCDAPMessage = cdapSessionManager.getReadObjectResponseMessage(clientSocket.getLocalPort(), null, 
+				"rina.messages.ApplicationProcessNameSynonym", 0, "/daf/management/naming/currentsynonym", null, 0, null,  cdapMessage.getInvokeID());
 		
 		sendCDAPMessage(outgoingCDAPMessage);
 		
-		outgoingCDAPMessage = CDAPMessage.getReadObjectRequestMessage(null, null, 49, 
-				"rina.messages.DIFEnrollmentInformation", 0, "/daf/management/enrollment", 0);
+		outgoingCDAPMessage = cdapSessionManager.getReadObjectRequestMessage( cdapMessage.getInvokeID(), null, null, 
+				"rina.messages.DIFEnrollmentInformation", 0, "/daf/management/enrollment", 0, true);
 		
 		//TODO set timer
 		
@@ -132,7 +132,7 @@ public class CDAPEnrollmentClient extends CDAPClient{
 		//TODO cancel timer
 		if (!cdapMessage.getOpCode().equals(Opcode.M_READ_R) || cdapMessage.getResult() != 0){
 			end = true;
-			return CDAPMessage.getReleaseConnectionRequestMessage(null, 0);
+			return cdapSessionManager.getReleaseConnectionRequestMessage( cdapMessage.getInvokeID(), null, false);
 		}
 		
 		if(cdapMessage.getFlags() != null && cdapMessage.getFlags().equals(Flags.F_RD_INCOMPLETE)){
@@ -149,10 +149,10 @@ public class CDAPEnrollmentClient extends CDAPClient{
 		//TODO canncel timer
 		if (!cdapMessage.getOpCode().equals(Opcode.M_START)){
 			end = true;
-			return CDAPMessage.getReleaseConnectionRequestMessage(null, 0);
+			return cdapSessionManager.getReleaseConnectionRequestMessage( cdapMessage.getInvokeID(), null, false);
 		}
 		
-		CDAPMessage outgoingCDAPMessage = CDAPMessage.getStartObjectResponseMessage(null, cdapMessage.getInvokeID(), 0, null);
+		CDAPMessage outgoingCDAPMessage = cdapSessionManager.getStartObjectResponseMessage( cdapMessage.getInvokeID(), null, 0, null, cdapMessage.getInvokeID());
 		state = State.ENROLLED;
 		
 		return outgoingCDAPMessage;

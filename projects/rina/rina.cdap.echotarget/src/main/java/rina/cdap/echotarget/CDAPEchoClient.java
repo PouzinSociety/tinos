@@ -92,38 +92,38 @@ public class CDAPEchoClient extends CDAPClient{
 	private CDAPMessage getMCreateMessage(CDAPMessage cdapMessage) throws CDAPException{
 		ObjectValue objectValue = new ObjectValue();
 		objectValue.setStrval("This is a fake Flow message");
-		return CDAPMessage.getCreateObjectRequestMessage(null, null, 25, "rina.flowallocator.api.message.Flow", 0, "1234", objectValue, 0);
+		return cdapSessionManager.getCreateObjectRequestMessage(clientSocket.getLocalPort(), null, null, "rina.flowallocator.api.message.Flow", 0, "1234", objectValue, 0, true);
 	}
 	
 	private CDAPMessage getMStartMessage(CDAPMessage cdapMessage) throws CDAPException{
-		return CDAPMessage.getStartObjectRequestMessage(null, null, 89, cdapMessage.getObjClass(), 
-														null, cdapMessage.getObjInst(), cdapMessage.getObjName(), 0);
+		return cdapSessionManager.getStartObjectRequestMessage(clientSocket.getLocalPort(), null, null, cdapMessage.getObjClass(), 
+														null, cdapMessage.getObjInst(), cdapMessage.getObjName(), 0, true);
 	}
 	
 	private CDAPMessage getMWriteMessage(CDAPMessage cdapMessage) throws CDAPException{
 		ObjectValue objectValue = new ObjectValue();
 		objectValue.setStrval("Overwriting the value of the fake Flow message");
-		return CDAPMessage.getWriteObjectRequestMessage(null, null, 940, cdapMessage.getObjClass(), 
-														cdapMessage.getObjInst(), objectValue, cdapMessage.getObjName(), 0);
+		return cdapSessionManager.getWriteObjectRequestMessage(clientSocket.getLocalPort(), null, null, cdapMessage.getObjClass(), 
+														cdapMessage.getObjInst(), objectValue, cdapMessage.getObjName(), 0, true);
 	}
 	
 	private CDAPMessage getMReadMessage(CDAPMessage cdapMessage) throws CDAPException{
-		return CDAPMessage.getReadObjectRequestMessage(null, null, 46, "Enrollment", 
-				cdapMessage.getObjInst(), "daf.management.enrollment", 0);
+		return cdapSessionManager.getReadObjectRequestMessage(clientSocket.getLocalPort(), null, null, "Enrollment", 
+				cdapMessage.getObjInst(), "daf.management.enrollment", 0, true);
 	}
 	
 	private CDAPMessage getMStopMessage(CDAPMessage cdapMessage) throws CDAPException{
-		return CDAPMessage.getStopObjectRequestMessage(null, null, 365, cdapMessage.getObjClass(), null, 
-					cdapMessage.getObjInst(), cdapMessage.getObjName(), 0);
+		return cdapSessionManager.getStopObjectRequestMessage(clientSocket.getLocalPort(), null, null, cdapMessage.getObjClass(), null, 
+					cdapMessage.getObjInst(), cdapMessage.getObjName(), 0, true);
 	}
 	
 	private CDAPMessage getMDeleteMessage(CDAPMessage cdapMessage) throws CDAPException{
-		return CDAPMessage.getDeleteObjectRequestMessage(null, null, 1231, cdapMessage.getObjClass(), 
-				cdapMessage.getObjInst(), cdapMessage.getObjName(), 0);
+		return cdapSessionManager.getDeleteObjectRequestMessage(clientSocket.getLocalPort(), null, null, cdapMessage.getObjClass(), 
+				cdapMessage.getObjInst(), cdapMessage.getObjName(), 0, true);
 	}
 	
 	private CDAPMessage getMReleaseMessage(CDAPMessage cdapMessage) throws CDAPException{
-		return CDAPMessage.getReleaseConnectionRequestMessage(null, 42);
+		return cdapSessionManager.getReleaseConnectionRequestMessage(clientSocket.getLocalPort(), null, true);
 	}
 	
 	public static void main(String[] args){

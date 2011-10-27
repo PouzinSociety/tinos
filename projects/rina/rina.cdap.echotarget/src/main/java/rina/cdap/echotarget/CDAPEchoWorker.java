@@ -88,45 +88,45 @@ public class CDAPEchoWorker extends CDAPWorker {
 	}
 	
 	private CDAPMessage getMConnectResponse(CDAPMessage cdapMessage) throws CDAPException{
-		return CDAPMessage.getOpenConnectionResponseMessage(cdapMessage.getAuthMech(), cdapMessage.getAuthValue(), cdapMessage.getSrcAEInst(), cdapMessage.getSrcAEName(), 
-				cdapMessage.getSrcApInst(), cdapMessage.getSrcApName(), cdapMessage.getInvokeID(), 0, null, cdapMessage.getDestAEInst(), 
-				cdapMessage.getDestAEName(), cdapMessage.getDestApInst(), cdapMessage.getDestApName());
+		return cdapSessionManager.getOpenConnectionResponseMessage(socket.getPort(), cdapMessage.getAuthMech(), cdapMessage.getAuthValue(), cdapMessage.getSrcAEInst(), cdapMessage.getSrcAEName(), 
+				cdapMessage.getSrcApInst(), cdapMessage.getSrcApName(), 0, null, cdapMessage.getDestAEInst(), 
+				cdapMessage.getDestAEName(), cdapMessage.getDestApInst(), cdapMessage.getDestApName(), cdapMessage.getInvokeID());
 	}
 	
 	private CDAPMessage getMCreateResponse(CDAPMessage cdapMessage) throws CDAPException{
-		return CDAPMessage.getCreateObjectResponseMessage(cdapMessage.getFlags(), 
-				cdapMessage.getInvokeID(), cdapMessage.getObjClass(), 12345, cdapMessage.getObjName(), cdapMessage.getObjValue(), 0, "");
+		return cdapSessionManager.getCreateObjectResponseMessage(socket.getPort(), cdapMessage.getFlags(), 
+				cdapMessage.getObjClass(), 12345, cdapMessage.getObjName(), cdapMessage.getObjValue(), 0, "", cdapMessage.getInvokeID());
 	}
 	
 	private CDAPMessage getMStartResponse(CDAPMessage cdapMessage) throws CDAPException{
-		return CDAPMessage.getStartObjectResponseMessage(cdapMessage.getFlags(), cdapMessage.getInvokeID(), 0, "");
+		return cdapSessionManager.getStartObjectResponseMessage(socket.getPort(), cdapMessage.getFlags(), 0, "", cdapMessage.getInvokeID());
 	}
 	
 	private CDAPMessage getMWriteResponse(CDAPMessage cdapMessage) throws CDAPException{
-		return CDAPMessage.getWriteObjectResponseMessage(cdapMessage.getFlags(), cdapMessage.getInvokeID(), 0, "");
+		return cdapSessionManager.getWriteObjectResponseMessage(socket.getPort(), cdapMessage.getFlags(), 0, "", cdapMessage.getInvokeID());
 	}
 	
 	private CDAPMessage getMDeleteResponse(CDAPMessage cdapMessage) throws CDAPException{
-		return CDAPMessage.getDeleteObjectResponseMessage(cdapMessage.getFlags(), cdapMessage.getInvokeID(), cdapMessage.getObjClass(), 
-				cdapMessage.getObjInst(), cdapMessage.getObjName(), 0, "");
+		return cdapSessionManager.getDeleteObjectResponseMessage(socket.getPort(), cdapMessage.getFlags(), cdapMessage.getObjClass(), 
+				cdapMessage.getObjInst(), cdapMessage.getObjName(), 0, "", cdapMessage.getInvokeID());
 	}
 	
 	private CDAPMessage getMCancelReadResponse(CDAPMessage cdapMessage) throws CDAPException{
-		return CDAPMessage.getCancelReadResponseMessage(cdapMessage.getFlags(), cdapMessage.getInvokeID(), 0, "");
+		return cdapSessionManager.getCancelReadResponseMessage(socket.getPort(), cdapMessage.getFlags(), cdapMessage.getInvokeID(), 0, "");
 	}
 	
 	private CDAPMessage getMStopResponse(CDAPMessage cdapMessage) throws CDAPException{
-		return CDAPMessage.getStopObjectResponseMessage(cdapMessage.getFlags(), cdapMessage.getInvokeID(), 0, "");
+		return cdapSessionManager.getStopObjectResponseMessage(socket.getPort(), cdapMessage.getFlags(), 0, "", cdapMessage.getInvokeID());
 	}
 	
 	private CDAPMessage getMReleaseResponse(CDAPMessage cdapMessage) throws CDAPException{
-		return CDAPMessage.getReleaseConnectionResponseMessage(cdapMessage.getFlags(), cdapMessage.getInvokeID(), 0, "");
+		return cdapSessionManager.getReleaseConnectionResponseMessage(socket.getPort(), cdapMessage.getFlags(), 0, "", cdapMessage.getInvokeID());
 	}
 	
 	private CDAPMessage getMReadResponse(CDAPMessage cdapMessage) throws CDAPException{
 		ObjectValue objectValue = new ObjectValue();
 		objectValue.setStrval("Overwriting the value of the fake Flow message");
-		return CDAPMessage.getReadObjectResponseMessage(cdapMessage.getFlags(), cdapMessage.getInvokeID(), cdapMessage.getObjClass(), 
-							cdapMessage.getObjInst(), cdapMessage.getObjName(), objectValue, 0, "");
+		return cdapSessionManager.getReadObjectResponseMessage(socket.getPort(), cdapMessage.getFlags(), cdapMessage.getObjClass(), 
+							cdapMessage.getObjInst(), cdapMessage.getObjName(), objectValue, 0, "", cdapMessage.getInvokeID());
 	}
 }
