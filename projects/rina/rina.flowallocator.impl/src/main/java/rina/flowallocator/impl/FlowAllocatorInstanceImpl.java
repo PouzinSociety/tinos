@@ -158,11 +158,11 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		createDataTransferAEInstance(flow);
 		
 		//Check directory to see to what IPC process the CDAP M_CREATE request has to be delivered
-		long destinationAddress = flowAllocator.getDirectoryForwardingTable().getAddress(allocateRequest.getRequestedAPinfo());
+		long destinationAddress = flowAllocator.getDirectoryForwardingTable().getAddress(allocateRequest.getDestinationAPNamingInfo());
 		flow.setDestinationAddress(destinationAddress);
 		if (destinationAddress == 0){
 			//error, the table should have at least returned a default IPC process address to continue looking for the application process
-			String message = "The directory forwarding table returned no entries when looking up " + allocateRequest.getRequestedAPinfo().toString();
+			String message = "The directory forwarding table returned no entries when looking up " + allocateRequest.getDestinationAPNamingInfo().toString();
 			throw new IPCException(5, message);
 		}
 		

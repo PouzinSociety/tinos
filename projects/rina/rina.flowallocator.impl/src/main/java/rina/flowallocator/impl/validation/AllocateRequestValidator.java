@@ -12,7 +12,8 @@ import rina.ipcservice.api.IPCException;
 public class AllocateRequestValidator {
 	
 	public void validateAllocateRequest(AllocateRequest allocateRequest) throws IPCException{
-		validateApplicationProcessNamingInfo(allocateRequest.getRequestedAPinfo());
+		validateApplicationProcessNamingInfo(allocateRequest.getSourceAPNamingInfo());
+		validateApplicationProcessNamingInfo(allocateRequest.getDestinationAPNamingInfo());
 	}
 	
 	/** 

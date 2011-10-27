@@ -107,6 +107,18 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	public void setEnrollmentTaskFactory(EnrollmentTaskFactory enrollmentTaskFactory){
 		this.enrollmentTaskFactory = enrollmentTaskFactory;
 	}
+	
+	public CDAPSessionManagerFactory getCDAPSessionManagerFactory(){
+		return this.cdapSessionManagerFactory;
+	}
+	
+	public EncoderFactory getEncoderFactory(){
+		return this.encoderFactory;
+	}
+	
+	public DelimiterFactory getDelimiterFactory(){
+		return this.delimiterFactory;
+	}
 
 	public IPCProcess createIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) throws Exception{
 		if (ipcProcesses.get(ipcProcessNamingInfo.getProcessKey()) != null){

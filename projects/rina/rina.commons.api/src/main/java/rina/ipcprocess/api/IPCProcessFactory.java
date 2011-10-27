@@ -2,6 +2,9 @@ package rina.ipcprocess.api;
 
 import java.util.List;
 
+import rina.cdap.api.CDAPSessionManagerFactory;
+import rina.delimiting.api.DelimiterFactory;
+import rina.encoding.api.EncoderFactory;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 /**
@@ -44,4 +47,8 @@ public interface IPCProcessFactory {
 	 * @return
 	 */
 	public List<IPCProcess> listIPCProcesses();
+	
+	public CDAPSessionManagerFactory getCDAPSessionManagerFactory();
+	public EncoderFactory getEncoderFactory();
+	public DelimiterFactory getDelimiterFactory();
 }

@@ -364,7 +364,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		}catch(IPCException ex){
 			ex.printStackTrace();
 			log.error("Problems processing allocate request: "+ex);
-			applicationProcess.deliverAllocateResponse(allocateRequest.getRequestedAPinfo(), 0, -1, ex.getMessage());
+			applicationProcess.deliverAllocateResponse(allocateRequest.getDestinationAPNamingInfo(), 0, -1, ex.getMessage());
 		}
 	}
 

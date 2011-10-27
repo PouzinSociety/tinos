@@ -1,5 +1,6 @@
 package rina.ipcmanager.impl;
 
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -11,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import rina.applicationprocess.api.DAFMember;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.cdap.api.CDAPSessionDescriptor;
+import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
 import rina.efcp.api.DataTransferConstants;
@@ -50,17 +52,49 @@ public class IPCManagerImpl {
 	 */
 	private IPCProcessFactory ipcProcessFactory = null;
 	
+	/**
+	 * The Inter DIF Directory or IDD
+	 */
+	private InterDIFDirectory interDIFDirectory = null;
+	
+	private CDAPSessionManager cdapSessionManager = null;
+	
+	private Encoder encoder = null;
+	
 	public IPCManagerImpl(){
 		console = new IPCManagerConsole(this);
+		interDIFDirectory = new InterDIFDirectory();
 		tcpServer = new IPCManagerTCPServer(this);
-		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
+		executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
 		executorService.execute(console);
 		executorService.execute(tcpServer);
+		cdapSessionManager = ipcProcessFactory.getCDAPSessionManagerFactory().createCDAPSessionManager();
+		encoder = ipcProcessFactory.getEncoderFactory().createEncoderInstance();
 		log.debug("IPC Manager started");
 	}
 	
 	public void setIPCProcessFactory(IPCProcessFactory ipcProcessFactory){
 		this.ipcProcessFactory = ipcProcessFactory;
+	}
+	
+	public synchronized void newConnectionAccepted(Socket socket){
+		
+	}
+	
+	public synchronized IPCService processAllocationRequest(byte[] pdu){
+		try{
+			CDAPMessage cdapMessage = cdapSessionManager.decodeCDAPMessage(pdu);
+			AllocateRequest allocateRequest = (AllocateRequest) encoder.decode(cdapMessage.getObjValue().getByteval(), AllocateRequest.class.toString());
+			String difName = interDIFDirectory.mapApplicationProcessNamingInfoToDIFName(allocateRequest.getDestinationAPNamingInfo());
+			//TODO Look for the local IPC Process that is a member of difName
+			
+			
+		}catch(Exception ex){
+			ex.printStackTrace();
+			log.error("Problems when decoding CDAP Message, ignoring it. "+ex.getMessage());
+		}
+		
+		return null;
 	}
 	
 	public void createIPCProcess(String applicationProcessName, String applicationProcessInstance, String difName) throws Exception{
@@ -209,7 +243,8 @@ public class IPCManagerImpl {
 				new ApplicationProcessNamingInfo(sourceIPCProcessName, sourceIPCProcessInstance));
 		IPCService ipcService = (IPCService) ipcProcess;
 		AllocateRequest allocateRequest = new AllocateRequest();
-		allocateRequest.setRequestedAPinfo(new ApplicationProcessNamingInfo(destinationApplicationProcessName, destinationApplicationProcessInstance));
+		allocateRequest.setDestinationAPNamingInfo(new ApplicationProcessNamingInfo(destinationApplicationProcessName, destinationApplicationProcessInstance));
+		allocateRequest.setSourceAPNamingInfo(new ApplicationProcessNamingInfo("console", "1"));
 		ipcService.submitAllocateRequest(allocateRequest, null);
 	}
 	

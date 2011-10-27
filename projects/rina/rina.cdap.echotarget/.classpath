@@ -6,16 +6,12 @@
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/ivy-cache/repository/org.apache.commons/com.springsource.org.apache.commons.logging/1.1.1/com.springsource.org.apache.commons.logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/com.google/com.google.protobuf/2.3.0/com.google.protobuf-2.3.0.jar"/>
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.commons.api/1.0.0/rina.commons.api-1.0.0.jar"/>
-	<classpathentry ivygen="true" kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/ivy-cache/repository/org.antlr/com.springsource.antlr/2.7.6/com.springsource.antlr-2.7.6.jar"/>
-	<classpathentry ivygen="true" kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/ivy-cache/repository/org.junit/com.springsource.org.junit/4.4.0/license-4.4.0.txt"/>
-	<classpathentry ivygen="true" kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/ivy-cache/repository/org.antlr/com.springsource.antlr/2.7.6/com.springsource.antlr-sources-2.7.6.jar"/>
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/downloaded/org.junit/com.springsource.org.junit/4.4.0/com.springsource.org.junit-4.4.0.jar"/>
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.cdap.impl/1.0.0/rina.cdap.impl-1.0.0.jar"/>
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.delimiting.impl/1.0.0/rina.delimiting.impl-1.0.0.jar"/>
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.encoding.impl/1.0.0/rina.encoding.impl-1.0.0.jar"/>
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.ribdaemon.impl/1.0.0/rina.ribdaemon.impl-1.0.0.jar"/>
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.ipcservice.impl/1.0.0/rina.ipcservice.impl-1.0.0.jar"/>
-	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.ipcservice.api/1.0.0/rina.ipcservice.api-1.0.0.jar"/>
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.rmt.impl/1.0.0/rina.rmt.impl-1.0.0.jar"/>
 	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.enrollment.impl/1.0.0/rina.enrollment.impl-1.0.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>

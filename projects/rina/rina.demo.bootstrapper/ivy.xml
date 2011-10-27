@@ -16,7 +16,6 @@
 	</publications>
 
 	<dependencies>
-		<dependency org="org.pouzinsociety.rina" name="rina.ipcservice.api" rev="${rina.ipcservice.api}" />
 		<dependency org="org.pouzinsociety.rina" name="rina.commons.api" rev="${rina.commons.api}"  />
 		<dependency org="org.antlr" name="com.springsource.antlr" rev="${org.antlr}" conf="test->runtime" />
 		<dependency org="org.junit" name="com.springsource.org.junit" rev="${org.junit}" conf="test->runtime" />

@@ -81,8 +81,8 @@ private static final Log log = LogFactory.getLog(IPCManagerTCPServer.class);
 				log.info("Got a new request from "+socket.getInetAddress().getHostAddress() + 
 						". Local port: "+socket.getLocalPort()+"; Remote port: "+socket.getPort());
 				
-				//TODO call the IPC Manager
-				
+				//Call the IPC Manager
+				ipcManager.newConnectionAccepted(socket);
 			}
 		}catch(IOException e){
 			log.error(e.getMessage());

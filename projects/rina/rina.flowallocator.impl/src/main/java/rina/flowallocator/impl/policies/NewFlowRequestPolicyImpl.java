@@ -9,8 +9,8 @@ public class NewFlowRequestPolicyImpl implements NewFlowRequestPolicy{
 
 	public Flow generateFlowObject(AllocateRequest allocateRequest) throws IPCException {
 		Flow flow = new Flow();
-		flow.setDestinationNamingInfo(allocateRequest.getRequestedAPinfo());
-		flow.setSourceNamingInfo(new ApplicationProcessNamingInfo("test", "1")); //change this for the real source application naming information
+		flow.setDestinationNamingInfo(allocateRequest.getDestinationAPNamingInfo());
+		flow.setSourceNamingInfo(allocateRequest.getSourceAPNamingInfo());
 		flow.setHopCount(3);
 		flow.setMaxCreateFlowRetries(1);
 		
