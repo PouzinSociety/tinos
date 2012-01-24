@@ -15,7 +15,7 @@ public interface IPCService {
 	 * @throw IPCException if the allocate request is not well formed or there are 
 	 * no resources to honour the request
 	 */
-	public void submitAllocateRequest(AllocateRequest request, APService apService) throws IPCException;
+	public void submitAllocateRequest(FlowService request, APService apService) throws IPCException;
 	
 	/**
 	 * This primitive is invoked by the Application Process when in the Transfer state to 

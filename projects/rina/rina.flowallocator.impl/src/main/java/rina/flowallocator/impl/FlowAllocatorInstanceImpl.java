@@ -26,7 +26,7 @@ import rina.flowallocator.impl.tcp.TCPServer;
 import rina.flowallocator.impl.tcp.TCPSocketReader;
 import rina.flowallocator.impl.timertasks.SocketClosedTimerTask;
 import rina.ipcservice.api.APService;
-import rina.ipcservice.api.AllocateRequest;
+import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
@@ -152,17 +152,17 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 * @param portId the local port id associated to this flow
 	 * @throws IPCException if there are not enough resources to fulfill the allocate request
 	 */
-	public void submitAllocateRequest(AllocateRequest allocateRequest) throws IPCException {
-		flow = newFlowRequestPolicy.generateFlowObject(allocateRequest);
+	public void submitAllocateRequest(FlowService flowService) throws IPCException {
+		flow = newFlowRequestPolicy.generateFlowObject(flowService);
 		log.debug("Generated flow object: "+flow.toString());
 		createDataTransferAEInstance(flow);
 		
 		//Check directory to see to what IPC process the CDAP M_CREATE request has to be delivered
-		long destinationAddress = flowAllocator.getDirectoryForwardingTable().getAddress(allocateRequest.getDestinationAPNamingInfo());
+		long destinationAddress = flowAllocator.getDirectoryForwardingTable().getAddress(flowService.getDestinationAPNamingInfo());
 		flow.setDestinationAddress(destinationAddress);
 		if (destinationAddress == 0){
 			//error, the table should have at least returned a default IPC process address to continue looking for the application process
-			String message = "The directory forwarding table returned no entries when looking up " + allocateRequest.getDestinationAPNamingInfo().toString();
+			String message = "The directory forwarding table returned no entries when looking up " + flowService.getDestinationAPNamingInfo().toString();
 			throw new IPCException(5, message);
 		}
 		
@@ -291,7 +291,8 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		//1 TODO Check if the source application process has access to the destination application process
 		//2 TODO If not send negative M_CREATE_R back to the sender IPC process, and housekeeping
 		//3 TODO If it has, determine if the proposed policies for the flow are acceptable (invoke NewFlowREquestPolicy)
-		//4 TODO If they are acceptable, the FAI will invoke the Allocate_Request.deliver operation of the destination application process
+		//4 TODO If they are acceptable, the FAI will invoke the Allocate_Request.deliver operation of the destination application process. To do so it will find the
+		//IPC Manager and pass it the allocation request.
 		//TODO:Fix this. Right now this is a hack. I've short-circuited this and called submitAllocateResponse to avoid calling the destination App
 		this.submitAllocateResponse(portId, true, null);
 	}

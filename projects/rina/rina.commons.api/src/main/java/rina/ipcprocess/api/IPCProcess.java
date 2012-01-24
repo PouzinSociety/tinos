@@ -3,6 +3,8 @@ package rina.ipcprocess.api;
 import java.util.List;
 import java.util.Map;
 
+import rina.ipcmanager.api.IPCManager;
+
 /**
  * Represents an IPC Process. Holds together the different components of the IPC 
  * process
@@ -21,6 +23,11 @@ public interface IPCProcess{
 	public IPCProcessComponent removeIPCProcessComponent(String componentName);
 	
 	public void setIPCProcessCompnents(Map<String, IPCProcessComponent> ipcProcessComponents);
+	
+	/* IPC Manager */
+	public void setIPCManager(IPCManager ipcManager);
+	
+	public IPCManager getIPCManager();
 	
 	/**
 	 * Lifecicle event, invoked to tell the IPC process it is about to be destroyed.

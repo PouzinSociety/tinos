@@ -1,11 +1,11 @@
 package rina.rmt.impl.tcp;
 
-import java.io.IOException;
 import java.net.Socket;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.delimiting.api.BaseSocketReader;
 import rina.delimiting.api.Delimiter;
 import rina.ribdaemon.api.RIBDaemon;
 
@@ -15,110 +15,35 @@ import rina.ribdaemon.api.RIBDaemon;
  * @author eduardgrasa
  *
  */
-public class TCPSocketReader implements Runnable{
+public class TCPSocketReader extends BaseSocketReader{
 	
 	private static final Log log = LogFactory.getLog(TCPSocketReader.class);
 	
 	private TCPRMTImpl rmt = null;
 	
 	private RIBDaemon ribdaemon = null;
-	
-	private Delimiter delimiter = null;
-	
-	private Socket socket = null;
-	
-	/**
-	 * Controls when the reader will finish the execution
-	 */
-	private boolean end = false;
 
 	public TCPSocketReader(Socket socket, RIBDaemon ribdaemon, Delimiter delimiter, TCPRMTImpl rmt){
-		this.socket = socket;
+		super(socket, delimiter);
 		this.ribdaemon = ribdaemon;
-		this.delimiter = delimiter;
 		this.rmt = rmt;
 	}
-
-	public void run() {
-		boolean lookingForSduLength = true;
-		int length = 0;
-		int index = 0;
-		byte[] lastSduLengthCandidate = new byte[0];
-		byte[] currentSduLengthCandidate = null;
-		byte[] serializedCDAPMessage = null;
-		byte nextByte = 0;
-		int value = 0;
-		
-		log.info("Reading socket from remote interface: "+socket.getInetAddress().getHostAddress() + "\n" 
-				+ "Local port_id: "+socket.getLocalPort() + "\n" 
-				+ "Remote port_id: "+socket.getPort());
-		
-		while(!end){
-			//Delimit the byte array that contains a serialized CDAP message
-			try{
-				value = socket.getInputStream().read();
-				if (value == -1){
-					break;
-				}
 	
-				nextByte = (byte) value;
-				if (lookingForSduLength){
-					currentSduLengthCandidate = new byte[lastSduLengthCandidate.length + 1];
-					for(int i=0; i<lastSduLengthCandidate.length; i++){
-						currentSduLengthCandidate[i] = lastSduLengthCandidate[i];
-					}
-					currentSduLengthCandidate[lastSduLengthCandidate.length] = nextByte;
-					length = delimiter.readVarint32(currentSduLengthCandidate);
-					if (length == -2){
-						lastSduLengthCandidate = currentSduLengthCandidate;
-					}else{
-						lastSduLengthCandidate = new byte[0];
-						if (length > 0){
-							log.debug("Found a delimited CDAP message, of length " + length);
-							lookingForSduLength = false;
-						}
-					}
-				}else{
-					if (index < length){
-						if (serializedCDAPMessage == null){
-							serializedCDAPMessage = new byte[length];
-						}
-						serializedCDAPMessage[index] = nextByte;
-						index ++;
-						if (index == length){
-							log.debug("Received PDU through flow "+socket.getPort()+": "+printBytes(serializedCDAPMessage));
-							log.debug("Passing the PDU to the RIB Daemon");
-							ribdaemon.cdapMessageDelivered(serializedCDAPMessage, socket.getPort());
-							index = 0;
-							length = 0;
-							lookingForSduLength = true;
-							serializedCDAPMessage = null;
-						}
-					}
-				}
-			}catch(IOException ex){
-				ex.printStackTrace();
-				end = true;
-			}
-		}
-		
-		try{
-			socket.close();
-		}catch(IOException ex){
-			ex.printStackTrace();
-		}
-		
-		log.debug("The remote endpoint of flow "+socket.getPort()+" has disconnected. Notifying the RMT and the RIB Daemon");
-		this.rmt.connectionEnded(socket.getPort());
-		this.ribdaemon.flowDeallocated(socket.getPort());
+	/**
+	 * process the pdu that has been found
+	 * @param pdu
+	 */
+	public void processPDU(byte[] pdu){
+		log.debug("Passing the PDU to the RIB Daemon");
+		ribdaemon.cdapMessageDelivered(pdu, getSocket().getPort());
 	}
 	
-	private String printBytes(byte[] message){
-		String result = "";
-		for(int i=0; i<message.length; i++){
-			result = result + String.format("%02X", message[i]) + " ";
-		}
-		
-		return result;
+	/**
+	 * Invoked when the socket is disconnected
+	 */
+	public void socketDisconnected(){
+		log.debug("Notifying the RMT and the RIB Daemon");
+		this.rmt.connectionEnded(getSocket().getPort());
+		this.ribdaemon.flowDeallocated(getSocket().getPort());
 	}
 }

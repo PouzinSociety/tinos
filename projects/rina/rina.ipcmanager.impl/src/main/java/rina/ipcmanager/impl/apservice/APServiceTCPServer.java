@@ -1,4 +1,4 @@
-package rina.ipcmanager.impl.server;
+package rina.ipcmanager.impl.apservice;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -16,16 +16,16 @@ import rina.ipcmanager.impl.IPCManagerImpl;
  * @author eduardgrasa
  *
  */
-public class IPCManagerTCPServer implements Runnable{
+public class APServiceTCPServer implements Runnable{
 	
-private static final Log log = LogFactory.getLog(IPCManagerTCPServer.class);
+private static final Log log = LogFactory.getLog(APServiceTCPServer.class);
 	
 	public static final int DEFAULT_PORT = 32771;
 	
 	/**
-	 * The IPC Manager
+	 * The AP Service
 	 */
-	private IPCManagerImpl ipcManager = null;
+	private APServiceImpl apService = null;
 	
 	/**
 	 * Controls when the server will finish the execution
@@ -42,12 +42,12 @@ private static final Log log = LogFactory.getLog(IPCManagerTCPServer.class);
 	 */
 	private ServerSocket serverSocket = null;
 	
-	public IPCManagerTCPServer(IPCManagerImpl ipcManager){
-		this(ipcManager, DEFAULT_PORT);
+	public APServiceTCPServer(APServiceImpl apService){
+		this(apService, DEFAULT_PORT);
 	}
 	
-	public IPCManagerTCPServer(IPCManagerImpl ipcManager, int port){
-		this.ipcManager = ipcManager;
+	public APServiceTCPServer(APServiceImpl apService, int port){
+		this.apService = apService;
 		this.port = port;
 	}
 	
@@ -81,8 +81,8 @@ private static final Log log = LogFactory.getLog(IPCManagerTCPServer.class);
 				log.info("Got a new request from "+socket.getInetAddress().getHostAddress() + 
 						". Local port: "+socket.getLocalPort()+"; Remote port: "+socket.getPort());
 				
-				//Call the IPC Manager
-				ipcManager.newConnectionAccepted(socket);
+				//Call the AP Service
+				apService.newConnectionAccepted(socket);
 			}
 		}catch(IOException e){
 			log.error(e.getMessage());

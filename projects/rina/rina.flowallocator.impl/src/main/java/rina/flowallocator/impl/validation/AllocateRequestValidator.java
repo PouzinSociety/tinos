@@ -1,7 +1,7 @@
 package rina.flowallocator.impl.validation;
 
-import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 
 /**
@@ -11,9 +11,9 @@ import rina.ipcservice.api.IPCException;
  */
 public class AllocateRequestValidator {
 	
-	public void validateAllocateRequest(AllocateRequest allocateRequest) throws IPCException{
-		validateApplicationProcessNamingInfo(allocateRequest.getSourceAPNamingInfo());
-		validateApplicationProcessNamingInfo(allocateRequest.getDestinationAPNamingInfo());
+	public void validateAllocateRequest(FlowService flowService) throws IPCException{
+		validateApplicationProcessNamingInfo(flowService.getSourceAPNamingInfo());
+		validateApplicationProcessNamingInfo(flowService.getDestinationAPNamingInfo());
 	}
 	
 	/** 

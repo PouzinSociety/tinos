@@ -1,20 +1,23 @@
 package rina.ipcservice.api;
 
-public class AllocateRequest {
+public class FlowService {
 
+	public static final String OBJECT_NAME="/flowservice";
+	public static final String OBJECT_CLASS="flow service object";
+	
 	private ApplicationProcessNamingInfo sourceAPNamingInfo = null;
 	private ApplicationProcessNamingInfo destinationAPNamingInfo = null;
 	private int portId = 0;
-	private QoSParameters cube = null;
+	private QoSParameters qosParameters = null;
 	private boolean result = false;
 	
-	public AllocateRequest(){
+	public FlowService(){
 	}
 
-	public AllocateRequest(ApplicationProcessNamingInfo sourceAPNamingInfo, ApplicationProcessNamingInfo destinationAPNamingInfo, QoSParameters cube) {
+	public FlowService(ApplicationProcessNamingInfo sourceAPNamingInfo, ApplicationProcessNamingInfo destinationAPNamingInfo, QoSParameters qosParameters) {
 		this.sourceAPNamingInfo = sourceAPNamingInfo;
 		this.destinationAPNamingInfo = destinationAPNamingInfo;
-		this.cube = cube;
+		this.qosParameters = qosParameters;
 	}
 	
 	public ApplicationProcessNamingInfo getSourceAPNamingInfo() {
@@ -42,11 +45,11 @@ public class AllocateRequest {
 	}
 
 	public QoSParameters getCube() {
-		return cube;
+		return qosParameters;
 	}
 
-	public void setCube(QoSParameters cube) {
-		this.cube = cube;
+	public void setQoSParameters(QoSParameters qosParameters) {
+		this.qosParameters = qosParameters;
 	}
 
 	public boolean isResult() {

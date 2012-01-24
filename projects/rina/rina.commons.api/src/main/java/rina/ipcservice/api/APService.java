@@ -7,7 +7,7 @@ package rina.ipcservice.api;
 public interface APService {
 	
 	/**
-	 * This primitive is invoked by the IPC process to the requested Application Process
+	 * This primitive is invoked by the IPC process to the IPC Manager
 	 * to indicate the success or failure of the request associated with this port-id. 
 	 * @param requestedAPinfo
 	 * @param port_id -1 if error, portId otherwise
@@ -45,5 +45,5 @@ public interface APService {
 	 * Invoked when a Create_Request primitive is received at the requested IPC process
 	 * @param request
 	 */
-	public void deliverAllocateRequest(AllocateRequest request) ;
+	public void deliverAllocateRequest(FlowService request) ;
 }

@@ -1,7 +1,7 @@
 package rina.flowallocator.impl.policies;
 
 import rina.flowallocator.api.message.Flow;
-import rina.ipcservice.api.AllocateRequest;
+import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 
 /**
@@ -20,5 +20,5 @@ public interface NewFlowRequestPolicy {
 	 * @return flow the object with all the required data to create a connection that supports this flow
 	 * @throws IPCException if the request cannot be satisfied
 	 */
-	public Flow generateFlowObject(AllocateRequest allocateRequest) throws IPCException; 
+	public Flow generateFlowObject(FlowService flowService) throws IPCException; 
 }

@@ -5,7 +5,7 @@ import java.net.Socket;
 import rina.cdap.api.message.CDAPMessage;
 import rina.flowallocator.api.message.Flow;
 import rina.ipcservice.api.APService;
-import rina.ipcservice.api.AllocateRequest;
+import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 
 /**
@@ -46,7 +46,7 @@ public interface FlowAllocatorInstance{
 	 * @param request
 	 * @param portId the local port Id associated to this flow
 	 */
-	public void submitAllocateRequest(AllocateRequest request) throws IPCException;
+	public void submitAllocateRequest(FlowService request) throws IPCException;
 	
 	/**
 	 * Called by the Flow Allocator when an M_CREATE CDAP PDU with a Flow object 

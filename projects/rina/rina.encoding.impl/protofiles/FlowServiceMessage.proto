@@ -1,8 +1,8 @@
 package rina.messages;
-option java_package="rina.encoding.impl.googleprotobuf.allocaterequest";
+option java_package="rina.encoding.impl.googleprotobuf.flowservice";
 import "protofiles/ApplicationProcessNamingInfoMessage.proto";
 
-message AllocateRequest{  //Contains the information to trigger a flow allocation request
+message FlowService{  //Contains the information of a flow service
 	optional rina.messages.applicationProcessNamingInfo_t sourceNamingInfo = 1;  			//The naming information of the source application process
 	required rina.messages.applicationProcessNamingInfo_t destinationNamingInfo = 2; 		//The naming information of the destination application process
 	optional uint64 portId = 3; 										//The port id allocated to this flow by the source IPC process

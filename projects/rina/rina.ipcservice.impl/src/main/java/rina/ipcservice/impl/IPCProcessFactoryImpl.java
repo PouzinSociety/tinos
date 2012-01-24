@@ -20,7 +20,9 @@ import rina.ipcprocess.api.IPCProcessFactory;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
+import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBDaemonFactory;
+import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
 import rina.rmt.api.RMTFactory;
 
@@ -173,6 +175,43 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 
 	public IPCProcess getIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
 		return ipcProcesses.get(ipcProcessNamingInfo.getProcessKey());
+	}
+	
+	/**
+	 * Return the IPC process that is a member of the DIF called "difname"
+	 * @param difname The name of the DIF
+	 * @return
+	 */
+	public IPCProcess getIPCProcessBelongingToDIF(String difname){
+		IPCProcess currentIPCProcess = null;
+		RIBDaemon ribDaemon = null;
+		RIBObject ribObject = null;
+		RIBObject childRIBObject = null;
+		
+		Iterator<String> iterator = ipcProcesses.keySet().iterator();
+		while(iterator.hasNext()){
+			currentIPCProcess = ipcProcesses.get(iterator.next());
+			ribDaemon = (RIBDaemon) currentIPCProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+			try{
+				ribObject = (RIBObject) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+						RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES, 0);
+				if (ribObject != null){
+					List<RIBObject> ribObjects = ribObject.getChildren();
+					for(int j=0; j<ribObjects.size(); j++){
+						childRIBObject = ribObjects.get(j);
+						if(childRIBObject.getObjectName().equals(RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+								RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
+								RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "any")){
+							return currentIPCProcess;
+						}
+					}
+				}
+			}catch(RIBDaemonException ex){
+				ex.printStackTrace();
+			}
+		}
+		
+		return null;
 	}
 	
 	/**

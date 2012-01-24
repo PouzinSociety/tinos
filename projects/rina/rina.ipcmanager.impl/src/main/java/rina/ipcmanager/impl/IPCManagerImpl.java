@@ -1,8 +1,11 @@
 package rina.ipcmanager.impl;
 
+import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -15,32 +18,47 @@ import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
+import rina.delimiting.api.DelimiterFactory;
 import rina.efcp.api.DataTransferConstants;
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
 import rina.enrollment.api.BaseEnrollmentTask;
 import rina.enrollment.api.EnrollmentTask;
+import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.flowallocator.api.QoSCube;
+import rina.flowallocator.api.message.Flow;
+import rina.ipcmanager.api.IPCManager;
+import rina.ipcmanager.api.InterDIFDirectory;
+import rina.ipcmanager.impl.apservice.APServiceImpl;
+import rina.ipcmanager.impl.apservice.APServiceTCPServer;
+import rina.ipcmanager.impl.apservice.TCPSocketReader;
 import rina.ipcmanager.impl.console.IPCManagerConsole;
-import rina.ipcmanager.impl.server.IPCManagerTCPServer;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
-import rina.ipcservice.api.AllocateRequest;
+import rina.ipcservice.api.APService;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.FlowService;
+import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
+import rina.ipcservice.api.RegisterApplicationRequest;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
 
-public class IPCManagerImpl {
+/**
+ * The IPC Manager is the component of a DAF that manages the local IPC resources. In its current implementation it 
+ * manages IPC Processes (creates/destroys them), and serves as a broker between applications and IPC Processes. Applications 
+ * can use the RINA library to establish a connection to the IPC Manager and interact with the RINA stack.
+ * @author eduardgrasa
+ *
+ */
+public class IPCManagerImpl implements IPCManager{
 	private static final Log log = LogFactory.getLog(IPCManagerImpl.class);
 	private static final int MAXWORKERTHREADS = 10;
 	
 	private IPCManagerConsole console = null;
-	
-	private IPCManagerTCPServer tcpServer = null;
 	
 	/**
 	 * The thread pool implementation
@@ -61,54 +79,40 @@ public class IPCManagerImpl {
 	
 	private Encoder encoder = null;
 	
+	private APServiceImpl apService = null;
+	
 	public IPCManagerImpl(){
 		console = new IPCManagerConsole(this);
-		interDIFDirectory = new InterDIFDirectory();
-		tcpServer = new IPCManagerTCPServer(this);
+		apService = new APServiceImpl();
 		executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
 		executorService.execute(console);
-		executorService.execute(tcpServer);
-		cdapSessionManager = ipcProcessFactory.getCDAPSessionManagerFactory().createCDAPSessionManager();
-		encoder = ipcProcessFactory.getEncoderFactory().createEncoderInstance();
 		log.debug("IPC Manager started");
+	}
+	
+	public void setInterDIFDirectory(InterDIFDirectory idd){
+		apService.setInterDIFDirectory(idd);
 	}
 	
 	public void setIPCProcessFactory(IPCProcessFactory ipcProcessFactory){
 		this.ipcProcessFactory = ipcProcessFactory;
+		cdapSessionManager = ipcProcessFactory.getCDAPSessionManagerFactory().createCDAPSessionManager();
+		encoder = ipcProcessFactory.getEncoderFactory().createEncoderInstance();
+		apService.setIPCProcessFactory(ipcProcessFactory);
 	}
-	
-	public synchronized void newConnectionAccepted(Socket socket){
-		
-	}
-	
-	public synchronized IPCService processAllocationRequest(byte[] pdu){
-		try{
-			CDAPMessage cdapMessage = cdapSessionManager.decodeCDAPMessage(pdu);
-			AllocateRequest allocateRequest = (AllocateRequest) encoder.decode(cdapMessage.getObjValue().getByteval(), AllocateRequest.class.toString());
-			String difName = interDIFDirectory.mapApplicationProcessNamingInfoToDIFName(allocateRequest.getDestinationAPNamingInfo());
-			//TODO Look for the local IPC Process that is a member of difName
-			
-			
-		}catch(Exception ex){
-			ex.printStackTrace();
-			log.error("Problems when decoding CDAP Message, ignoring it. "+ex.getMessage());
-		}
-		
-		return null;
-	}
-	
+
 	public void createIPCProcess(String applicationProcessName, String applicationProcessInstance, String difName) throws Exception{
 		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance);
 		IPCProcess ipcProcess = ipcProcessFactory.createIPCProcess(apNamingInfo);
+		ipcProcess.setIPCManager(this);
 		if (difName != null){
 			WhatevercastName dan = new WhatevercastName();
 			dan.setName(difName);
-			dan.setRule("All members");
+			dan.setRule("Any member");
 
 			RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 			ribDaemon.create(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
-					RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "all", 0, dan);
+					RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "any", 0, dan);
 			
 			ribDaemon.write(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0, new Long(1));
@@ -242,10 +246,10 @@ public class IPCManagerImpl {
 		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(
 				new ApplicationProcessNamingInfo(sourceIPCProcessName, sourceIPCProcessInstance));
 		IPCService ipcService = (IPCService) ipcProcess;
-		AllocateRequest allocateRequest = new AllocateRequest();
-		allocateRequest.setDestinationAPNamingInfo(new ApplicationProcessNamingInfo(destinationApplicationProcessName, destinationApplicationProcessInstance));
-		allocateRequest.setSourceAPNamingInfo(new ApplicationProcessNamingInfo("console", "1"));
-		ipcService.submitAllocateRequest(allocateRequest, null);
+		FlowService flowService = new FlowService();
+		flowService.setDestinationAPNamingInfo(new ApplicationProcessNamingInfo(destinationApplicationProcessName, destinationApplicationProcessInstance));
+		flowService.setSourceAPNamingInfo(new ApplicationProcessNamingInfo("console", "1"));
+		ipcService.submitAllocateRequest(flowService, null);
 	}
 	
 	public void deallocateFlow(String sourceIPCProcessName, String sourceIPCProcessInstance, int portId) throws Exception{
@@ -253,6 +257,12 @@ public class IPCManagerImpl {
 				new ApplicationProcessNamingInfo(sourceIPCProcessName, sourceIPCProcessInstance));
 		IPCService ipcService = (IPCService) ipcProcess;
 		ipcService.submitDeallocateRequest(portId, null);
+	}
+
+	public void createFlowRequestMessageReceived(Flow arg0,
+			FlowAllocatorInstance arg1) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

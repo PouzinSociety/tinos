@@ -28,7 +28,7 @@ import rina.flowallocator.impl.tcp.TCPServer;
 import rina.flowallocator.impl.validation.AllocateRequestValidator;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.APService;
-import rina.ipcservice.api.AllocateRequest;
+import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
@@ -354,17 +354,17 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @param applicationProcess
 	 * @throws IPCException
 	 */
-	public void submitAllocateRequest(AllocateRequest allocateRequest, APService applicationProcess){
-		log.debug("Received allocate request: "+allocateRequest.toString());
+	public void submitAllocateRequest(FlowService flowService, APService applicationProcess){
+		log.debug("Received allocate request: "+flowService.toString());
 		try {
-			allocateRequestValidator.validateAllocateRequest(allocateRequest);
+			allocateRequestValidator.validateAllocateRequest(flowService);
 			FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(applicationProcess, this, cdapSessionManager);
-			flowAllocatorInstance.submitAllocateRequest(allocateRequest);
+			flowAllocatorInstance.submitAllocateRequest(flowService);
 			flowAllocatorInstances.put(new Integer(new Integer(flowAllocatorInstance.getPortId())), flowAllocatorInstance);
 		}catch(IPCException ex){
 			ex.printStackTrace();
 			log.error("Problems processing allocate request: "+ex);
-			applicationProcess.deliverAllocateResponse(allocateRequest.getDestinationAPNamingInfo(), 0, -1, ex.getMessage());
+			applicationProcess.deliverAllocateResponse(flowService.getDestinationAPNamingInfo(), 0, -1, ex.getMessage());
 		}
 	}
 

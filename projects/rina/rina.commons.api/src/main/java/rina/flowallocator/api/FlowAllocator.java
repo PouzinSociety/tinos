@@ -5,7 +5,7 @@ import java.net.Socket;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcessComponent;
 import rina.ipcservice.api.APService;
-import rina.ipcservice.api.AllocateRequest;
+import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 
 /**
@@ -27,7 +27,7 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * @throws IPCException if the request is not well formed or there are not enough resources
 	 * to honour the request
 	 */
-	public void submitAllocateRequest(AllocateRequest allocateRequest, APService applicationProcess);
+	public void submitAllocateRequest(FlowService allocateRequest, APService applicationProcess);
 	
 	/**
 	 * Forward the allocate response to the Flow Allocator Instance.

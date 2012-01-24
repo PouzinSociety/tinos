@@ -43,6 +43,13 @@ public interface IPCProcessFactory {
 	public IPCProcess getIPCProcess(ApplicationProcessNamingInfo namingInfo);
 	
 	/**
+	 * Return the IPC process that is a member of the DIF called "difname"
+	 * @param difname The name of the DIF
+	 * @return
+	 */
+	public IPCProcess getIPCProcessBelongingToDIF(String difname);
+	
+	/**
 	 * Return a list of the existing IPC processes
 	 * @return
 	 */

@@ -95,7 +95,7 @@ public class FlowEncoder extends BaseEncoder{
 		for(int i=0; i<qosParametersList.size(); i++){
 			cube.put(qosParametersList.get(i).getParameterName(), qosParametersList.get(i).getParameterValue());
 		}
-		result.setCube(cube);
+		result.setParameters(cube);
 		return result;
 	} 
 	
@@ -175,11 +175,11 @@ public class FlowEncoder extends BaseEncoder{
 	private List<qosParameter_t> getQosParametersTypes(QoSParameters qosParameters){
 		List<qosParameter_t> qosParametersList = new ArrayList<qosParameter_t>();
 		
-		if (qosParameters == null || qosParameters.getCube() == null){
+		if (qosParameters == null || qosParameters.getParameters() == null){
 			return qosParametersList;
 		}
 		
-		Iterator<Entry<String, Object>> iterator = qosParameters.getCube().entrySet().iterator();
+		Iterator<Entry<String, Object>> iterator = qosParameters.getParameters().entrySet().iterator();
 		Entry<String, Object> entry = null;
 		while(iterator.hasNext()){
 			entry = iterator.next();

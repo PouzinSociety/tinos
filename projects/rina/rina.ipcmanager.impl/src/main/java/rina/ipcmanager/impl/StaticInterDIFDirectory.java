@@ -10,6 +10,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.ipcmanager.api.InterDIFDirectory;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 /**
@@ -19,14 +20,14 @@ import rina.ipcservice.api.ApplicationProcessNamingInfo;
  * @author eduardgrasa
  *
  */
-public class InterDIFDirectory {
+public class StaticInterDIFDirectory implements InterDIFDirectory{
 	
-	private static final Log log = LogFactory.getLog(InterDIFDirectory.class);
+	private static final Log log = LogFactory.getLog(StaticInterDIFDirectory.class);
 	private static final String CONFIG_FILE_NAME = "config/rina/idd.rina";
 	
 	private Map<String, String> apToDIFMappings = null;
 	
-	public InterDIFDirectory(){
+	public StaticInterDIFDirectory(){
 		this.apToDIFMappings = new Hashtable<String, String>();
 		readConfigurationFile();
 	}

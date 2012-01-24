@@ -16,8 +16,8 @@ import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.FlowAllocator;
 import rina.ipcprocess.api.BaseIPCProcess;
 import rina.ipcservice.api.APService;
-import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
 import rina.ipcservice.impl.jobs.DeliverDeallocateJob;
@@ -108,10 +108,10 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * @param allocateRequest
 	 * @param applicationProcess
 	 */
-	public synchronized void submitAllocateRequest(AllocateRequest allocateRequest, APService applicationProcess){
+	public synchronized void submitAllocateRequest(FlowService flowService, APService applicationProcess){
 		log.debug("Allocate request received, forwarding it to the Flow Allocator");
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(BaseFlowAllocator.getComponentName());
-		SubmitAllocateRequestJob job = new SubmitAllocateRequestJob(allocateRequest, flowAllocator, applicationProcess);
+		SubmitAllocateRequestJob job = new SubmitAllocateRequestJob(flowService, flowAllocator, applicationProcess);
 		executorService.execute(job);
 	}
 
