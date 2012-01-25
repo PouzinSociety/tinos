@@ -455,6 +455,75 @@ public class CDAPMessage implements Serializable{
 		CDAPMessageValidator.validate(cdapMessage);
 		return cdapMessage;
 	}
+	
+	/**
+	 * Returns a reply message from the request message, copying all the fields except for: Opcode (it will be the 
+	 * request message counterpart), result (it will be 0) and resultReason (it will be null)
+	 * @param requestMessage
+	 * @return
+	 * @throws CDAPException
+	 */
+	public CDAPMessage getReplyMessage(){
+		Opcode opcode = null;
+		switch(this.getOpCode()){
+		case M_CREATE:
+			opcode = Opcode.M_CREATE_R;
+			break;
+		case M_CONNECT:
+			opcode = Opcode.M_CONNECT_R;
+			break;
+		case M_DELETE:
+			opcode = Opcode.M_DELETE_R;
+			break;
+		case M_RELEASE:
+			opcode = Opcode.M_RELEASE_R;
+			break;
+		case M_START:
+			opcode = Opcode.M_START_R;
+			break;
+		case M_STOP:
+			opcode = Opcode.M_STOP_R;
+			break;
+		case M_READ:
+			opcode = Opcode.M_READ_R;
+			break;
+		case M_WRITE:
+			opcode = Opcode.M_WRITE_R;
+			break;
+		case M_CANCELREAD:
+			opcode = Opcode.M_CANCELREAD_R;
+			break;
+		default:
+			opcode = this.getOpCode();
+		}
+		
+		CDAPMessage cdapMessage = new CDAPMessage();
+		cdapMessage.setAbsSyntax(this.getAbsSyntax());
+		cdapMessage.setAuthMech(this.getAuthMech());
+		cdapMessage.setAuthValue(this.getAuthValue());
+		cdapMessage.setDestAEInst(this.getDestAEInst());
+		cdapMessage.setDestAEName(this.getDestAEName());
+		cdapMessage.setDestApInst(this.getDestApInst());
+		cdapMessage.setDestApName(this.getDestApName());
+		cdapMessage.setFilter(this.getFilter());
+		cdapMessage.setFlags(this.getFlags());
+		cdapMessage.setInvokeID(this.getInvokeID());
+		cdapMessage.setObjClass(this.getObjClass());
+		cdapMessage.setObjInst(this.getObjInst());
+		cdapMessage.setObjName(this.getObjName());
+		cdapMessage.setObjValue(this.getObjValue());
+		cdapMessage.setOpCode(opcode);
+		cdapMessage.setResult(0);
+		cdapMessage.setResultReason(null);
+		cdapMessage.setScope(this.getScope());
+		cdapMessage.setSrcAEInst(this.getSrcAEInst());
+		cdapMessage.setSrcAEName(this.getSrcAEName());
+		cdapMessage.setSrcApInst(this.getSrcApInst());
+		cdapMessage.setSrcApName(this.getSrcApName());
+		cdapMessage.setVersion(this.getVersion());
+		
+		return cdapMessage;
+	}
 
 	public int getAbsSyntax() {
 		return absSyntax;

@@ -14,15 +14,14 @@ public interface APService {
 	 * @param result errorCode if result > 0, ok otherwise
 	 * @param resultReason null if no error, error description otherwise
 	 */
-	public void deliverAllocateResponse(ApplicationProcessNamingInfo requestedAPinfo, int port_id, int result, String resultReason) ;
+	public void deliverAllocateResponse(ApplicationProcessNamingInfo requestedAPinfo, int portId, int result, String resultReason) ;
 
 	/**
 	 * Invoked when in the Transfer state to deliver an SDU on this port-id
 	 * @param port_id
 	 * @param sdu
-	 * @return result
 	 */
-	public void deliverTransfer(int port_id, byte[] sdu, boolean result);
+	public void deliverTransfer(int port_id, byte[] sdu);
 	
 	/**
 	 * Invoked in any state by an AAEI to notify the local application process that the release 
@@ -42,8 +41,14 @@ public interface APService {
 	public void deliverStatus(int port_id, boolean result);
 	
 	/**
-	 * Invoked when a Create_Request primitive is received at the requested IPC process
+	 * Invoked when a Create_Flow primitive is received at the requested IPC process
 	 * @param request
 	 */
 	public void deliverAllocateRequest(FlowService request) ;
+	
+	/**
+	 * Invoked when a Delete_Flow primitive is received at the requested IPC process
+	 * @param request
+	 */
+	public void deliverDeallocateRequest(int portId);
 }

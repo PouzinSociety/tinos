@@ -1,11 +1,7 @@
 package rina.ipcmanager.impl;
 
-import java.io.IOException;
-import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -18,7 +14,6 @@ import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
-import rina.delimiting.api.DelimiterFactory;
 import rina.efcp.api.DataTransferConstants;
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
@@ -30,17 +25,12 @@ import rina.flowallocator.api.message.Flow;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcmanager.api.InterDIFDirectory;
 import rina.ipcmanager.impl.apservice.APServiceImpl;
-import rina.ipcmanager.impl.apservice.APServiceTCPServer;
-import rina.ipcmanager.impl.apservice.TCPSocketReader;
 import rina.ipcmanager.impl.console.IPCManagerConsole;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
-import rina.ipcservice.api.APService;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
-import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
-import rina.ipcservice.api.RegisterApplicationRequest;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;

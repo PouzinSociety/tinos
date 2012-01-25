@@ -2,7 +2,9 @@ package rina.ipcmanager.impl.apservice;
 
 import java.net.Socket;
 
+import rina.cdap.api.message.CDAPMessage;
 import rina.ipcservice.api.FlowService;
+import rina.ipcservice.api.IPCService;
 
 /**
  * Contains the information about the state of a flow service request
@@ -25,6 +27,21 @@ public class FlowServiceState {
 	private Socket socket = null;
 	
 	private Status status = Status.NULL;
+	
+	/**
+	 * The IPC Process that is handling our request
+	 */
+	private IPCService ipcService = null;
+	
+	/**
+	 * The latest relevant CDAP message received from the application
+	 */
+	private CDAPMessage cdapMessage = null;
+	
+	/**
+	 * The socket reader that reads the messages coming from the application library
+	 */
+	private TCPSocketReader tcpSocketReader = null;
 
 	public FlowService getFlowService() {
 		return flowService;
@@ -49,5 +66,31 @@ public class FlowServiceState {
 	public void setStatus(Status status) {
 		this.status = status;
 	}
+
+	public void setIpcService(IPCService ipcService) {
+		this.ipcService = ipcService;
+	}
+
+	public IPCService getIpcService() {
+		return ipcService;
+	}
+
+	public void setCdapMessage(CDAPMessage cdapMessage) {
+		this.cdapMessage = cdapMessage;
+	}
+
+	public CDAPMessage getCdapMessage() {
+		return cdapMessage;
+	}
+
+	public void setTcpSocketReader(TCPSocketReader tcpSocketReader) {
+		this.tcpSocketReader = tcpSocketReader;
+	}
+
+	public TCPSocketReader getTcpSocketReader() {
+		return tcpSocketReader;
+	}
+	
+	
 	
 }

@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
+import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.cdap.api.message.ObjectValue;
 import rina.delimiting.api.Delimiter;
 import rina.delimiting.api.DelimiterFactory;
@@ -46,7 +47,7 @@ public class IPCManagerAppInteractionTest {
 	}
 	
 	@Test
-	public void testFlowAllocation(){
+	public void testClientBehaviourFlowAllocateWriteReadDeallocateAllOk(){
 		try{
 			//1 Connect to the IPC Manager
 			Socket rinaLibrarySocket = new Socket("localhost", APServiceTCPServer.DEFAULT_PORT);
@@ -57,10 +58,45 @@ public class IPCManagerAppInteractionTest {
 			executorService.execute(socketReader);
 			
 			//3 Get an allocate object and send the request to the IPC Manager
-			CDAPMessage allocateRequest = getAllocateRequest();
-			sendCDAPMessage(rinaLibrarySocket, allocateRequest);
-			wait2Seconds();
+			CDAPMessage cdapMessage = getAllocateRequest();
+			sendCDAPMessage(rinaLibrarySocket, cdapMessage);
 			
+			//4 Wait a bit and check that we got the reply
+			wait2Seconds();
+			cdapMessage = socketReader.getLastMessage();
+			Assert.assertNotNull(cdapMessage);
+			Assert.assertEquals(cdapMessage.getResult(), 0);
+			Assert.assertEquals(cdapMessage.getOpCode(), Opcode.M_CREATE_R);
+			byte[] encodedValue = cdapMessage.getObjValue().getByteval();
+			FlowService flowService = (FlowService) encoder.decode(encodedValue, FlowService.class.toString());
+			System.out.println("Allocated portId: "+flowService.getPortId());
+			
+			//5 Write data
+			cdapMessage = getWriteDataRequest("The rain in Spain stays mainly in the plain".getBytes());
+			sendCDAPMessage(rinaLibrarySocket, cdapMessage);
+			
+			//6 Wait a bit and Read data
+			wait2Seconds();
+			cdapMessage = socketReader.getLastMessage();
+			Assert.assertNotNull(cdapMessage);
+			Assert.assertEquals(cdapMessage.getResult(), 0);
+			Assert.assertEquals(cdapMessage.getOpCode(), Opcode.M_READ_R);
+			byte[] sdu = cdapMessage.getObjValue().getByteval();
+			String receivedMessage = new String(sdu);
+			System.out.println("Received message: "+receivedMessage);
+			Assert.assertEquals(receivedMessage, "In Hertford, Hereford, and Hampshire, hurricanes hardly ever happen");
+			
+			//7 Request to unallocate the flow
+			cdapMessage = getDeallocateRequest();
+			sendCDAPMessage(rinaLibrarySocket, cdapMessage);
+			
+			//8 Wait a bit and check the deallocate response
+			wait2Seconds();
+			cdapMessage = socketReader.getLastMessage();
+			Assert.assertNotNull(cdapMessage);
+			Assert.assertEquals(cdapMessage.getResult(), 0);
+			Assert.assertEquals(cdapMessage.getOpCode(), Opcode.M_DELETE_R);
+			System.out.println("Flow deallocated");
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
@@ -83,6 +119,18 @@ public class IPCManagerAppInteractionTest {
 		CDAPMessage cdapMessage = 
 			CDAPMessage.getCreateObjectRequestMessage(null, null, FlowService.OBJECT_CLASS, 0, FlowService.OBJECT_NAME, objectValue, 0);
 		
+		return cdapMessage;
+	}
+	
+	private CDAPMessage getWriteDataRequest(byte[] sdu) throws Exception{
+		ObjectValue objectValue = new ObjectValue();
+		objectValue.setByteval(sdu);
+		CDAPMessage cdapMessage = CDAPMessage.getWriteObjectRequestMessage(null, null, null, 0, objectValue, null, 0);
+		return cdapMessage;
+	}
+	
+	private CDAPMessage getDeallocateRequest() throws Exception{
+		CDAPMessage cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, null, 0, null, 0);
 		return cdapMessage;
 	}
 	

@@ -363,6 +363,5 @@ public interface CDAPSessionManager extends IPCProcessComponent{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public CDAPMessage getCancelReadResponseMessage(int portId, Flags flags, int invokeID, int result, String resultReason) throws CDAPException;
-	
+	public CDAPMessage getCancelReadResponseMessage(int portId, Flags flags, int invokeID, int result, String resultReason) throws CDAPException;	
 }

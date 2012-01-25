@@ -13,6 +13,8 @@ public class SocketReader extends BaseSocketReader{
 	
 	private IPCManagerAppInteractionTest test = null;
 	
+	private CDAPMessage lastMessage = null;
+	
 	public SocketReader(Socket socket, Delimiter delimiter, CDAPSessionManager cdapSessionManager, IPCManagerAppInteractionTest test){
 		super(socket, delimiter);
 		this.cdapSessionManager = cdapSessionManager;
@@ -28,6 +30,16 @@ public class SocketReader extends BaseSocketReader{
 			CDAPMessage cdapMessage = cdapSessionManager.decodeCDAPMessage(pdu);
 			switch(cdapMessage.getOpCode()){
 			case M_CREATE_R:
+				System.out.println(cdapMessage.toString());
+				lastMessage = cdapMessage;
+				break;
+			case M_READ_R:
+				System.out.println(cdapMessage.toString());
+				lastMessage = cdapMessage;
+				break;
+			case M_DELETE_R:
+				System.out.println(cdapMessage.toString());
+				lastMessage = cdapMessage;
 				break;
 			default:
 				//TODO
@@ -36,6 +48,10 @@ public class SocketReader extends BaseSocketReader{
 			ex.printStackTrace();
 		}
 		
+	}
+	
+	public CDAPMessage getLastMessage(){
+		return lastMessage;
 	}
 	
 	/**

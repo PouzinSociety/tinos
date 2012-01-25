@@ -12,6 +12,7 @@ import rina.delimiting.api.BaseSocketReader;
 import rina.delimiting.api.Delimiter;
 import rina.encoding.api.Encoder;
 import rina.ipcservice.api.FlowService;
+import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
 
 /**
@@ -60,10 +61,15 @@ public class TCPSocketReader extends BaseSocketReader{
 		this.cdapSessionManager = cdapSessionManager;
 		this.apService = apService;
 		this.encoder = encoder;
+		this.portId = socket.getPort();
 	}
 	
 	public void setPortId(int portId){
 		this.portId = portId;
+	}
+	
+	public void setIPCService(IPCService ipcService){
+		this.ipcService = ipcService;
 	}
 	
 	/**
@@ -73,54 +79,102 @@ public class TCPSocketReader extends BaseSocketReader{
 	 */
 	public void processPDU(byte[] pdu){
 		CDAPMessage cdapMessage = null;
-		
+
 		try{
 			cdapMessage = cdapSessionManager.decodeCDAPMessage(pdu);
 			log.debug(cdapMessage.toString());
-			
+
 			switch(cdapMessage.getOpCode()){
 			case M_CREATE:
 				handleMCreateReceived(cdapMessage);
 				break;
 			case M_DELETE:
+				handleMDeleteReceived(cdapMessage);
 				break;
 			case M_WRITE:
+				handleMWriteReceived(cdapMessage);
 				break;
 			case M_START:
 				break;
 			case M_STOP:
 				break;
 			default:
-				
+				//TODO
 			}
-			
 		}catch(CDAPException ex){
 			ex.printStackTrace();
-			//TODO, what else to do?, send error message? close socket? both?
+			try{
+				CDAPMessage errorMessage = CDAPMessage.getReleaseConnectionResponseMessage(null, 1, "Could not parse CDAP message. " + ex.getMessage() , 1);
+				apService.sendErrorMessageAndCloseSocket(errorMessage, getSocket());
+			}catch(Exception ex1){
+				ex1.printStackTrace();
+				try{
+					getSocket().close();
+				}catch(Exception ex2){
+					ex2.printStackTrace();
+				}
+			}
 		}
-		
 	}
 	
-	private void handleMCreateReceived(CDAPMessage cdapMessage){
-		if (connected){
-			//Error, we cannot receive further allocation requests through this socket.
-			//TODO, what to do, ignore?, send error message? close the flow? 2 and 3?
-		}
-		
+	/**
+	 * Decode the flow service object and call the APService class to initiate the allocation of a new flow
+	 * @param cdapMessage
+	 */
+	private void handleMCreateReceived(CDAPMessage cdapMessage){		
 		try{
 			FlowService flowService = (FlowService) encoder.decode(cdapMessage.getObjValue().getByteval(), FlowService.class.toString());
-			apService.processAllocateRequest(flowService, getSocket());
+			apService.processAllocateRequest(flowService, cdapMessage, getSocket(), this);
 		}catch(Exception ex){
 			log.error(ex.getMessage());
-			//TODO, what else to do?, send error message? close socket? both?
+			try{
+				CDAPMessage errorMessage = cdapMessage.getReplyMessage();
+				errorMessage.setResult(1);
+				errorMessage.setResultReason("Could not parse object value. " + ex.getMessage());
+				apService.sendErrorMessageAndCloseSocket(errorMessage, getSocket());
+			}catch(Exception ex1){
+				ex1.printStackTrace();
+				try{
+					getSocket().close();
+				}catch(Exception ex2){
+					ex2.printStackTrace();
+				}
+			}
 		}
+	}
+	
+	/**
+	 * We have an SDU to deliver. Call the IPC Process and send the data
+	 * @param cdapMessage
+	 */
+	private void handleMWriteReceived(CDAPMessage cdapMessage){
+		if (ipcService == null){
+			log.error("Received a request to transfer data on portId "+portId+", but there is no flow allocated yet");
+			//There is no flow allocated yet, what to do?
+			//TODO a) ignore, b) send an error message c) send and error message and close the flow?
+		}
+		
+		byte[] sdu = cdapMessage.getObjValue().getByteval();
+		try {
+			ipcService.submitTransfer(portId, sdu);
+		} catch (IPCException ex) {
+			ex.printStackTrace();
+			//TODO, what else to do?
+		}
+	}
+	
+	/**
+	 * Decode the flow service object and call the APService class to initiate the allocation of a new flow
+	 * @param cdapMessage
+	 */
+	private void handleMDeleteReceived(CDAPMessage cdapMessage){
+		apService.processDeallocateRequest(getSocket(), cdapMessage);
 	}
 	
 	/**
 	 * Invoked when the socket is disconnected
 	 */
 	public void socketDisconnected(){
-		log.debug("Notifying the IPC Manager");
-		//TODO notify the IPC Manager Implementation
+		apService.processSocketClosed(getSocket());
 	}
 }
