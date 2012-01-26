@@ -1,5 +1,7 @@
 package rina.ipcmanager.api;
 
+import java.util.List;
+
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 /**
@@ -14,5 +16,13 @@ public interface InterDIFDirectory {
 	 * @param apNamingInfo The destination application process naming info (AP Name and optionally AP Instance)
 	 * @return
 	 */
-	public String mapApplicationProcessNamingInfoToDIFName(ApplicationProcessNamingInfo apNamingInfo);
+	public List<String> mapApplicationProcessNamingInfoToDIFName(ApplicationProcessNamingInfo apNamingInfo);
+	
+	public void addMapping(ApplicationProcessNamingInfo application, String difName);
+	
+	public void addMapping(ApplicationProcessNamingInfo application, List<String> difNames);
+	
+	public void removeMapping(ApplicationProcessNamingInfo application, List<String> difNames);
+	
+	public void removeAllMappings(ApplicationProcessNamingInfo application);
 }

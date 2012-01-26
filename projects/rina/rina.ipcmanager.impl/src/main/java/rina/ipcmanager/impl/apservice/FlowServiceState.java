@@ -91,6 +91,23 @@ public class FlowServiceState {
 		return tcpSocketReader;
 	}
 	
-	
+	@Override
+	public boolean equals(Object object){
+		if (object == null){
+			return false;
+		}
+		
+		if (!(object instanceof FlowServiceState)){
+			return false;
+		}
+		
+		FlowServiceState candidate = (FlowServiceState) object;
+		
+		if (candidate.getFlowService() == null){
+			return false;
+		}
+		
+		return (candidate.getFlowService().getPortId() == this.getFlowService().getPortId());
+	}
 	
 }

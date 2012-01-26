@@ -23,6 +23,9 @@
 <!-- Tests -->
 		<dependency org="org.antlr" name="com.springsource.antlr" rev="${org.antlr}" conf="test->runtime" />
 		<dependency org="org.junit" name="com.springsource.org.junit" rev="${org.junit}" conf="test->runtime" />
+		<dependency org="org.pouzinsociety.rina" name="rina.encoding.impl" rev="1.0.0" conf="test->runtime" />
+		<dependency org="org.pouzinsociety.rina" name="rina.delimiting.impl" rev="1.0.0" conf="test->runtime" />
+		<dependency org="org.pouzinsociety.rina" name="rina.cdap.impl" rev="1.0.0" conf="test->runtime" />
 	</dependencies>
 
 </ivy-module>

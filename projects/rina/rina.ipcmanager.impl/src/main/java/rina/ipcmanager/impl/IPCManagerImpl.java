@@ -28,6 +28,7 @@ import rina.ipcmanager.impl.apservice.APServiceImpl;
 import rina.ipcmanager.impl.console.IPCManagerConsole;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
+import rina.ipcservice.api.APService;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCService;
@@ -253,6 +254,10 @@ public class IPCManagerImpl implements IPCManager{
 			FlowAllocatorInstance arg1) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public APService getAPService() {
+		return apService;
 	}
 
 }

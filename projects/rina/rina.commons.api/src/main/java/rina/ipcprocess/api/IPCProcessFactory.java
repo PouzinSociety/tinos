@@ -55,6 +55,12 @@ public interface IPCProcessFactory {
 	 */
 	public List<IPCProcess> listIPCProcesses();
 	
+	/**
+	 * Return a list of the names of the DIFs currently available in the system
+	 * @return
+	 */
+	public List<String> listDIFNames();
+	
 	public CDAPSessionManagerFactory getCDAPSessionManagerFactory();
 	public EncoderFactory getEncoderFactory();
 	public DelimiterFactory getDelimiterFactory();

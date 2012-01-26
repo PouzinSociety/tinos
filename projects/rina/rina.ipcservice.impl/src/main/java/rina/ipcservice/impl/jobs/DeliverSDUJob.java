@@ -23,7 +23,7 @@ public class DeliverSDUJob implements Runnable{
 	
 	public void run(){
 		for (int i=0; i<sdus.size(); i++){
-			applicationProcess.deliverTransfer(portId, sdus.get(i), true);
+			applicationProcess.deliverTransfer(portId, sdus.get(i));
 		}
 	}
 

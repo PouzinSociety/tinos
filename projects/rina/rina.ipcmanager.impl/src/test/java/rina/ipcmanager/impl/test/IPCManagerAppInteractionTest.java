@@ -21,7 +21,9 @@ import rina.ipcmanager.impl.IPCManagerImpl;
 import rina.ipcmanager.impl.apservice.APServiceTCPServer;
 import rina.ipcprocess.api.IPCProcessFactory;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.ApplicationRegistration;
 import rina.ipcservice.api.FlowService;
+import rina.ipcservice.api.IPCService;
 
 public class IPCManagerAppInteractionTest {
 	
@@ -102,6 +104,48 @@ public class IPCManagerAppInteractionTest {
 		}
 	}
 	
+	@Test
+	public void testServerBehaviourRegisterAllocateReadWriteDeallocateUnregisterAllOk(){
+		try{
+			//1 Connect to the IPC Manager
+			Socket rinaLibrarySocket = new Socket("localhost", APServiceTCPServer.DEFAULT_PORT);
+			Assert.assertTrue(rinaLibrarySocket.isConnected());
+			
+			//2 Start a thread that will continuously listen to the socket waiting for IPC Manager responses
+			SocketReader socketReader = new SocketReader(rinaLibrarySocket, delimiter, cdapSessionManager, this);
+			executorService.execute(socketReader);
+			
+			//3 Start the TCPServer where the application will be listening for incoming requests, and issue the 
+			// registration call
+			TCPServer tcpServer = new TCPServer(delimiter, cdapSessionManager, encoder);
+			executorService.execute(tcpServer);
+			ApplicationRegistration applicationRegistration = new ApplicationRegistration();
+			applicationRegistration.setApNamingInfo(new ApplicationProcessNamingInfo("A", "1"));
+			applicationRegistration.setSocketNumber(tcpServer.getPort());
+			CDAPMessage cdapMessage = getRegistrationRequest(applicationRegistration);
+			sendCDAPMessage(rinaLibrarySocket, cdapMessage);
+			
+			//4 Wait a bit and check that we have the response
+			wait2Seconds();
+			cdapMessage = socketReader.getLastMessage();
+			Assert.assertNotNull(cdapMessage);
+			Assert.assertEquals(cdapMessage.getResult(), 0);
+			Assert.assertEquals(cdapMessage.getOpCode(), Opcode.M_START_R);
+			System.out.println("Application registered");
+			
+			//5 Allocation request arrives to AP service
+			FlowService flowService = new FlowService();
+			flowService.setDestinationAPNamingInfo(new ApplicationProcessNamingInfo("A", "1"));
+			flowService.setSourceAPNamingInfo(new ApplicationProcessNamingInfo("B", "1"));
+			flowService.setPortId(24);
+			ipcManager.getAPService().deliverAllocateRequest(flowService, (IPCService) mockIPCProcessFactory.createIPCProcess(null));
+			wait2Seconds();
+			
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+	}
+	
 	private void wait2Seconds() throws Exception{
 			Thread.sleep(2000);
 	}
@@ -131,6 +175,16 @@ public class IPCManagerAppInteractionTest {
 	
 	private CDAPMessage getDeallocateRequest() throws Exception{
 		CDAPMessage cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, null, 0, null, 0);
+		return cdapMessage;
+	}
+	
+	private CDAPMessage getRegistrationRequest(ApplicationRegistration applicationRegistration) throws Exception{
+		byte[] encodedObject = encoder.encode(applicationRegistration);
+
+		ObjectValue objectValue = new ObjectValue();
+		objectValue.setByteval(encodedObject);
+		CDAPMessage cdapMessage = CDAPMessage.
+			getStartObjectRequestMessage(null, null, ApplicationRegistration.OBJECT_CLASS, objectValue, 0, ApplicationRegistration.OBJECT_NAME, 0);
 		return cdapMessage;
 	}
 	

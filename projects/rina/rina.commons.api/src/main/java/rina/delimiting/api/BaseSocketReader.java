@@ -29,6 +29,10 @@ public abstract class BaseSocketReader implements Runnable{
 		this.socket = socket;
 		this.delimiter = delimiter;
 	}
+	
+	public Delimiter getDelimiter(){
+		return delimiter;
+	}
 
 	public void run() {
 		boolean lookingForSduLength = true;

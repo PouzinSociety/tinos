@@ -1,5 +1,6 @@
 package rina.ipcmanager.impl.test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import rina.cdap.api.CDAPSessionManagerFactory;
@@ -26,7 +27,6 @@ public class MockIPCProcessFactory implements IPCProcessFactory{
 
 	public IPCProcess createIPCProcess(ApplicationProcessNamingInfo arg0)
 			throws Exception {
-		ipcProcess = new MockIPCProcess();
 		return ipcProcess;
 	}
 
@@ -78,7 +78,14 @@ public class MockIPCProcessFactory implements IPCProcessFactory{
 	}
 
 	public List<IPCProcess> listIPCProcesses() {
-		// TODO Auto-generated method stub
-		return null;
+		List<IPCProcess> result = new ArrayList<IPCProcess>();
+		result.add(ipcProcess);
+		return result;
+	}
+
+	public List<String> listDIFNames() {
+		List<String> result = new ArrayList<String>();
+		result.add("test.DIF");
+		return result;
 	}
 }

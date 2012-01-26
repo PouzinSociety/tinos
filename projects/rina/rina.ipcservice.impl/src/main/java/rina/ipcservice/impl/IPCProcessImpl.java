@@ -108,11 +108,10 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * @param allocateRequest
 	 * @param applicationProcess
 	 */
-	public synchronized void submitAllocateRequest(FlowService flowService, APService applicationProcess){
+	public synchronized int submitAllocateRequest(FlowService flowService, APService applicationProcess){
 		log.debug("Allocate request received, forwarding it to the Flow Allocator");
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(BaseFlowAllocator.getComponentName());
-		SubmitAllocateRequestJob job = new SubmitAllocateRequestJob(flowService, flowAllocator, applicationProcess);
-		executorService.execute(job);
+		return flowAllocator.submitAllocateRequest(flowService, applicationProcess);
 	}
 
 	/**

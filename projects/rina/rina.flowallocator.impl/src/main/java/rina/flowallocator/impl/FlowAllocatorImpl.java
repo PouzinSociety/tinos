@@ -106,6 +106,8 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	
 	private CDAPSessionManager cdapSessionManager = null;
 	
+	private APService apService = null;
+	
 	public FlowAllocatorImpl(){
 		allocateRequestValidator = new AllocateRequestValidator();
 		flowAllocatorInstances = new HashMap<Integer, FlowAllocatorInstance>();
@@ -113,6 +115,10 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
 		executorService.execute(tcpServer);
 		pendingSockets = new Hashtable<Integer, Socket>();
+	}
+	
+	public void setAPService(APService apService){
+		this.apService = apService;
 	}
 	
 	@Override
@@ -288,7 +294,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 				//call the FAI
 				int portId = generatePortId();
 				log.debug("The destination application process is reachable through me. Assigning the local portId "+portId+" to the flow allocation.");
-				FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(null, this, cdapSessionManager);
+				FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(null, this, cdapSessionManager, apService);
 				flowAllocatorInstance.createFlowRequestMessageReceived(flow, portId, cdapMessage, underlyingPortId);
 				flowAllocatorInstances.put(new Integer(new Integer(portId)), flowAllocatorInstance);
 				//Check if the socket was already established
@@ -354,17 +360,19 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @param applicationProcess
 	 * @throws IPCException
 	 */
-	public void submitAllocateRequest(FlowService flowService, APService applicationProcess){
+	public int submitAllocateRequest(FlowService flowService, APService applicationProcess){
 		log.debug("Received allocate request: "+flowService.toString());
 		try {
 			allocateRequestValidator.validateAllocateRequest(flowService);
-			FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(applicationProcess, this, cdapSessionManager);
+			FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(applicationProcess, this, cdapSessionManager, apService);
 			flowAllocatorInstance.submitAllocateRequest(flowService);
 			flowAllocatorInstances.put(new Integer(new Integer(flowAllocatorInstance.getPortId())), flowAllocatorInstance);
+			return flowAllocatorInstance.getPortId();
 		}catch(IPCException ex){
 			ex.printStackTrace();
 			log.error("Problems processing allocate request: "+ex);
 			applicationProcess.deliverAllocateResponse(flowService.getDestinationAPNamingInfo(), 0, -1, ex.getMessage());
+			return 0;
 		}
 	}
 

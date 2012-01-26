@@ -24,10 +24,11 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * with a status of success or failure.
 	 * @param allocateRequest the characteristics of the flow to be allocated.
 	 * @param APService the application process that requested the allocation of the flow
+	 * @return the portId
 	 * @throws IPCException if the request is not well formed or there are not enough resources
 	 * to honour the request
 	 */
-	public void submitAllocateRequest(FlowService allocateRequest, APService applicationProcess);
+	public int submitAllocateRequest(FlowService allocateRequest, APService applicationProcess);
 	
 	/**
 	 * Forward the allocate response to the Flow Allocator Instance.

@@ -43,8 +43,12 @@ public interface APService {
 	/**
 	 * Invoked when a Create_Flow primitive is received at the requested IPC process
 	 * @param request
+	 * @param callback the IPC Service to call back
+	 * @return string if there was no error it is null. If the IPC Manager could not find the
+	 * destination application or something else bad happens, it will return a string detailing the error 
+	 * (then the callback will never be invoked back)
 	 */
-	public void deliverAllocateRequest(FlowService request) ;
+	public String deliverAllocateRequest(FlowService request, IPCService callback);
 	
 	/**
 	 * Invoked when a Delete_Flow primitive is received at the requested IPC process

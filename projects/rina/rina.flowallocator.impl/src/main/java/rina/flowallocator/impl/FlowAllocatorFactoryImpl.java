@@ -5,20 +5,27 @@ import java.util.Map;
 
 import rina.flowallocator.api.FlowAllocator;
 import rina.flowallocator.api.FlowAllocatorFactory;
+import rina.ipcmanager.api.IPCManager;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 public class FlowAllocatorFactoryImpl implements FlowAllocatorFactory{
 
 	private Map<ApplicationProcessNamingInfo, FlowAllocator> flowAllocatorRespository = null;
+	private IPCManager ipcManager = null;
 	
 	public FlowAllocatorFactoryImpl(){
 		flowAllocatorRespository = new HashMap<ApplicationProcessNamingInfo, FlowAllocator>();
 	}
 	
+	public void setIPCManager(IPCManager ipcManager){
+		this.ipcManager = ipcManager;
+	}
+	
 	public FlowAllocator createFlowAllocator(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
-		FlowAllocator flowAllocator = null;
+		FlowAllocatorImpl flowAllocator = null;
 		try {
 			flowAllocator = new FlowAllocatorImpl();
+			flowAllocator.setAPService(ipcManager.getAPService());
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

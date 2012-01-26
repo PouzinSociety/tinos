@@ -118,11 +118,14 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	
 	private CDAPSessionManager cdapSessionManager = null;
 	
-	public FlowAllocatorInstanceImpl(APService applicationProcess, FlowAllocator flowAllocator, CDAPSessionManager cdapSessionManager){
+	private APService apService = null;
+	
+	public FlowAllocatorInstanceImpl(APService applicationProcess, FlowAllocator flowAllocator, CDAPSessionManager cdapSessionManager, APService apService){
 		this.applicationProcess = applicationProcess;
 		this.flowAllocator = flowAllocator;
 		this.timer = new Timer();
 		this.cdapSessionManager = cdapSessionManager;
+		this.apService = apService;
 		connections = new ArrayList<Connection>();
 		//TODO initialize the newFlowRequestPolicy
 		newFlowRequestPolicy = new NewFlowRequestPolicyImpl();

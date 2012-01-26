@@ -11,6 +11,8 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.delimiting.api.BaseSocketReader;
 import rina.delimiting.api.Delimiter;
 import rina.encoding.api.Encoder;
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.ApplicationRegistration;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
@@ -51,17 +53,18 @@ public class TCPSocketReader extends BaseSocketReader{
 	private int portId = 0;
 	
 	/**
-	 * Controls if we are in the flow establishment phase or we're already 
-	 * sending/receiving PDUs
+	 * Controls if this socket will be used for application registration ("server application")
+	 * or to establish a data flow ("client application")
 	 */
-	private boolean connected = false;
+	private boolean registerApplication = false;
+	
+	private ApplicationProcessNamingInfo apNamingInfo = null;
 
 	public TCPSocketReader(Socket socket, Delimiter delimiter, Encoder encoder, CDAPSessionManager cdapSessionManager, APServiceImpl apService){
 		super(socket, delimiter);
 		this.cdapSessionManager = cdapSessionManager;
 		this.apService = apService;
 		this.encoder = encoder;
-		this.portId = socket.getPort();
 	}
 	
 	public void setPortId(int portId){
@@ -88,6 +91,9 @@ public class TCPSocketReader extends BaseSocketReader{
 			case M_CREATE:
 				handleMCreateReceived(cdapMessage);
 				break;
+			case M_CREATE_R:
+				handleMCreateResponseReceived(cdapMessage);
+				break;
 			case M_DELETE:
 				handleMDeleteReceived(cdapMessage);
 				break;
@@ -95,6 +101,7 @@ public class TCPSocketReader extends BaseSocketReader{
 				handleMWriteReceived(cdapMessage);
 				break;
 			case M_START:
+				handleMStartReceived(cdapMessage);
 				break;
 			case M_STOP:
 				break;
@@ -121,7 +128,12 @@ public class TCPSocketReader extends BaseSocketReader{
 	 * Decode the flow service object and call the APService class to initiate the allocation of a new flow
 	 * @param cdapMessage
 	 */
-	private void handleMCreateReceived(CDAPMessage cdapMessage){		
+	private void handleMCreateReceived(CDAPMessage cdapMessage){
+		if (registerApplication){
+			//This socket can only be used to modify the application registration information
+			//TODO, send error message and close socket?
+		}
+		
 		try{
 			FlowService flowService = (FlowService) encoder.decode(cdapMessage.getObjValue().getByteval(), FlowService.class.toString());
 			apService.processAllocateRequest(flowService, cdapMessage, getSocket(), this);
@@ -148,6 +160,11 @@ public class TCPSocketReader extends BaseSocketReader{
 	 * @param cdapMessage
 	 */
 	private void handleMWriteReceived(CDAPMessage cdapMessage){
+		if (registerApplication){
+			//This socket can only be used to modify the application registration information
+			//TODO, send error message and close socket?
+		}
+		
 		if (ipcService == null){
 			log.error("Received a request to transfer data on portId "+portId+", but there is no flow allocated yet");
 			//There is no flow allocated yet, what to do?
@@ -168,13 +185,66 @@ public class TCPSocketReader extends BaseSocketReader{
 	 * @param cdapMessage
 	 */
 	private void handleMDeleteReceived(CDAPMessage cdapMessage){
-		apService.processDeallocateRequest(getSocket(), cdapMessage);
+		if (registerApplication){
+			//This socket can only be used to modify the application registration information
+			//TODO, send error message and close socket?
+		}
+		
+		apService.processDeallocateRequest(cdapMessage, portId, getSocket());
+	}
+	
+	/**
+	 * Decode the application registration object and call the APService class to initiate the allocation of a new flow
+	 * @param cdapMessage
+	 */
+	private void handleMStartReceived(CDAPMessage cdapMessage){
+		if (ipcService != null){
+			//This socket can only be used for data transfer
+			//TODO send error message and close socket?
+		}
+		
+		try{
+			ApplicationRegistration applicationRegistration = (ApplicationRegistration) encoder.decode(cdapMessage.getObjValue().getByteval(), ApplicationRegistration.class.toString());
+			apService.processApplicationRegistrationRequest(applicationRegistration, cdapMessage, getSocket(), this);
+			registerApplication = true;
+		}catch(Exception ex){
+			log.error(ex.getMessage());
+			try{
+				CDAPMessage errorMessage = cdapMessage.getReplyMessage();
+				errorMessage.setResult(1);
+				errorMessage.setResultReason("Could not parse object value. " + ex.getMessage());
+				apService.sendErrorMessageAndCloseSocket(errorMessage, getSocket());
+			}catch(Exception ex1){
+				ex1.printStackTrace();
+				try{
+					getSocket().close();
+				}catch(Exception ex2){
+					ex2.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Decode the flow service object and call the APService class to confirm the allocation of a new flow
+	 * @param cdapMessage
+	 */
+	private void handleMCreateResponseReceived(CDAPMessage cdapMessage){
+		apService.processAllocateResponse(cdapMessage, portId, this);
 	}
 	
 	/**
 	 * Invoked when the socket is disconnected
 	 */
 	public void socketDisconnected(){
-		apService.processSocketClosed(getSocket());
+		apService.processSocketClosed(portId);
+	}
+
+	public void setApNamingInfo(ApplicationProcessNamingInfo apNamingInfo) {
+		this.apNamingInfo = apNamingInfo;
+	}
+
+	public ApplicationProcessNamingInfo getApNamingInfo() {
+		return apNamingInfo;
 	}
 }

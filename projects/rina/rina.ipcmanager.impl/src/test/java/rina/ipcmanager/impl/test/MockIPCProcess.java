@@ -41,29 +41,34 @@ public class MockIPCProcess extends BaseIPCProcess implements IPCService{
 		// TODO Auto-generated method stub
 	}
 
-	public void register(ApplicationProcessNamingInfo arg0) {
-		// TODO Auto-generated method stub
+	public void register(ApplicationProcessNamingInfo apNamingInfo) {
+		Assert.assertEquals(apNamingInfo.getApplicationProcessName(), "A");
+		Assert.assertEquals(apNamingInfo.getApplicationProcessInstance(), "1");
+		System.out.println("Registered application "+apNamingInfo.toString());
 	}
 
-	public void submitAllocateRequest(FlowService flowService, APService apService) throws IPCException {
+	public int submitAllocateRequest(FlowService flowService, APService apService) throws IPCException {
 		Assert.assertEquals(flowService.getDestinationAPNamingInfo().getApplicationProcessName(), "B");
 		Assert.assertEquals(flowService.getDestinationAPNamingInfo().getApplicationProcessInstance(), "1");
 		Assert.assertEquals(flowService.getSourceAPNamingInfo().getApplicationProcessName(), "A");
 		Assert.assertEquals(flowService.getSourceAPNamingInfo().getApplicationProcessInstance(), "1");
-		Assert.assertNotNull(flowService.getPortId());
-		this.portId = flowService.getPortId();
+		this.portId = 1;
 		this.flowService = flowService;
+		this.flowService.setPortId(1);
 		this.apService = apService;
 		
 		System.out.println("Received allocate request from application process A-1 to communicate with application process B-1");
 		System.out.println("Assigned portId: "+portId);
 		APNotifier notifier = new APNotifier(apService, flowService, Status.ALLOCATE_RESPONSE_OK);
 		executorService.execute(notifier);
+		return this.portId;
 	}
 
-	public void submitAllocateResponse(int arg0, boolean arg1, String arg2)
-			throws IPCException {
-		// TODO Auto-generated method stub
+	public void submitAllocateResponse(int portId, boolean result, String reason) throws IPCException {
+		System.out.println("Allocate response called!!");
+		Assert.assertEquals(portId, 24);
+		Assert.assertEquals(result, true);
+		Assert.assertNull(reason);
 	}
 
 	public void submitDeallocateRequest(int portId, APService apService) {

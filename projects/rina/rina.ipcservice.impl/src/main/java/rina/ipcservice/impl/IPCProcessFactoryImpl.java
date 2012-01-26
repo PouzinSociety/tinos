@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.applicationprocess.api.WhatevercastName;
 import rina.cdap.api.CDAPSessionManagerFactory;
 import rina.delimiting.api.DelimiterFactory;
 import rina.efcp.api.DataTransferAEFactory;
@@ -182,11 +183,51 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	 * @param difname The name of the DIF
 	 * @return
 	 */
-	public IPCProcess getIPCProcessBelongingToDIF(String difname){
+	public IPCProcess getIPCProcessBelongingToDIF(String difName){
 		IPCProcess currentIPCProcess = null;
 		RIBDaemon ribDaemon = null;
 		RIBObject ribObject = null;
 		RIBObject childRIBObject = null;
+
+		Iterator<String> iterator = ipcProcesses.keySet().iterator();
+		while(iterator.hasNext()){
+			currentIPCProcess = ipcProcesses.get(iterator.next());
+			ribDaemon = (RIBDaemon) currentIPCProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+			try{
+				ribObject = (RIBObject) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+						RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES, 0);
+				if (ribObject != null){
+					List<RIBObject> ribObjects = ribObject.getChildren();
+					for(int j=0; j<ribObjects.size(); j++){
+						childRIBObject = ribObjects.get(j);
+						if(childRIBObject.getObjectName().equals(RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+								RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
+								RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "any")){
+							WhatevercastName whatevercastName = (WhatevercastName) childRIBObject.getObjectValue();
+							if(whatevercastName.getName().equals(difName)){
+								return currentIPCProcess;
+							}
+						}
+					}
+				}
+			}catch(RIBDaemonException ex){
+				ex.printStackTrace();
+			}
+		}
+
+		return null;
+	}
+	
+	/**
+	 * Return a list of the names of the DIFs currently available in the system
+	 * @return
+	 */
+	public List<String> listDIFNames(){
+		IPCProcess currentIPCProcess = null;
+		RIBDaemon ribDaemon = null;
+		RIBObject ribObject = null;
+		RIBObject childRIBObject = null;
+		List<String> difNames = new ArrayList<String>();
 		
 		Iterator<String> iterator = ipcProcesses.keySet().iterator();
 		while(iterator.hasNext()){
@@ -202,7 +243,8 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 						if(childRIBObject.getObjectName().equals(RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 								RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
 								RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "any")){
-							return currentIPCProcess;
+							WhatevercastName whatevercastName = (WhatevercastName) childRIBObject.getObjectValue();
+							difNames.add(whatevercastName.getName());
 						}
 					}
 				}
@@ -212,6 +254,7 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		}
 		
 		return null;
+		
 	}
 	
 	/**
