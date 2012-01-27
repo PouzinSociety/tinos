@@ -51,6 +51,15 @@ public interface IPCService {
 	public void submitAllocateResponse(int portId, boolean result, String reason) throws IPCException;
 	
 	/**
+	 * This primitive is invoked by the requested Application Process to respond to a deallocation 
+	 * request from IPC. 
+	 * @param port_id
+	 * @param result
+	 * @param reason
+	 */
+	public void submitDeallocateResponse(int portId, boolean result, String reason) throws IPCException;
+	
+	/**
 	 * Used by an application process to specify that it is available through this IPC process
 	 * @param applicationProcessNamingInfo
 	 */

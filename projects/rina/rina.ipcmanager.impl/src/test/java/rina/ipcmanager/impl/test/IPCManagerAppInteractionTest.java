@@ -38,7 +38,7 @@ public class IPCManagerAppInteractionTest {
 	@Before
 	public void setup(){
 		ipcManager = new IPCManagerImpl();
-		mockIPCProcessFactory = new MockIPCProcessFactory();
+		mockIPCProcessFactory = new MockIPCProcessFactory(ipcManager.getAPService());
 		ipcManager.setIPCProcessFactory(mockIPCProcessFactory);
 		idd = new MockInterDIFDirectory();
 		ipcManager.setInterDIFDirectory(idd);
@@ -99,13 +99,14 @@ public class IPCManagerAppInteractionTest {
 			Assert.assertEquals(cdapMessage.getResult(), 0);
 			Assert.assertEquals(cdapMessage.getOpCode(), Opcode.M_DELETE_R);
 			System.out.println("Flow deallocated");
+			ipcManager.stop();
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
 	}
 	
 	@Test
-	public void testServerBehaviourRegisterAllocateReadWriteDeallocateUnregisterAllOk(){
+	public void testServerBehaviourRegisterAllocateDeallocateUnregisterAllOk(){
 		try{
 			//1 Connect to the IPC Manager
 			Socket rinaLibrarySocket = new Socket("localhost", APServiceTCPServer.DEFAULT_PORT);
@@ -138,8 +139,29 @@ public class IPCManagerAppInteractionTest {
 			flowService.setDestinationAPNamingInfo(new ApplicationProcessNamingInfo("A", "1"));
 			flowService.setSourceAPNamingInfo(new ApplicationProcessNamingInfo("B", "1"));
 			flowService.setPortId(24);
-			ipcManager.getAPService().deliverAllocateRequest(flowService, (IPCService) mockIPCProcessFactory.createIPCProcess(null));
+			MockIPCProcess ipcService = (MockIPCProcess) mockIPCProcessFactory.createIPCProcess(null);
+			ipcService.setFlowService(flowService);
+			String result = ipcManager.getAPService().deliverAllocateRequest(flowService, (IPCService) ipcService);
+			Assert.assertNull(result);
 			wait2Seconds();
+			
+			//6 Deallocation request arrives to AP service
+			ipcManager.getAPService().deliverDeallocateRequest(flowService.getPortId());
+			wait2Seconds();
+			
+			//7 Unregister application
+			cdapMessage = CDAPMessage.getStopObjectRequestMessage(null, null, null, null, 0, null, 0);
+			sendCDAPMessage(rinaLibrarySocket, cdapMessage);
+			
+			//8 Wait a bit and check that we have the response
+			wait2Seconds();
+			cdapMessage = socketReader.getLastMessage();
+			Assert.assertNotNull(cdapMessage);
+			Assert.assertEquals(cdapMessage.getResult(), 0);
+			Assert.assertEquals(cdapMessage.getOpCode(), Opcode.M_STOP_R);
+			System.out.println("Application unregistered, stopping server");
+			tcpServer.setEnd(true);
+			Assert.assertTrue(rinaLibrarySocket.isClosed());
 			
 		}catch(Exception ex){
 			ex.printStackTrace();

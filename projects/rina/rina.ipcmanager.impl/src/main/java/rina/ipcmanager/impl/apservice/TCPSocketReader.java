@@ -56,8 +56,6 @@ public class TCPSocketReader extends BaseSocketReader{
 	 * Controls if this socket will be used for application registration ("server application")
 	 * or to establish a data flow ("client application")
 	 */
-	private boolean registerApplication = false;
-	
 	private ApplicationProcessNamingInfo apNamingInfo = null;
 
 	public TCPSocketReader(Socket socket, Delimiter delimiter, Encoder encoder, CDAPSessionManager cdapSessionManager, APServiceImpl apService){
@@ -85,7 +83,7 @@ public class TCPSocketReader extends BaseSocketReader{
 
 		try{
 			cdapMessage = cdapSessionManager.decodeCDAPMessage(pdu);
-			log.debug(cdapMessage.toString());
+			log.info(cdapMessage.toString());
 
 			switch(cdapMessage.getOpCode()){
 			case M_CREATE:
@@ -97,6 +95,9 @@ public class TCPSocketReader extends BaseSocketReader{
 			case M_DELETE:
 				handleMDeleteReceived(cdapMessage);
 				break;
+			case M_DELETE_R:
+				handleMDeleteResponseReceived(cdapMessage);
+				break;
 			case M_WRITE:
 				handleMWriteReceived(cdapMessage);
 				break;
@@ -104,6 +105,7 @@ public class TCPSocketReader extends BaseSocketReader{
 				handleMStartReceived(cdapMessage);
 				break;
 			case M_STOP:
+				handleMStopReceived(cdapMessage);
 				break;
 			default:
 				//TODO
@@ -129,9 +131,10 @@ public class TCPSocketReader extends BaseSocketReader{
 	 * @param cdapMessage
 	 */
 	private void handleMCreateReceived(CDAPMessage cdapMessage){
-		if (registerApplication){
+		if (apNamingInfo != null){
 			//This socket can only be used to modify the application registration information
 			//TODO, send error message and close socket?
+			return;
 		}
 		
 		try{
@@ -160,9 +163,10 @@ public class TCPSocketReader extends BaseSocketReader{
 	 * @param cdapMessage
 	 */
 	private void handleMWriteReceived(CDAPMessage cdapMessage){
-		if (registerApplication){
+		if (apNamingInfo != null){
 			//This socket can only be used to modify the application registration information
 			//TODO, send error message and close socket?
+			return;
 		}
 		
 		if (ipcService == null){
@@ -185,9 +189,10 @@ public class TCPSocketReader extends BaseSocketReader{
 	 * @param cdapMessage
 	 */
 	private void handleMDeleteReceived(CDAPMessage cdapMessage){
-		if (registerApplication){
+		if (apNamingInfo != null){
 			//This socket can only be used to modify the application registration information
 			//TODO, send error message and close socket?
+			return;
 		}
 		
 		apService.processDeallocateRequest(cdapMessage, portId, getSocket());
@@ -201,12 +206,13 @@ public class TCPSocketReader extends BaseSocketReader{
 		if (ipcService != null){
 			//This socket can only be used for data transfer
 			//TODO send error message and close socket?
+			return;
 		}
 		
 		try{
 			ApplicationRegistration applicationRegistration = (ApplicationRegistration) encoder.decode(cdapMessage.getObjValue().getByteval(), ApplicationRegistration.class.toString());
 			apService.processApplicationRegistrationRequest(applicationRegistration, cdapMessage, getSocket(), this);
-			registerApplication = true;
+			apNamingInfo = applicationRegistration.getApNamingInfo();
 		}catch(Exception ex){
 			log.error(ex.getMessage());
 			try{
@@ -225,26 +231,45 @@ public class TCPSocketReader extends BaseSocketReader{
 		}
 	}
 	
+	private void handleMStopReceived(CDAPMessage cdapMessage){
+		if (ipcService != null){
+			//This socket can only be used for data transfer
+			//TODO send error message and close socket?
+			return;
+		}
+		
+		apService.processApplicationUnregistration(apNamingInfo, cdapMessage, getSocket());
+	}
+	
 	/**
 	 * Decode the flow service object and call the APService class to confirm the allocation of a new flow
 	 * @param cdapMessage
 	 */
 	private void handleMCreateResponseReceived(CDAPMessage cdapMessage){
+		if (apNamingInfo != null){
+			//This socket can only be used to modify the application registration information
+			//TODO, send error message and close socket?
+			return;
+		}
+		
 		apService.processAllocateResponse(cdapMessage, portId, this);
+	}
+	
+	
+	private void handleMDeleteResponseReceived(CDAPMessage cdapMessage){
+		if (apNamingInfo != null){
+			//This socket can only be used to modify the application registration information
+			//TODO, send error message and close socket?
+			return;
+		}
+		
+		apService.processDeallocateResponse(cdapMessage, portId, this);
 	}
 	
 	/**
 	 * Invoked when the socket is disconnected
 	 */
 	public void socketDisconnected(){
-		apService.processSocketClosed(portId);
-	}
-
-	public void setApNamingInfo(ApplicationProcessNamingInfo apNamingInfo) {
-		this.apNamingInfo = apNamingInfo;
-	}
-
-	public ApplicationProcessNamingInfo getApNamingInfo() {
-		return apNamingInfo;
+		apService.processSocketClosed(portId, apNamingInfo);
 	}
 }

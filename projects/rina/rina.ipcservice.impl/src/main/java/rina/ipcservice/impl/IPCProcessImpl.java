@@ -199,4 +199,9 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	public void destroy(){
 		executorService.shutdown();
 	}
+
+	public synchronized void submitDeallocateResponse(int portId, boolean result, String reason) throws IPCException {
+		// TODO Auto-generated method stub
+		
+	}
 }

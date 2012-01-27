@@ -29,6 +29,15 @@ public class MockIPCProcess extends BaseIPCProcess implements IPCService{
 		executorService = Executors.newFixedThreadPool(2);
 	}
 	
+	public void setAPService(APService apService){
+		this.apService = apService;
+	}
+	
+	public void setFlowService(FlowService flowService){
+		this.flowService = flowService;
+		this.portId = flowService.getPortId();
+	}
+	
 	public void deliverDeallocateRequestToApplicationProcess(int arg0) {
 		// TODO Auto-generated method stub
 	}
@@ -91,7 +100,17 @@ public class MockIPCProcess extends BaseIPCProcess implements IPCService{
 		executorService.execute(notifier);
 	}
 
-	public void unregister(ApplicationProcessNamingInfo arg0) {
-		// TODO Auto-generated method stub
+	public void unregister(ApplicationProcessNamingInfo apNamingInfo) {
+		Assert.assertEquals(apNamingInfo.getApplicationProcessName(), "A");
+		Assert.assertEquals(apNamingInfo.getApplicationProcessInstance(), "1");
+		System.out.println("Unregistered application "+apNamingInfo.toString());
+	}
+
+	public void submitDeallocateResponse(int portId, boolean result, String reason) throws IPCException {
+		Assert.assertEquals(24, portId);
+		Assert.assertEquals(true, result);
+		Assert.assertNull(reason);
+		
+		System.out.println("Flow deallocated at portId "+portId);
 	}
 }

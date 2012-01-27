@@ -7,9 +7,6 @@ import java.net.Socket;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.ipcmanager.impl.IPCManagerImpl;
-
-
 /**
  * Listens to local connections from applications that want to use the RINA services.
  * In reality the calls will come from the API libraries (Native RINA or faux sockets).

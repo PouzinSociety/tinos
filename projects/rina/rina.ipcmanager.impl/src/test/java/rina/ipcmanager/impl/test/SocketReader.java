@@ -6,10 +6,11 @@ import junit.framework.Assert;
 
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
+import rina.cdap.api.message.ObjectValue;
 import rina.delimiting.api.BaseSocketReader;
 import rina.delimiting.api.Delimiter;
 import rina.encoding.api.Encoder;
-import rina.encoding.impl.googleprotobuf.flowservice.FlowServiceMessage.FlowService;
+import rina.ipcservice.api.FlowService;
 
 public class SocketReader extends BaseSocketReader{
 	
@@ -40,8 +41,8 @@ public class SocketReader extends BaseSocketReader{
 				try{
 					FlowService flowService = (FlowService) encoder.decode(cdapMessage.getObjValue().getByteval(), FlowService.class.toString());
 					Assert.assertEquals(flowService.getPortId(), 24);
-					Assert.assertEquals(flowService.getSourceNamingInfo().getApplicationProcessName(), "B");
-					Assert.assertEquals(flowService.getDestinationNamingInfo().getApplicationProcessName(), "A");
+					Assert.assertEquals(flowService.getSourceAPNamingInfo().getApplicationProcessName(), "B");
+					Assert.assertEquals(flowService.getDestinationAPNamingInfo().getApplicationProcessName(), "A");
 					
 					CDAPMessage replyMessage = cdapMessage.getReplyMessage();
 					byte[] encodedMessage = cdapSessionManager.encodeCDAPMessage(replyMessage);
@@ -60,11 +61,27 @@ public class SocketReader extends BaseSocketReader{
 				System.out.println(cdapMessage.toString());
 				lastMessage = cdapMessage;
 				break;
+			case M_DELETE:
+				System.out.println(cdapMessage.toString());
+				lastMessage = cdapMessage;
+				try{
+					CDAPMessage replyMessage = cdapMessage.getReplyMessage();
+					byte[] encodedMessage = cdapSessionManager.encodeCDAPMessage(replyMessage);
+					byte[] delimitedMessage = this.getDelimiter().getDelimitedSdu(encodedMessage);
+					getSocket().getOutputStream().write(delimitedMessage);
+				}catch(Exception ex){
+					ex.printStackTrace();
+				}
+				break;
 			case M_DELETE_R:
 				System.out.println(cdapMessage.toString());
 				lastMessage = cdapMessage;
 				break;
 			case M_START_R:
+				System.out.println(cdapMessage.toString());
+				lastMessage = cdapMessage;
+				break;
+			case M_STOP_R:
 				System.out.println(cdapMessage.toString());
 				lastMessage = cdapMessage;
 				break;

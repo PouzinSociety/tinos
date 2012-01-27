@@ -12,17 +12,19 @@ import rina.encoding.api.EncoderFactory;
 import rina.encoding.impl.googleprotobuf.GPBEncoderFactory;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
+import rina.ipcservice.api.APService;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 public class MockIPCProcessFactory implements IPCProcessFactory{
 	
-	private IPCProcess ipcProcess = null;
+	private MockIPCProcess ipcProcess = null;
 	private CDAPSessionManagerFactoryImpl cdapSessionManagerFactory = null;
 	private EncoderFactory encoderFactory = null;
 	private DelimiterFactory delimiterFactory = null;
 	
-	public MockIPCProcessFactory(){
+	public MockIPCProcessFactory(APService apService){
 		ipcProcess = new MockIPCProcess();
+		ipcProcess.setAPService(apService);
 	}
 
 	public IPCProcess createIPCProcess(ApplicationProcessNamingInfo arg0)

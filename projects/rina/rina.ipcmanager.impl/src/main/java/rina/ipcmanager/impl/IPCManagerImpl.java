@@ -11,7 +11,6 @@ import org.apache.commons.logging.LogFactory;
 import rina.applicationprocess.api.DAFMember;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.cdap.api.CDAPSessionDescriptor;
-import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
 import rina.efcp.api.DataTransferConstants;
@@ -61,15 +60,6 @@ public class IPCManagerImpl implements IPCManager{
 	 */
 	private IPCProcessFactory ipcProcessFactory = null;
 	
-	/**
-	 * The Inter DIF Directory or IDD
-	 */
-	private InterDIFDirectory interDIFDirectory = null;
-	
-	private CDAPSessionManager cdapSessionManager = null;
-	
-	private Encoder encoder = null;
-	
 	private APServiceImpl apService = null;
 	
 	public IPCManagerImpl(){
@@ -80,14 +70,17 @@ public class IPCManagerImpl implements IPCManager{
 		log.debug("IPC Manager started");
 	}
 	
+	public void stop(){
+		apService.stop();
+		console.stop();
+	}
+	
 	public void setInterDIFDirectory(InterDIFDirectory idd){
 		apService.setInterDIFDirectory(idd);
 	}
 	
 	public void setIPCProcessFactory(IPCProcessFactory ipcProcessFactory){
 		this.ipcProcessFactory = ipcProcessFactory;
-		cdapSessionManager = ipcProcessFactory.getCDAPSessionManagerFactory().createCDAPSessionManager();
-		encoder = ipcProcessFactory.getEncoderFactory().createEncoderInstance();
 		apService.setIPCProcessFactory(ipcProcessFactory);
 	}
 

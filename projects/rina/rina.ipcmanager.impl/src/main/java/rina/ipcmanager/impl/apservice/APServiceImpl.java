@@ -75,6 +75,10 @@ public class APServiceImpl implements APService{
 		applicationRegistrations = new Hashtable<String, ApplicationRegistrationState>();
 	}
 	
+	public void stop(){
+		tcpServer.setEnd(true);
+	}
+	
 	public void setInterDIFDirectory(InterDIFDirectory interDIFDirectory){
 		this.interDIFDirectory = interDIFDirectory;
 	}
@@ -180,25 +184,50 @@ public class APServiceImpl implements APService{
 	
 	/**
 	 * Just call the IPC process to release the flow associated to the socket, if it was not already done.
-	 * @param socket
+	 * @param portId
+	 * @param apNamingInfo True if this socket was being used as an application registration
 	 */
-	public synchronized void processSocketClosed(int portId){
-		FlowServiceState flowServiceState = flowServices.get(new Integer(portId));
-		if (flowServiceState == null){
-			return;
-		}
-		
-		if (!flowServiceState.getStatus().equals(Status.ALLOCATED)){
-			return;
-		}
-		
-		try{
-			flowServiceState.getIpcService().submitDeallocateRequest(portId, this);
-			flowServiceState.setCdapMessage(null);
-			flowServiceState.setStatus(Status.DEALLOCATION_REQUESTED);
-		}catch(Exception ex){
-			ex.printStackTrace();
-			//TODO, what to do?
+	public synchronized void processSocketClosed(int portId, ApplicationProcessNamingInfo apNamingInfo){
+		if (apNamingInfo == null){
+			FlowServiceState flowServiceState = flowServices.get(new Integer(portId));
+			if (flowServiceState == null){
+				return;
+			}
+
+			if (!flowServiceState.getStatus().equals(Status.ALLOCATED)){
+				return;
+			}
+
+			try{
+				flowServiceState.getIpcService().submitDeallocateRequest(portId, this);
+				flowServiceState.setCdapMessage(null);
+				flowServiceState.setStatus(Status.DEALLOCATION_REQUESTED);
+			}catch(Exception ex){
+				ex.printStackTrace();
+				//TODO, what to do?
+			}
+		}else{
+			ApplicationRegistrationState apState = applicationRegistrations.get(apNamingInfo.getProcessKey());
+			if (apState == null){
+				return;
+			}
+			
+			List<String> difNames = null;
+			if (apState.getApplicationRegistration().getDifNames() == null || apState.getApplicationRegistration().getDifNames().size() == 0){
+				difNames = ipcProcessFactory.listDIFNames();
+			}else{
+				difNames = apState.getApplicationRegistration().getDifNames();
+			}
+			
+			for(int i=0; i<difNames.size(); i++){
+				IPCService ipcService = (IPCService) ipcProcessFactory.getIPCProcessBelongingToDIF(difNames.get(i));
+				if (ipcService != null){
+					ipcService.unregister(apNamingInfo);
+				}
+			}
+			
+			interDIFDirectory.removeMapping(apNamingInfo, difNames);			
+			applicationRegistrations.remove(apNamingInfo.getProcessKey());
 		}
 	}
 	
@@ -212,11 +241,11 @@ public class APServiceImpl implements APService{
 	 */
 	public synchronized void processApplicationRegistrationRequest(ApplicationRegistration applicationRegistration, 
 			CDAPMessage cdapMessage, Socket socket, TCPSocketReader tcpSocketReader){
-		if(applicationRegistrations.get(new Integer(socket.getPort())) != null){
+		if(applicationRegistrations.get(applicationRegistration.getApNamingInfo().getProcessKey()) != null){
 			CDAPMessage errorMessage = cdapMessage.getReplyMessage();
 			errorMessage.setResult(1);
 			errorMessage.setResultReason("The application is already registered through this socket");
-			sendReplyMessage(errorMessage, socket);
+			sendMessage(errorMessage, socket);
 		}
 		
 		List<String> difNames = null;
@@ -233,17 +262,16 @@ public class APServiceImpl implements APService{
 				//TODO error message, one of the DIF names is not available in the system
 				//return?
 			}else{
-				//Register the application
 				ipcService.register(applicationRegistration.getApNamingInfo());
-				//Update the IDD
-				interDIFDirectory.addMapping(applicationRegistration.getApNamingInfo(), difNames);
 			}
 		}
+		
+		interDIFDirectory.addMapping(applicationRegistration.getApNamingInfo(), difNames);
 
 		//Reply to the application
 		try{
 			CDAPMessage confirmationMessage = cdapMessage.getReplyMessage();
-			sendReplyMessage(confirmationMessage, socket);
+			sendMessage(confirmationMessage, socket);
 		}catch(Exception ex){
 			ex.printStackTrace();
 			//TODO what to do?
@@ -253,6 +281,57 @@ public class APServiceImpl implements APService{
 		ApplicationRegistrationState applicationRegistrationState = new ApplicationRegistrationState(applicationRegistration);
 		applicationRegistrationState.setSocket(socket);
 		applicationRegistrations.put(applicationRegistration.getApNamingInfo().getProcessKey(), applicationRegistrationState);
+	}
+	
+	/**
+	 * Unregister the application from one or more DIFs, do any house keeping and close the socket
+	 * @param apNamingInfo
+	 * @param cdapMessage
+	 * @param socket
+	 */
+	public void processApplicationUnregistration(ApplicationProcessNamingInfo apNamingInfo, CDAPMessage cdapMessage, Socket socket){
+		ApplicationRegistrationState apState = applicationRegistrations.get(apNamingInfo.getProcessKey());
+		if (apState == null){
+			CDAPMessage errorMessage = cdapMessage.getReplyMessage();
+			errorMessage.setResult(1);
+			errorMessage.setResultReason("The application is not registered through this socket");
+			sendErrorMessageAndCloseSocket(cdapMessage, socket);
+		}
+		
+		List<String> difNames = null;
+		if (apState.getApplicationRegistration().getDifNames() == null || apState.getApplicationRegistration().getDifNames().size() == 0){
+			difNames = ipcProcessFactory.listDIFNames();
+		}else{
+			difNames = apState.getApplicationRegistration().getDifNames();
+		}
+		
+		for(int i=0; i<difNames.size(); i++){
+			IPCService ipcService = (IPCService) ipcProcessFactory.getIPCProcessBelongingToDIF(difNames.get(i));
+			if (ipcService != null){
+				ipcService.unregister(apNamingInfo);
+			}
+		}
+		
+		interDIFDirectory.removeMapping(apNamingInfo, difNames);
+		
+		//Reply to the application
+		try{
+			CDAPMessage confirmationMessage = cdapMessage.getReplyMessage();
+			sendMessage(confirmationMessage, socket);
+		}catch(Exception ex){
+			ex.printStackTrace();
+			//TODO what to do?
+		}
+		
+		applicationRegistrations.remove(apNamingInfo.getProcessKey());
+		
+		try{
+			if (socket.isConnected()){
+				socket.close();
+			}
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
 	}
 
 	/**
@@ -282,6 +361,7 @@ public class APServiceImpl implements APService{
 			TCPSocketReader socketReader = new TCPSocketReader(socket, ipcProcessFactory.getDelimiterFactory().createDelimiter(DelimiterFactory.DIF),
 					ipcProcessFactory.getEncoderFactory().createEncoderInstance(), ipcProcessFactory.getCDAPSessionManagerFactory().createCDAPSessionManager(), 
 					this);
+			socketReader.setPortId(flowService.getPortId());
 			executorService.execute(socketReader);
 			
 			byte[] encodedObject = encoder.encode(flowService);
@@ -289,7 +369,7 @@ public class APServiceImpl implements APService{
 			objectValue.setByteval(encodedObject);
 			CDAPMessage cdapMessage = CDAPMessage.
 				getCreateObjectRequestMessage(null, null, FlowService.OBJECT_CLASS, 0, FlowService.OBJECT_NAME, objectValue, 0);
-			sendReplyMessage(cdapMessage, socket);
+			sendMessage(cdapMessage, socket);
 			
 			FlowServiceState flowServiceState = new FlowServiceState();
 			flowServiceState.setFlowService(flowService);
@@ -349,6 +429,48 @@ public class APServiceImpl implements APService{
 	}
 	
 	/**
+	 * Invoked when the application process has sent an M_DELETE_R in response to a
+	 * deallocation request
+	 * @param cdapMessage
+	 * @param portId
+	 */
+	public synchronized void processDeallocateResponse(CDAPMessage cdapMessage, int portId, TCPSocketReader socketReader){
+		FlowServiceState flowServiceState = flowServices.get(portId);
+		if (flowServiceState == null || !flowServiceState.getStatus().equals(Status.DEALLOCATION_REQUESTED)){
+			//TODO, what to do? just send error message?
+			return;
+		}
+		
+		if (cdapMessage.getResult() == 0){
+			//Flow deallocation accepted
+			try{
+				flowServiceState.getIpcService().submitDeallocateResponse(portId, true, null);
+				flowServices.remove(portId);
+				ApplicationRegistrationState arState = applicationRegistrations.get(flowServiceState.getFlowService().getDestinationAPNamingInfo().getProcessKey());
+				if (arState == null){
+					//TODO what to do?
+				}else{
+					arState.getFlowServices().remove(flowServiceState);
+				}
+				if (flowServiceState.getSocket().isConnected()){
+					flowServiceState.getSocket().close();
+				}
+			}catch(Exception ex){
+				ex.printStackTrace();
+				//TODO what to do?
+			}
+		}else{
+			//Flow deallocation denied
+			try{
+				flowServiceState.getIpcService().submitDeallocateResponse(portId, true, cdapMessage.getResultReason());
+				flowServiceState.setStatus(Status.ALLOCATED);
+			}catch(Exception ex){
+				ex.printStackTrace();
+			}
+		}
+	}
+	
+	/**
 	 * This primitive is invoked by the IPC process to the IPC Manager
 	 * to indicate the success or failure of the request associated with this port-id. 
 	 * @param requestedAPinfo
@@ -380,7 +502,7 @@ public class APServiceImpl implements APService{
 				confirmationMessage.setObjValue(objectValue);
 				confirmationMessage.setResult(result);
 				confirmationMessage.setResultReason(resultReason);
-				sendReplyMessage(confirmationMessage, flowServiceState.getSocket());
+				sendMessage(confirmationMessage, flowServiceState.getSocket());
 			}catch(Exception ex){
 				ex.printStackTrace();
 				//TODO what to do?
@@ -418,7 +540,7 @@ public class APServiceImpl implements APService{
 			ObjectValue objectValue = new ObjectValue();
 			objectValue.setByteval(sdu);
 			CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(null, null, 0, null, objectValue, 0, null, 1);
-			sendReplyMessage(cdapMessage, flowServiceState.getSocket());
+			sendMessage(cdapMessage, flowServiceState.getSocket());
 		}catch(Exception ex){
 			ex.printStackTrace();
 			//TODO, what to do?
@@ -449,7 +571,7 @@ public class APServiceImpl implements APService{
 			flowServices.remove(new Integer(portId));
 			if (flowServiceState.getCdapMessage() != null){
 				CDAPMessage responseMessage = flowServiceState.getCdapMessage().getReplyMessage();
-				sendReplyMessage(responseMessage, flowServiceState.getSocket());
+				sendMessage(responseMessage, flowServiceState.getSocket());
 				try{
 					flowServiceState.getSocket().close();
 				}catch(Exception ex){
@@ -463,26 +585,42 @@ public class APServiceImpl implements APService{
 				CDAPMessage errorMessage = flowServiceState.getCdapMessage().getReplyMessage();
 				errorMessage.setResult(result);
 				errorMessage.setResultReason(resultReason);
-				sendReplyMessage(errorMessage, flowServiceState.getSocket());
+				sendMessage(errorMessage, flowServiceState.getSocket());
 			}
 		}
 	}
 	
 	/**
-	 * Invoked when a Delete_Flow primitive is received at the requested IPC process
+	 * Invoked when a Delete_Flow primitive invoked by an IPC process
 	 * @param request
 	 */
 	public void deliverDeallocateRequest(int portId) {
-		// TODO Auto-generated method stub
+		FlowServiceState flowServiceState = flowServices.get(new Integer(portId));
+		if (flowServiceState == null){
+			log.warn("Received a deallocate response for portid " + portId + ", but didn't have any pending deallocation request identified by this portId");
+			return;
+		}
 		
+		if (!flowServiceState.getStatus().equals(FlowServiceState.Status.ALLOCATED)){
+			//TODO, what to do?
+			return;
+		}
+		
+		try{
+			CDAPMessage cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, null, 0, null, 0);
+			sendCDAPMessage(cdapMessage, flowServiceState.getSocket());
+			flowServiceState.setStatus(Status.DEALLOCATION_REQUESTED);
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
 	}
 	
 	/**
-	 * Send a reply message to the application library
+	 * Send a message to the application library
 	 * @param cdapMessage
 	 * @param socket
 	 */
-	public synchronized void sendReplyMessage(CDAPMessage cdapMessage, Socket socket){
+	public synchronized void sendMessage(CDAPMessage cdapMessage, Socket socket){
 		try{
 			sendCDAPMessage(cdapMessage, socket);
 		}catch(Exception ex){

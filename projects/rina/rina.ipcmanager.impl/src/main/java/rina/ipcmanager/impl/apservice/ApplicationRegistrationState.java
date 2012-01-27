@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import rina.ipcservice.api.ApplicationRegistration;
-import rina.ipcservice.api.IPCService;
 
 /**
  * Contains information about a certain application registration state
