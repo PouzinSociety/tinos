@@ -1,0 +1,155 @@
+package rina.applibrary.api;
+
+import java.util.Hashtable;
+import java.util.Map;
+
+/**
+ * Encapsulates the parameters that define the level of service that this 
+ * flow must accomplish
+ * @author eduardgrasa
+ *
+ */
+public class QualityOfServiceSpecification {
+	
+	/**
+	 * Average bandwidth in bytes/s, a value of 0 indicates 'don't care'
+	 */
+	private long averageBandwidth = 0;
+	
+	/**
+	 * Average bandwidth in SDUs/s, a value of 0 indicates 'don't care'
+	 */
+	private long averageSDUBandwidth = 0;
+	
+	/**
+	 * In milliseconds, a value of 0 indicates 'don't care'
+	 */
+	private int peakBandwidthDuration = 0;
+	
+	/**
+	 * In milliseconds, a value of 0 indicates 'don't care'
+	 */
+	private int peakSDUBandwidthDuration = 0;
+	
+	/**
+	 * A value of 0 indicates 'don't care'
+	 */
+	private double undetectedBitErrorRate = 0;
+	
+	/**
+	 * Indicates if partial delivery of SDUs is allowed or not
+	 */
+	private boolean partialDelivery = true;
+
+	/**
+	 * Indicates if SDUs have to be delivered in order
+	 */
+	private boolean order = false;
+	
+	/**
+	 * Indicates the maximum gap allowed in SDUs, a gap of N SDUs is considered the same as 
+	 * all SDUs delivered. A value of -1 indicates 'Any'
+	 */
+	private int maxAllowableGapSDU = -1;
+	
+	/**
+	 * In milliseconds, indicates the maximum delay allowed in this flow. A value of 
+	 * 0 indicates 'don't care'
+	 */
+	private int delay = 0;
+	
+	/**
+	 * In milliseconds, indicates the maximum jitter allowed in this flow. A value of 
+	 * 0 indicates 'don't care'
+	 */
+	private int jitter = 0;
+	
+	/**
+	 * Used to add extra parameters
+	 */
+	private Map<String, String> extendedPrameters = new Hashtable<String, String>();
+
+	public Map<String, String> getExtendedPrameters() {
+		return extendedPrameters;
+	}
+
+	public long getAverageBandwidth() {
+		return averageBandwidth;
+	}
+
+	public void setAverageBandwidth(long averageBandwidth) {
+		this.averageBandwidth = averageBandwidth;
+	}
+
+	public long getAverageSDUBandwidth() {
+		return averageSDUBandwidth;
+	}
+
+	public void setAverageSDUBandwidth(long averageSDUBandwidth) {
+		this.averageSDUBandwidth = averageSDUBandwidth;
+	}
+
+	public int getPeakBandwidthDuration() {
+		return peakBandwidthDuration;
+	}
+
+	public void setPeakBandwidthDuration(int peakBandwidthDuration) {
+		this.peakBandwidthDuration = peakBandwidthDuration;
+	}
+
+	public int getPeakSDUBandwidthDuration() {
+		return peakSDUBandwidthDuration;
+	}
+
+	public void setPeakSDUBandwidthDuration(int peakSDUBandwidthDuration) {
+		this.peakSDUBandwidthDuration = peakSDUBandwidthDuration;
+	}
+
+	public double getUndetectedBitErrorRate() {
+		return undetectedBitErrorRate;
+	}
+
+	public void setUndetectedBitErrorRate(double undetectedBitErrorRate) {
+		this.undetectedBitErrorRate = undetectedBitErrorRate;
+	}
+
+	public boolean isPartialDelivery() {
+		return partialDelivery;
+	}
+
+	public void setPartialDelivery(boolean partialDelivery) {
+		this.partialDelivery = partialDelivery;
+	}
+
+	public boolean isOrder() {
+		return order;
+	}
+
+	public void setOrder(boolean order) {
+		this.order = order;
+	}
+
+	public int getMaxAllowableGapSDU() {
+		return maxAllowableGapSDU;
+	}
+
+	public void setMaxAllowableGapSDU(int maxAllowableGapSDU) {
+		this.maxAllowableGapSDU = maxAllowableGapSDU;
+	}
+
+	public int getDelay() {
+		return delay;
+	}
+
+	public void setDelay(int delay) {
+		this.delay = delay;
+	}
+
+	public int getJitter() {
+		return jitter;
+	}
+
+	public void setJitter(int jitter) {
+		this.jitter = jitter;
+	}
+}
