@@ -53,4 +53,49 @@ public class ApplicationProcess {
 			flowException.setErrorCode(IPCException.APPLICATION_PROCESS_NAME_NOT_SPECIFIED_CODE);
 		}
 	}
+	
+	public boolean equals(Object object){
+		if (object == null){
+			return false;
+		}
+		
+		if (!(object instanceof ApplicationProcess)){
+			return false;
+		}
+		
+		ApplicationProcess candidate = (ApplicationProcess) object;
+		if (!this.applicationProcessName.equals(candidate.getApplicationProcessName())){
+			return false;
+		}
+		
+		if (this.applicationProcessInstance != null && !this.applicationProcessInstance.equals(candidate.getApplicationProcessInstance())){
+			return false;
+		}
+		
+		if (this.applicationEntityName != null && !this.applicationEntityName.equals(candidate.getApplicationEntityName())){
+			return false;
+		}
+		
+		if (this.applicationEntityInstance != null && !this.applicationEntityInstance.equals(candidate.getApplicationEntityInstance())){
+			return false;
+		}
+		
+		return true;
+	}
+	
+	public String toString(){
+		String result = "";
+		result = result + "AP Name: " + this.applicationProcessName;
+		if (this.applicationProcessInstance != null){
+			result = result + "\nAP Instance: " + this.getApplicationProcessInstance();
+		}
+		if (this.applicationEntityName != null){
+			result = result + "\nAE Name: " + this.getApplicationEntityName();
+		}
+		if (this.applicationEntityInstance != null){
+			result = result + "\nAE Instance: " + this.getApplicationEntityInstance();
+		}
+		
+		return result;
+	}
 }

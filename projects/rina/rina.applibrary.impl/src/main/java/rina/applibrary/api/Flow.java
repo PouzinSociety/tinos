@@ -2,6 +2,7 @@ package rina.applibrary.api;
 
 import java.util.List;
 
+import rina.applibrary.api.FlowImpl.State;
 import rina.applibrary.impl.DefaultFlowImpl;
 
 /**
@@ -15,29 +16,6 @@ import rina.applibrary.impl.DefaultFlowImpl;
 public class Flow {
 	
 	/**
-	 * The name of the source application of this flow (i.e. the application that requested
-	 * the establishment of this flow)
-	 */
-	protected ApplicationProcess sourceApplication = null;
-	
-	/**
-	 * The name of the destination application of this flow (i.e. the application that accepted 
-	 * the establishment of this flow)
-	 */
-	protected ApplicationProcess destinationApplication = null;
-	
-	/**
-	 * The quality of service requested for this flow. This is the service level 
-	 * agreement negotiated between the application requesting the flow and the DIF
-	 */
-	protected QualityOfServiceSpecification qosSpec = null;
-	
-	/**
-	 * The class to be called when a new SDU is received by this flow
-	 */
-	protected SDUListener sduListener = null;
-	
-	/**
 	 * The class that does the work
 	 */
 	private FlowImpl flowImplementation = null;
@@ -47,6 +25,10 @@ public class Flow {
 	 * to change the behavior of the FlowImpl.
 	 */
 	private FlowImplFactory flowImplementationFactory = null;
+	
+	public Flow(FlowImpl flowImplementation){
+		this.flowImplementation = flowImplementation;
+	}
 	
 	/**
 	 * Will try to allocate a flow to the destination application process with the level of 
@@ -82,28 +64,32 @@ public class Flow {
 		if (sourceApplication == null){
 			IPCException flowException = new IPCException(IPCException.SOURCE_APPLICATION_NOT_SPECIFIED);
 			flowException.setErrorCode(IPCException.SOURCE_APPLICATION_NOT_SPECIFIED_CODE);
+			throw flowException;
 		}
 		sourceApplication.validate();
-		this.sourceApplication = sourceApplication;
 		
 		if (destinationApplication == null){
 			IPCException flowException = new IPCException(IPCException.DESTINATION_APPLICATION_NOT_SPECIFIED);
 			flowException.setErrorCode(IPCException.DESTINATION_APPLICATION_NOT_SPECIFIED_CODE);
+			throw flowException;
 		}
 		destinationApplication.validate();
-		this.destinationApplication = destinationApplication;
 		
-		if (this.sduListener == null){
+		if (sduListener == null){
 			IPCException flowException = new IPCException(IPCException.SDU_LISTENER_NOT_SPECIFIED);
 			flowException.setErrorCode(IPCException.SDU_LISTENER_NOT_SPECIFIED_CODE);
+			throw flowException;
 		}
 		
-		this.qosSpec = qosSpec;
 		this.flowImplementationFactory = flowImplFactory;
 		
 		this.createFlowImpl();
+		this.flowImplementation.setSourceApplication(sourceApplication);
+		this.flowImplementation.setDestinationApplication(destinationApplication);
+		this.flowImplementation.setQosSpec(qosSpec);
+		this.flowImplementation.setSduListener(sduListener);
 		
-		flowImplementation.allocate(sourceApplication, destinationApplication, qosSpec, sduListener);
+		this.flowImplementation.allocate();
 	}
 	
 	/**
@@ -131,7 +117,7 @@ public class Flow {
 	 */
 	public void write(List<byte[]> sdus) throws IPCException{
 		if (sdus == null){
-			throw new IPCException("Null parameter");
+			throw new IPCException("List of SDUs cannot be null");
 		}
 		
 		for(int i=0; i<sdus.size(); i++){
@@ -145,6 +131,58 @@ public class Flow {
 	 */
 	public void deallocate() throws IPCException{
 		flowImplementation.deallocate();
+	}
+	
+	public void setSDUListener(SDUListener sduListener){
+		flowImplementation.setSduListener(sduListener);
+	}
+	
+	public void setSourceApplication(ApplicationProcess sourceApplication) throws IPCException{
+		if (sourceApplication == null){
+			IPCException flowException = new IPCException(IPCException.SOURCE_APPLICATION_NOT_SPECIFIED);
+			flowException.setErrorCode(IPCException.SOURCE_APPLICATION_NOT_SPECIFIED_CODE);
+			throw flowException;
+		}
+		sourceApplication.validate();
+		flowImplementation.setSourceApplication(sourceApplication);
+	}
+	
+	public ApplicationProcess getSourceApplication(){
+		return flowImplementation.getSourceApplication();
+	}
+	
+	public void setDestinationApplication(ApplicationProcess destinationApplication) throws IPCException{
+		if (destinationApplication == null){
+			IPCException flowException = new IPCException(IPCException.DESTINATION_APPLICATION_NOT_SPECIFIED);
+			flowException.setErrorCode(IPCException.DESTINATION_APPLICATION_NOT_SPECIFIED_CODE);
+			throw flowException;
+		}
+		destinationApplication.validate();
+		flowImplementation.setDestinationApplication(destinationApplication);
+	}
+	
+	public ApplicationProcess getDestinationApplication(){
+		return flowImplementation.getDestinationApplication();
+	}
+	
+	public void setQoSSpec(QualityOfServiceSpecification qosSpec){
+		flowImplementation.setQosSpec(qosSpec);
+	}
+	
+	public QualityOfServiceSpecification getQoSSpec(){
+		return flowImplementation.getQosSpec();
+	}
+	
+	public boolean isAllocated(){
+		return flowImplementation.getState() == State.ALLOCATED;
+	}
+	
+	/**
+	 * Return the portId associated to this flow
+	 * @return
+	 */
+	public int getPortId(){
+		return flowImplementation.getPortId();
 	}
 
 }
