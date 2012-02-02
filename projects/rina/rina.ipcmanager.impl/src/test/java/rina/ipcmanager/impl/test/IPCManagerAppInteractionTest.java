@@ -82,7 +82,7 @@ public class IPCManagerAppInteractionTest {
 			cdapMessage = socketReader.getLastMessage();
 			Assert.assertNotNull(cdapMessage);
 			Assert.assertEquals(cdapMessage.getResult(), 0);
-			Assert.assertEquals(cdapMessage.getOpCode(), Opcode.M_READ_R);
+			Assert.assertEquals(cdapMessage.getOpCode(), Opcode.M_WRITE);
 			byte[] sdu = cdapMessage.getObjValue().getByteval();
 			String receivedMessage = new String(sdu);
 			System.out.println("Received message: "+receivedMessage);

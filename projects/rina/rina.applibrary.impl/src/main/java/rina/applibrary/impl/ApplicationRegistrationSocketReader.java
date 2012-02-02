@@ -3,9 +3,6 @@ package rina.applibrary.impl;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import rina.delimiting.api.BaseSocketReader;
 import rina.delimiting.api.Delimiter;
 
@@ -16,8 +13,6 @@ import rina.delimiting.api.Delimiter;
  *
  */
 public class ApplicationRegistrationSocketReader extends BaseSocketReader{
-	
-	private static final Log log = LogFactory.getLog(ApplicationRegistrationSocketReader.class);
 	
 	/**
 	 * The queue to send back the M_CREATE_R and M_DELETE_R CDAP messages 
@@ -33,7 +28,6 @@ public class ApplicationRegistrationSocketReader extends BaseSocketReader{
 
 	@Override
 	public void processPDU(byte[] pdu) {
-		log.debug("Received pdu: " + printBytes(pdu));
 		try{
 			this.registrationQueue.put(pdu);
 		}catch(InterruptedException ex){

@@ -539,7 +539,7 @@ public class APServiceImpl implements APService{
 		try{
 			ObjectValue objectValue = new ObjectValue();
 			objectValue.setByteval(sdu);
-			CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(null, null, 0, null, objectValue, 0, null, 1);
+			CDAPMessage cdapMessage = CDAPMessage.getWriteObjectRequestMessage(null, null, null, 0, objectValue, null, 1);
 			sendMessage(cdapMessage, flowServiceState.getSocket());
 		}catch(Exception ex){
 			ex.printStackTrace();

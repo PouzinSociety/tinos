@@ -164,7 +164,7 @@ public class FlowRequestsServer implements Runnable{
 		}catch(Exception ex){
 			log.error("Problems accepting the new flow: "+ ex.getMessage());
 			try{
-				cdapMessage = CDAPMessage.getCreateObjectResponseMessage(null, null, 0, null, null, 1, ex.getMessage(), cdapMessage.getInvokeID());
+				cdapMessage = CDAPMessage.getCreateObjectResponseMessage(null, null, 0, null, null, 1, ex.getMessage(), 1);
 				pdu = cdapSessionManager.encodeCDAPMessage(cdapMessage);
 				socket.getOutputStream().write(delimiter.getDelimitedSdu(pdu));
 				if (!socket.isClosed()){
@@ -176,18 +176,7 @@ public class FlowRequestsServer implements Runnable{
 			}
 		}
 		
-		//5 The flow has been accepted, answer back positively
-		try{
-			log.debug("Flow accepted, replying back.");
-			cdapMessage = CDAPMessage.getCreateObjectResponseMessage(null, null, 0, null, null, 0, null, cdapMessage.getInvokeID());
-			pdu = cdapSessionManager.encodeCDAPMessage(cdapMessage);
-			socket.getOutputStream().write(delimiter.getDelimitedSdu(pdu));
-		}catch(Exception ex){
-			log.error(ex);
-			//TODO, what to do?
-		}
-		
-		//6 Create the flow object, and either notify the flowListener or put it in the queue
+		//5 Create the flow object, and either notify the flowListener or put it in the queue
 		//(depending if we are on blocking or non-blocking operation)
 		FlowImpl flowImpl = new DefaultFlowImpl();
 		flowImpl.setSourceApplication(sourceApplication);
@@ -196,6 +185,7 @@ public class FlowRequestsServer implements Runnable{
 			((DefaultFlowImpl)flowImpl).setCDAPSessionManager(cdapSessionManager);
 			((DefaultFlowImpl)flowImpl).setDelimiter(delimiter);
 			((DefaultFlowImpl)flowImpl).setEncoder(encoder);
+			((DefaultFlowImpl)flowImpl).setPortId(flowService.getPortId());
 			flowImpl.setSocket(socket);
 		}catch(IPCException ex){
 			log.error("This error should never happen " + ex);
@@ -211,6 +201,18 @@ public class FlowRequestsServer implements Runnable{
 				flowListener.flowAccepted(flow);
 			}
 		}catch(Exception ex){
+			log.error(ex);
+			//TODO, what to do?
+		}
+		
+		//6 The flow has been accepted, answer back positively
+		try{
+			log.debug("Flow accepted, replying back.");
+			cdapMessage = CDAPMessage.getCreateObjectResponseMessage(null, null, 0, null, null, 0, null, 1);
+			pdu = cdapSessionManager.encodeCDAPMessage(cdapMessage);
+			socket.getOutputStream().write(delimiter.getDelimitedSdu(pdu));
+		}catch(Exception ex){
+			ex.printStackTrace();
 			log.error(ex);
 			//TODO, what to do?
 		}

@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import rina.applibrary.api.ApplicationProcess;
+import rina.applibrary.api.ApplicationRegistration;
 import rina.applibrary.api.Flow;
 import rina.applibrary.api.IPCException;
 
@@ -59,13 +60,13 @@ public class TestCorrectClientServerApplication {
 		//echo server
 		String sdu = "The rain in Spain stays mainly in the plain";
 		flow.write(sdu.getBytes());
-		wait1Second();
+		wait2Seconds();
 		Assert.assertEquals(sdu, sduListener.getLastSDU());
 		
 		//3 Do it again
 		sdu = "Today it's very cold and about to snow";
 		flow.write(sdu.getBytes());
-		wait1Second();
+		wait2Seconds();
 		Assert.assertEquals(sdu, sduListener.getLastSDU());
 		
 		//4 Deallocate the flow
@@ -74,9 +75,84 @@ public class TestCorrectClientServerApplication {
 		System.out.println("Flow deallocated");
 	}
 	
-	private void wait1Second(){
+	@Test
+	public void testBlockingServerApplicationWithClient() throws IPCException{
+		//1 Register this application with the RINAServer
+		ApplicationProcess applicationProcess = new ApplicationProcess();
+		applicationProcess.setApplicationProcessName("echo-server");
+		applicationProcess.setApplicationProcessInstance("1");
+		
+		ApplicationRegistration registration = new ApplicationRegistration(applicationProcess);
+		Assert.assertFalse(registration.isUnregistered());
+		
+		//Block until a new flow is accepted
+		SimpleSDUListener sduListener = new SimpleSDUListener();
+		Flow flow = registration.accept(sduListener);
+		Assert.assertTrue(flow.isAllocated());
+		System.out.println("Server: Accepted a flow! PortId = " + flow.getPortId());
+		
+		//wait 1 second, read the SDU
+		wait2Seconds();
+		Assert.assertEquals("Switzerland is a good country if you like mountains", sduListener.getLastSDU());
+		System.out.println("Server: Received SDU, echoing it back! "+sduListener.getLastSDU());
+		flow.write(sduListener.getLastSDU().getBytes());
+		
+		//wait 1 second, read the SDU
+		wait2Seconds();
+		Assert.assertEquals("And it can be even a better country if you also like cheese", sduListener.getLastSDU());
+		System.out.println("Server: Received SDU, echoing it back! "+sduListener.getLastSDU());
+		flow.write(sduListener.getLastSDU().getBytes());
+		
+		//wait 1 second, check that the flow is unallocated
+		wait2Seconds();
+		Assert.assertFalse(flow.isAllocated());
+		
+		//unregister the application
+		registration.unregister();
+		Assert.assertTrue(registration.isUnregistered());
+	}
+	
+	@Test
+	public void testNonBlockingServerApplicationWithClient() throws IPCException{
+		//1 Register this application with the RINAServer
+		ApplicationProcess applicationProcess = new ApplicationProcess();
+		applicationProcess.setApplicationProcessName("echo-server");
+		applicationProcess.setApplicationProcessInstance("1");
+		
+		SimpleSDUListener sduListener = new SimpleSDUListener();
+		SimpleFlowListener flowListener = new SimpleFlowListener(sduListener);
+		ApplicationRegistration registration = new ApplicationRegistration(applicationProcess, flowListener);
+		
+		//wait 1 second, check that there is already a flow accepted
+		wait2Seconds();
+		Flow flow = flowListener.getFlow();
+		Assert.assertTrue(flow.isAllocated());
+		System.out.println("Server: Accepted a flow! PortId = " + flow.getPortId());
+		
+		//wait 1 second, read the SDU
+		wait2Seconds();
+		Assert.assertEquals("Switzerland is a good country if you like mountains", sduListener.getLastSDU());
+		System.out.println("Server: Received SDU, echoing it back! "+sduListener.getLastSDU());
+		flow.write(sduListener.getLastSDU().getBytes());
+		
+		//wait 1 second, read the SDU
+		wait2Seconds();
+		Assert.assertEquals("And it can be even a better country if you also like cheese", sduListener.getLastSDU());
+		System.out.println("Server: Received SDU, echoing it back! "+sduListener.getLastSDU());
+		flow.write(sduListener.getLastSDU().getBytes());
+		
+		//wait 1 second, check that the flow is unallocated
+		wait2Seconds();
+		Assert.assertFalse(flow.isAllocated());
+		
+		//unregister the application
+		registration.unregister();
+		Assert.assertTrue(registration.isUnregistered());
+	}
+	
+	private void wait2Seconds(){
 		try{
-			Thread.sleep(1000);
+			Thread.sleep(2000);
 		}catch(InterruptedException ex){
 			ex.printStackTrace();
 		}

@@ -277,7 +277,7 @@ public class DefaultFlowImpl implements FlowImpl{
 		}
 		
 		try{
-			CDAPMessage responseMessage = CDAPMessage.getDeleteObjectResponseMessage(null, null, 0, null, 0, null, cdapMessage.getInvokeID());
+			CDAPMessage responseMessage = CDAPMessage.getDeleteObjectResponseMessage(null, null, 0, null, 0, null, 1);
 			byte[] encodedMessage = cdapSessionManager.encodeCDAPMessage(responseMessage);
 			socket.getOutputStream().write(delimiter.getDelimitedSdu(encodedMessage));
 		}catch(Exception ex){
@@ -449,5 +449,13 @@ public class DefaultFlowImpl implements FlowImpl{
 	 */
 	public int getPortId(){
 		return this.portId;
+	}
+	
+	/**
+	 * Set the portId associated to this flow
+	 * @param portId
+	 */
+	public void setPortId(int portId){
+		this.portId = portId;
 	}
 }

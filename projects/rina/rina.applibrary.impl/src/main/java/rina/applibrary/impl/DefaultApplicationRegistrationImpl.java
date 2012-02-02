@@ -116,11 +116,11 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 			socket = new Socket("localhost", RINAFactory.DEFAULT_PORT);
 			
 			//2 Start a server socket to listen for incoming flow establishment attempts
-			serverSocket = new ServerSocket();
+			serverSocket = new ServerSocket(0);
 			
 			//3 Create and start the registration socket reader
 			this.arSocketReader = new ApplicationRegistrationSocketReader(socket, delimiter, registrationQueue);
-			this.executorService.equals(arSocketReader);
+			this.executorService.execute(arSocketReader);
 			
 			//4 Populate the application registration object
 			ApplicationRegistration applicationRegistration = new ApplicationRegistration();
@@ -155,9 +155,9 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 			
 			//7 If the registration was successful, start the server thread that will wait for incoming Flow establishment attempts
 			if (this.flowListener == null){
-				this.flowRequestsServer = new FlowRequestsServer(serverSocket, flowAcceptor, flowListener);
-			}else{
 				this.flowRequestsServer = new FlowRequestsServer(serverSocket, flowAcceptor, acceptedFlowsQueue);
+			}else{
+				this.flowRequestsServer = new FlowRequestsServer(serverSocket, flowAcceptor, flowListener);
 			}
 			this.flowRequestsServer.setCDAPSessionManager(cdapSessionManager);
 			this.flowRequestsServer.setDelimiter(delimiter);

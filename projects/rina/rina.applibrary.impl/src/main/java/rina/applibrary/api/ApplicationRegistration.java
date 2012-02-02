@@ -54,6 +54,27 @@ public class ApplicationRegistration {
 	private FlowListener flowListener = null;
 	
 	/**
+	 * Constructor for blocking servers registering the application in all the DIFs, using the default acceptor and the default 
+	 * registration implementation
+	 * @param application
+	 * @throws IPCException
+	 */
+	public ApplicationRegistration(ApplicationProcess application) throws IPCException{
+		this(application, null, null, null, null);
+	}
+	
+	/**
+	 * Constructor for non-blocking servers registering the application in all the DIFs, using the default acceptor and the default 
+	 * registration implementation
+	 * @param application
+	 * @param flowListener
+	 * @throws IPCException
+	 */
+	public ApplicationRegistration(ApplicationProcess application, FlowListener flowListener) throws IPCException{
+		this(application, null, null, null, flowListener);
+	}
+	
+	/**
 	 * Registers the application to the specified list of DIFs. If the list is null, the application is 
 	 * registered in all the DIFs that currently exist in this system.
 	 * @param application

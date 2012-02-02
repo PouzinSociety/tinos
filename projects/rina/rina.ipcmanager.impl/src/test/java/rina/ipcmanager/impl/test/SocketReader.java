@@ -57,7 +57,7 @@ public class SocketReader extends BaseSocketReader{
 				System.out.println(cdapMessage.toString());
 				lastMessage = cdapMessage;
 				break;
-			case M_READ_R:
+			case M_WRITE:
 				System.out.println(cdapMessage.toString());
 				lastMessage = cdapMessage;
 				break;
