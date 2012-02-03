@@ -8,16 +8,17 @@ public class FlowService {
 	private ApplicationProcessNamingInfo sourceAPNamingInfo = null;
 	private ApplicationProcessNamingInfo destinationAPNamingInfo = null;
 	private int portId = 0;
-	private QoSParameters qosParameters = null;
+	private QualityOfServiceSpecification qosSpec = null;
 	private boolean result = false;
 	
 	public FlowService(){
 	}
 
-	public FlowService(ApplicationProcessNamingInfo sourceAPNamingInfo, ApplicationProcessNamingInfo destinationAPNamingInfo, QoSParameters qosParameters) {
+	public FlowService(ApplicationProcessNamingInfo sourceAPNamingInfo, ApplicationProcessNamingInfo destinationAPNamingInfo, 
+			QualityOfServiceSpecification qosSpec) {
 		this.sourceAPNamingInfo = sourceAPNamingInfo;
 		this.destinationAPNamingInfo = destinationAPNamingInfo;
-		this.qosParameters = qosParameters;
+		this.qosSpec = qosSpec;
 	}
 	
 	public ApplicationProcessNamingInfo getSourceAPNamingInfo() {
@@ -44,12 +45,12 @@ public class FlowService {
 		this.portId = portId;
 	}
 
-	public QoSParameters getCube() {
-		return qosParameters;
+	public QualityOfServiceSpecification getQoSSpecification() {
+		return qosSpec;
 	}
 
-	public void setQoSParameters(QoSParameters qosParameters) {
-		this.qosParameters = qosParameters;
+	public void setQoSSpecification(QualityOfServiceSpecification qosSpec) {
+		this.qosSpec = qosSpec;
 	}
 
 	public boolean isResult() {
@@ -64,6 +65,9 @@ public class FlowService {
 		String result = "";
 		result = result + "Source application process naming info: " + this.getSourceAPNamingInfo() + "\n";
 		result = result + "Destination application process naming info: " + this.getDestinationAPNamingInfo() + "\n";
+		if (qosSpec != null){
+			result = result + qosSpec.toString();
+		}
 		return result;
 	}
 

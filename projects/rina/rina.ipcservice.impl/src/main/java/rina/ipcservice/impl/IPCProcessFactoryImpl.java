@@ -16,6 +16,7 @@ import rina.efcp.api.DataTransferAEFactory;
 import rina.encoding.api.EncoderFactory;
 import rina.enrollment.api.EnrollmentTaskFactory;
 import rina.flowallocator.api.FlowAllocatorFactory;
+import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
@@ -75,6 +76,11 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	 */
 	private EnrollmentTaskFactory enrollmentTaskFactory = null;
 	
+	/**
+	 * The IPCManager of this system
+	 */
+	private IPCManager ipcManager = null;
+	
 	public IPCProcessFactoryImpl(){
 		ipcProcesses = new HashMap<String, IPCProcess>();
 	}
@@ -131,6 +137,7 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		RIBDaemon ribDaemon = ribDaemonFactory.createRIBDaemon(ipcProcessNamingInfo);
 		IPCProcess ipcProcess = new IPCProcessImpl(ipcProcessNamingInfo.getApplicationProcessName(), 
 				ipcProcessNamingInfo.getApplicationProcessInstance(), ribDaemon);
+		ipcProcess.setIPCManager(this.ipcManager);
 		
 		ipcProcess.addIPCProcessComponent(ribDaemon);
 		ipcProcess.addIPCProcessComponent(delimiterFactory.createDelimiter(DelimiterFactory.DIF));
@@ -269,6 +276,14 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		}
 		
 		return result;
+	}
+
+	/**
+	 * Set the IPCManager of this system
+	 * @param ipcManager
+	 */
+	public void setIPCManager(IPCManager ipcManager) {
+		this.ipcManager = ipcManager;
 	}
 
 }

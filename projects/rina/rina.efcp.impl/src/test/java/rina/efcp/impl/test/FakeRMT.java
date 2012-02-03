@@ -3,7 +3,7 @@ package rina.efcp.impl.test;
 import rina.efcp.api.DataTransferConstants;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
-import rina.ipcservice.api.QoSParameters;
+import rina.ipcservice.api.QualityOfServiceSpecification;
 import rina.rmt.api.RMT;
 
 /**
@@ -116,7 +116,7 @@ public class FakeRMT implements RMT{
 	}
 
 	public int allocateFlow(ApplicationProcessNamingInfo arg0,
-			QoSParameters arg1) throws Exception {
+			QualityOfServiceSpecification arg1) throws Exception {
 		// TODO Auto-generated method stub
 		return 0;
 	}

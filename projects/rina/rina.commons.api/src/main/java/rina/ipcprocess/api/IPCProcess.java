@@ -1,9 +1,9 @@
 package rina.ipcprocess.api;
 
-import java.util.List;
 import java.util.Map;
 
 import rina.ipcmanager.api.IPCManager;
+import rina.ipcservice.api.APService;
 
 /**
  * Represents an IPC Process. Holds together the different components of the IPC 
@@ -25,9 +25,24 @@ public interface IPCProcess{
 	public void setIPCProcessCompnents(Map<String, IPCProcessComponent> ipcProcessComponents);
 	
 	/* IPC Manager */
+	/**
+	 * Set the IPCManager of this system
+	 * @param ipcManager
+	 */
 	public void setIPCManager(IPCManager ipcManager);
 	
+	/**
+	 * Get the IPCManager of this system
+	 * @return
+	 */
 	public IPCManager getIPCManager();
+	
+	/**
+	 * Get the class that handles the interaction with 
+	 * the applications in this system
+	 * @return
+	 */
+	public APService getAPService();
 	
 	/**
 	 * Lifecicle event, invoked to tell the IPC process it is about to be destroyed.
@@ -35,17 +50,4 @@ public interface IPCProcess{
 	 * operation.
 	 */
 	public void destroy();
-	
-	/**
-	 * Deliver a set of sdus to the application process bound to portId
-	 * @param sdus
-	 * @param portId
-	 */
-	public void deliverSDUsToApplicationProcess(List<byte[]> sdus, int portId);
-	
-	/**
-	 * Call the applicationProcess deallocate.deliver operation
-	 * @param portId
-	 */
-	public void deliverDeallocateRequestToApplicationProcess(int portId);
 }

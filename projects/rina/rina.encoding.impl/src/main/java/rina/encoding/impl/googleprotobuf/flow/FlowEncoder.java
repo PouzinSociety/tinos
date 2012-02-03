@@ -1,22 +1,18 @@
 package rina.encoding.impl.googleprotobuf.flow;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import rina.encoding.api.BaseEncoder;
 import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.message.Flow;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
-import rina.ipcservice.api.QoSParameters;
+import rina.ipcservice.api.QualityOfServiceSpecification;
 import rina.encoding.impl.googleprotobuf.GPBUtils;
 import rina.encoding.impl.googleprotobuf.apnaminginfo.ApplicationProcessNamingInfoMessage;
 import rina.encoding.impl.googleprotobuf.apnaminginfo.ApplicationProcessNamingInfoMessage.applicationProcessNamingInfo_t;
 import rina.encoding.impl.googleprotobuf.flow.FlowMessage.connectionId_t;
-import rina.encoding.impl.googleprotobuf.flow.FlowMessage.qosParameter_t;
+import rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t;
 
 /**
  * Serializes, unserializes Flow objects using the GPB encoding
@@ -35,7 +31,7 @@ public class FlowEncoder extends BaseEncoder{
 		byte[] accessControl = GPBUtils.getByteArray(gpbFlow.getAccessControl());
 		ApplicationProcessNamingInfo destinationAPName = getApplicationProcessNamingInfo(gpbFlow.getDestinationNamingInfo());
 		List<ConnectionId> flowIds = getConnectionIds(gpbFlow.getConnectionIdsList());
-		QoSParameters qosParameters = getQoSParameters(gpbFlow.getQosParametersList());
+		QualityOfServiceSpecification qosParameters = GPBUtils.getQualityOfServiceSpecification(gpbFlow.getQosParameters());
 		ApplicationProcessNamingInfo sourceAPName = getApplicationProcessNamingInfo(gpbFlow.getSourceNamingInfo());
 		byte[] status = GPBUtils.getByteArray(gpbFlow.getState());
 		
@@ -88,16 +84,7 @@ public class FlowEncoder extends BaseEncoder{
 		result.setSourceCEPId(connectionId.getSourceCEPId());
 		return result;
 	}
-	
-	private QoSParameters getQoSParameters(List<qosParameter_t> qosParametersList) {
-		QoSParameters result = new QoSParameters();
-		Map<String, Object> cube = new HashMap<String, Object>();
-		for(int i=0; i<qosParametersList.size(); i++){
-			cube.put(qosParametersList.get(i).getParameterName(), qosParametersList.get(i).getParameterValue());
-		}
-		result.setParameters(cube);
-		return result;
-	} 
+	 
 	
 	public byte[] encode(Object object) throws Exception {
 		if (object == null || !(object instanceof Flow)){
@@ -107,31 +94,53 @@ public class FlowEncoder extends BaseEncoder{
 		Flow flow = (Flow) object;
 		
 		List<connectionId_t> connectionIds = getConnectionIdTypes(flow.getFlowIds());
-		List<qosParameter_t> qosParametersList = getQosParametersTypes(flow.getQosParameters());
+		qosSpecification_t qosSpecificationT = GPBUtils.getQoSSpecificationT(flow.getQosParameters());
 		List<String> flowPolicies = flow.getPolicies();
 		if (flowPolicies == null){
 			flowPolicies = new ArrayList<String>();
 		}
 		
-		FlowMessage.Flow gpbFlow = FlowMessage.Flow.newBuilder().
-										setAccessControl(GPBUtils.getByteString(flow.getAccessControl())).
-										setCreateFlowRetries(flow.getCreateFlowRetries()).
-										setCurrentConnectionId(flow.getCurrentFlowId()).
-										addAllConnectionIds(connectionIds).
-										setDestinationAddress(flow.getDestinationAddress()).
-										setDestinationNamingInfo(getApplicationProcessNamingInfoT(flow.getDestinationNamingInfo())).
-										setDestinationPortId(flow.getDestinationPortId()).
-										setHopCount(flow.getHopCount()).
-										addAllPolicies(flowPolicies).
-										addAllQosParameters(qosParametersList).
-										setMaxCreateFlowRetries(flow.getMaxCreateFlowRetries()).
-										setSourceAddress(flow.getSourceAddress()).
-										setSourceNamingInfo(getApplicationProcessNamingInfoT(flow.getSourceNamingInfo())).
-										setSourcePortId(flow.getSourcePortId()).
-										setState(GPBUtils.getByteString(new byte[]{flow.getStatus()})).
-										setTcprendezvousid(flow.getTcpRendezvousId()).
-										build();
+		FlowMessage.Flow gpbFlow = null;
 		
+		if (qosSpecificationT != null){
+			gpbFlow = FlowMessage.Flow.newBuilder().
+			setAccessControl(GPBUtils.getByteString(flow.getAccessControl())).
+			setCreateFlowRetries(flow.getCreateFlowRetries()).
+			setCurrentConnectionId(flow.getCurrentFlowId()).
+			addAllConnectionIds(connectionIds).
+			setDestinationAddress(flow.getDestinationAddress()).
+			setDestinationNamingInfo(getApplicationProcessNamingInfoT(flow.getDestinationNamingInfo())).
+			setDestinationPortId(flow.getDestinationPortId()).
+			setHopCount(flow.getHopCount()).
+			addAllPolicies(flowPolicies).
+			setQosParameters(qosSpecificationT).
+			setMaxCreateFlowRetries(flow.getMaxCreateFlowRetries()).
+			setSourceAddress(flow.getSourceAddress()).
+			setSourceNamingInfo(getApplicationProcessNamingInfoT(flow.getSourceNamingInfo())).
+			setSourcePortId(flow.getSourcePortId()).
+			setState(GPBUtils.getByteString(new byte[]{flow.getStatus()})).
+			setTcprendezvousid(flow.getTcpRendezvousId()).
+			build();
+		}else{
+			gpbFlow = FlowMessage.Flow.newBuilder().
+			setAccessControl(GPBUtils.getByteString(flow.getAccessControl())).
+			setCreateFlowRetries(flow.getCreateFlowRetries()).
+			setCurrentConnectionId(flow.getCurrentFlowId()).
+			addAllConnectionIds(connectionIds).
+			setDestinationAddress(flow.getDestinationAddress()).
+			setDestinationNamingInfo(getApplicationProcessNamingInfoT(flow.getDestinationNamingInfo())).
+			setDestinationPortId(flow.getDestinationPortId()).
+			setHopCount(flow.getHopCount()).
+			addAllPolicies(flowPolicies).
+			setMaxCreateFlowRetries(flow.getMaxCreateFlowRetries()).
+			setSourceAddress(flow.getSourceAddress()).
+			setSourceNamingInfo(getApplicationProcessNamingInfoT(flow.getSourceNamingInfo())).
+			setSourcePortId(flow.getSourcePortId()).
+			setState(GPBUtils.getByteString(new byte[]{flow.getStatus()})).
+			setTcprendezvousid(flow.getTcpRendezvousId()).
+			build();
+		}
+
 		return gpbFlow.toByteArray();
 	}
 	
@@ -171,30 +180,4 @@ public class FlowEncoder extends BaseEncoder{
 		
 		return result;
 	}
-	
-	private List<qosParameter_t> getQosParametersTypes(QoSParameters qosParameters){
-		List<qosParameter_t> qosParametersList = new ArrayList<qosParameter_t>();
-		
-		if (qosParameters == null || qosParameters.getParameters() == null){
-			return qosParametersList;
-		}
-		
-		Iterator<Entry<String, Object>> iterator = qosParameters.getParameters().entrySet().iterator();
-		Entry<String, Object> entry = null;
-		while(iterator.hasNext()){
-			entry = iterator.next();
-			qosParametersList.add(getQoSParameterT(entry));
-		}
-		
-		return qosParametersList;
-	}
-	
-	private qosParameter_t getQoSParameterT(Entry<String, Object> entry){
-		qosParameter_t result = FlowMessage.qosParameter_t.newBuilder().
-									setParameterName(entry.getKey()).
-									setParameterValue((String) entry.getValue()).
-									build();
-		return result;
-	}
-
 }

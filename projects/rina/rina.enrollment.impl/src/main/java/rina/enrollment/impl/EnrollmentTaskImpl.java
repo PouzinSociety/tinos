@@ -21,7 +21,6 @@ import rina.enrollment.impl.ribobjects.OperationalStatusRIBObject;
 import rina.enrollment.impl.statemachines.DefaultEnrollmentStateMachine;
 import rina.enrollment.impl.statemachines.EnrollmentStateMachine;
 import rina.ipcprocess.api.IPCProcess;
-import rina.ipcservice.api.ApplicationEntityNamingInfo;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
@@ -121,7 +120,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	
 	public EnrollmentStateMachine getEnrollmentStateMachine(ApplicationProcessNamingInfo apNamingInfo){
 		return enrollmentStateMachines.get(apNamingInfo.getApplicationProcessName()+
-				apNamingInfo.getApplicationProcessInstance()+apNamingInfo.getApplicationEntities().get(0).getApplicationEntityName());
+				apNamingInfo.getApplicationProcessInstance()+apNamingInfo.getApplicationEntityName());
 	}
 	
 	private boolean isEnrolledTo(String applicationProcessName, String applicationProcessInstance){
@@ -147,17 +146,17 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		Encoder encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
 		EnrollmentStateMachine enrollmentStateMachine = null;
 		
-		if (apNamingInfo.getApplicationEntities().get(0).getApplicationEntityName().equals(DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT)){
+		if (apNamingInfo.getApplicationEntityName().equals(DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT)){
 			enrollmentStateMachine = new DefaultEnrollmentStateMachine(ribDaemon, cdapSessionManager, encoder, apNamingInfo, this);
 			enrollmentStateMachines.put(apNamingInfo.getApplicationProcessName() + 
-					apNamingInfo.getApplicationProcessInstance() + apNamingInfo.getApplicationEntities().get(0).getApplicationEntityName(), enrollmentStateMachine);
+					apNamingInfo.getApplicationProcessInstance() + apNamingInfo.getApplicationEntityName(), enrollmentStateMachine);
 			log.debug("Created a new Enrollment state machine for remote IPC process: "
 					+ apNamingInfo.getApplicationProcessName()+" "+apNamingInfo.getApplicationProcessInstance() 
-					+ " " + apNamingInfo.getApplicationEntities().get(0).getApplicationEntityName());
+					+ " " + apNamingInfo.getApplicationEntityName());
 			return enrollmentStateMachine;
 		}
 		
-		throw new Exception("Unknown application entity for enrollment: "+apNamingInfo.getApplicationEntities().get(0).getApplicationEntityName());
+		throw new Exception("Unknown application entity for enrollment: "+apNamingInfo.getApplicationEntityName());
 	}
 	
 	/**
@@ -191,9 +190,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		
 		//2 Tell the RMT to allocate a new flow to the IPC process  (will return a port Id)
 		candidateNamingInfo = new ApplicationProcessNamingInfo(candidate.getApplicationProcessName(), candidate.getApplicationProcessInstance());
-		ApplicationEntityNamingInfo aeNamingInfo = new ApplicationEntityNamingInfo();
-		aeNamingInfo.setApplicationEntityName(DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT);
-		candidateNamingInfo.getApplicationEntities().add(aeNamingInfo);
+		candidateNamingInfo.setApplicationEntityName(DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT);
 		try{
 			portId = rmt.allocateFlow(candidateNamingInfo, null);
 		}catch(Exception ex){

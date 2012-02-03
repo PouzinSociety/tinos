@@ -10,10 +10,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applibrary.api.ApplicationProcess;
 import rina.applibrary.api.FlowImpl;
 import rina.applibrary.api.IPCException;
-import rina.applibrary.api.QualityOfServiceSpecification;
 import rina.applibrary.api.SDUListener;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
@@ -22,6 +20,7 @@ import rina.delimiting.api.Delimiter;
 import rina.encoding.api.Encoder;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
+import rina.ipcservice.api.QualityOfServiceSpecification;
 
 /**
  * The default implementation for the FlowImpl interface.
@@ -39,13 +38,13 @@ public class DefaultFlowImpl implements FlowImpl{
 	 * The name of the source application of this flow (i.e. the application that requested
 	 * the establishment of this flow)
 	 */
-	private ApplicationProcess sourceApplication = null;
+	private ApplicationProcessNamingInfo sourceApplication = null;
 	
 	/**
 	 * The name of the destination application of this flow (i.e. the application that accepted 
 	 * the establishment of this flow)
 	 */
-	private ApplicationProcess destinationApplication = null;
+	private ApplicationProcessNamingInfo destinationApplication = null;
 	
 	/**
 	 * The quality of service requested for this flow. This is the service level 
@@ -131,13 +130,9 @@ public class DefaultFlowImpl implements FlowImpl{
 			
 			//2 Create the CDAP message with an encoded FlowService object
 			FlowService flowService = new FlowService();
-			ApplicationProcessNamingInfo sourceAPNamingInfo = new ApplicationProcessNamingInfo(sourceApplication.getApplicationProcessName(), 
-					sourceApplication.getApplicationProcessInstance());
-			ApplicationProcessNamingInfo destinationAPNamingInfo = new ApplicationProcessNamingInfo(destinationApplication.getApplicationProcessName(), 
-					destinationApplication.getApplicationProcessInstance());
-			flowService.setSourceAPNamingInfo(sourceAPNamingInfo);
-			flowService.setDestinationAPNamingInfo(destinationAPNamingInfo);
-			//Ignoring QoS parameters for now
+			flowService.setSourceAPNamingInfo(sourceApplication);
+			flowService.setDestinationAPNamingInfo(destinationApplication);
+			flowService.setQoSSpecification(qosSpec);
 			ObjectValue objectValue = new ObjectValue();
 			objectValue.setByteval(encoder.encode(flowService));
 			CDAPMessage cdapMessage = CDAPMessage.getCreateObjectRequestMessage(null, null, FlowService.OBJECT_CLASS, 0, FlowService.OBJECT_NAME, objectValue, 0);
@@ -346,7 +341,7 @@ public class DefaultFlowImpl implements FlowImpl{
 	 * the establishment of this flow)
 	 * @return source application process
 	 */
-	public ApplicationProcess getSourceApplication() {
+	public ApplicationProcessNamingInfo getSourceApplication() {
 		return sourceApplication;
 	}
 
@@ -355,7 +350,7 @@ public class DefaultFlowImpl implements FlowImpl{
 	 * the establishment of this flow)
 	 * @param source application process
 	 */
-	public void setSourceApplication(ApplicationProcess sourceApplication) {
+	public void setSourceApplication(ApplicationProcessNamingInfo sourceApplication) {
 		this.sourceApplication = sourceApplication;
 	}
 
@@ -364,7 +359,7 @@ public class DefaultFlowImpl implements FlowImpl{
 	 * the establishment of this flow)
 	 * @return destination application process
 	 */
-	public ApplicationProcess getDestinationApplication() {
+	public ApplicationProcessNamingInfo getDestinationApplication() {
 		return destinationApplication;
 	}
 
@@ -373,7 +368,7 @@ public class DefaultFlowImpl implements FlowImpl{
 	 * the establishment of this flow)
 	 * @param destination application process
 	 */
-	public void setDestinationApplication(ApplicationProcess destinationApplication) {
+	public void setDestinationApplication(ApplicationProcessNamingInfo destinationApplication) {
 		this.destinationApplication = destinationApplication;
 	}
 

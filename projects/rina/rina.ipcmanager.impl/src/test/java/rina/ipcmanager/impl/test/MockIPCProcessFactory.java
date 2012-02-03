@@ -10,6 +10,7 @@ import rina.delimiting.api.DelimiterFactory;
 import rina.delimiting.impl.DelimiterFactoryImpl;
 import rina.encoding.api.EncoderFactory;
 import rina.encoding.impl.googleprotobuf.GPBEncoderFactory;
+import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
 import rina.ipcservice.api.APService;
@@ -89,5 +90,20 @@ public class MockIPCProcessFactory implements IPCProcessFactory{
 		List<String> result = new ArrayList<String>();
 		result.add("test.DIF");
 		return result;
+	}
+
+	public APService getAPService() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public IPCManager getIPCManager() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setIPCManager(IPCManager arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 }

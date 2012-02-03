@@ -2,6 +2,8 @@ package rina.applibrary.api;
 
 import java.util.List;
 
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
+
 /**
  * Classes implementing this interface provide the behavior of the ApplicationRegistration class
  * @author eduardgrasa
@@ -22,7 +24,7 @@ public interface ApplicationRegistrationImpl {
 	 * to call the "accept" blocking operation in order to get the accepted flows.
 	 * @throws IPCException
 	 */
-	public void register(ApplicationProcess applicationProcess, List<String> difNames, FlowAcceptor flowAcceptor, FlowListener flowListener) throws IPCException;
+	public void register(ApplicationProcessNamingInfo applicationProcess, List<String> difNames, FlowAcceptor flowAcceptor, FlowListener flowListener) throws IPCException;
 	
 	/**
 	 * This operation will block until a new incoming flow is accepted.

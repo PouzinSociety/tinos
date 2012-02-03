@@ -56,7 +56,7 @@ public class MockIPCProcess extends BaseIPCProcess implements IPCService{
 		System.out.println("Registered application "+apNamingInfo.toString());
 	}
 
-	public int submitAllocateRequest(FlowService flowService, APService apService) throws IPCException {
+	public int submitAllocateRequest(FlowService flowService) throws IPCException {
 		Assert.assertEquals(flowService.getDestinationAPNamingInfo().getApplicationProcessName(), "B");
 		Assert.assertEquals(flowService.getDestinationAPNamingInfo().getApplicationProcessInstance(), "1");
 		Assert.assertEquals(flowService.getSourceAPNamingInfo().getApplicationProcessName(), "A");
@@ -64,7 +64,6 @@ public class MockIPCProcess extends BaseIPCProcess implements IPCService{
 		this.portId = 1;
 		this.flowService = flowService;
 		this.flowService.setPortId(1);
-		this.apService = apService;
 		
 		System.out.println("Received allocate request from application process A-1 to communicate with application process B-1");
 		System.out.println("Assigned portId: "+portId);
@@ -112,5 +111,10 @@ public class MockIPCProcess extends BaseIPCProcess implements IPCService{
 		Assert.assertNull(reason);
 		
 		System.out.println("Flow deallocated at portId "+portId);
+	}
+
+	public void submitDeallocateRequest(int arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 }

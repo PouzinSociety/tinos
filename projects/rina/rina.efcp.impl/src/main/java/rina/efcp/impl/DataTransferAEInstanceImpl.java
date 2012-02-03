@@ -9,6 +9,7 @@ import rina.efcp.api.DataTransferConstants;
 import rina.flowallocator.api.Connection;
 import rina.ipcprocess.api.BaseIPCProcessComponent;
 import rina.ipcprocess.api.IPCProcess;
+import rina.ipcservice.api.APService;
 import rina.rmt.api.RMT;
 import rina.utils.types.Unsigned;
 
@@ -29,6 +30,11 @@ public class DataTransferAEInstanceImpl extends BaseIPCProcessComponent implemen
 	 */
 	private DataTransferConstants dataTransferConstants = null;
 	
+	/**
+	 * The class that interacts with applications in this system
+	 */
+	private APService apService = null;
+	
 	public DataTransferAEInstanceImpl(Connection connection, DataTransferConstants dataTransferConstants){
 		this.dataTransferConstants = dataTransferConstants;
 		stateVector = new DTAEIState(connection, dataTransferConstants);
@@ -36,6 +42,7 @@ public class DataTransferAEInstanceImpl extends BaseIPCProcessComponent implemen
 
 	public void setIPCProcess(IPCProcess ipcProcess) {
 		this.ipcProcess = ipcProcess;
+		this.apService = ipcProcess.getAPService();
 	}
 
 	public DTAEIState getStateVector(){
@@ -195,9 +202,10 @@ public class DataTransferAEInstanceImpl extends BaseIPCProcessComponent implemen
 			//TODO, deal with reassembly
 			sdus.addAll(currentPDU.getUserData());
 		}
-		
-		ipcProcess.deliverSDUsToApplicationProcess(sdus, 
-				new Long(stateVector.getConnection().getSourcePortId()).intValue());
+
+		for(int i=0; i<sdus.size(); i++){
+			apService.deliverTransfer(new Long(stateVector.getConnection().getSourcePortId()).intValue(), sdus.get(i));
+		}
 		
 		//We have delivered some SDUs. That satisfies the gap timer - for now.
 		if (stateVector.getConnection().getSduGapTimer() != null){

@@ -12,6 +12,7 @@ import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.message.Flow;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.QualityOfServiceSpecification;
 
 /**
  * Test if the serialization/deserialization mechanisms for the Flow object work
@@ -56,6 +57,10 @@ public class FlowEncoderTest {
 		flow2.setDestinationNamingInfo(new ApplicationProcessNamingInfo("d", null));
 		flow2.setSourceNamingInfo(new ApplicationProcessNamingInfo("c", null));
 		flow2.setHopCount(1);
+		QualityOfServiceSpecification qosSpec = new QualityOfServiceSpecification();
+		qosSpec.setDelay(24);
+		qosSpec.setAverageBandwidth(100000);
+		flow2.setQosParameters(qosSpec);
 	}
 	
 	@Test
@@ -91,6 +96,7 @@ public class FlowEncoderTest {
 		Assert.assertEquals(flow2.getHopCount(), recoveredFlow.getHopCount());
 		Assert.assertEquals(flow2.getSourceAddress(), recoveredFlow.getSourceAddress());
 		Assert.assertEquals(flow2.getSourceNamingInfo(), recoveredFlow.getSourceNamingInfo());
+		Assert.assertEquals(flow2.getQosParameters().getAverageBandwidth(), recoveredFlow.getQosParameters().getAverageBandwidth());
 	}
 
 }

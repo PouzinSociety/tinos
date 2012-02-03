@@ -2,7 +2,6 @@ package rina.cdap.api;
 
 import rina.cdap.api.message.AuthValue;
 import rina.cdap.api.message.CDAPMessage.AuthTypes;
-import rina.ipcservice.api.ApplicationEntityNamingInfo;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 /**
@@ -213,10 +212,8 @@ public class CDAPSessionDescriptor {
 	public ApplicationProcessNamingInfo getSourceApplicationProcessNamingInfo(){
 		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(this.getSrcApName(), this.getSrcApInst());
 		if (this.getSrcAEName() != null){
-			ApplicationEntityNamingInfo aeInfo = new ApplicationEntityNamingInfo();
-			aeInfo.setApplicationEntityName(this.getSrcAEName());
-			aeInfo.setApplicationEntityInstance(this.getSrcAEInst());
-			apNamingInfo.getApplicationEntities().add(aeInfo);
+			apNamingInfo.setApplicationEntityName(this.getSrcAEName());
+			apNamingInfo.setApplicationEntityInstance(this.getSrcAEInst());
 		}
 		
 		return apNamingInfo;
@@ -229,10 +226,8 @@ public class CDAPSessionDescriptor {
 	public ApplicationProcessNamingInfo getDestinationApplicationProcessNamingInfo(){
 		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(this.getDestApName(), this.getDestApInst());
 		if (this.getDestAEName() != null){
-			ApplicationEntityNamingInfo aeInfo = new ApplicationEntityNamingInfo();
-			aeInfo.setApplicationEntityName(this.getDestAEName());
-			aeInfo.setApplicationEntityInstance(this.getDestAEInst());
-			apNamingInfo.getApplicationEntities().add(aeInfo);
+			apNamingInfo.setApplicationEntityName(this.getDestAEName());
+			apNamingInfo.setApplicationEntityInstance(this.getDestAEInst());
 		}
 		
 		return apNamingInfo;

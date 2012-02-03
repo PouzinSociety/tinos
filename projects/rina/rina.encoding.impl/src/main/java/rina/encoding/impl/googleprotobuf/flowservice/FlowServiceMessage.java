@@ -49,8 +49,15 @@ public final class FlowServiceMessage {
     public boolean hasDestinationNamingInfo() { return hasDestinationNamingInfo; }
     public rina.encoding.impl.googleprotobuf.apnaminginfo.ApplicationProcessNamingInfoMessage.applicationProcessNamingInfo_t getDestinationNamingInfo() { return destinationNamingInfo_; }
     
-    // optional uint64 portId = 3;
-    public static final int PORTID_FIELD_NUMBER = 3;
+    // optional .rina.messages.qosSpecification_t qosSpecification = 3;
+    public static final int QOSSPECIFICATION_FIELD_NUMBER = 3;
+    private boolean hasQosSpecification;
+    private rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t qosSpecification_;
+    public boolean hasQosSpecification() { return hasQosSpecification; }
+    public rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t getQosSpecification() { return qosSpecification_; }
+    
+    // optional uint64 portId = 4;
+    public static final int PORTID_FIELD_NUMBER = 4;
     private boolean hasPortId;
     private long portId_ = 0L;
     public boolean hasPortId() { return hasPortId; }
@@ -59,6 +66,7 @@ public final class FlowServiceMessage {
     private void initFields() {
       sourceNamingInfo_ = rina.encoding.impl.googleprotobuf.apnaminginfo.ApplicationProcessNamingInfoMessage.applicationProcessNamingInfo_t.getDefaultInstance();
       destinationNamingInfo_ = rina.encoding.impl.googleprotobuf.apnaminginfo.ApplicationProcessNamingInfoMessage.applicationProcessNamingInfo_t.getDefaultInstance();
+      qosSpecification_ = rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t.getDefaultInstance();
     }
     public final boolean isInitialized() {
       if (!hasDestinationNamingInfo) return false;
@@ -66,6 +74,9 @@ public final class FlowServiceMessage {
         if (!getSourceNamingInfo().isInitialized()) return false;
       }
       if (!getDestinationNamingInfo().isInitialized()) return false;
+      if (hasQosSpecification()) {
+        if (!getQosSpecification().isInitialized()) return false;
+      }
       return true;
     }
     
@@ -78,8 +89,11 @@ public final class FlowServiceMessage {
       if (hasDestinationNamingInfo()) {
         output.writeMessage(2, getDestinationNamingInfo());
       }
+      if (hasQosSpecification()) {
+        output.writeMessage(3, getQosSpecification());
+      }
       if (hasPortId()) {
-        output.writeUInt64(3, getPortId());
+        output.writeUInt64(4, getPortId());
       }
       getUnknownFields().writeTo(output);
     }
@@ -98,9 +112,13 @@ public final class FlowServiceMessage {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, getDestinationNamingInfo());
       }
+      if (hasQosSpecification()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(3, getQosSpecification());
+      }
       if (hasPortId()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt64Size(3, getPortId());
+          .computeUInt64Size(4, getPortId());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -266,6 +284,9 @@ public final class FlowServiceMessage {
         if (other.hasDestinationNamingInfo()) {
           mergeDestinationNamingInfo(other.getDestinationNamingInfo());
         }
+        if (other.hasQosSpecification()) {
+          mergeQosSpecification(other.getQosSpecification());
+        }
         if (other.hasPortId()) {
           setPortId(other.getPortId());
         }
@@ -312,7 +333,16 @@ public final class FlowServiceMessage {
               setDestinationNamingInfo(subBuilder.buildPartial());
               break;
             }
-            case 24: {
+            case 26: {
+              rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t.Builder subBuilder = rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t.newBuilder();
+              if (hasQosSpecification()) {
+                subBuilder.mergeFrom(getQosSpecification());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setQosSpecification(subBuilder.buildPartial());
+              break;
+            }
+            case 32: {
               setPortId(input.readUInt64());
               break;
             }
@@ -395,7 +425,44 @@ public final class FlowServiceMessage {
         return this;
       }
       
-      // optional uint64 portId = 3;
+      // optional .rina.messages.qosSpecification_t qosSpecification = 3;
+      public boolean hasQosSpecification() {
+        return result.hasQosSpecification();
+      }
+      public rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t getQosSpecification() {
+        return result.getQosSpecification();
+      }
+      public Builder setQosSpecification(rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.hasQosSpecification = true;
+        result.qosSpecification_ = value;
+        return this;
+      }
+      public Builder setQosSpecification(rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t.Builder builderForValue) {
+        result.hasQosSpecification = true;
+        result.qosSpecification_ = builderForValue.build();
+        return this;
+      }
+      public Builder mergeQosSpecification(rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t value) {
+        if (result.hasQosSpecification() &&
+            result.qosSpecification_ != rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t.getDefaultInstance()) {
+          result.qosSpecification_ =
+            rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t.newBuilder(result.qosSpecification_).mergeFrom(value).buildPartial();
+        } else {
+          result.qosSpecification_ = value;
+        }
+        result.hasQosSpecification = true;
+        return this;
+      }
+      public Builder clearQosSpecification() {
+        result.hasQosSpecification = false;
+        result.qosSpecification_ = rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t.getDefaultInstance();
+        return this;
+      }
+      
+      // optional uint64 portId = 4;
       public boolean hasPortId() {
         return result.hasPortId();
       }
@@ -441,13 +508,15 @@ public final class FlowServiceMessage {
     java.lang.String[] descriptorData = {
       "\n#protofiles/FlowServiceMessage.proto\022\rr" +
       "ina.messages\0324protofiles/ApplicationProc" +
-      "essNamingInfoMessage.proto\"\264\001\n\013FlowServi" +
-      "ce\022G\n\020sourceNamingInfo\030\001 \001(\0132-.rina.mess" +
-      "ages.applicationProcessNamingInfo_t\022L\n\025d" +
-      "estinationNamingInfo\030\002 \002(\0132-.rina.messag" +
-      "es.applicationProcessNamingInfo_t\022\016\n\006por" +
-      "tId\030\003 \001(\004B/\n-rina.encoding.impl.googlepr" +
-      "otobuf.flowservice"
+      "essNamingInfoMessage.proto\032!protofiles/Q" +
+      "oSSpecification.proto\"\361\001\n\013FlowService\022G\n" +
+      "\020sourceNamingInfo\030\001 \001(\0132-.rina.messages." +
+      "applicationProcessNamingInfo_t\022L\n\025destin" +
+      "ationNamingInfo\030\002 \002(\0132-.rina.messages.ap" +
+      "plicationProcessNamingInfo_t\022;\n\020qosSpeci" +
+      "fication\030\003 \001(\0132!.rina.messages.qosSpecif" +
+      "ication_t\022\016\n\006portId\030\004 \001(\004B/\n-rina.encodi",
+      "ng.impl.googleprotobuf.flowservice"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -459,7 +528,7 @@ public final class FlowServiceMessage {
           internal_static_rina_messages_FlowService_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rina_messages_FlowService_descriptor,
-              new java.lang.String[] { "SourceNamingInfo", "DestinationNamingInfo", "PortId", },
+              new java.lang.String[] { "SourceNamingInfo", "DestinationNamingInfo", "QosSpecification", "PortId", },
               rina.encoding.impl.googleprotobuf.flowservice.FlowServiceMessage.FlowService.class,
               rina.encoding.impl.googleprotobuf.flowservice.FlowServiceMessage.FlowService.Builder.class);
           return null;
@@ -469,6 +538,7 @@ public final class FlowServiceMessage {
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           rina.encoding.impl.googleprotobuf.apnaminginfo.ApplicationProcessNamingInfoMessage.getDescriptor(),
+          rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.getDescriptor(),
         }, assigner);
   }
   

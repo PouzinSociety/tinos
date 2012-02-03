@@ -25,9 +25,11 @@ import rina.flowallocator.impl.policies.NewFlowRequestPolicyImpl;
 import rina.flowallocator.impl.tcp.TCPServer;
 import rina.flowallocator.impl.tcp.TCPSocketReader;
 import rina.flowallocator.impl.timertasks.SocketClosedTimerTask;
+import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
+import rina.ipcservice.api.IPCService;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
@@ -73,7 +75,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	/**
 	 * The application process that requested the allocation of the flow
 	 */
-	private APService applicationProcess = null;
+	private APService apService = null;
 	
 	/**
 	 * The portId associated to this Flow Allocator instance
@@ -118,14 +120,14 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	
 	private CDAPSessionManager cdapSessionManager = null;
 	
-	private APService apService = null;
+	private IPCProcess ipcProcess = null;
 	
-	public FlowAllocatorInstanceImpl(APService applicationProcess, FlowAllocator flowAllocator, CDAPSessionManager cdapSessionManager, APService apService){
-		this.applicationProcess = applicationProcess;
+	public FlowAllocatorInstanceImpl(IPCProcess ipcProcess, FlowAllocator flowAllocator, CDAPSessionManager cdapSessionManager){
 		this.flowAllocator = flowAllocator;
 		this.timer = new Timer();
 		this.cdapSessionManager = cdapSessionManager;
-		this.apService = apService;
+		this.ipcProcess = ipcProcess;
+		this.apService = ipcProcess.getAPService();
 		connections = new ArrayList<Connection>();
 		//TODO initialize the newFlowRequestPolicy
 		newFlowRequestPolicy = new NewFlowRequestPolicyImpl();
@@ -291,13 +293,20 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		}
 		this.socket = socket;
 		
-		//1 TODO Check if the source application process has access to the destination application process
-		//2 TODO If not send negative M_CREATE_R back to the sender IPC process, and housekeeping
-		//3 TODO If it has, determine if the proposed policies for the flow are acceptable (invoke NewFlowREquestPolicy)
-		//4 TODO If they are acceptable, the FAI will invoke the Allocate_Request.deliver operation of the destination application process. To do so it will find the
+		//1 TODO Check if the source application process has access to the destination application process. If not send negative M_CREATE_R 
+		//back to the sender IPC process, and housekeeping.
+		//Not done in this version, this decision is left to the application 
+		//2 TODO If it has, determine if the proposed policies for the flow are acceptable (invoke NewFlowREquestPolicy)
+		//Not done in this version, it is assumed that the proposed policies for the flow are acceptable.
+		//3 If they are acceptable, the FAI will invoke the Allocate_Request.deliver operation of the destination application process. To do so it will find the
 		//IPC Manager and pass it the allocation request.
-		//TODO:Fix this. Right now this is a hack. I've short-circuited this and called submitAllocateResponse to avoid calling the destination App
-		this.submitAllocateResponse(portId, true, null);
+		this.portId = socket.getLocalPort();
+		FlowService flowService = new FlowService();
+		flowService.setSourceAPNamingInfo(flow.getSourceNamingInfo());
+		flowService.setDestinationAPNamingInfo(flow.getDestinationNamingInfo());
+		flowService.setQoSSpecification(flow.getQosParameters());
+		flowService.setPortId(this.portId);
+		apService.deliverAllocateRequest(flowService, (IPCService) ipcProcess);
 	}
 
 	/**
@@ -519,6 +528,11 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 
 	public void writeResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1)
 			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void submitDeallocateRequest(int portId) {
 		// TODO Auto-generated method stub
 		
 	}

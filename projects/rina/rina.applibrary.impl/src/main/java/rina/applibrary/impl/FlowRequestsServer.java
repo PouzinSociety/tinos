@@ -8,7 +8,6 @@ import java.util.concurrent.BlockingQueue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applibrary.api.ApplicationProcess;
 import rina.applibrary.api.Flow;
 import rina.applibrary.api.FlowAcceptor;
 import rina.applibrary.api.FlowImpl;
@@ -127,8 +126,6 @@ public class FlowRequestsServer implements Runnable{
 		FlowService flowService = null;
 		String result = null;
 		Flow flow = null;
-		ApplicationProcess sourceApplication = null;
-		ApplicationProcess destinationApplication = null;
 		
 		//1 Get the first PDU from the socket
 		pdu = getFirstPDUFromSocket(socket);
@@ -151,13 +148,7 @@ public class FlowRequestsServer implements Runnable{
 			flowService = (FlowService) encoder.decode(cdapMessage.getObjValue().getByteval(), FlowService.class.toString());
 			
 			//4 Invoke the flowAcceptor class
-			sourceApplication = new ApplicationProcess();
-			sourceApplication.setApplicationProcessName(flowService.getSourceAPNamingInfo().getApplicationProcessName());
-			sourceApplication.setApplicationProcessInstance(flowService.getSourceAPNamingInfo().getApplicationProcessInstance());
-			destinationApplication = new ApplicationProcess();
-			destinationApplication.setApplicationProcessName(flowService.getDestinationAPNamingInfo().getApplicationProcessName());
-			destinationApplication.setApplicationProcessInstance(flowService.getDestinationAPNamingInfo().getApplicationProcessInstance());
-			result = flowAcceptor.acceptFlow(sourceApplication, destinationApplication);
+			result = flowAcceptor.acceptFlow(flowService.getSourceAPNamingInfo(), flowService.getDestinationAPNamingInfo());
 			if (result != null){
 				throw new Exception(result);
 			}
@@ -179,8 +170,9 @@ public class FlowRequestsServer implements Runnable{
 		//5 Create the flow object, and either notify the flowListener or put it in the queue
 		//(depending if we are on blocking or non-blocking operation)
 		FlowImpl flowImpl = new DefaultFlowImpl();
-		flowImpl.setSourceApplication(sourceApplication);
-		flowImpl.setDestinationApplication(destinationApplication);
+		flowImpl.setSourceApplication(flowService.getSourceAPNamingInfo());
+		flowImpl.setDestinationApplication(flowService.getDestinationAPNamingInfo());
+		flowImpl.setQosSpec(flowService.getQoSSpecification());
 		try{
 			((DefaultFlowImpl)flowImpl).setCDAPSessionManager(cdapSessionManager);
 			((DefaultFlowImpl)flowImpl).setDelimiter(delimiter);

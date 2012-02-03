@@ -9,7 +9,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import rina.applibrary.api.ApplicationProcess;
 import rina.applibrary.api.ApplicationRegistrationImpl;
 import rina.applibrary.api.Flow;
 import rina.applibrary.api.FlowAcceptor;
@@ -102,7 +101,7 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 	 * to call the "accept" blocking operation in order to get the accepted flows.
 	 * @throws IPCException
 	 */
-	public void register(ApplicationProcess applicationProcess, List<String> difNames, 
+	public void register(ApplicationProcessNamingInfo applicationProcess, List<String> difNames, 
 			FlowAcceptor flowAcceptor, FlowListener flowListener) throws IPCException{
 		this.flowListener = flowListener;
 		if (this.flowListener == null){
@@ -124,9 +123,7 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 			
 			//4 Populate the application registration object
 			ApplicationRegistration applicationRegistration = new ApplicationRegistration();
-			ApplicationProcessNamingInfo applicationProcessNamingInfo = new ApplicationProcessNamingInfo(
-					applicationProcess.getApplicationProcessName(), applicationProcess.getApplicationProcessInstance());
-			applicationRegistration.setApNamingInfo(applicationProcessNamingInfo);
+			applicationRegistration.setApNamingInfo(applicationProcess);
 			applicationRegistration.setDifNames(difNames);
 			applicationRegistration.setSocketNumber(serverSocket.getLocalPort());
 			

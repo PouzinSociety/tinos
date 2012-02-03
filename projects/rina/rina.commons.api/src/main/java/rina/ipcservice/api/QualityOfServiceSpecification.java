@@ -1,4 +1,4 @@
-package rina.applibrary.api;
+package rina.ipcservice.api;
 
 import java.util.Hashtable;
 import java.util.Map;
@@ -151,5 +151,39 @@ public class QualityOfServiceSpecification {
 
 	public void setJitter(int jitter) {
 		this.jitter = jitter;
+	}
+	
+	public String toString(){
+		String result = "Quality of service required:\n";
+		if (averageBandwidth != 0){
+			result = result + "Average bandwidth: "+ averageBandwidth + " bytes/second \n";
+		}
+		if (averageSDUBandwidth != 0){
+			result = result + "Average SDU bandwidth: "+ averageSDUBandwidth + " SDUs/second \n";
+		}
+		if (peakBandwidthDuration != 0){
+			result = result + "Peak bandwidth duration: "+ peakBandwidthDuration + " miliseconds \n";
+		}
+		if (peakSDUBandwidthDuration != 0){
+			result = result + "Peak SDU bandwidth duration: "+ peakSDUBandwidthDuration + " miliseconds \n";
+		}
+		if (undetectedBitErrorRate != 0){
+			result = result + "Undetected bit error rate: "+ undetectedBitErrorRate + "\n";
+		}
+		result = result + "Partial delivery of SDUs accepted? " + partialDelivery + "\n";
+		result = result + "SDUs delivered in order? " + order + "\n";
+		if (maxAllowableGapSDU != -1){
+			result = result + "Maximum gap allowed between SDUS: " + maxAllowableGapSDU + "\n";
+		}else{
+			result = result + "Maximum gap allowed between SDUS: Any \n";
+		}
+		if (delay != 0){
+			result = result + "Maximum delayed allowed: "+ delay + " miliseconds \n";
+		}
+		if (jitter != 0){
+			result = result + "Maximum jitter allowed: "+ jitter + " miliseconds \n";
+		}
+		
+		return result;
 	}
 }

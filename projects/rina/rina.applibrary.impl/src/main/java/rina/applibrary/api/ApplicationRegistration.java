@@ -4,6 +4,7 @@ import java.util.List;
 
 import rina.applibrary.impl.DefaultApplicationRegistrationImpl;
 import rina.applibrary.impl.DefaultFlowAcceptor;
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 /**
  * The object that is used to allow an application to register in one or more DIFs
@@ -17,7 +18,7 @@ public class ApplicationRegistration {
 	/**
 	 * The application that has registered
 	 */
-	private ApplicationProcess application = null;
+	private ApplicationProcessNamingInfo application = null;
 	
 	/**
 	 * The DIF names where this application is registered. If the list 
@@ -59,7 +60,7 @@ public class ApplicationRegistration {
 	 * @param application
 	 * @throws IPCException
 	 */
-	public ApplicationRegistration(ApplicationProcess application) throws IPCException{
+	public ApplicationRegistration(ApplicationProcessNamingInfo application) throws IPCException{
 		this(application, null, null, null, null);
 	}
 	
@@ -70,7 +71,7 @@ public class ApplicationRegistration {
 	 * @param flowListener
 	 * @throws IPCException
 	 */
-	public ApplicationRegistration(ApplicationProcess application, FlowListener flowListener) throws IPCException{
+	public ApplicationRegistration(ApplicationProcessNamingInfo application, FlowListener flowListener) throws IPCException{
 		this(application, null, null, null, flowListener);
 	}
 	
@@ -88,13 +89,12 @@ public class ApplicationRegistration {
 	 * to call the "accept" blocking operation in order to get the accepted flows.
 	 * @throws IPCException
 	 */
-	public ApplicationRegistration(ApplicationProcess application, List<String> difNames, 
+	public ApplicationRegistration(ApplicationProcessNamingInfo application, List<String> difNames, 
 			ApplicationRegistrationImplFactory ariFactory, FlowAcceptor flowAcceptor, FlowListener flowListener) throws IPCException{
 		if (application == null){
-			IPCException flowException = new IPCException(IPCException.APPLICATION_NOT_SPECIFIED);
-			flowException.setErrorCode(IPCException.APPLICATION_NOT_SPECIFIED_CODE);
+			IPCException ipcException = new IPCException(IPCException.APPLICATION_NOT_SPECIFIED);
+			ipcException.setErrorCode(IPCException.APPLICATION_NOT_SPECIFIED_CODE);
 		}
-		application.validate();
 		this.application = application;
 		
 		this.difNames = difNames;

@@ -81,6 +81,7 @@ public class IPCManagerImpl implements IPCManager{
 	
 	public void setIPCProcessFactory(IPCProcessFactory ipcProcessFactory){
 		this.ipcProcessFactory = ipcProcessFactory;
+		ipcProcessFactory.setIPCManager(this);
 		apService.setIPCProcessFactory(ipcProcessFactory);
 	}
 
@@ -233,14 +234,14 @@ public class IPCManagerImpl implements IPCManager{
 		FlowService flowService = new FlowService();
 		flowService.setDestinationAPNamingInfo(new ApplicationProcessNamingInfo(destinationApplicationProcessName, destinationApplicationProcessInstance));
 		flowService.setSourceAPNamingInfo(new ApplicationProcessNamingInfo("console", "1"));
-		ipcService.submitAllocateRequest(flowService, null);
+		ipcService.submitAllocateRequest(flowService);
 	}
 	
 	public void deallocateFlow(String sourceIPCProcessName, String sourceIPCProcessInstance, int portId) throws Exception{
 		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(
 				new ApplicationProcessNamingInfo(sourceIPCProcessName, sourceIPCProcessInstance));
 		IPCService ipcService = (IPCService) ipcProcess;
-		ipcService.submitDeallocateRequest(portId, null);
+		ipcService.submitDeallocateRequest(portId);
 	}
 
 	public void createFlowRequestMessageReceived(Flow arg0,

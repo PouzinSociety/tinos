@@ -9,10 +9,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import rina.applibrary.api.ApplicationProcess;
 import rina.applibrary.api.ApplicationRegistration;
 import rina.applibrary.api.Flow;
 import rina.applibrary.api.IPCException;
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 /**
  * Tests the normal course of events for both a client and a server application
@@ -47,9 +47,9 @@ public class TestCorrectClientServerApplication {
 		SimpleSDUListener sduListener = new SimpleSDUListener();
 		
 		//1 Create a flow to the echo server application
-		ApplicationProcess sourceApplication = new ApplicationProcess();
+		ApplicationProcessNamingInfo sourceApplication = new ApplicationProcessNamingInfo();
 		sourceApplication.setApplicationProcessName("junit-test");
-		ApplicationProcess destinationApplication = new ApplicationProcess();
+		ApplicationProcessNamingInfo destinationApplication = new ApplicationProcessNamingInfo();
 		destinationApplication.setApplicationProcessName("echo-server");
 		Flow flow = new Flow(sourceApplication, destinationApplication, null, sduListener);
 		Assert.assertTrue(flow.isAllocated());
@@ -78,7 +78,7 @@ public class TestCorrectClientServerApplication {
 	@Test
 	public void testBlockingServerApplicationWithClient() throws IPCException{
 		//1 Register this application with the RINAServer
-		ApplicationProcess applicationProcess = new ApplicationProcess();
+		ApplicationProcessNamingInfo applicationProcess = new ApplicationProcessNamingInfo();
 		applicationProcess.setApplicationProcessName("echo-server");
 		applicationProcess.setApplicationProcessInstance("1");
 		
@@ -115,7 +115,7 @@ public class TestCorrectClientServerApplication {
 	@Test
 	public void testNonBlockingServerApplicationWithClient() throws IPCException{
 		//1 Register this application with the RINAServer
-		ApplicationProcess applicationProcess = new ApplicationProcess();
+		ApplicationProcessNamingInfo applicationProcess = new ApplicationProcessNamingInfo();
 		applicationProcess.setApplicationProcessName("echo-server");
 		applicationProcess.setApplicationProcessInstance("1");
 		

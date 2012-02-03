@@ -132,7 +132,7 @@ public class APServiceImpl implements APService{
 		
 		//Once we have the IPCService, invoke allocate request
 		try{
-			int portId = ipcService.submitAllocateRequest(flowService, this);
+			int portId = ipcService.submitAllocateRequest(flowService);
 			flowService.setPortId(portId);
 			tcpSocketReader.setPortId(portId);
 		}catch(IPCException ex){
@@ -173,7 +173,7 @@ public class APServiceImpl implements APService{
 		}
 		
 		try{
-			flowServiceState.getIpcService().submitDeallocateRequest(portId, this);
+			flowServiceState.getIpcService().submitDeallocateRequest(portId);
 			flowServiceState.setCdapMessage(cdapMessage);
 			flowServiceState.setStatus(Status.DEALLOCATION_REQUESTED);
 		}catch(Exception ex){
@@ -199,7 +199,7 @@ public class APServiceImpl implements APService{
 			}
 
 			try{
-				flowServiceState.getIpcService().submitDeallocateRequest(portId, this);
+				flowServiceState.getIpcService().submitDeallocateRequest(portId);
 				flowServiceState.setCdapMessage(null);
 				flowServiceState.setStatus(Status.DEALLOCATION_REQUESTED);
 			}catch(Exception ex){

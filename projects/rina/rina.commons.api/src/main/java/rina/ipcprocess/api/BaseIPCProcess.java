@@ -4,6 +4,7 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import rina.ipcmanager.api.IPCManager;
+import rina.ipcservice.api.APService;
 
 /**
  * Base IPC Process class that implements the component management
@@ -50,5 +51,14 @@ public abstract class BaseIPCProcess implements IPCProcess{
 	
 	public IPCManager getIPCManager(){
 		return this.ipcManager;
+	}
+	
+	/**
+	 * Get the class that handles the interaction with 
+	 * the applications in this system
+	 * @return
+	 */
+	public APService getAPService(){
+		return this.ipcManager.getAPService();
 	}
 }

@@ -7,7 +7,7 @@ import java.util.Map;
 
 import rina.flowallocator.api.ConnectionId;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
-import rina.ipcservice.api.QoSParameters;
+import rina.ipcservice.api.QualityOfServiceSpecification;
 
 /**
  * Encapsulates all the information required to manage a Flow
@@ -66,7 +66,7 @@ public class Flow {
 	/**
 	 * The list of parameters from the AllocateRequest that generated this flow
 	 */
-	private QoSParameters qosParameters = null;
+	private QualityOfServiceSpecification qosParameters = null;
 	
 	/**
 	 * The list of policies that are used to control this flow. NOTE: Does this provide 
@@ -185,11 +185,11 @@ public class Flow {
 		this.status = status;
 	}
 
-	public QoSParameters getQosParameters() {
+	public QualityOfServiceSpecification getQosParameters() {
 		return qosParameters;
 	}
 
-	public void setQosParameters(QoSParameters qosParameters) {
+	public void setQosParameters(QualityOfServiceSpecification qosParameters) {
 		this.qosParameters = qosParameters;
 	}
 

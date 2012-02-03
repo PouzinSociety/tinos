@@ -4,6 +4,7 @@ import rina.encoding.api.BaseEncoder;
 import rina.encoding.impl.googleprotobuf.GPBUtils;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
+import rina.ipcservice.api.QualityOfServiceSpecification;
 
 public class FlowServiceEncoder extends BaseEncoder{
 
@@ -16,10 +17,12 @@ public class FlowServiceEncoder extends BaseEncoder{
 		
 		ApplicationProcessNamingInfo destinationAPName = GPBUtils.getApplicationProcessNamingInfo(gpbFlowService.getDestinationNamingInfo());
 		ApplicationProcessNamingInfo sourceAPName = GPBUtils.getApplicationProcessNamingInfo(gpbFlowService.getSourceNamingInfo());
+		QualityOfServiceSpecification qosSpec = GPBUtils.getQualityOfServiceSpecification(gpbFlowService.getQosSpecification());
 		
 		FlowService result = new FlowService();
 		result.setSourceAPNamingInfo(sourceAPName);
 		result.setDestinationAPNamingInfo(destinationAPName);
+		result.setQoSSpecification(qosSpec);
 		result.setPortId((int)gpbFlowService.getPortId());
 		
 		return result;
@@ -33,14 +36,26 @@ public class FlowServiceEncoder extends BaseEncoder{
 		FlowService flowService = (FlowService) object;
 		FlowServiceMessage.FlowService gpbFlowService = null;
 
-		if (flowService.getSourceAPNamingInfo() == null){
+		if (flowService.getSourceAPNamingInfo() == null && flowService.getQoSSpecification() == null){
 			gpbFlowService = FlowServiceMessage.FlowService.newBuilder().
 			setDestinationNamingInfo(GPBUtils.getApplicationProcessNamingInfoT(flowService.getDestinationAPNamingInfo())).
+			setPortId(flowService.getPortId()).build();
+		}else if (flowService.getSourceAPNamingInfo() == null && flowService.getQoSSpecification() != null){
+			gpbFlowService = FlowServiceMessage.FlowService.newBuilder().
+			setDestinationNamingInfo(GPBUtils.getApplicationProcessNamingInfoT(flowService.getDestinationAPNamingInfo())).
+			setQosSpecification(GPBUtils.getQoSSpecificationT(flowService.getQoSSpecification())).
+			setPortId(flowService.getPortId()).build();
+		}
+		else if (flowService.getSourceAPNamingInfo() != null && flowService.getQoSSpecification() == null){
+			gpbFlowService = FlowServiceMessage.FlowService.newBuilder().
+			setDestinationNamingInfo(GPBUtils.getApplicationProcessNamingInfoT(flowService.getDestinationAPNamingInfo())).
+			setSourceNamingInfo(GPBUtils.getApplicationProcessNamingInfoT(flowService.getSourceAPNamingInfo())).
 			setPortId(flowService.getPortId()).build();
 		}else{
 			gpbFlowService = FlowServiceMessage.FlowService.newBuilder().
 			setDestinationNamingInfo(GPBUtils.getApplicationProcessNamingInfoT(flowService.getDestinationAPNamingInfo())).
 			setSourceNamingInfo(GPBUtils.getApplicationProcessNamingInfoT(flowService.getSourceAPNamingInfo())).
+			setQosSpecification(GPBUtils.getQoSSpecificationT(flowService.getQoSSpecification())).
 			setPortId(flowService.getPortId()).build();
 		}
 

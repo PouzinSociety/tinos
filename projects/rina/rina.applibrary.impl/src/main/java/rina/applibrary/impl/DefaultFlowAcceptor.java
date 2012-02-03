@@ -1,7 +1,7 @@
 package rina.applibrary.impl;
 
-import rina.applibrary.api.ApplicationProcess;
 import rina.applibrary.api.FlowAcceptor;
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 /**
  * Accepts all the flows that are for this application process
@@ -11,13 +11,13 @@ import rina.applibrary.api.FlowAcceptor;
  */
 public class DefaultFlowAcceptor implements FlowAcceptor{
 	
-	private ApplicationProcess myself = null;
+	private ApplicationProcessNamingInfo myself = null;
 	
-	public DefaultFlowAcceptor(ApplicationProcess applicationProcess){
+	public DefaultFlowAcceptor(ApplicationProcessNamingInfo applicationProcess){
 		this.myself = applicationProcess;
 	}
 
-	public String acceptFlow(ApplicationProcess sourceApplication, ApplicationProcess destinationApplication){
+	public String acceptFlow(ApplicationProcessNamingInfo sourceApplication, ApplicationProcessNamingInfo destinationApplication){
 		if (myself.equals(destinationApplication)){
 			return null;
 		}else{

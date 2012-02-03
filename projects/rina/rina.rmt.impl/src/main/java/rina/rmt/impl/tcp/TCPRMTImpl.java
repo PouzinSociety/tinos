@@ -19,7 +19,7 @@ import rina.delimiting.api.BaseDelimiter;
 import rina.delimiting.api.Delimiter;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
-import rina.ipcservice.api.QoSParameters;
+import rina.ipcservice.api.QualityOfServiceSpecification;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.rmt.api.BaseRMT;
@@ -155,7 +155,7 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @return int the portId allocated to the flow
 	 * @throws Exception if there was an issue allocating the flow
 	 */
-	public int allocateFlow(ApplicationProcessNamingInfo apNamingInfo, QoSParameters qosparams) throws Exception{
+	public int allocateFlow(ApplicationProcessNamingInfo apNamingInfo, QualityOfServiceSpecification qosparams) throws Exception{
 		//Map the application naming information to the DNS name of the interface of the IPC process
 		String[] contactInformation = apToHostnameMappings.get(apNamingInfo.getApplicationProcessName() + apNamingInfo.getApplicationProcessInstance()).split("#");
 		Socket socket = new Socket(contactInformation[0], Integer.parseInt(contactInformation[1]));

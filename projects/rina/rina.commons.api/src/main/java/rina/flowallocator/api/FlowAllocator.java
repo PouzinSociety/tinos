@@ -4,7 +4,6 @@ import java.net.Socket;
 
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcessComponent;
-import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 
@@ -28,7 +27,7 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * @throws IPCException if the request is not well formed or there are not enough resources
 	 * to honour the request
 	 */
-	public int submitAllocateRequest(FlowService allocateRequest, APService applicationProcess);
+	public int submitAllocateRequest(FlowService allocateRequest);
 	
 	/**
 	 * Forward the allocate response to the Flow Allocator Instance.
@@ -41,7 +40,16 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * Forward the deallocate request to the Flow Allocator Instance.
 	 * @param portId
 	 */
-	public void submitDeallocateRequest(int portId, APService applicationProcess);
+	public void submitDeallocateRequest(int portId);
+	
+	/**
+	 * This primitive is invoked by the requested Application Process to respond to a deallocation 
+	 * request from IPC. 
+	 * @param port_id
+	 * @param result
+	 * @param reason
+	 */
+	public void submitDeallocateResponse(int portId, boolean result, String reason) throws IPCException;
 	
 	/**
 	 * Returns the directory

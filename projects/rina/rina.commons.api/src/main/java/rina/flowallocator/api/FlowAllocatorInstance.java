@@ -4,7 +4,6 @@ import java.net.Socket;
 
 import rina.cdap.api.message.CDAPMessage;
 import rina.flowallocator.api.message.Flow;
-import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 
@@ -80,7 +79,7 @@ public interface FlowAllocatorInstance{
 	 * @param portId
 	 * @param applicationProcess
 	 */
-	public void submitDeallocateRequest(int portId, APService applicationProcess);
+	public void submitDeallocateRequest(int portId);
 	
 	/**
 	 * When this PDU is received by the FAI with this port-id, the FAI invokes a Deallocate.deliver to notify the local Application, 

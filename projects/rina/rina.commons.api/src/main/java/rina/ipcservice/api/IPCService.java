@@ -11,12 +11,11 @@ public interface IPCService {
 	 * This primitive is invoked by an Application Process to request the allocation of 
 	 * IPC resources with the destination application.
 	 * @param request the characteristics of the requested flow
-	 * @param apService the application process, required to deliver the response as a callback
 	 * @return int the portId for the flow allocation
 	 * @throw IPCException if the allocate request is not well formed or there are 
 	 * no resources to honour the request
 	 */
-	public int submitAllocateRequest(FlowService request, APService apService) throws IPCException;
+	public int submitAllocateRequest(FlowService request) throws IPCException;
 	
 	/**
 	 * This primitive is invoked by the Application Process when in the Transfer state to 
@@ -32,7 +31,7 @@ public interface IPCService {
 	 * resources allocated to this instance. 
 	 * @param port_id
 	 */
-	public void submitDeallocateRequest(int portId, APService applicationProcess);
+	public void submitDeallocateRequest(int portId);
 	
 	/**
 	 * This primitive is invoked at any time by the Application any time it wishes to 

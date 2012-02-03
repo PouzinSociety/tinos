@@ -5,6 +5,7 @@ import java.util.List;
 import rina.cdap.api.CDAPSessionManagerFactory;
 import rina.delimiting.api.DelimiterFactory;
 import rina.encoding.api.EncoderFactory;
+import rina.ipcmanager.api.IPCManager;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 /**
@@ -60,6 +61,12 @@ public interface IPCProcessFactory {
 	 * @return
 	 */
 	public List<String> listDIFNames();
+	
+	/**
+	 * Set the IPCManager of this system
+	 * @param ipcManager
+	 */
+	public void setIPCManager(IPCManager ipcManager);
 	
 	public CDAPSessionManagerFactory getCDAPSessionManagerFactory();
 	public EncoderFactory getEncoderFactory();

@@ -6,7 +6,7 @@ import java.util.Timer;
 
 import rina.flowallocator.api.message.Flow;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
-import rina.ipcservice.api.QoSParameters;
+import rina.ipcservice.api.QualityOfServiceSpecification;
 
 /**
  * Captures the state of a single connection
@@ -53,7 +53,7 @@ public class Connection {
 	/**
 	 * The list of parameters from the Allocate_Request.submit call that generated this connection
 	 */
-	private QoSParameters qosParameters = null;
+	private QualityOfServiceSpecification qosParameters = null;
 
 	/**
 	 * The list of policies that are used to control this connection. NOTE: Does this provide 
@@ -268,11 +268,11 @@ public class Connection {
 		this.craeteFlowRetries = craeteFlowRetries;
 	}
 	
-	public QoSParameters getQosParameters() {
+	public QualityOfServiceSpecification getQosParameters() {
 		return qosParameters;
 	}
 
-	public void setQosParameters(QoSParameters qosParameters) {
+	public void setQosParameters(QualityOfServiceSpecification qosParameters) {
 		this.qosParameters = qosParameters;
 	}
 	

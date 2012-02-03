@@ -1,5 +1,7 @@
 package rina.applibrary.api;
 
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
+
 /**
  * Classes implementing this interface are called every time an external application 
  * attempts to establish a flow to this application. FlowAcceptors have to decide wether 
@@ -16,6 +18,6 @@ public interface FlowAcceptor {
 	 * @return null if the flow is accepted, a string explaining the reasons 
 	 * why the flow is rejected in case it is rejected
 	 */
-	public String acceptFlow(ApplicationProcess sourceApplication, ApplicationProcess destinationApplication);
+	public String acceptFlow(ApplicationProcessNamingInfo sourceApplication, ApplicationProcessNamingInfo destinationApplication);
 
 }

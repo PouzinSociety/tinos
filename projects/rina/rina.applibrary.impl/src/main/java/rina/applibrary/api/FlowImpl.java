@@ -3,6 +3,8 @@ package rina.applibrary.api;
 import java.net.Socket;
 
 import rina.cdap.api.message.CDAPMessage;
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.QualityOfServiceSpecification;
 
 /**
  *
@@ -63,28 +65,28 @@ public interface FlowImpl {
 	 * the establishment of this flow)
 	 * @return source application process
 	 */
-	public ApplicationProcess getSourceApplication();
+	public ApplicationProcessNamingInfo getSourceApplication();
 
 	/**
 	 * Set the name of the source application of this flow (i.e. the application that requested
 	 * the establishment of this flow)
 	 * @param source application process
 	 */
-	public void setSourceApplication(ApplicationProcess sourceApplication);
+	public void setSourceApplication(ApplicationProcessNamingInfo sourceApplication);
 
 	/**
 	 * Get the name of the destination application of this flow (i.e. the application that accepted 
 	 * the establishment of this flow)
 	 * @return destination application process
 	 */
-	public ApplicationProcess getDestinationApplication();
+	public ApplicationProcessNamingInfo getDestinationApplication();
 
 	/**
 	 * Set the name of the destination application of this flow (i.e. the application that accepted 
 	 * the establishment of this flow)
 	 * @return destination application process
 	 */
-	public void setDestinationApplication(ApplicationProcess destinationApplication);
+	public void setDestinationApplication(ApplicationProcessNamingInfo destinationApplication);
 
 	/**
 	 * Get the quality of service requested for this flow. This is the service level 
