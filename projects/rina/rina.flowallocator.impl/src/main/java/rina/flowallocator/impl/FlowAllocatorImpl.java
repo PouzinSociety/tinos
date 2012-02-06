@@ -27,14 +27,12 @@ import rina.flowallocator.impl.ribobjects.QoSCubesSetRIBObject;
 import rina.flowallocator.impl.tcp.TCPServer;
 import rina.flowallocator.impl.validation.AllocateRequestValidator;
 import rina.ipcprocess.api.IPCProcess;
-import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
-import rina.ribdaemon.api.RIBObjectNames;
 import rina.utils.types.Unsigned;
 
 /** 
@@ -106,8 +104,6 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	
 	private CDAPSessionManager cdapSessionManager = null;
 	
-	private APService apService = null;
-	
 	public FlowAllocatorImpl(){
 		allocateRequestValidator = new AllocateRequestValidator();
 		flowAllocatorInstances = new HashMap<Integer, FlowAllocatorInstance>();
@@ -120,7 +116,6 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	@Override
 	public void setIPCProcess(IPCProcess ipcProcess){
 		super.setIPCProcess(ipcProcess);
-		this.apService = ipcProcess.getAPService();
 		this.ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		this.encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
 		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
@@ -226,31 +221,29 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	
 	/**
 	 * Generates a portid for the flow allocation
-	 * @return
+	 * @return a valid portId
 	 */
-	public int generatePortId(){
+	private int generatePortId(){
 		if (portIdCounter == Integer.MAX_VALUE){
 			portIdCounter = MIN_PORT_ID_VALUE;
 		}else{
 			portIdCounter++;
 		}
 		
-		while(portIdAlreadyExists(portIdCounter)){
+		while(portIdAlreadyInUse(portIdCounter)){
 			portIdCounter++;
 		}
 		
 		return portIdCounter;
 	}
 	
-	private boolean portIdAlreadyExists(int candidate){
-		Iterator<Integer> iterator = flowAllocatorInstances.keySet().iterator();
-		while(iterator.hasNext()){
-			if (iterator.next().intValue() == candidate){
-				return true;
-			}
-		}
-		
-		return false;
+	/**
+	 * Checks if a portId is already in use
+	 * @param candidate
+	 * @return
+	 */
+	private boolean portIdAlreadyInUse(int candidate){
+		return flowAllocatorInstances.get(new Integer(candidate)) != null;
 	}
 	
 	/**
@@ -273,82 +266,81 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		}
 		
 		long address = directoryForwardingTable.getAddress(flow.getDestinationNamingInfo());
-		
-		try{
-			myAddress = (Long) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0).getObjectValue();
-		}catch(RIBDaemonException ex){
-			log.error(ex);
-			//TODO
-		}
+		myAddress = this.getIPCProcess().getAddress().longValue();
 		
 		if (address == 0){
 			//error, the table should have at least returned a default IPC process address to continue looking for the application process
 			log.error("The directory forwarding table returned no entries when looking up " + flow.getDestinationNamingInfo().toString());
-		}else{
-			if (address == myAddress){
-				//There is an entry and the address is this IPC Process, create a FAI, extract the Flow object from the CDAP message and
-				//call the FAI
-				int portId = generatePortId();
-				log.debug("The destination application process is reachable through me. Assigning the local portId "+portId+" to the flow allocation.");
-				FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), this, cdapSessionManager);
-				flowAllocatorInstance.createFlowRequestMessageReceived(flow, portId, cdapMessage, underlyingPortId);
-				flowAllocatorInstances.put(new Integer(new Integer(portId)), flowAllocatorInstance);
-				//Check if the socket was already established
-				Socket socket = pendingSockets.remove(new Integer((int)flow.getTcpRendezvousId()));
-				if (socket != null){
-					flowAllocatorInstance.setSocket(socket);
-				}
-				
-				//TODO, if socket is null, add a timer to avoid waiting forever. Upon expiration, send a negative M_CREATE response
-			}else{
-				//The address is not this IPC process, forward the CDAP message to that address increment the hop count of the Flow object
-				//extract the flow object from the CDAP message
-				flow.setHopCount(flow.getHopCount() - 1);
-				if (flow.getHopCount()  <= 0){
-					//TODO send negative create Flow response CDAP message to the source IPC process, specifying that the application process
-					//could not be found before the hop count expired
-				}
-				
-				try{
-					int destinationPortId = Utils.mapAddressToPortId(address, this.getIPCProcess());
-					ObjectValue objectValue = new ObjectValue();
-					objectValue.setByteval(encoder.encode(flow));
-				}catch(Exception ex){
-					//Error that has to be fixed, we cannot continue, log it and return
-					log.error("Fatal error when serializing a Flow object. " +ex.getMessage());
-					return;
-				}
+			return;
+		}
+		
+		if (address == myAddress){
+			//There is an entry and the address is this IPC Process, create a FAI, extract the Flow object from the CDAP message and
+			//call the FAI
+			int portId = generatePortId();
+			log.debug("The destination application process is reachable through me. Assigning the local portId "+portId+" to the flow allocation.");
+			FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), this, cdapSessionManager, portId);
+			flowAllocatorInstance.createFlowRequestMessageReceived(flow, cdapMessage, underlyingPortId);
+			flowAllocatorInstances.put(new Integer(new Integer(portId)), flowAllocatorInstance);
+			//Check if the socket was already established
+			Socket socket = pendingSockets.remove(new Integer((int)flow.getTcpRendezvousId()));
+			if (socket != null){
+				flowAllocatorInstance.setSocket(socket);
 			}
+
+			//TODO, if socket is null, add a timer to avoid waiting forever. Upon expiration, send a negative M_CREATE response
+			return;
+		}
+		
+		//The address is not this IPC process, forward the CDAP message to that address increment the hop count of the Flow object
+		//extract the flow object from the CDAP message
+		flow.setHopCount(flow.getHopCount() - 1);
+		if (flow.getHopCount()  <= 0){
+			//TODO send negative create Flow response CDAP message to the source IPC process, specifying that the application process
+			//could not be found before the hop count expired
+		}
+
+		try{
+			int destinationPortId = Utils.mapAddressToPortId(address, this.getIPCProcess());
+			RIBDaemon ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+			ObjectValue objectValue = new ObjectValue();
+			objectValue.setByteval(encoder.encode(flow));
+			cdapMessage.setObjValue(objectValue);
+			ribDaemon.sendMessage(cdapMessage, destinationPortId, null);
+		}catch(Exception ex){
+			//Error that has to be fixed, we cannot continue, log it and return
+			log.error("Fatal error when serializing a Flow object. " +ex.getMessage());
+			return;
 		}
 	}
 	
 	/**
-	 * When a Create_Response PDU is received the InvokeID is used to deliver to the appropriate FAI.
-	 * If the response was negative remove the flow allocator instance from the list of active
-	 * flow allocator instances
-	 * @param cdapMessage
+	 * Called by the flow allocator instance when a request for a local flow is received
+	 * @param flowService
+	 * @param objectName
+	 * @throws IPCException
 	 */
-	private void createFlowResponseMessageReceived(CDAPMessage cdapMessage){
-		//TODO implement this
+	public synchronized void receivedLocalFlowRequest(FlowService flowService, String objectName) throws IPCException{
+		int portId = generatePortId();
+		FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), this, portId);
+		flowAllocatorInstance.receivedLocalFlowRequest(flowService, objectName);
+		flowAllocatorInstances.put(new Integer(new Integer(portId)), flowAllocatorInstance);
 	}
 	
 	/**
-	 * Forward to the FAI. When it completes, remove the flow allocator instance from the list of active
-	 * flow allocator instances
-	 * @param cdapMessage
+	 * Called by the flow allocator instance when a response for a local flow is received
+	 * @param portId
+	 * @param flowService
+	 * @param result
+	 * @param resultReason
+	 * @throws IPCException
 	 */
-	private void deleteFlowRequestMessageReceived(CDAPMessage cdapMessage){
-		//TODO implement this
-	}
-	
-	/**
-	 * Forward to the FAI.When it completes, remove the flow allocator instance from the list of active
-	 * flow allocator instances.
-	 * @param cdapMessage
-	 */
-	private void deleteFlowResponseMessageReceived(CDAPMessage cdapMessage){
-		//TODO implement this
+	public void receivedLocalFlowResponse(int portId, int remotePortId, boolean result, String resultReason) throws IPCException{
+		FlowAllocatorInstance flowAllocatorInstance = getFlowAllocatorInstance(portId);
+		flowAllocatorInstance.receivedLocalFlowResponse(remotePortId, result, resultReason);
+		if (!result){
+			flowAllocatorInstances.remove(new Integer(portId));
+		}
 	}
 	
 	/**
@@ -357,20 +349,14 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @param applicationProcess
 	 * @throws IPCException
 	 */
-	public int submitAllocateRequest(FlowService flowService){
-		log.debug("Received allocate request: "+flowService.toString());
-		try {
-			allocateRequestValidator.validateAllocateRequest(flowService);
-			FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), this, cdapSessionManager);
-			flowAllocatorInstance.submitAllocateRequest(flowService);
-			flowAllocatorInstances.put(new Integer(new Integer(flowAllocatorInstance.getPortId())), flowAllocatorInstance);
-			return flowAllocatorInstance.getPortId();
-		}catch(IPCException ex){
-			ex.printStackTrace();
-			log.error("Problems processing allocate request: "+ex);
-			apService.deliverAllocateResponse(flowService.getDestinationAPNamingInfo(), 0, -1, ex.getMessage());
-			return 0;
-		}
+	public synchronized int submitAllocateRequest(FlowService flowService) throws IPCException{
+		log.debug("Local application invoked allocate request: "+flowService.toString());
+		allocateRequestValidator.validateAllocateRequest(flowService);
+		int portId = generatePortId();
+		FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), this, cdapSessionManager, portId);
+		flowAllocatorInstance.submitAllocateRequest(flowService);
+		flowAllocatorInstances.put(new Integer(portId), flowAllocatorInstance);
+		return portId;
 	}
 
 	/**
@@ -380,14 +366,10 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @param portId
 	 * @param success
 	 */
-	public void submitAllocateResponse(int portId, boolean success, String reason) {
-		FlowAllocatorInstance flowAllocatorInstance = flowAllocatorInstances.get(portId);
-		if (flowAllocatorInstance == null){
-			log.error("Could not find the Flow Allocator Instance associated to the portId "+portId);
-			return;
-		}
-		
-		flowAllocatorInstance.submitAllocateResponse(portId, success, reason);
+	public synchronized void submitAllocateResponse(int portId, boolean success, String reason) throws IPCException{
+		log.debug("Local application invoked allocate response for portId "+portId+" with result "+success);
+		FlowAllocatorInstance flowAllocatorInstance = getFlowAllocatorInstance(portId);
+		flowAllocatorInstance.submitAllocateResponse(success, reason);
 		if (!success){
 			flowAllocatorInstances.remove(portId);
 		}
@@ -397,25 +379,29 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * Forward the deallocate request to the Flow Allocator Instance.
 	 * @param portId
 	 */
-	public void submitDeallocateRequest(int portId, APService applicationProcess) {
+	public synchronized void submitDeallocate(int portId) throws IPCException{
+		log.debug("Local application invoked deallocate request for flow at portId "+portId);
+		FlowAllocatorInstance flowAllocatorInstance = getFlowAllocatorInstance(portId);
+		flowAllocatorInstance.submitDeallocate();
+	}
+	
+	/**
+	 * Request to deallocate a local flow
+	 * @param portId
+	 * @throws IPCException
+	 */
+	public void receivedDeallocateLocalFlowRequest(int portId) throws IPCException{
+		FlowAllocatorInstance flowAllocatorInstance = getFlowAllocatorInstance(portId);
+		flowAllocatorInstance.receivedDeallocateLocalFlowRequest();
+	}
+	
+	private FlowAllocatorInstance getFlowAllocatorInstance(int portId) throws IPCException{
 		FlowAllocatorInstance flowAllocatorInstance = flowAllocatorInstances.get(new Integer(portId));
 		if (flowAllocatorInstance == null){
-			String message = "Could not find the Flow Allocator Instance associated to the portId "+portId;
-			log.error(message);
-			applicationProcess.deliverDeallocateResponse(portId, -1, message);
-			return;
+			throw new IPCException(IPCException.NO_FLOW_ALLOCATOR_INSTANCE_FOR_THIS_PORTID_CODE , 
+					IPCException.NO_FLOW_ALLOCATOR_INSTANCE_FOR_THIS_PORTID);
 		}
 		
-		flowAllocatorInstance.submitDeallocateRequest(portId);
-	}
-
-	public void submitDeallocateRequest(int portId) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void submitDeallocateResponse(int portId, boolean success, String reason) throws IPCException {
-		// TODO Auto-generated method stub
-		
+		return flowAllocatorInstance;
 	}
 }

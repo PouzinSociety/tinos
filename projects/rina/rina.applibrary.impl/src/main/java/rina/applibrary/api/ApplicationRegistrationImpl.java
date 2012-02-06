@@ -3,6 +3,7 @@ package rina.applibrary.api;
 import java.util.List;
 
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.IPCException;
 
 /**
  * Classes implementing this interface provide the behavior of the ApplicationRegistration class

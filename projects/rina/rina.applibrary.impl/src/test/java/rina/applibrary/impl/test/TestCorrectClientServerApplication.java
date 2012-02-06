@@ -11,8 +11,8 @@ import org.junit.Test;
 
 import rina.applibrary.api.ApplicationRegistration;
 import rina.applibrary.api.Flow;
-import rina.applibrary.api.IPCException;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.IPCException;
 
 /**
  * Tests the normal course of events for both a client and a server application
@@ -28,7 +28,7 @@ public class TestCorrectClientServerApplication {
 	/**
 	 * Create and start the RINA Server in a separate thread
 	 */
-	public void setup(){
+	public final void setup(){
 		RINAServer = new RINASoftwareServer();
 		executorService = Executors.newFixedThreadPool(2);
 		executorService.execute(RINAServer);
@@ -38,12 +38,12 @@ public class TestCorrectClientServerApplication {
 	/**
 	 * Stop the RINA Server
 	 */
-	public void teardown(){
+	public final void teardown(){
 		RINAServer.setEnd(true);
 	}
 	
 	@Test
-	public void testClientApplicationWithEchoServer() throws IPCException{
+	public final void testClientApplicationWithEchoServer() throws IPCException{
 		SimpleSDUListener sduListener = new SimpleSDUListener();
 		
 		//1 Create a flow to the echo server application
@@ -76,7 +76,7 @@ public class TestCorrectClientServerApplication {
 	}
 	
 	@Test
-	public void testBlockingServerApplicationWithClient() throws IPCException{
+	public final void testBlockingServerApplicationWithClient() throws IPCException{
 		//1 Register this application with the RINAServer
 		ApplicationProcessNamingInfo applicationProcess = new ApplicationProcessNamingInfo();
 		applicationProcess.setApplicationProcessName("echo-server");
@@ -113,7 +113,7 @@ public class TestCorrectClientServerApplication {
 	}
 	
 	@Test
-	public void testNonBlockingServerApplicationWithClient() throws IPCException{
+	public final void testNonBlockingServerApplicationWithClient() throws IPCException{
 		//1 Register this application with the RINAServer
 		ApplicationProcessNamingInfo applicationProcess = new ApplicationProcessNamingInfo();
 		applicationProcess.setApplicationProcessName("echo-server");
@@ -150,7 +150,7 @@ public class TestCorrectClientServerApplication {
 		Assert.assertTrue(registration.isUnregistered());
 	}
 	
-	private void wait2Seconds(){
+	private final void wait2Seconds(){
 		try{
 			Thread.sleep(2000);
 		}catch(InterruptedException ex){

@@ -95,9 +95,6 @@ public class TCPSocketReader extends BaseSocketReader{
 			case M_DELETE:
 				handleMDeleteReceived(cdapMessage);
 				break;
-			case M_DELETE_R:
-				handleMDeleteResponseReceived(cdapMessage);
-				break;
 			case M_WRITE:
 				handleMWriteReceived(cdapMessage);
 				break;
@@ -173,6 +170,7 @@ public class TCPSocketReader extends BaseSocketReader{
 			log.error("Received a request to transfer data on portId "+portId+", but there is no flow allocated yet");
 			//There is no flow allocated yet, what to do?
 			//TODO a) ignore, b) send an error message c) send and error message and close the flow?
+			return;
 		}
 		
 		byte[] sdu = cdapMessage.getObjValue().getByteval();
@@ -195,7 +193,7 @@ public class TCPSocketReader extends BaseSocketReader{
 			return;
 		}
 		
-		apService.processDeallocateRequest(cdapMessage, portId, getSocket());
+		apService.processDeallocate(cdapMessage, portId, getSocket());
 	}
 	
 	/**
@@ -253,17 +251,6 @@ public class TCPSocketReader extends BaseSocketReader{
 		}
 		
 		apService.processAllocateResponse(cdapMessage, portId, this);
-	}
-	
-	
-	private void handleMDeleteResponseReceived(CDAPMessage cdapMessage){
-		if (apNamingInfo != null){
-			//This socket can only be used to modify the application registration information
-			//TODO, send error message and close socket?
-			return;
-		}
-		
-		apService.processDeallocateResponse(cdapMessage, portId, this);
 	}
 	
 	/**

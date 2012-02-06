@@ -16,7 +16,6 @@ import rina.ipcservice.api.IPCService;
 
 public class MockIPCProcess extends BaseIPCProcess implements IPCService{
 	
-	private int portId = 0;
 	private FlowService flowService = null;
 	private APService apService = null;
 	
@@ -35,7 +34,6 @@ public class MockIPCProcess extends BaseIPCProcess implements IPCService{
 	
 	public void setFlowService(FlowService flowService){
 		this.flowService = flowService;
-		this.portId = flowService.getPortId();
 	}
 	
 	public void deliverDeallocateRequestToApplicationProcess(int arg0) {
@@ -61,15 +59,14 @@ public class MockIPCProcess extends BaseIPCProcess implements IPCService{
 		Assert.assertEquals(flowService.getDestinationAPNamingInfo().getApplicationProcessInstance(), "1");
 		Assert.assertEquals(flowService.getSourceAPNamingInfo().getApplicationProcessName(), "A");
 		Assert.assertEquals(flowService.getSourceAPNamingInfo().getApplicationProcessInstance(), "1");
-		this.portId = 1;
 		this.flowService = flowService;
 		this.flowService.setPortId(1);
 		
 		System.out.println("Received allocate request from application process A-1 to communicate with application process B-1");
-		System.out.println("Assigned portId: "+portId);
+		System.out.println("Assigned portId: "+this.flowService.getPortId());
 		APNotifier notifier = new APNotifier(apService, flowService, Status.ALLOCATE_RESPONSE_OK);
 		executorService.execute(notifier);
-		return this.portId;
+		return this.flowService.getPortId();
 	}
 
 	public void submitAllocateResponse(int portId, boolean result, String reason) throws IPCException {
@@ -79,12 +76,11 @@ public class MockIPCProcess extends BaseIPCProcess implements IPCService{
 		Assert.assertNull(reason);
 	}
 
-	public void submitDeallocateRequest(int portId, APService apService) {
-		Assert.assertEquals(portId, this.portId);
-		System.out.println("Received deallocate request for portId "+portId);
-		
-		APNotifier notifier = new APNotifier(apService, flowService, Status.DEALLOCATE_RESPONSE_OK);
-		executorService.execute(notifier);
+	public void submitDeallocate(int portId) {
+		System.out.println("Received deallocate request!!");
+		System.out.println("Port id :" + portId);
+		System.out.println(this.flowService.getPortId());
+		Assert.assertEquals(portId, this.flowService.getPortId());
 	}
 
 	public void submitStatus(int arg0) {
@@ -92,8 +88,8 @@ public class MockIPCProcess extends BaseIPCProcess implements IPCService{
 	}
 
 	public void submitTransfer(int portId, byte[] sdu) throws IPCException {
-		Assert.assertEquals(this.portId, portId);
-		System.out.println("Got a request for portId "+portId+ " to send the following SDU: " + sdu);
+		Assert.assertEquals(this.flowService.getPortId(), portId);
+		System.out.println("Got a request for portId "+this.flowService.getPortId()+ " to send the following SDU: " + sdu);
 		
 		APNotifier notifier = new APNotifier(apService, flowService, Status.DELIVER_TRANSFER);
 		executorService.execute(notifier);
@@ -105,16 +101,8 @@ public class MockIPCProcess extends BaseIPCProcess implements IPCService{
 		System.out.println("Unregistered application "+apNamingInfo.toString());
 	}
 
-	public void submitDeallocateResponse(int portId, boolean result, String reason) throws IPCException {
-		Assert.assertEquals(24, portId);
-		Assert.assertEquals(true, result);
-		Assert.assertNull(reason);
-		
-		System.out.println("Flow deallocated at portId "+portId);
-	}
-
-	public void submitDeallocateRequest(int arg0) {
+	public Long getAddress() {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
 }

@@ -110,6 +110,11 @@ public class FakeIPCProcess extends BaseIPCProcess{
 		// TODO Auto-generated method stub
 		
 	}
+
+	public Long getAddress() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 	
 

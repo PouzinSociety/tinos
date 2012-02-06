@@ -241,7 +241,7 @@ public class IPCManagerImpl implements IPCManager{
 		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(
 				new ApplicationProcessNamingInfo(sourceIPCProcessName, sourceIPCProcessInstance));
 		IPCService ipcService = (IPCService) ipcProcess;
-		ipcService.submitDeallocateRequest(portId);
+		ipcService.submitDeallocate(portId);
 	}
 
 	public void createFlowRequestMessageReceived(Flow arg0,

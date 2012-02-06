@@ -3,8 +3,6 @@ package rina.flowallocator.impl.ribobjects;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.cdap.api.CDAPSessionDescriptor;
-import rina.cdap.api.message.CDAPMessage;
 import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;

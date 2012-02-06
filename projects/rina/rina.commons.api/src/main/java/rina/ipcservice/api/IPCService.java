@@ -30,8 +30,9 @@ public interface IPCService {
 	 * This primitive is invoked by the Application Process in any state to deallocate the 
 	 * resources allocated to this instance. 
 	 * @param port_id
+	 * @throws IPCException
 	 */
-	public void submitDeallocateRequest(int portId);
+	public void submitDeallocate(int portId) throws IPCException;
 	
 	/**
 	 * This primitive is invoked at any time by the Application any time it wishes to 
@@ -46,17 +47,9 @@ public interface IPCService {
 	 * @param port_id
 	 * @param result
 	 * @param reason
+	 * @throws IPCException
 	 */
 	public void submitAllocateResponse(int portId, boolean result, String reason) throws IPCException;
-	
-	/**
-	 * This primitive is invoked by the requested Application Process to respond to a deallocation 
-	 * request from IPC. 
-	 * @param port_id
-	 * @param result
-	 * @param reason
-	 */
-	public void submitDeallocateResponse(int portId, boolean result, String reason) throws IPCException;
 	
 	/**
 	 * Used by an application process to specify that it is available through this IPC process

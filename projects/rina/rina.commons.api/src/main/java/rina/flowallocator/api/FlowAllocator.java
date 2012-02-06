@@ -27,29 +27,22 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * @throws IPCException if the request is not well formed or there are not enough resources
 	 * to honour the request
 	 */
-	public int submitAllocateRequest(FlowService allocateRequest);
+	public int submitAllocateRequest(FlowService allocateRequest) throws IPCException;
 	
 	/**
 	 * Forward the allocate response to the Flow Allocator Instance.
 	 * @param portId the portId associated to the allocate response
 	 * @param success successful or unsucessful allocate request
+	 * @throws IPCException
 	 */
-	public void submitAllocateResponse(int portId, boolean success, String reason);
+	public void submitAllocateResponse(int portId, boolean success, String reason) throws IPCException;
 	
 	/**
 	 * Forward the deallocate request to the Flow Allocator Instance.
 	 * @param portId
+	 * @throws IPCException
 	 */
-	public void submitDeallocateRequest(int portId);
-	
-	/**
-	 * This primitive is invoked by the requested Application Process to respond to a deallocation 
-	 * request from IPC. 
-	 * @param port_id
-	 * @param result
-	 * @param reason
-	 */
-	public void submitDeallocateResponse(int portId, boolean result, String reason) throws IPCException;
+	public void submitDeallocate(int portId) throws IPCException;
 	
 	/**
 	 * Returns the directory
@@ -86,4 +79,29 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * @param portId
 	 */
 	public void removeFlowAllocatorInstance(int portId);
+	
+	/**
+	 * Called by the flow allocator instance when a request for a local flow is received
+	 * @param flowService
+	 * @param objectname
+	 * @throws IPCException
+	 */
+	public void receivedLocalFlowRequest(FlowService flowService, String objectname) throws IPCException;
+	
+	/**
+	 * Called by the flow allocator instance when a response for a local flow is received
+	 * @param portId
+	 * @param remotePortId
+	 * @param result
+	 * @param resultReason
+	 * @throws IPCException
+	 */
+	public void receivedLocalFlowResponse(int portId, int remotePortId, boolean result, String resultReason) throws IPCException;
+	
+	/**
+	 * Request to deallocate a local flow
+	 * @param portId
+	 * @throws IPCException
+	 */
+	public void receivedDeallocateLocalFlowRequest(int portId) throws IPCException;
 }

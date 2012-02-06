@@ -5,7 +5,7 @@ import rina.ipcservice.api.FlowService;
 
 public class APNotifier implements Runnable{
 	
-	public enum Status {NULL, ALLOCATE_RESPONSE_OK, ALLOCATE_RESPONSE_WRONG, DELIVER_TRANSFER, DEALLOCATE_RESPONSE_OK};
+	public enum Status {NULL, ALLOCATE_RESPONSE_OK, ALLOCATE_RESPONSE_WRONG, DELIVER_TRANSFER};
 	
 	private APService apService = null;
 	private FlowService flowService = null;
@@ -20,13 +20,10 @@ public class APNotifier implements Runnable{
 	public void run() {
 		switch(status){
 		case ALLOCATE_RESPONSE_OK:
-			apService.deliverAllocateResponse(flowService.getDestinationAPNamingInfo(), flowService.getPortId(), 0, null);
+			apService.deliverAllocateResponse(flowService.getPortId(), 0, null);
 			break;
 		case DELIVER_TRANSFER:
 			apService.deliverTransfer(flowService.getPortId(), "In Hertford, Hereford, and Hampshire, hurricanes hardly ever happen".getBytes());
-			break;
-		case DEALLOCATE_RESPONSE_OK:
-			apService.deliverDeallocateResponse(flowService.getPortId(), 0, null);
 			break;
 		default:
 			

@@ -50,4 +50,7 @@ public interface IPCProcess{
 	 * operation.
 	 */
 	public void destroy();
+	
+	/* Information from RIB objects managed by the IPC Process */
+	public Long getAddress();
 }

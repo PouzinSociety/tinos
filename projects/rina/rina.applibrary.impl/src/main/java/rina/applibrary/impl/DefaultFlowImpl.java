@@ -11,7 +11,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.applibrary.api.FlowImpl;
-import rina.applibrary.api.IPCException;
 import rina.applibrary.api.SDUListener;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
@@ -20,6 +19,7 @@ import rina.delimiting.api.Delimiter;
 import rina.encoding.api.Encoder;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
+import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 
 /**
@@ -266,17 +266,9 @@ public class DefaultFlowImpl implements FlowImpl{
 	 * received
 	 * @param cdapMessage
 	 */
-	public void deallocateRequestReceived(CDAPMessage cdapMessage){
+	public void deallocateReceived(CDAPMessage cdapMessage){
 		if (state != State.ALLOCATED){
 			return;
-		}
-		
-		try{
-			CDAPMessage responseMessage = CDAPMessage.getDeleteObjectResponseMessage(null, null, 0, null, 0, null, 1);
-			byte[] encodedMessage = cdapSessionManager.encodeCDAPMessage(responseMessage);
-			socket.getOutputStream().write(delimiter.getDelimitedSdu(encodedMessage));
-		}catch(Exception ex){
-			ex.printStackTrace();
 		}
 		
 		try{

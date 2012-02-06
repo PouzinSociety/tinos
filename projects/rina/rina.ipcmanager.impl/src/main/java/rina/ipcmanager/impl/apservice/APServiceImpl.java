@@ -158,7 +158,7 @@ public class APServiceImpl implements APService{
 	 * the socket.
 	 * @param socket
 	 */
-	public synchronized void processDeallocateRequest(CDAPMessage cdapMessage, int portId, Socket socket){
+	public synchronized void processDeallocate(CDAPMessage cdapMessage, int portId, Socket socket){
 		FlowServiceState flowServiceState = flowServices.get(new Integer(portId));
 		if (flowServiceState == null){
 			CDAPMessage errorMessage = cdapMessage.getReplyMessage();
@@ -173,9 +173,21 @@ public class APServiceImpl implements APService{
 		}
 		
 		try{
-			flowServiceState.getIpcService().submitDeallocateRequest(portId);
-			flowServiceState.setCdapMessage(cdapMessage);
-			flowServiceState.setStatus(Status.DEALLOCATION_REQUESTED);
+			flowServiceState.getIpcService().submitDeallocate(portId);
+			
+			flowServices.remove(new Integer(portId));
+			ApplicationRegistrationState arState = applicationRegistrations.get(flowServiceState.getFlowService().getDestinationAPNamingInfo().getProcessKey());
+			if (arState == null){
+				//TODO what to do?
+			}else{
+				arState.getFlowServices().remove(flowServiceState);
+			}
+			
+			CDAPMessage confirmationMessage = cdapMessage.getReplyMessage();
+			sendMessage(confirmationMessage, socket);
+			if (flowServiceState.getSocket().isConnected()){
+				flowServiceState.getSocket().close();
+			}
 		}catch(Exception ex){
 			ex.printStackTrace();
 			//TODO, what to do?
@@ -199,7 +211,7 @@ public class APServiceImpl implements APService{
 			}
 
 			try{
-				flowServiceState.getIpcService().submitDeallocateRequest(portId);
+				flowServiceState.getIpcService().submitDeallocate(portId);
 				flowServiceState.setCdapMessage(null);
 				flowServiceState.setStatus(Status.DEALLOCATION_REQUESTED);
 			}catch(Exception ex){
@@ -416,7 +428,7 @@ public class APServiceImpl implements APService{
 				flowServices.remove(portId);
 				String key = flowServiceState.getFlowService().getDestinationAPNamingInfo().getProcessKey();
 				ApplicationRegistrationState registrationState = applicationRegistrations.get(key);
-				registrationState.getFlowServices().remove(flowServiceState.getFlowService());
+				registrationState.getFlowServices().remove(flowServiceState);
 				Socket socket = flowServiceState.getSocket();
 				if (socket.isConnected()){
 					socket.close();
@@ -429,56 +441,13 @@ public class APServiceImpl implements APService{
 	}
 	
 	/**
-	 * Invoked when the application process has sent an M_DELETE_R in response to a
-	 * deallocation request
-	 * @param cdapMessage
-	 * @param portId
-	 */
-	public synchronized void processDeallocateResponse(CDAPMessage cdapMessage, int portId, TCPSocketReader socketReader){
-		FlowServiceState flowServiceState = flowServices.get(portId);
-		if (flowServiceState == null || !flowServiceState.getStatus().equals(Status.DEALLOCATION_REQUESTED)){
-			//TODO, what to do? just send error message?
-			return;
-		}
-		
-		if (cdapMessage.getResult() == 0){
-			//Flow deallocation accepted
-			try{
-				flowServiceState.getIpcService().submitDeallocateResponse(portId, true, null);
-				flowServices.remove(portId);
-				ApplicationRegistrationState arState = applicationRegistrations.get(flowServiceState.getFlowService().getDestinationAPNamingInfo().getProcessKey());
-				if (arState == null){
-					//TODO what to do?
-				}else{
-					arState.getFlowServices().remove(flowServiceState);
-				}
-				if (flowServiceState.getSocket().isConnected()){
-					flowServiceState.getSocket().close();
-				}
-			}catch(Exception ex){
-				ex.printStackTrace();
-				//TODO what to do?
-			}
-		}else{
-			//Flow deallocation denied
-			try{
-				flowServiceState.getIpcService().submitDeallocateResponse(portId, true, cdapMessage.getResultReason());
-				flowServiceState.setStatus(Status.ALLOCATED);
-			}catch(Exception ex){
-				ex.printStackTrace();
-			}
-		}
-	}
-	
-	/**
 	 * This primitive is invoked by the IPC process to the IPC Manager
 	 * to indicate the success or failure of the request associated with this port-id. 
-	 * @param requestedAPinfo
 	 * @param port_id -1 if error, portId otherwise
 	 * @param result errorCode if result > 0, ok otherwise
 	 * @param resultReason null if no error, error description otherwise
 	 */
-	public synchronized void deliverAllocateResponse(ApplicationProcessNamingInfo requestedAPinfo, int portId, int result, String resultReason){
+	public synchronized void deliverAllocateResponse(int portId, int result, String resultReason){
 		FlowServiceState flowServiceState = flowServices.get(new Integer(portId));
 		if (flowServiceState == null){
 			log.warn("Received an allocate response for portid " + portId + ", but didn't have any pending allocation request identified by this portId");
@@ -548,53 +517,10 @@ public class APServiceImpl implements APService{
 	}
 	
 	/**
-	 * Invoked in any state by an Flow Allocator instance to notify the local application process that the release 
-	 * of all the resources allocated to this instance are released 
-	 * @param portId
-	 * @param result
-	 * @param resultReason
-	 */
-	public void deliverDeallocateResponse(int portId, int result, String resultReason){
-		FlowServiceState flowServiceState = flowServices.get(new Integer(portId));
-		if (flowServiceState == null){
-			log.warn("Received a deallocate response for portid " + portId + ", but didn't have any pending deallocation request identified by this portId");
-			return;
-		}
-		
-		if (!flowServiceState.getStatus().equals(FlowServiceState.Status.DEALLOCATION_REQUESTED)){
-			//TODO, what to do?
-			return;
-		}
-		
-		switch(result){
-		case 0:
-			flowServices.remove(new Integer(portId));
-			if (flowServiceState.getCdapMessage() != null){
-				CDAPMessage responseMessage = flowServiceState.getCdapMessage().getReplyMessage();
-				sendMessage(responseMessage, flowServiceState.getSocket());
-				try{
-					flowServiceState.getSocket().close();
-				}catch(Exception ex){
-					ex.printStackTrace();
-				}
-			}
-			break;
-		default:
-			flowServiceState.setStatus(Status.ALLOCATED);
-			if (flowServiceState.getCdapMessage() != null){
-				CDAPMessage errorMessage = flowServiceState.getCdapMessage().getReplyMessage();
-				errorMessage.setResult(result);
-				errorMessage.setResultReason(resultReason);
-				sendMessage(errorMessage, flowServiceState.getSocket());
-			}
-		}
-	}
-	
-	/**
 	 * Invoked when a Delete_Flow primitive invoked by an IPC process
 	 * @param request
 	 */
-	public void deliverDeallocateRequest(int portId) {
+	public void deliverDeallocate(int portId) {
 		FlowServiceState flowServiceState = flowServices.get(new Integer(portId));
 		if (flowServiceState == null){
 			log.warn("Received a deallocate response for portid " + portId + ", but didn't have any pending deallocation request identified by this portId");
@@ -609,7 +535,16 @@ public class APServiceImpl implements APService{
 		try{
 			CDAPMessage cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, null, 0, null, 0);
 			sendCDAPMessage(cdapMessage, flowServiceState.getSocket());
-			flowServiceState.setStatus(Status.DEALLOCATION_REQUESTED);
+			flowServices.remove(new Integer(portId));
+			ApplicationRegistrationState arState = applicationRegistrations.get(flowServiceState.getFlowService().getDestinationAPNamingInfo().getProcessKey());
+			if (arState == null){
+				//TODO what to do?
+			}else{
+				arState.getFlowServices().remove(flowServiceState);
+			}
+			if (flowServiceState.getSocket().isConnected()){
+				flowServiceState.getSocket().close();
+			}
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}

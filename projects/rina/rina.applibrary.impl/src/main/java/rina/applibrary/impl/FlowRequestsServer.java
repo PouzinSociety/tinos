@@ -12,13 +12,13 @@ import rina.applibrary.api.Flow;
 import rina.applibrary.api.FlowAcceptor;
 import rina.applibrary.api.FlowImpl;
 import rina.applibrary.api.FlowListener;
-import rina.applibrary.api.IPCException;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.delimiting.api.Delimiter;
 import rina.encoding.api.Encoder;
 import rina.ipcservice.api.FlowService;
+import rina.ipcservice.api.IPCException;
 
 /**
  * Processes the incoming requests that try to create 

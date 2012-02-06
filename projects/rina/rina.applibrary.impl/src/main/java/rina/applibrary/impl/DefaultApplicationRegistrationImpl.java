@@ -13,7 +13,6 @@ import rina.applibrary.api.ApplicationRegistrationImpl;
 import rina.applibrary.api.Flow;
 import rina.applibrary.api.FlowAcceptor;
 import rina.applibrary.api.FlowListener;
-import rina.applibrary.api.IPCException;
 import rina.applibrary.api.SDUListener;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
@@ -23,6 +22,7 @@ import rina.delimiting.api.Delimiter;
 import rina.encoding.api.Encoder;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.ApplicationRegistration;
+import rina.ipcservice.api.IPCException;
 
 /**
  * Default implementaiton of the applicationRegistrationImpl interface, used unless the user of 

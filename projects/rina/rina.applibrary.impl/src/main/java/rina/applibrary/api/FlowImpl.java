@@ -4,6 +4,7 @@ import java.net.Socket;
 
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 
 /**
@@ -51,7 +52,7 @@ public interface FlowImpl {
 	 * received
 	 * @param cdapMessage
 	 */
-	public void deallocateRequestReceived(CDAPMessage cdapMessage);
+	public void deallocateReceived(CDAPMessage cdapMessage);
 	
 	/**
 	 * Invoked when the socketReader detects that the socket 

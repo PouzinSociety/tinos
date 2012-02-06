@@ -1,9 +1,7 @@
 package rina.ipcservice.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -13,7 +11,6 @@ import rina.efcp.api.DataTransferAEInstance;
 import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.FlowAllocator;
 import rina.ipcprocess.api.BaseIPCProcess;
-import rina.ipcservice.api.APService;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
@@ -36,11 +33,6 @@ import rina.ribdaemon.api.RIBObjectNames;
 public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 
 	private static final Log log = LogFactory.getLog(IPCProcessImpl.class);
-
-	/**
-	 * Stores the applications that have a port Id in transfer state
-	 */
-	private Map<Integer, APService> transferApplicationProcesses = null;
 	
 	/**
 	 * The RIB Daemon
@@ -48,7 +40,6 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	private RIBDaemon ribDaemon = null;
 
 	public IPCProcessImpl(String applicationProcessName, String applicationProcessInstance, RIBDaemon ribDaemon){
-		this.transferApplicationProcesses = new HashMap<Integer, APService>();
 		this.ribDaemon = ribDaemon;
 		populateRIB(applicationProcessName, applicationProcessInstance);
 	}
@@ -74,8 +65,9 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * Forward the allocate request to the Flow Allocator. Before, choose an available portId
 	 * @param allocateRequest
 	 * @param applicationProcess
+	 * @throws IPCException
 	 */
-	public synchronized int submitAllocateRequest(FlowService flowService){
+	public synchronized int submitAllocateRequest(FlowService flowService) throws IPCException{
 		log.debug("Allocate request received, forwarding it to the Flow Allocator");
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(BaseFlowAllocator.getComponentName());
 		return flowAllocator.submitAllocateRequest(flowService);
@@ -96,16 +88,10 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * Forward the deallocate call to the Flow Allocator
 	 * @param portId 
 	 */
-	public synchronized void submitDeallocateRequest(int portId){
+	public synchronized void submitDeallocate(int portId) throws IPCException{
 		log.debug("Deallocate request received, forwarding it to the Flow Allocator");
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
-		flowAllocator.submitDeallocateRequest(portId);
-	}
-	
-	public void submitDeallocateResponse(int portId, boolean success, String reason) throws IPCException {
-		log.debug("Deallocate response received, forwarding it to the Flow Allocator");
-		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
-		flowAllocator.submitDeallocateResponse(portId, success, reason);
+		flowAllocator.submitDeallocate(portId);
 	}
 
 	public synchronized void submitStatus(int arg0) {
@@ -113,12 +99,6 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	}
 
 	public synchronized  void submitTransfer(int portId, byte[] sdu) throws IPCException{
-		Integer key = new Integer(portId);
-
-		if (!transferApplicationProcesses.keySet().contains(key)){
-			throw new IPCException(IPCException.PORTID_NOT_IN_TRANSFER_STATE);
-		}
-
 		List<byte[]> sdus = new ArrayList<byte[]>();
 		sdus.add(sdu);
 		DataTransferAE dataTransferAE = (DataTransferAE) this.getIPCProcessComponent(DataTransferAE.class.getName());
@@ -154,5 +134,17 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 
 	public void destroy() {
 		// TODO Auto-generated method stub
+	}
+	
+	public Long getAddress(){
+		Long result = null;
+		try{
+			result = (Long) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT +
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0).getObjectValue();
+		}catch(RIBDaemonException ex){
+			log.error(ex);
+		}
+
+		return result;
 	}
 }

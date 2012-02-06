@@ -24,11 +24,13 @@ public class AllocateRequestValidator {
 	 */
 	private void validateApplicationProcessNamingInfo(ApplicationProcessNamingInfo apNamingInfo) throws IPCException{
 		if (apNamingInfo == null){
-			throw new IPCException(IPCException.MALFORMED_ALLOCATE_REQUEST, ErrorDescriptions.NULL_APPLICATION_NAMING_INFO);
+			throw new IPCException(IPCException.MALFORMED_ALLOCATE_REQUEST_CODE, 
+					IPCException.MALFORMED_ALLOCATE_REQUEST + ". Missing application process naming information");
 		}
 		
 		if (apNamingInfo.getApplicationProcessName() == null){
-			throw new IPCException(IPCException.MALFORMED_ALLOCATE_REQUEST, ErrorDescriptions.NULL_APPLICATION_PROCESS_NAME);
+			throw new IPCException(IPCException.MALFORMED_ALLOCATE_REQUEST_CODE,
+					IPCException.MALFORMED_ALLOCATE_REQUEST + ". Missing application process name");
 		}
 	}
 

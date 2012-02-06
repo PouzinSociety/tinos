@@ -61,7 +61,7 @@ public class FlowSocketReader extends BaseSocketReader{
 				}
 				break;
 			case M_DELETE:
-				flowImpl.deallocateRequestReceived(cdapMessage);
+				flowImpl.deallocateReceived(cdapMessage);
 				break;
 			case M_DELETE_R:
 				try{

@@ -92,12 +92,8 @@ public class IPCManagerAppInteractionTest {
 			cdapMessage = getDeallocateRequest();
 			sendCDAPMessage(rinaLibrarySocket, cdapMessage);
 			
-			//8 Wait a bit and check the deallocate response
+			//8 Wait a bit and stop
 			wait2Seconds();
-			cdapMessage = socketReader.getLastMessage();
-			Assert.assertNotNull(cdapMessage);
-			Assert.assertEquals(cdapMessage.getResult(), 0);
-			Assert.assertEquals(cdapMessage.getOpCode(), Opcode.M_DELETE_R);
 			System.out.println("Flow deallocated");
 			ipcManager.stop();
 		}catch(Exception ex){
@@ -146,7 +142,7 @@ public class IPCManagerAppInteractionTest {
 			wait2Seconds();
 			
 			//6 Deallocation request arrives to AP service
-			ipcManager.getAPService().deliverDeallocateRequest(flowService.getPortId());
+			ipcManager.getAPService().deliverDeallocate(flowService.getPortId());
 			wait2Seconds();
 			
 			//7 Unregister application

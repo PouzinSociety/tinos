@@ -5,6 +5,7 @@ import java.util.List;
 import rina.applibrary.impl.DefaultApplicationRegistrationImpl;
 import rina.applibrary.impl.DefaultFlowAcceptor;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.IPCException;
 
 /**
  * The object that is used to allow an application to register in one or more DIFs

@@ -14,7 +14,7 @@ public interface APService {
 	 * @param result errorCode if result > 0, ok otherwise
 	 * @param resultReason null if no error, error description otherwise
 	 */
-	public void deliverAllocateResponse(ApplicationProcessNamingInfo requestedAPinfo, int portId, int result, String resultReason) ;
+	public void deliverAllocateResponse(int portId, int result, String resultReason);
 
 	/**
 	 * Invoked when in the Transfer state to deliver an SDU on this port-id
@@ -22,15 +22,6 @@ public interface APService {
 	 * @param sdu
 	 */
 	public void deliverTransfer(int port_id, byte[] sdu);
-	
-	/**
-	 * Invoked in any state by an AAEI to notify the local application process that the release 
-	 * of all the resources allocated to this instance are released 
-	 * @param portId
-	 * @param result
-	 * @param resultReason
-	 */
-	public void deliverDeallocateResponse(int portId, int result, String resultReason);
 	
 	/**
 	 * This primitive is invoked in response to a sumbitStatus to report the current status of 
@@ -54,5 +45,5 @@ public interface APService {
 	 * Invoked when a Delete_Flow primitive is received at the requested IPC process
 	 * @param request
 	 */
-	public void deliverDeallocateRequest(int portId);
+	public void deliverDeallocate(int portId);
 }
