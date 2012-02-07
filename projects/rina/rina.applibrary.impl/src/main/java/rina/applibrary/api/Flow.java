@@ -101,6 +101,7 @@ public class Flow {
 			this.flowImplementation = this.flowImplementationFactory.createFlowImpl();
 		}else{
 			this.flowImplementation = new DefaultFlowImpl();
+			this.flowImplementation.setFlow(this);
 		}
 	}
 	
@@ -136,6 +137,10 @@ public class Flow {
 	
 	public void setSDUListener(SDUListener sduListener){
 		flowImplementation.setSduListener(sduListener);
+	}
+	
+	public void setFlowListener(FlowListener flowListener){
+		flowImplementation.setFlowListener(flowListener);
 	}
 	
 	public void setSourceApplication(ApplicationProcessNamingInfo sourceApplication) throws IPCException{
@@ -174,6 +179,10 @@ public class Flow {
 	
 	public boolean isAllocated(){
 		return flowImplementation.getState() == State.ALLOCATED;
+	}
+	
+	public boolean isDeallocated(){
+		return flowImplementation.getState() == State.DEALLOCATED;
 	}
 	
 	/**

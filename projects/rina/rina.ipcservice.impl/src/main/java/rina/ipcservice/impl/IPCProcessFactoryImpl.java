@@ -194,7 +194,6 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		IPCProcess currentIPCProcess = null;
 		RIBDaemon ribDaemon = null;
 		RIBObject ribObject = null;
-		RIBObject childRIBObject = null;
 
 		Iterator<String> iterator = ipcProcesses.keySet().iterator();
 		while(iterator.hasNext()){
@@ -202,19 +201,13 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 			ribDaemon = (RIBDaemon) currentIPCProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 			try{
 				ribObject = (RIBObject) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-						RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES, 0);
+						RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "any", 0);
+				log.debug("RIB Object: "+ribObject);
 				if (ribObject != null){
-					List<RIBObject> ribObjects = ribObject.getChildren();
-					for(int j=0; j<ribObjects.size(); j++){
-						childRIBObject = ribObjects.get(j);
-						if(childRIBObject.getObjectName().equals(RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-								RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
-								RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "any")){
-							WhatevercastName whatevercastName = (WhatevercastName) childRIBObject.getObjectValue();
-							if(whatevercastName.getName().equals(difName)){
-								return currentIPCProcess;
-							}
-						}
+					log.debug("RIB Object value: "+ribObject.getObjectValue());
+					WhatevercastName whatevercastName = (WhatevercastName) ribObject.getObjectValue();
+					if(whatevercastName.getName().equals(difName)){
+						return currentIPCProcess;
 					}
 				}
 			}catch(RIBDaemonException ex){
@@ -233,7 +226,6 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		IPCProcess currentIPCProcess = null;
 		RIBDaemon ribDaemon = null;
 		RIBObject ribObject = null;
-		RIBObject childRIBObject = null;
 		List<String> difNames = new ArrayList<String>();
 		
 		Iterator<String> iterator = ipcProcesses.keySet().iterator();
@@ -242,25 +234,19 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 			ribDaemon = (RIBDaemon) currentIPCProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 			try{
 				ribObject = (RIBObject) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-						RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES, 0);
+						RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "any", 0);
+				log.debug("RIB Object: "+ribObject);
 				if (ribObject != null){
-					List<RIBObject> ribObjects = ribObject.getChildren();
-					for(int j=0; j<ribObjects.size(); j++){
-						childRIBObject = ribObjects.get(j);
-						if(childRIBObject.getObjectName().equals(RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-								RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
-								RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "any")){
-							WhatevercastName whatevercastName = (WhatevercastName) childRIBObject.getObjectValue();
-							difNames.add(whatevercastName.getName());
-						}
-					}
+					log.debug("RIB Object value: "+ribObject.getObjectValue());
+					WhatevercastName whatevercastName = (WhatevercastName) ribObject.getObjectValue();
+					difNames.add(whatevercastName.getName());
 				}
 			}catch(RIBDaemonException ex){
 				ex.printStackTrace();
 			}
 		}
 		
-		return null;
+		return difNames;
 		
 	}
 	

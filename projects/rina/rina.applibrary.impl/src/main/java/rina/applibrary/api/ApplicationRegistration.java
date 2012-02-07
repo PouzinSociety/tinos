@@ -163,6 +163,10 @@ public class ApplicationRegistration {
 		return unregistered;
 	}
 	
+	public boolean isRegistered(){
+		return !unregistered;
+	}
+	
 	/**
 	 * Returns we
 	 * @return

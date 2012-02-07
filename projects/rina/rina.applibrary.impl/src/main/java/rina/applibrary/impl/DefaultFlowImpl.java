@@ -10,7 +10,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.applibrary.api.Flow;
 import rina.applibrary.api.FlowImpl;
+import rina.applibrary.api.FlowListener;
 import rina.applibrary.api.SDUListener;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
@@ -56,6 +58,17 @@ public class DefaultFlowImpl implements FlowImpl{
 	 * The class to whom the received SDUs will be delivered
 	 */
 	private SDUListener sduListener = null;
+	
+	/**
+	 * The class that will be notified when the flow is allocated 
+	 * or deallocated
+	 */
+	private FlowListener flowListener = null;
+	
+	/**
+	 * A pointer to the Flow class associated to this Flow implementation
+	 */
+	private Flow flow = null;
 	
 	/**
 	 * The portId associated to this flow
@@ -161,7 +174,7 @@ public class DefaultFlowImpl implements FlowImpl{
 			log.debug("Flow allocated successfully! PortId: "+getPortId());
 		}catch(Exception ex){
 			try{
-				if (!socket.isClosed()){
+				if (socket != null && !socket.isClosed()){
 					socket.close();
 				}
 			}catch(Exception e){
@@ -282,6 +295,9 @@ public class DefaultFlowImpl implements FlowImpl{
 		socket = null;
 		flowSocketReader = null;
 		setState(State.DEALLOCATED);
+		if (flowListener != null){
+			flowListener.flowDeallocated(this.flow);
+		}
 	}
 	
 	/**
@@ -326,6 +342,14 @@ public class DefaultFlowImpl implements FlowImpl{
 		flowSocketReader = new FlowSocketReader(socket, delimiter, cdapSessionManager, flowQueue, this);
 		executorService.execute(flowSocketReader);
 		setState(State.ALLOCATED);
+	}
+	
+	public void setFlowListener(FlowListener flowListener){
+		this.flowListener = flowListener;
+	}
+	
+	public void setFlow(Flow flow){
+		this.flow = flow;
 	}
 
 	/**

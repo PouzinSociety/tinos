@@ -1,12 +1,11 @@
 package rina.flowallocator.impl.tcp;
 
-import java.io.IOException;
 import java.net.Socket;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
+import rina.delimiting.api.BaseSocketReader;
+import rina.delimiting.api.Delimiter;
 import rina.flowallocator.api.FlowAllocatorInstance;
+import rina.ipcservice.api.APService;
 
 /**
  * Continuously reads data from a socket. When an amount of data has been received
@@ -15,14 +14,7 @@ import rina.flowallocator.api.FlowAllocatorInstance;
  * @author eduardgrasa
  *
  */
-public class TCPSocketReader implements Runnable{
-	
-	private static final Log log = LogFactory.getLog(TCPSocketReader.class);
-	
-	/**
-	 * The socket to read the data from
-	 */
-	private Socket socket = null;
+public class TCPSocketReader extends BaseSocketReader{
 	
 	/**
 	 * A reference to the Flow Allocator instance that owns this flow
@@ -30,44 +22,28 @@ public class TCPSocketReader implements Runnable{
 	private FlowAllocatorInstance flowAllocatorInstance = null;
 	
 	/**
-	 * Controls the end of the execution of this Runnable
+	 * The class that interacts with the local application
 	 */
-	private boolean end = false;
+	private APService apService = null;
 	
-	public TCPSocketReader(Socket socket){
-		this.socket = socket;
-	}
+	/**
+	 * The portId associated to this flow
+	 */
+	private int portId = 0;
 	
-	public synchronized void setEnd(){
-		this.end = true;
+	public TCPSocketReader(Socket socket, Delimiter delimiter, APService apService, int portId){
+		super(socket, delimiter);
+		this.apService = apService;
+		this.portId = portId;
 	}
 
-	public void run() {
-		log.debug("Started socket reader. Remote IP address: "+socket.getInetAddress().getHostAddress()+
-				". Remote port: "+socket.getPort()+"; local port: "+socket.getLocalPort());
-		
-		int value = 0;
-		
-		while(!end){
-			try{
-				value = socket.getInputStream().read();
-				if (value == -1){
-					break;
-				}
-			}catch(IOException ex){
-				ex.printStackTrace();
-				end = true;
-			}
-		}
-		
-		try{
-			socket.close();
-		}catch(IOException ex){
-			ex.printStackTrace();
-		}
-		
-		log.debug("The remote endpoint of flow "+socket.getPort()+" has disconnected. Notifying the Flow Allocator instance");
+	@Override
+	public void processPDU(byte[] sdu) {
+		apService.deliverTransfer(portId, sdu);
+	}
+
+	@Override
+	public void socketDisconnected() {
 		flowAllocatorInstance.socketClosed();
 	}
-
 }

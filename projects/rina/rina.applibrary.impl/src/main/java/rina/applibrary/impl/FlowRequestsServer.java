@@ -165,6 +165,7 @@ public class FlowRequestsServer implements Runnable{
 				log.error(e);
 				//TODO, what to do?
 			}
+			return;
 		}
 		
 		//5 Create the flow object, and either notify the flowListener or put it in the queue
@@ -186,11 +187,13 @@ public class FlowRequestsServer implements Runnable{
 		//SDU listener has to be set by the flowListerner (non-blocking) or will be set by the accept() (blocking) call in the Flow object
 		
 		flow = new Flow(flowImpl);
+		flowImpl.setFlow(flow);
 		try{
 			if (flowListener == null){
 				acceptedFlowsQueue.put(flow);
 			}else{
-				flowListener.flowAccepted(flow);
+				flow.setFlowListener(flowListener);
+				flowListener.flowAllocated(flow);
 			}
 		}catch(Exception ex){
 			log.error(ex);

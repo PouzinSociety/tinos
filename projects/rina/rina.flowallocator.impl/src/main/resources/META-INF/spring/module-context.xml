@@ -4,7 +4,5 @@
 			http://www.springframework.org/schema/beans
 			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-	<bean name="flowAllocatorFactoryBean" class="rina.flowallocator.impl.FlowAllocatorFactoryImpl">
-		<property name="IPCManager" ref="ipcManagerService" />
-	</bean>
+	<bean name="flowAllocatorFactoryBean" class="rina.flowallocator.impl.FlowAllocatorFactoryImpl"/>
 </beans>

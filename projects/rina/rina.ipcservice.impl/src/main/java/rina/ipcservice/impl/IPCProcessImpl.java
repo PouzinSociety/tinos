@@ -1,13 +1,8 @@
 package rina.ipcservice.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.efcp.api.DataTransferAE;
-import rina.efcp.api.DataTransferAEInstance;
 import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.FlowAllocator;
 import rina.ipcprocess.api.BaseIPCProcess;
@@ -98,12 +93,21 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 		// TODO Auto-generated method stub
 	}
 
-	public synchronized  void submitTransfer(int portId, byte[] sdu) throws IPCException{
-		List<byte[]> sdus = new ArrayList<byte[]>();
+	/**
+	 * Send an SDU through the flow identified by portId
+	 * @param portId
+	 * @param sdu
+	 * @throws IPCException
+	 */
+	public synchronized void submitTransfer(int portId, byte[] sdu) throws IPCException{
+		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
+		flowAllocator.submitTransfer(portId, sdu);
+		
+		/*List<byte[]> sdus = new ArrayList<byte[]>();
 		sdus.add(sdu);
 		DataTransferAE dataTransferAE = (DataTransferAE) this.getIPCProcessComponent(DataTransferAE.class.getName());
 		DataTransferAEInstance dataTransferAEInstance = dataTransferAE.getDataTransferAEInstance(portId);
-		dataTransferAEInstance.sdusDelivered(sdus);
+		dataTransferAEInstance.sdusDelivered(sdus);*/
 	}
 
 	/**

@@ -133,4 +133,8 @@ public interface FlowImpl {
 	 * @return
 	 */
 	public int getPortId();
+	
+	public void setFlowListener(FlowListener flowListener);
+	
+	public void setFlow(Flow flow);
 }

@@ -138,7 +138,7 @@ public class TCPSocketReader extends BaseSocketReader{
 			FlowService flowService = (FlowService) encoder.decode(cdapMessage.getObjValue().getByteval(), FlowService.class.toString());
 			apService.processAllocateRequest(flowService, cdapMessage, getSocket(), this);
 		}catch(Exception ex){
-			log.error(ex.getMessage());
+			ex.printStackTrace();
 			try{
 				CDAPMessage errorMessage = cdapMessage.getReplyMessage();
 				errorMessage.setResult(1);
@@ -212,7 +212,7 @@ public class TCPSocketReader extends BaseSocketReader{
 			apService.processApplicationRegistrationRequest(applicationRegistration, cdapMessage, getSocket(), this);
 			apNamingInfo = applicationRegistration.getApNamingInfo();
 		}catch(Exception ex){
-			log.error(ex.getMessage());
+			ex.printStackTrace();
 			try{
 				CDAPMessage errorMessage = cdapMessage.getReplyMessage();
 				errorMessage.setResult(1);

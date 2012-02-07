@@ -13,5 +13,11 @@ public interface FlowListener {
 	 * this application will be lost
 	 * @param flow
 	 */
-	public void flowAccepted(Flow flow);
+	public void flowAllocated(Flow flow);
+	
+	/**
+	 * Called when a flow is deallocated.
+	 * @param flow
+	 */
+	public void flowDeallocated(Flow flow);
 }

@@ -161,14 +161,14 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 			this.flowRequestsServer.setEncoder(encoder);
 			executorService.execute(this.flowRequestsServer);
 		}catch(Exception ex){
-			if (!socket.isClosed()){
+			if (socket != null && !socket.isClosed()){
 				try{
 					socket.close();
 				}catch(Exception e){
 				}
 			}
 			
-			if (!serverSocket.isClosed()){
+			if (serverSocket != null && !serverSocket.isClosed()){
 				try{
 					serverSocket.close();
 				}catch(Exception e){

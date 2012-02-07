@@ -17,10 +17,15 @@ public class SimpleFlowListener implements FlowListener{
 		return flow;
 	}
 	
-	public void flowAccepted(Flow flow) {
+	public void flowAllocated(Flow flow) {
 		flow.setSDUListener(sduListener);
 		this.flow = flow;
-		System.out.println("Flow accepted! PortId: "+flow.getPortId());
+		System.out.println("Flow allocated! PortId: "+flow.getPortId());
+	}
+
+	public void flowDeallocated(Flow flow) {
+		System.out.println("Flow deallocated! PortId: "+flow.getPortId());
+		
 	}
 
 }

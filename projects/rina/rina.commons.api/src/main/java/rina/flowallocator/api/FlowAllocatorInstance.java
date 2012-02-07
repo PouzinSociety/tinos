@@ -88,6 +88,8 @@ public interface FlowAllocatorInstance{
 	 */
 	public void deleteFlowRequestMessageReceived(CDAPMessage requestMessage, int underlyingPortId);
 	
+	/* Deal with local flows (flows between applications from the same system) */
+	
 	/**
 	 * Called when the Flow Allocator receives a request for a local flow
 	 * @param flowService
@@ -110,4 +112,15 @@ public interface FlowAllocatorInstance{
 	 * @throws IPCException
 	 */
 	public void receivedDeallocateLocalFlowRequest() throws IPCException;
+	
+	/* Temporary, just for the RINA over TCP prototype */
+	
+	/**
+	 * Sends an SDU through the flow managed by this flow allocator instance.
+	 * This function is just for the RINA prototype over TCP. When DTP and DTCP are implemented
+	 * this operation will be removed from here.
+	 * @param sdu
+	 * @throws IPCException
+	 */
+	public void submitTransfer(byte[] sdu) throws IPCException;
 }

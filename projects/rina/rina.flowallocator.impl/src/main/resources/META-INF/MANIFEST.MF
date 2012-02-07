@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: RINA Flow Allocator Implementation
-Bundle-SymbolicName: rina.flowallocator.impl
-Bundle-Version: 1.0.0
-Bundle-Vendor: Pouzin Society
-Export-Package: rina.flowallocator.impl;version="1.0.0"
-Import-Package: org.apache.commons.logging;version="[1.1.1,1.1.1]", rina.ipcservice.api;version="1.0.0", rina.ipcprocess.api;version="1.0.0", rina.ribdaemon.api;version="1.0.0", rina.flowallocator.api;version="1.0.0", rina.efcp.api;version="1.0.0", rina.utils.types;version="1.0.0", rina.cdap.api;version="1.0.0", rina.cdap.api.message;version="1.0.0", rina.applicationprocess.api;version="1.0.0", rina.encoding.api;version="1.0.0", rina.flowallocator.api.message;version="1.0.0", rina.rmt.api;version="1.0.0", rina.ipcmanager.api;version="1.0.0"
