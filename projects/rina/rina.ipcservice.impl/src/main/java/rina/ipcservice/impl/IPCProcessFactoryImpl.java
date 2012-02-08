@@ -6,9 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import rina.applicationprocess.api.WhatevercastName;
 import rina.cdap.api.CDAPSessionManagerFactory;
 import rina.delimiting.api.DelimiterFactory;
@@ -29,8 +26,6 @@ import rina.ribdaemon.api.RIBObjectNames;
 import rina.rmt.api.RMTFactory;
 
 public class IPCProcessFactoryImpl implements IPCProcessFactory{
-	private static final Log log = LogFactory.getLog(IPCProcessFactoryImpl.class);
-	
 	/**
 	 * All the existing IPC processes in this system
 	 */
@@ -202,9 +197,7 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 			try{
 				ribObject = (RIBObject) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 						RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "any", 0);
-				log.debug("RIB Object: "+ribObject);
 				if (ribObject != null){
-					log.debug("RIB Object value: "+ribObject.getObjectValue());
 					WhatevercastName whatevercastName = (WhatevercastName) ribObject.getObjectValue();
 					if(whatevercastName.getName().equals(difName)){
 						return currentIPCProcess;
@@ -235,9 +228,7 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 			try{
 				ribObject = (RIBObject) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 						RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "any", 0);
-				log.debug("RIB Object: "+ribObject);
 				if (ribObject != null){
-					log.debug("RIB Object value: "+ribObject.getObjectValue());
 					WhatevercastName whatevercastName = (WhatevercastName) ribObject.getObjectValue();
 					difNames.add(whatevercastName.getName());
 				}

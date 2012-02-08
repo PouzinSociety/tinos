@@ -2,6 +2,7 @@ package rina.applibrary.api;
 
 import java.util.List;
 
+import rina.applibrary.api.ApplicationRegistrationImpl.State;
 import rina.applibrary.impl.DefaultApplicationRegistrationImpl;
 import rina.applibrary.impl.DefaultFlowAcceptor;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
@@ -44,11 +45,6 @@ public class ApplicationRegistration {
 	 * the behavior of this class
 	 */
 	private ApplicationRegistrationImplFactory ariFactory = null;
-	
-	/**
-	 * Controls if this object is already unregistered
-	 */
-	private boolean unregistered = false;
 	
 	/**
 	 * Controls if flows will be notified
@@ -155,16 +151,14 @@ public class ApplicationRegistration {
 	 */
 	public void unregister() throws IPCException{
 		this.applicationRegistrationImplementation.unregister();
-		this.unregistered = true;
 	}
 
-
 	public boolean isUnregistered() {
-		return unregistered;
+		return this.applicationRegistrationImplementation.getState() == State.UNREGISTERED;
 	}
 	
 	public boolean isRegistered(){
-		return !unregistered;
+		return this.applicationRegistrationImplementation.getState() == State.REGISTERED;
 	}
 	
 	/**

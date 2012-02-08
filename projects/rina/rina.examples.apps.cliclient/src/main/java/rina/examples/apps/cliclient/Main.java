@@ -24,6 +24,8 @@ public class Main {
 		default:
 			System.out.println("Application "+option+" is not available.");
 		}
+		
+		System.exit(0);
 	}
 
 }

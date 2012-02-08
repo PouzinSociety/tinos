@@ -607,6 +607,20 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			}catch(Exception ex){
 				log.error(ex);
 			}
+		}else if (cdapMessage.getObjName().startsWith(RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS)){
+			try{
+				DAFMember dafMember = (DAFMember) encoder.decode(cdapMessage.getObjValue().getByteval(), DAFMember.class.toString());
+				if (remotePeer.getApplicationProcessName().equals(dafMember.getApplicationProcessName()) && 
+						(remotePeer.getApplicationProcessInstance() == null || remotePeer.getApplicationProcessInstance().equals(dafMember.getApplicationProcessInstance()))){
+					//This is the DAFMember object representing the remote peer I'm enrolling with
+					remotePeer.setSynonym(dafMember.getSynonym());
+				}else{
+					//TODO create DAFMember objects in the RIB for the other DAF Members
+				}
+			}catch(Exception ex){
+				log.error(ex);
+			}
 		}
 		//TODO add QoS cubes info
 		

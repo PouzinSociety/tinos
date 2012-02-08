@@ -9,14 +9,13 @@ import java.net.Socket;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.delimiting.api.BaseDelimiter;
 import rina.delimiting.api.Delimiter;
+import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.QualityOfServiceSpecification;
@@ -45,18 +44,6 @@ public class TCPRMTImpl extends BaseRMT{
 	private Map<Integer, Socket> flowTable = null;
 	
 	/**
-	 * The thread pool implementation
-	 */
-	private ExecutorService executorService = null;
-	
-	/**
-	 * The maximum number of worker threads in the RMT Thread pool
-	 * (1 for listening to incoming connections + MAX-1 for reading 
-	 * data from sockets)
-	 */
-	private static int MAXWORKERTHREADS = 10;
-	
-	/**
 	 * The server that will listen for incoming connections to this RMT
 	 */
 	private RMTServer rmtServer = null;
@@ -68,10 +55,14 @@ public class TCPRMTImpl extends BaseRMT{
 	
 	public TCPRMTImpl(int port){
 		this.flowTable = new Hashtable<Integer, Socket>();
-		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
 		this.rmtServer = new RMTServer(this, port);
-		executorService.execute(rmtServer);
 		readConfigurationFile();
+	}
+	
+	@Override
+	public void setIPCProcess(IPCProcess ipcProcess){
+		super.setIPCProcess(ipcProcess);
+		ipcProcess.execute(rmtServer);
 	}
 	
 	private void readConfigurationFile(){
@@ -216,7 +207,7 @@ public class TCPRMTImpl extends BaseRMT{
 		Delimiter delimiter = (Delimiter) getIPCProcess().getIPCProcessComponent(BaseDelimiter.getComponentName());
 		RIBDaemon ribdaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		TCPSocketReader tcpSocketReader = new TCPSocketReader(socket, ribdaemon, delimiter, this);
-		executorService.execute(tcpSocketReader);
+		this.getIPCProcess().execute(tcpSocketReader);
 	}
 	
 	/**

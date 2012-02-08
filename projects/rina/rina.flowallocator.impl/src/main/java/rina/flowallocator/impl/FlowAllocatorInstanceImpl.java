@@ -163,6 +163,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		connections = new ArrayList<Connection>();
 		//TODO initialize the newFlowRequestPolicy
 		newFlowRequestPolicy = new NewFlowRequestPolicyImpl();
+		log.debug("Created flow allocator instance to manage the flow identified by portId "+portId);
 	}
 	
 	/**
@@ -174,6 +175,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	public FlowAllocatorInstanceImpl(IPCProcess ipcProcess, FlowAllocator flowAllocator, int portId){
 		initialize(ipcProcess, flowAllocator, portId);
 		this.local = true;
+		log.debug("Created flow allocator instance to manage the flow identified by portId "+portId);
 	}
 	
 	private void initialize(IPCProcess ipcProcess, FlowAllocator flowAllocator, int portId){
@@ -183,7 +185,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		this.portId = portId;
 		this.ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		this.delimiter = (Delimiter) ipcProcess.getIPCProcessComponent(BaseDelimiter.getComponentName());
-		this.encoder = (Encoder) ipcProcess.getIPCProcessComponent(BaseDelimiter.getComponentName());
+		this.encoder = (Encoder) ipcProcess.getIPCProcessComponent(BaseEncoder.getComponentName());
 	}
 	
 	public Socket getSocket(){
@@ -227,7 +229,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		//2 Check if the destination address is this IPC process (then invoke degenerated form of IPC)
 		long sourceAddress = flowAllocator.getIPCProcess().getAddress().longValue();
 		flow.setSourceAddress(sourceAddress);
-		String flowName = ""+sourceAddress+"-"+socket.getLocalPort();
+		String flowName = ""+sourceAddress+"-"+this.portId;
 		this.objectName = RIBObjectNames.SEPARATOR + 
 			RIBObjectNames.DIF + RIBObjectNames.SEPARATOR + RIBObjectNames.RESOURCE_ALLOCATION + RIBObjectNames.SEPARATOR +
 			RIBObjectNames.FLOW_ALLOCATOR + RIBObjectNames.SEPARATOR + RIBObjectNames.FLOWS + RIBObjectNames.SEPARATOR + flowName;
@@ -391,7 +393,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 				this.ribDaemon.sendMessage(cdapMessage, underlyingPortId, null);
 				this.ribDaemon.create(requestMessage.getObjClass(), requestMessage.getObjName(), 0, this);
 				tcpSocketReader = new TCPSocketReader(socket, this.delimiter, this.apService, this.portId);
-				flowAllocator.executeRunnable(tcpSocketReader);
+				this.ipcProcess.execute(tcpSocketReader);
 			}catch(Exception ex){
 				log.error(ex);
 				throw new IPCException(IPCException.PROBLEMS_ALLOCATING_FLOW_CODE, 
@@ -521,7 +523,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			log.debug("Successfull create flow message response received for flow "+cdapMessage.getObjName()+".\n "+this.flow.toString());
 			this.ribDaemon.create("flow", objectName, 0, this);
 			this.tcpSocketReader = new TCPSocketReader(socket, this.delimiter, this.apService, this.portId);
-			this.flowAllocator.executeRunnable(tcpSocketReader);
+			this.ipcProcess.execute(tcpSocketReader);
 			this.apService.deliverAllocateResponse(portId, 0, null);
 		}catch(Exception ex){
 			ex.printStackTrace();

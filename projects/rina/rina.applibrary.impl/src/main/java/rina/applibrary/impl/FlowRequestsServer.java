@@ -110,6 +110,8 @@ public class FlowRequestsServer implements Runnable{
 		}catch(IOException e){
 			log.info(e.getMessage());
 		}
+		
+		log.info("Application registration terminated. No longer listening for incoming TCP connections");
 	}
 	
 	/**

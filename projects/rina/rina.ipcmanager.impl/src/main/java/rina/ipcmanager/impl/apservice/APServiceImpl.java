@@ -5,8 +5,6 @@ import java.net.Socket;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,6 +16,7 @@ import rina.cdap.api.message.ObjectValue;
 import rina.delimiting.api.Delimiter;
 import rina.delimiting.api.DelimiterFactory;
 import rina.encoding.api.Encoder;
+import rina.ipcmanager.api.IPCManager;
 import rina.ipcmanager.api.InterDIFDirectory;
 import rina.ipcmanager.impl.apservice.FlowServiceState.Status;
 import rina.ipcprocess.api.IPCProcessFactory;
@@ -35,17 +34,13 @@ import rina.ipcservice.api.IPCService;
  */
 public class APServiceImpl implements APService{
 	private static final Log log = LogFactory.getLog(APServiceImpl.class);
-	private static final int MAXWORKERTHREADS = 10;
-	
-	/**
-	 * The thread pool implementation
-	 */
-	private ExecutorService executorService = null;
 	
 	/**
 	 * The IPC Process factory
 	 */
 	private IPCProcessFactory ipcProcessFactory = null;
+	
+	private IPCManager ipcManager = null;
 
 	private InterDIFDirectory interDIFDirectory = null;
 	
@@ -67,10 +62,10 @@ public class APServiceImpl implements APService{
 	
 	private Map<String, ApplicationRegistrationState> applicationRegistrations = null;
 	
-	public APServiceImpl(){
+	public APServiceImpl(IPCManager ipcManager){
+		this.ipcManager = ipcManager;
 		tcpServer = new APServiceTCPServer(this);
-		executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
-		executorService.execute(tcpServer);
+		ipcManager.execute(tcpServer);
 		flowServices = new Hashtable<Integer, FlowServiceState>();
 		applicationRegistrations = new Hashtable<String, ApplicationRegistrationState>();
 	}
@@ -98,7 +93,7 @@ public class APServiceImpl implements APService{
 		TCPSocketReader socketReader = new TCPSocketReader(socket, ipcProcessFactory.getDelimiterFactory().createDelimiter(DelimiterFactory.DIF),
 				ipcProcessFactory.getEncoderFactory().createEncoderInstance(), ipcProcessFactory.getCDAPSessionManagerFactory().createCDAPSessionManager(), 
 				this);
-		executorService.execute(socketReader);
+		ipcManager.execute(socketReader);
 	}
 	
 	/**
@@ -116,10 +111,21 @@ public class APServiceImpl implements APService{
 			errorMessage.setResult(1);
 			errorMessage.setResultReason("A flow is already allocated or being allocated, cannot allocate another one.");
 			sendErrorMessageAndCloseSocket(errorMessage, socket);
+			return;
 		}
 		
 		//TODO currently choosing the first DIF suggested by the IDD
-		String difName = interDIFDirectory.mapApplicationProcessNamingInfoToDIFName(flowService.getDestinationAPNamingInfo()).get(0);
+		List<String> difNames = interDIFDirectory.mapApplicationProcessNamingInfoToDIFName(flowService.getDestinationAPNamingInfo());
+		String difName = null;
+		if (difNames != null){
+			difName = difNames.get(0);
+		}else{
+			CDAPMessage errorMessage = cdapMessage.getReplyMessage();
+			errorMessage.setResult(1);
+			errorMessage.setResultReason("Could not find a DIF for application process "+flowService.getDestinationAPNamingInfo());
+			sendErrorMessageAndCloseSocket(errorMessage, socket);
+			return;
+		}
 		
 		//Look for the local IPC Process that is a member of difName
 		IPCService ipcService = (IPCService) ipcProcessFactory.getIPCProcessBelongingToDIF(difName);
@@ -128,12 +134,12 @@ public class APServiceImpl implements APService{
 			errorMessage.setResult(1);
 			errorMessage.setResultReason("Could not find an IPC Process belonging to DIF " + difName + " in this system");
 			sendErrorMessageAndCloseSocket(errorMessage, socket);
+			return;
 		}
 		
 		//Once we have the IPCService, invoke allocate request
 		try{
 			int portId = ipcService.submitAllocateRequest(flowService);
-			flowService.setPortId(portId);
 			tcpSocketReader.setPortId(portId);
 		}catch(IPCException ex){
 			ex.printStackTrace();
@@ -240,6 +246,7 @@ public class APServiceImpl implements APService{
 			
 			interDIFDirectory.removeMapping(apNamingInfo, difNames);			
 			applicationRegistrations.remove(apNamingInfo.getProcessKey());
+			log.info("Application "+apNamingInfo.getProcessKey()+" implicitly canceled the registration with DIF(s) "+printStringList(difNames));
 		}
 	}
 	
@@ -258,6 +265,7 @@ public class APServiceImpl implements APService{
 			errorMessage.setResult(1);
 			errorMessage.setResultReason("The application is already registered through this socket");
 			sendMessage(errorMessage, socket);
+			return;
 		}
 		
 		List<String> difNames = null;
@@ -293,6 +301,8 @@ public class APServiceImpl implements APService{
 		ApplicationRegistrationState applicationRegistrationState = new ApplicationRegistrationState(applicationRegistration);
 		applicationRegistrationState.setSocket(socket);
 		applicationRegistrations.put(applicationRegistration.getApNamingInfo().getProcessKey(), applicationRegistrationState);
+		
+		log.info("Application "+applicationRegistration.getApNamingInfo().getProcessKey()+" registered to DIF(s) "+printStringList(difNames));
 	}
 	
 	/**
@@ -344,6 +354,8 @@ public class APServiceImpl implements APService{
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
+		
+		log.info("Application "+apNamingInfo.getProcessKey()+" explicitly canceled the registration from DIF(s) "+printStringList(difNames));
 	}
 
 	/**
@@ -374,7 +386,7 @@ public class APServiceImpl implements APService{
 					ipcProcessFactory.getEncoderFactory().createEncoderInstance(), ipcProcessFactory.getCDAPSessionManagerFactory().createCDAPSessionManager(), 
 					this);
 			socketReader.setPortId(flowService.getPortId());
-			executorService.execute(socketReader);
+			ipcManager.execute(socketReader);
 			
 			byte[] encodedObject = encoder.encode(flowService);
 			ObjectValue objectValue = new ObjectValue();
@@ -594,6 +606,22 @@ public class APServiceImpl implements APService{
 	public synchronized void deliverStatus(int arg0, boolean arg1) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	private String printStringList(List<String> list){
+		String result = "";
+		if (list == null){
+			return "";
+		}
+		
+		for(int i=0; i<list.size(); i++){
+			result = result + list.get(i);
+			if (i+1<list.size()){
+				result = result + ", ";
+			}
+		}
+		
+		return result;
 	}
 
 }

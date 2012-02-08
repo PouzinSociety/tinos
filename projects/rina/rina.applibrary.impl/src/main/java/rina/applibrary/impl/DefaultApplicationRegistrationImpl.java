@@ -4,10 +4,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import rina.applibrary.api.ApplicationRegistrationImpl;
 import rina.applibrary.api.Flow;
@@ -31,8 +32,8 @@ import rina.ipcservice.api.IPCException;
  *
  */
 public class DefaultApplicationRegistrationImpl implements ApplicationRegistrationImpl{
-	
-	private static final int MAXWORKERTHREADS = 3;
+	private static final Log log = LogFactory.getLog(DefaultApplicationRegistrationImpl.class);
+
 	private static final int MAX_WAITTIME_IN_SECONDS = 3;
 	
 	private FlowListener flowListener = null;
@@ -44,11 +45,6 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 	private Encoder encoder = null;
 	
 	private Socket socket = null;
-	
-	/**
-	 * The thread pool implementation
-	 */
-	private ExecutorService executorService = null;
 	
 	/**
 	 * This queue will be used for communication between 
@@ -80,8 +76,17 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 	 */
 	private FlowRequestsServer flowRequestsServer = null;
 	
+	/**
+	 * The naming information of the registered application
+	 */
+	private ApplicationProcessNamingInfo registeredApp = null;
+	
+	/**
+	 * The registration state
+	 */
+	private State state = State.UNREGISTERED;
+	
 	public DefaultApplicationRegistrationImpl(){
-		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
 		this.cdapSessionManager = RINAFactory.getCDAPSessionManagerInstance();
 		this.delimiter = RINAFactory.getDelimiterInstance();
 		this.encoder = RINAFactory.getEncoderInstance();
@@ -118,8 +123,8 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 			serverSocket = new ServerSocket(0);
 			
 			//3 Create and start the registration socket reader
-			this.arSocketReader = new ApplicationRegistrationSocketReader(socket, delimiter, registrationQueue);
-			this.executorService.execute(arSocketReader);
+			this.arSocketReader = new ApplicationRegistrationSocketReader(socket, delimiter, registrationQueue, this);
+			RINAFactory.execute(arSocketReader);
 			
 			//4 Populate the application registration object
 			ApplicationRegistration applicationRegistration = new ApplicationRegistration();
@@ -159,7 +164,9 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 			this.flowRequestsServer.setCDAPSessionManager(cdapSessionManager);
 			this.flowRequestsServer.setDelimiter(delimiter);
 			this.flowRequestsServer.setEncoder(encoder);
-			executorService.execute(this.flowRequestsServer);
+			RINAFactory.execute(this.flowRequestsServer);
+			this.registeredApp = applicationProcess;
+			this.state = State.REGISTERED;
 		}catch(Exception ex){
 			if (socket != null && !socket.isClosed()){
 				try{
@@ -227,20 +234,45 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 				throw new IPCException("Got a negative response from the local RINA software: "+cdapMessage.getResultReason());
 			}
 			
-			//4 Unregistration successful, stop serverSocket and socket
-			flowRequestsServer.setEnd(true);
-
+			//4 Unregistration successful, stop serverSocket, socket and execution service
 			if (!socket.isClosed()){
 				try{
 					socket.close();
 				}catch(Exception ex){
 				}
 			}
+			flowRequestsServer.setEnd(true);
+			this.state = State.UNREGISTERED;
 		}catch(Exception ex){
 			IPCException ipcException = new IPCException(IPCException.PROBLEMS_ACCEPTING_FLOW + " " + ex.getMessage());
 			ipcException.setErrorCode(IPCException.PROBLEMS_ACCEPTING_FLOW_CODE);
 			throw ipcException;
 		}
 	}
-
+	
+	public void registrationSocketClosed(){
+		log.info("Registration socket closed, application "+this.registeredApp.getProcessKey()+" is no longer registered");
+		if (this.state == State.REGISTERED){
+			flowRequestsServer.setEnd(true);
+			this.state = State.UNREGISTERED;
+		}
+		this.registeredApp = null;
+	}
+	
+	/**
+	 * Returns the registration state
+	 * @return
+	 */
+	public State getState(){
+		return this.state;
+	}
+	
+	/**
+	 * Sets the registration state
+	 * @param current state
+	 * @param state
+	 */
+	public void setState(State state){
+		this.state = state;
+	}
 }

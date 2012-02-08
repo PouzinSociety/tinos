@@ -51,6 +51,18 @@ public interface IPCProcess{
 	 */
 	public void destroy();
 	
+	/**
+	 * Will call the execute operation of the IPCManager in order to execute a runnable.
+	 * Classes implementing IPCProcess should not create its own thread pool, but use 
+	 * the one managed by the IPCManager instead.
+	 * @param runnable
+	 */
+	public void execute(Runnable runnable);
+	
 	/* Information from RIB objects managed by the IPC Process */
 	public Long getAddress();
+	
+	public String getApplicationProcessName();
+	
+	public String getApplicationProcessInstance();
 }

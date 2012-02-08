@@ -20,10 +20,17 @@ public class ApplicationRegistrationSocketReader extends BaseSocketReader{
 	 */
 	private BlockingQueue<byte[]> registrationQueue = null;
 	
+	/**
+	 * The applicationRegistrationImplementation object. Will notify it when 
+	 * the registration ends (i.e. the registration socket closes)
+	 */
+	private DefaultApplicationRegistrationImpl appRegImpl = null;
+	
 	public ApplicationRegistrationSocketReader(Socket socket, Delimiter delimiter, 
-			BlockingQueue<byte[]> registrationQueue) {
+			BlockingQueue<byte[]> registrationQueue, DefaultApplicationRegistrationImpl appRegImpl) {
 		super(socket, delimiter);
 		this.registrationQueue = registrationQueue;
+		this.appRegImpl = appRegImpl;
 	}
 
 	@Override
@@ -38,7 +45,6 @@ public class ApplicationRegistrationSocketReader extends BaseSocketReader{
 
 	@Override
 	public void socketDisconnected() {
-		// TODO Auto-generated method stub
-		
+		appRegImpl.registrationSocketClosed();
 	}
 }

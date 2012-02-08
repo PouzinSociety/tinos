@@ -81,7 +81,7 @@ public abstract class BaseSocketReader implements Runnable{
 						pdu[index] = nextByte;
 						index ++;
 						if (index == length){
-							log.debug("Received PDU through flow "+socket.getPort()+": "+printBytes(pdu));
+							log.debug("Received PDU through socket "+socket.getPort()+": "+printBytes(pdu));
 							processPDU(pdu);
 							index = 0;
 							length = 0;
@@ -102,7 +102,7 @@ public abstract class BaseSocketReader implements Runnable{
 			ex.printStackTrace();
 		}
 		
-		log.debug("The remote endpoint of flow "+socket.getPort()+" has disconnected");
+		log.debug("The remote endpoint of socket "+socket.getPort()+" has disconnected");
 		socketDisconnected();
 	}
 	

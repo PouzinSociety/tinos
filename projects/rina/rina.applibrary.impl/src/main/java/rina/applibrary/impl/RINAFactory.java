@@ -1,5 +1,8 @@
 package rina.applibrary.impl;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.impl.CDAPSessionManagerFactoryImpl;
 import rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory;
@@ -26,6 +29,12 @@ public class RINAFactory {
 	private static DelimiterFactory delimiterFactory = new DelimiterFactoryImpl();
 	private static EncoderFactory encoderFactory = new GPBEncoderFactory();
 	
+	/**
+	 * Centralize the executor service for all the classes using the RINA Library in this 
+	 * Java Virtual Machine
+	 */
+	private static ExecutorService executorService = null;
+	
 	public static synchronized CDAPSessionManager getCDAPSessionManagerInstance(){
 		if (cdapSessionManagerFactory == null){
 			cdapSessionManagerFactory = new CDAPSessionManagerFactoryImpl();
@@ -41,6 +50,19 @@ public class RINAFactory {
 	
 	public static synchronized Encoder getEncoderInstance(){
 		return encoderFactory.createEncoderInstance();
+	}
+	
+	/**
+	 * Execute a runnable. The threads created will be daemon threads, 
+	 * so that a program can exit when the main class completes.
+	 * @param runnable
+	 */
+	public static synchronized void execute(Runnable runnable){
+		if (executorService == null){
+			executorService = Executors.newCachedThreadPool();
+		}
+		
+		executorService.execute(runnable);
 	}
 
 }

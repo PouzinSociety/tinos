@@ -2,8 +2,6 @@ package rina.applibrary.impl;
 
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -33,7 +31,6 @@ public class DefaultFlowImpl implements FlowImpl{
 	
 	private static final Log log = LogFactory.getLog(DefaultFlowImpl.class);
 	
-	private static final int MAXWORKERTHREADS = 1;
 	private static final int MAX_WAITTIME_IN_SECONDS = 3;
 	
 	/**
@@ -96,11 +93,6 @@ public class DefaultFlowImpl implements FlowImpl{
 	 */
 	private BlockingQueue<CDAPMessage> flowQueue = null;
 	
-	/**
-	 * The thread pool implementation
-	 */
-	private ExecutorService executorService = null;
-	
 	/* RINA Infrastructure */
 	private Delimiter delimiter = null;
 	private CDAPSessionManager cdapSessionManager = null;
@@ -112,7 +104,6 @@ public class DefaultFlowImpl implements FlowImpl{
 	private CDAPMessage writeCDAPMessage = null;
 	
 	public DefaultFlowImpl(){
-		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
 		this.flowQueue = new LinkedBlockingQueue<CDAPMessage>();	
 	}
 
@@ -139,7 +130,7 @@ public class DefaultFlowImpl implements FlowImpl{
 			socket = new Socket("localhost", RINAFactory.DEFAULT_PORT);
 			flowSocketReader = new FlowSocketReader(socket, delimiter, cdapSessionManager, flowQueue, this);
 			flowSocketReader.setSDUListener(sduListener);
-			executorService.execute(flowSocketReader);
+			RINAFactory.execute(flowSocketReader);
 			
 			//2 Create the CDAP message with an encoded FlowService object
 			FlowService flowService = new FlowService();
@@ -258,7 +249,7 @@ public class DefaultFlowImpl implements FlowImpl{
 			
 			//4 Response was successful, update the state, close the socket and return
 			try{
-				if (!socket.isClosed()){
+				if (socket != null && !socket.isClosed()){
 					socket.close();
 				}
 			}catch(Exception e){
@@ -285,7 +276,7 @@ public class DefaultFlowImpl implements FlowImpl{
 		}
 		
 		try{
-			if (!socket.isClosed()){
+			if (socket != null && !socket.isClosed()){
 				socket.close();
 			}
 		}catch(Exception ex){
@@ -309,6 +300,9 @@ public class DefaultFlowImpl implements FlowImpl{
 			socket = null;
 			flowSocketReader = null;
 			setState(State.DEALLOCATED);
+			if (flowListener != null){
+				flowListener.flowDeallocated(this.flow);
+			}
 		}
 	}
 	
@@ -340,7 +334,7 @@ public class DefaultFlowImpl implements FlowImpl{
 		this.socket = socket;
 		initializeRINAInfrastructure();
 		flowSocketReader = new FlowSocketReader(socket, delimiter, cdapSessionManager, flowQueue, this);
-		executorService.execute(flowSocketReader);
+		RINAFactory.execute(flowSocketReader);
 		setState(State.ALLOCATED);
 	}
 	

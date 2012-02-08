@@ -71,11 +71,14 @@ public class StaticInterDIFDirectory implements InterDIFDirectory{
 				value = new ArrayList<String>();
 				tokens2 = tokens[1].split(" ");
 				for(int i=0; i<tokens2.length; i++){
+					if (tokens2[i].equals("") || tokens2[i].equals(" ")){
+						continue;
+					}
 					value.add(tokens2[i]);
 				}
 				
 				apToDIFMappings.put(apNamingInfo.getProcessKey(), value);
-				log.debug("Application " + apNamingInfo.getProcessKey() + " reachable from DIFs "+ tokens2);
+				log.debug("Application " + apNamingInfo.getProcessKey() + " reachable from DIF(s) "+ printStringList(value));
 			}
 			in.close();
 		}catch (Exception e){
@@ -84,7 +87,13 @@ public class StaticInterDIFDirectory implements InterDIFDirectory{
 	}
 	
 	public synchronized List<String> mapApplicationProcessNamingInfoToDIFName(ApplicationProcessNamingInfo apNamingInfo){
-		List<String> result = apToDIFMappings.get(apNamingInfo.getApplicationProcessName()+apNamingInfo.getApplicationProcessInstance());
+		log.debug("Looking for the DIFs through which application "+apNamingInfo.getProcessKey()+" is available");
+		List<String> result = apToDIFMappings.get(apNamingInfo.getProcessKey());
+		if (result == null){
+			log.debug("Could not find any DIF through which "+apNamingInfo.getProcessKey()+ " is reachable.");
+		}else{
+			log.debug(apNamingInfo.getProcessKey()+ " is reachable through DIF(s) " + printStringList(result));
+		}
 		return result;
 	}
 
@@ -145,6 +154,22 @@ public class StaticInterDIFDirectory implements InterDIFDirectory{
 			apToDIFMappings.remove(key);
 		}
 		
+	}
+	
+	private String printStringList(List<String> list){
+		String result = "";
+		if (list == null){
+			return result;
+		}
+		
+		for(int i=0; i<list.size(); i++){
+			result = result + list.get(i);
+			if(i+1<list.size()){
+				result = result + ", ";
+			}
+		}
+		
+		return result;
 	}
 
 }

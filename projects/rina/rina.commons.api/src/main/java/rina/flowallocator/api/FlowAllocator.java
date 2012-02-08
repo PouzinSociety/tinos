@@ -69,12 +69,6 @@ public interface FlowAllocator extends IPCProcessComponent{
 	public void newConnectionAccepted(Socket socket);
 	
 	/**
-	 * Executes a runnable in a separate Thread. The process is controlled by the flow allocator
-	 * @param runnable
-	 */
-	public void executeRunnable(Runnable runnable);
-	
-	/**
 	 * Called by the flow allocator instance when it finishes to cleanup the state.
 	 * @param portId
 	 */

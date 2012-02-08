@@ -46,7 +46,6 @@ import rina.ribdaemon.api.RIBObjectNames;
  */
 public class IPCManagerImpl implements IPCManager{
 	private static final Log log = LogFactory.getLog(IPCManagerImpl.class);
-	private static final int MAXWORKERTHREADS = 10;
 	
 	private IPCManagerConsole console = null;
 	
@@ -63,16 +62,26 @@ public class IPCManagerImpl implements IPCManager{
 	private APServiceImpl apService = null;
 	
 	public IPCManagerImpl(){
+		executorService = Executors.newCachedThreadPool();
 		console = new IPCManagerConsole(this);
-		apService = new APServiceImpl();
-		executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
+		apService = new APServiceImpl(this);
 		executorService.execute(console);
 		log.debug("IPC Manager started");
+	}
+	
+	/**
+	 * Executes a runnable in a thread. The IPCManager maintains a single thread pool 
+	 * for all the RINA prototype
+	 * @param runnable
+	 */
+	public synchronized void execute(Runnable runnable){
+		executorService.execute(runnable);
 	}
 	
 	public void stop(){
 		apService.stop();
 		console.stop();
+		executorService.shutdownNow();
 	}
 	
 	public void setInterDIFDirectory(InterDIFDirectory idd){

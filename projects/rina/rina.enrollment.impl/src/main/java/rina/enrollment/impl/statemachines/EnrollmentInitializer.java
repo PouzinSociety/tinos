@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.applicationprocess.api.DAFMember;
 import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
@@ -26,7 +27,7 @@ public class EnrollmentInitializer implements Runnable{
 	private static final Log log = LogFactory.getLog(EnrollmentInitializer.class);
 	
 	private enum State {ADDRESS, WHATEVERCAST_NAMES, DATA_TRANSFER_CONSTANTS, QOS_CUBES, 
-		EFCP_POLICIES, FLOW_ALLOCATOR_POLICIES, DONE};
+		EFCP_POLICIES, FLOW_ALLOCATOR_POLICIES, DAF_MEMBERS, DONE};
 	
 	private DefaultEnrollmentStateMachine enrollmentStateMachine = null;
 	
@@ -75,6 +76,9 @@ public class EnrollmentInitializer implements Runnable{
 				case EFCP_POLICIES:
 					break;
 				case FLOW_ALLOCATOR_POLICIES:
+					break;
+				case DAF_MEMBERS:
+					sendDAFMembers();
 					break;
 				case DONE:
 					this.cancelread();
@@ -170,11 +174,8 @@ public class EnrollmentInitializer implements Runnable{
 				serializedObject = enrollmentStateMachine.getEncoder().encode(qosCubes.get(i).getObjectValue());
 				objectValue = new ObjectValue();
 				objectValue.setByteval(serializedObject);
-				if (i == qosCubes.size() -1 ){
-					flags = null;
-				}else{
-					flags = Flags.F_RD_INCOMPLETE;
-				}
+				flags = Flags.F_RD_INCOMPLETE;
+				
 				CDAPMessage cdapMessage = cdapSessionManager.getReadObjectResponseMessage(portId, flags, qosCubes.get(i).getObjectClass(), 
 						qosCubes.get(i).getObjectInstance(), qosCubes.get(i).getObjectName(), objectValue, 0, null, invokeId);
 				enrollmentStateMachine.sendCDAPMessage(cdapMessage);
@@ -182,6 +183,36 @@ public class EnrollmentInitializer implements Runnable{
 				log.error(ex);
 			}
 		}
+		
+		state = State.DAF_MEMBERS;
+	}
+	
+	private void sendDAFMembers() throws CDAPException, IOException, RIBDaemonException{
+		byte[] serializedObject = null;
+		ObjectValue objectValue = null;
+		Flags flags = null;
+		
+		//1 Send myself as a DAF member
+		RIBDaemon ribDaemon = enrollmentStateMachine.getRIBDaemon();
+		DAFMember dafMember = new DAFMember();
+		dafMember.setSynonym(ribDaemon.getIPCProcess().getAddress().longValue());
+		dafMember.setApplicationProcessName(ribDaemon.getIPCProcess().getApplicationProcessName());
+		dafMember.setApplicationProcessInstance(ribDaemon.getIPCProcess().getApplicationProcessInstance());
+		
+		try{
+			serializedObject = enrollmentStateMachine.getEncoder().encode(dafMember);
+			objectValue = new ObjectValue();
+			objectValue.setByteval(serializedObject);
+			String objectName = RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+				RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS + RIBObjectNames.SEPARATOR + 
+				dafMember.getApplicationProcessName()+dafMember.getApplicationProcessInstance();
+			CDAPMessage cdapMessage = cdapSessionManager.getReadObjectResponseMessage(portId, flags, "daf member", 0, objectName, objectValue, 0, null, invokeId);
+			enrollmentStateMachine.sendCDAPMessage(cdapMessage);
+		}catch(Exception ex){
+			log.error(ex);
+		}
+		
+		//2 TODO send the others
 		
 		state = State.DONE;
 	}

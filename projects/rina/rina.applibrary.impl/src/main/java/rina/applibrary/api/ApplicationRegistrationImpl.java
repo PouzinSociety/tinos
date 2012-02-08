@@ -11,6 +11,8 @@ import rina.ipcservice.api.IPCException;
  *
  */
 public interface ApplicationRegistrationImpl {
+
+	public enum State {REGISTERED, UNREGISTERED};
 	
 	/**
 	 * Registers the application to the specified list of DIFs. If the list is null, the application is 
@@ -39,4 +41,17 @@ public interface ApplicationRegistrationImpl {
 	 * @throws IPCException
 	 */
 	public void unregister() throws IPCException;
+	
+	/**
+	 * Returns the registration state
+	 * @return
+	 */
+	public State getState();
+	
+	/**
+	 * Sets the registration state
+	 * @param current state
+	 * @param state
+	 */
+	public void setState(State state);
 }

@@ -38,6 +38,16 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 		this.ribDaemon = ribDaemon;
 		populateRIB(applicationProcessName, applicationProcessInstance);
 	}
+	
+	/**
+	 * Will call the execute operation of the IPCManager in order to execute a runnable.
+	 * Classes implementing IPCProcess should not create its own thread pool, but use 
+	 * the one managed by the IPCManager instead.
+	 * @param runnable
+	 */
+	public void execute(Runnable runnable){
+		this.getIPCManager().execute(runnable);
+	}
 
 	/**
 	 * Tell the ribDaemon the portions of the RIB space that the IPC process will manage
@@ -145,10 +155,36 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 		try{
 			result = (Long) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT +
 					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0).getObjectValue();
-		}catch(RIBDaemonException ex){
+		}catch(Exception ex){
 			log.error(ex);
 		}
 
+		return result;
+	}
+	
+	public String getApplicationProcessName(){
+		String result = null;
+		try{
+			result = ((ApplicationProcessNamingInfo) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME, 0).getObjectValue()).
+					getApplicationProcessName();
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+		
+		return result;
+	}
+	
+	public String getApplicationProcessInstance(){
+		String result = null;
+		try{
+			result = ((ApplicationProcessNamingInfo) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME, 0).getObjectValue()).
+					getApplicationProcessInstance();
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+		
 		return result;
 	}
 }

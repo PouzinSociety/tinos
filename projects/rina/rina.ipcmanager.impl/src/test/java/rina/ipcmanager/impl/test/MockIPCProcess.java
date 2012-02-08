@@ -105,4 +105,19 @@ public class MockIPCProcess extends BaseIPCProcess implements IPCService{
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	public void execute(Runnable arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public String getApplicationProcessInstance() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String getApplicationProcessName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

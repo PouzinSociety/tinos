@@ -31,5 +31,12 @@ public interface IPCManager {
 	 * @return
 	 */
 	public APService getAPService();
+	
+	/**
+	 * Executes a runnable in a thread. The IPCManager maintains a single thread pool 
+	 * for all the RINA prototype
+	 * @param runnable
+	 */
+	public void execute(Runnable runnable);
 
 }
