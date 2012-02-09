@@ -16,8 +16,6 @@
 	</publications>
 
 	<dependencies>
-<!-- IPC Service API -->
-		<dependency org="org.pouzinsociety.rina" name="rina.ipcservice.api" rev="${rina.ipcservice.api}" />
 <!-- RINA Commons API -->
 		<dependency org="org.pouzinsociety.rina" name="rina.commons.api" rev="${rina.commons.api}"/>
 <!-- Logging -->

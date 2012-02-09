@@ -5,6 +5,7 @@ package rina.ribdaemon.api;
  * @author eduardgrasa
  */
 public interface RIBObjectNames {
+	/* Partial names */
 	public static final String APNAME = "applicationprocessname";
 	public static final String CONSTANTS = "constants";
 	public static final String CURRENT_SYNONYM = "currentsynonym";
@@ -26,4 +27,16 @@ public interface RIBObjectNames {
 	public static final String SEPARATOR = "/";
 	public static final String SYNONYMS = "synonyms";
 	public static final String WHATEVERCAST_NAMES = "whatevercastnames";
+	
+	/* Full names */
+	public static final String OPERATIONAL_STATUS_RIB_OBJECT_NAME = RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
+		RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.OPERATIONAL_STATUS;
+	
+	public static final String OPERATIONAL_STATUS_RIB_OBJECT_CLASS = "operationstatus";
+	
+	public static final String CURRENT_SYNONYM_RIB_OBJECT_NAME = RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
+		RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + 
+		RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM;
+
+	public static final String CURRENT_SYNONYM_RIB_OBJECT_CLASS = "synonym";
 }

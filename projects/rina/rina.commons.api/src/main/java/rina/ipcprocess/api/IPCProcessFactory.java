@@ -2,6 +2,10 @@ package rina.ipcprocess.api;
 
 import java.util.List;
 
+import rina.cdap.api.CDAPSessionManagerFactory;
+import rina.delimiting.api.DelimiterFactory;
+import rina.encoding.api.EncoderFactory;
+import rina.ipcmanager.api.IPCManager;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 /**
@@ -40,8 +44,31 @@ public interface IPCProcessFactory {
 	public IPCProcess getIPCProcess(ApplicationProcessNamingInfo namingInfo);
 	
 	/**
+	 * Return the IPC process that is a member of the DIF called "difname"
+	 * @param difname The name of the DIF
+	 * @return
+	 */
+	public IPCProcess getIPCProcessBelongingToDIF(String difname);
+	
+	/**
 	 * Return a list of the existing IPC processes
 	 * @return
 	 */
 	public List<IPCProcess> listIPCProcesses();
+	
+	/**
+	 * Return a list of the names of the DIFs currently available in the system
+	 * @return
+	 */
+	public List<String> listDIFNames();
+	
+	/**
+	 * Set the IPCManager of this system
+	 * @param ipcManager
+	 */
+	public void setIPCManager(IPCManager ipcManager);
+	
+	public CDAPSessionManagerFactory getCDAPSessionManagerFactory();
+	public EncoderFactory getEncoderFactory();
+	public DelimiterFactory getDelimiterFactory();
 }

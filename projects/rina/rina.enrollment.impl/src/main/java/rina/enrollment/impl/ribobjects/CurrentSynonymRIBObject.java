@@ -3,7 +3,9 @@ package rina.enrollment.impl.ribobjects;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPSessionDescriptor;
+import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.enrollment.impl.EnrollmentTaskImpl;
 import rina.enrollment.impl.statemachines.EnrollmentStateMachine.State;
@@ -26,12 +28,14 @@ public class CurrentSynonymRIBObject extends BaseRIBObject{
 	
 	private Long synonym = null;
 	private EnrollmentTaskImpl enrollmentTask = null;
+	private CDAPSessionManager cdapSessionManager = null;
 	
 	public CurrentSynonymRIBObject(IPCProcess ipcProcess, EnrollmentTaskImpl enrollmentTask){
-		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 
-				"synonym", ObjectInstanceGenerator.getObjectInstance());
+		super(ipcProcess, RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME, 
+				RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_CLASS, 
+				ObjectInstanceGenerator.getObjectInstance());
 		this.enrollmentTask = enrollmentTask;
+		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 	}
 	
 	@Override
@@ -43,7 +47,8 @@ public class CurrentSynonymRIBObject extends BaseRIBObject{
 		}catch(Exception ex){
 			log.error(ex);
 			try{
-				enrollmentTask.getRIBDaemon().sendMessage(CDAPMessage.getReleaseConnectionRequestMessage(null, 0), cdapSessionDescriptor.getPortId(), null);
+				enrollmentTask.getRIBDaemon().sendMessage(cdapSessionManager.getReleaseConnectionRequestMessage(cdapSessionDescriptor.getPortId(), null, false), 
+						cdapSessionDescriptor.getPortId(), null);
 			}catch(Exception e){
 				log.error(e);
 			}

@@ -56,8 +56,8 @@ public class EnrollingIPCProcess {
 			newMember.setApplicationProcessInstance("1");
 			byte[] encodedObject = encoder.encode(newMember);
 			objectValue.setByteval(encodedObject);
-			CDAPMessage cdapMessage = CDAPMessage.getCreateObjectRequestMessage(null, null, 23, "class", 0, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS + RIBObjectNames.SEPARATOR + "1", objectValue, 0);
+			CDAPMessage cdapMessage = cdapSessionManager.getCreateObjectRequestMessage(123456, null, null, "class", 0, RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
+					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS + RIBObjectNames.SEPARATOR + "1", objectValue, 0, true);
 
 			enrollmentTask.initiateEnrollment(cdapMessage, null);
 		}catch(Exception ex){

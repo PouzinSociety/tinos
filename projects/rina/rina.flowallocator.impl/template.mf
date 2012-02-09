@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RINA Flow Allocator Implementation
+Bundle-SymbolicName: rina.flowallocator.impl
+Bundle-Version: ${version}
+Bundle-Vendor: Pouzin Society
+Export-Template: rina.flowallocator.impl.*;version="${version}"
+Import-Template: rina.*;version="[1, 2)",
+ org.apache.commons.logging;version="[${org.apache.commons.logging}, 2)"

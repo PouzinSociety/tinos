@@ -8,7 +8,7 @@
        http://www.springframework.org/schema/beans   
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-	<!--  Export the dataTransferAEFactory to the OSGi registry-->
+	<!--  Export the flowAllocatorFactory to the OSGi registry-->
     <osgi:service id="flowAllocatorFactory" ref="flowAllocatorFactoryBean">
      	<osgi:interfaces>
  			<value>rina.flowallocator.api.FlowAllocatorFactory</value>

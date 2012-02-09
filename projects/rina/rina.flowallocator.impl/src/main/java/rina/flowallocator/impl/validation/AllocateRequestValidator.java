@@ -1,7 +1,7 @@
 package rina.flowallocator.impl.validation;
 
-import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 
 /**
@@ -11,8 +11,9 @@ import rina.ipcservice.api.IPCException;
  */
 public class AllocateRequestValidator {
 	
-	public void validateAllocateRequest(AllocateRequest allocateRequest) throws IPCException{
-		validateApplicationProcessNamingInfo(allocateRequest.getRequestedAPinfo());
+	public void validateAllocateRequest(FlowService flowService) throws IPCException{
+		validateApplicationProcessNamingInfo(flowService.getSourceAPNamingInfo());
+		validateApplicationProcessNamingInfo(flowService.getDestinationAPNamingInfo());
 	}
 	
 	/** 
@@ -23,11 +24,13 @@ public class AllocateRequestValidator {
 	 */
 	private void validateApplicationProcessNamingInfo(ApplicationProcessNamingInfo apNamingInfo) throws IPCException{
 		if (apNamingInfo == null){
-			throw new IPCException(IPCException.MALFORMED_ALLOCATE_REQUEST, ErrorDescriptions.NULL_APPLICATION_NAMING_INFO);
+			throw new IPCException(IPCException.MALFORMED_ALLOCATE_REQUEST_CODE, 
+					IPCException.MALFORMED_ALLOCATE_REQUEST + ". Missing application process naming information");
 		}
 		
 		if (apNamingInfo.getApplicationProcessName() == null){
-			throw new IPCException(IPCException.MALFORMED_ALLOCATE_REQUEST, ErrorDescriptions.NULL_APPLICATION_PROCESS_NAME);
+			throw new IPCException(IPCException.MALFORMED_ALLOCATE_REQUEST_CODE,
+					IPCException.MALFORMED_ALLOCATE_REQUEST + ". Missing application process name");
 		}
 	}
 

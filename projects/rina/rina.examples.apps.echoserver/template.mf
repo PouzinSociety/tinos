@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RINA Echo Server Example Application
+Bundle-SymbolicName: rina.examples.apps.echoserver
+Bundle-Version: ${version}
+Bundle-Vendor: Pouzin Society
+Import-Template:
+ org.apache.commons.logging;version="${org.apache.commons.logging}",
+ rina.*;version="[1, 2)"
+Import-Bundle: com.springsource.org.apache.commons.logging;version="[${org.apache.commons.logging},${org.apache.commons.logging}]"

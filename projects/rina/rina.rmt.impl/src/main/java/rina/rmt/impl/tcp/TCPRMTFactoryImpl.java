@@ -29,7 +29,7 @@ public class TCPRMTFactoryImpl implements RMTFactory{
 
 	public void destroyRMT(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
 		RMT rmt = rmtRespository.remove(ipcProcessNamingInfo.getProcessKey());
-		((TCPRMTImpl)rmt).stop();
+		rmt.stop();
 	}
 
 	public RMT getRMT(ApplicationProcessNamingInfo ipcProcessNamingInfo) {

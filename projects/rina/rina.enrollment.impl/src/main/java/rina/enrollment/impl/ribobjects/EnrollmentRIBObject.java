@@ -3,7 +3,9 @@ package rina.enrollment.impl.ribobjects;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPSessionDescriptor;
+import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.enrollment.impl.EnrollmentTaskImpl;
 import rina.enrollment.impl.statemachines.EnrollmentStateMachine;
@@ -23,11 +25,13 @@ public class EnrollmentRIBObject extends BaseRIBObject{
 	private static final Log log = LogFactory.getLog(EnrollmentRIBObject.class);
 	
 	private EnrollmentTaskImpl enrollmentTask = null;
+	private CDAPSessionManager cdapSessionManager = null;
 	
 	public EnrollmentRIBObject(EnrollmentTaskImpl enrollmentTaskImpl, IPCProcess ipcProcess){
 		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT, "enrollment", ObjectInstanceGenerator.getObjectInstance());
 		this.enrollmentTask = enrollmentTaskImpl;
+		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 	}
 	
 	@Override
@@ -39,7 +43,8 @@ public class EnrollmentRIBObject extends BaseRIBObject{
 		}catch(Exception ex){
 			log.error(ex);
 			try{
-				enrollmentTask.getRIBDaemon().sendMessage(CDAPMessage.getReleaseConnectionRequestMessage(null, 0), cdapSessionDescriptor.getPortId(), null);
+				enrollmentTask.getRIBDaemon().sendMessage(cdapSessionManager.getReleaseConnectionRequestMessage(cdapSessionDescriptor.getPortId(), null, false), 
+						cdapSessionDescriptor.getPortId(), null);
 			}catch(Exception e){
 				log.error(e);
 			}
@@ -62,7 +67,8 @@ public class EnrollmentRIBObject extends BaseRIBObject{
 		}catch(Exception ex){
 			log.error(ex);
 			try{
-				enrollmentTask.getRIBDaemon().sendMessage(CDAPMessage.getReleaseConnectionRequestMessage(null, 0), cdapSessionDescriptor.getPortId(), null);
+				enrollmentTask.getRIBDaemon().sendMessage(cdapSessionManager.getReleaseConnectionRequestMessage(cdapSessionDescriptor.getPortId(), null, false), 
+						cdapSessionDescriptor.getPortId(), null);
 			}catch(Exception e){
 				log.error(e);
 			}

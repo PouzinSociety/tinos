@@ -15,7 +15,6 @@ import rina.ribdaemon.api.BaseRIBObject;
 import rina.ribdaemon.api.ObjectInstanceGenerator;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
-import rina.ribdaemon.api.RIBObjectNames;
 
 /**
  * Handles all the operations for the "daf.management.enrollment.members" objectname
@@ -28,9 +27,8 @@ public class DIFMemberSetRIBObject extends BaseRIBObject{
 	private EnrollmentTaskImpl enrollmentTask = null;
 	
 	public DIFMemberSetRIBObject(EnrollmentTaskImpl enrollmentTask, IPCProcess ipcProcess){
-		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-				RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS, 
-				"dafmember set", ObjectInstanceGenerator.getObjectInstance());
+		super(ipcProcess, DAFMember.DAF_MEMBER_SET_RIB_OBJECT_NAME, 
+				DAFMember.DAF_MEMBER_SET_RIB_OBJECT_CLASS, ObjectInstanceGenerator.getObjectInstance());
 		this.enrollmentTask = enrollmentTask;
 	}
 	

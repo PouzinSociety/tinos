@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project rina.examples.apps.echoserver with libraries in sub-folder">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+        <jar destfile="/Users/eduardgrasa/Development/projectes/tinos/tinos/projects/rina/rina.examples.apps.echoserver/target/rina.examples.apps.echoserver">
+            <manifest>
+                <attribute name="Main-Class" value="rina.examples.apps.echoserver.Main"/>
+                <attribute name="Class-Path" value=". rina.examples.apps_lib/rina.commons.api-1.0.0.jar rina.examples.apps_lib/com.springsource.org.apache.commons.logging-1.1.1.jar rina.examples.apps_lib/junit.jar rina.examples.apps_lib/org.hamcrest.core_1.1.0.v20090501071000.jar rina.examples.apps_lib/rina.cdap.impl-1.0.0.jar rina.examples.apps_lib/rina.delimiting.impl-1.0.0.jar rina.examples.apps_lib/rina.applibrary.impl-1.0.0.jar rina.examples.apps_lib/com.google.protobuf-2.3.0.jar rina.examples.apps_lib/rina.encoding.impl-1.0.0.jar"/>
+            </manifest>
+            <fileset dir="/Users/eduardgrasa/Development/projectes/tinos/tinos/projects/rina/rina.examples.apps.echoserver/target/classes"/>
+        </jar>
+        <delete dir="/Users/eduardgrasa/Development/projectes/tinos/tinos/projects/rina/rina.examples.apps.echoserver/target/rina.examples.apps_lib"/>
+        <mkdir dir="/Users/eduardgrasa/Development/projectes/tinos/tinos/projects/rina/rina.examples.apps.echoserver/target/rina.examples.apps_lib"/>
+        <copy file="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.commons.api/1.0.0/rina.commons.api-1.0.0.jar" todir="/Users/eduardgrasa/Development/projectes/tinos/tinos/projects/rina/rina.examples.apps.echoserver/target/rina.examples.apps_lib"/>
+        <copy file="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/downloaded/org.apache.commons/com.springsource.org.apache.commons.logging/1.1.1/com.springsource.org.apache.commons.logging-1.1.1.jar" todir="/Users/eduardgrasa/Development/projectes/tinos/tinos/projects/rina/rina.examples.apps.echoserver/target/rina.examples.apps_lib"/>
+        <copy file="/Users/eduardgrasa/Development/aplicacions/sts2.6.1/sts-2.6.1.SR1/plugins/org.junit_4.8.1.v4_8_1_v20100427-1100/junit.jar" todir="/Users/eduardgrasa/Development/projectes/tinos/tinos/projects/rina/rina.examples.apps.echoserver/target/rina.examples.apps_lib"/>
+        <copy file="/Users/eduardgrasa/Development/aplicacions/sts2.6.1/sts-2.6.1.SR1/plugins/org.hamcrest.core_1.1.0.v20090501071000.jar" todir="/Users/eduardgrasa/Development/projectes/tinos/tinos/projects/rina/rina.examples.apps.echoserver/target/rina.examples.apps_lib"/>
+        <copy file="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.cdap.impl/1.0.0/rina.cdap.impl-1.0.0.jar" todir="/Users/eduardgrasa/Development/projectes/tinos/tinos/projects/rina/rina.examples.apps.echoserver/target/rina.examples.apps_lib"/>
+        <copy file="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.delimiting.impl/1.0.0/rina.delimiting.impl-1.0.0.jar" todir="/Users/eduardgrasa/Development/projectes/tinos/tinos/projects/rina/rina.examples.apps.echoserver/target/rina.examples.apps_lib"/>
+        <copy file="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.applibrary.impl/1.0.0/rina.applibrary.impl-1.0.0.jar" todir="/Users/eduardgrasa/Development/projectes/tinos/tinos/projects/rina/rina.examples.apps.echoserver/target/rina.examples.apps_lib"/>
+        <copy file="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/com.google/com.google.protobuf/2.3.0/com.google.protobuf-2.3.0.jar" todir="/Users/eduardgrasa/Development/projectes/tinos/tinos/projects/rina/rina.examples.apps.echoserver/target/rina.examples.apps_lib"/>
+        <copy file="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/integration-repo/org.pouzinsociety.rina/rina.encoding.impl/1.0.0/rina.encoding.impl-1.0.0.jar" todir="/Users/eduardgrasa/Development/projectes/tinos/tinos/projects/rina/rina.examples.apps.echoserver/target/rina.examples.apps_lib"/>
+    </target>
+</project>

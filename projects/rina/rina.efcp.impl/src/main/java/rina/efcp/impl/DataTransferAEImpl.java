@@ -10,13 +10,13 @@ import org.apache.commons.logging.LogFactory;
 import rina.efcp.api.BaseDataTransferAE;
 import rina.efcp.api.DataTransferAEInstance;
 import rina.efcp.api.DataTransferConstants;
-import rina.efcp.impl.ribobjects.DataTransferConstantsRIBObject;
 import rina.flowallocator.api.Connection;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
+import rina.ribdaemon.api.SimpleRIBObject;
 
 /**
  * Simple implementation of DataTransferAEFactory
@@ -53,7 +53,10 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	
 	private void populateRIB(IPCProcess ipcProcess){
 		try{
-			RIBObject ribObject = new DataTransferConstantsRIBObject(ipcProcess);
+			RIBObject ribObject = new SimpleRIBObject(ipcProcess, 
+					DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_NAME, 
+					DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_CLASS, 
+					dataTransferConstants);
 			ribDaemon.addRIBObject(ribObject);
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();
@@ -112,7 +115,7 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		
 		while(iterator.hasNext()){
 			connection = iterator.next();
-			if (connection.getSourcePortId().getValue() == portId){
+			if (connection.getSourcePortId() == portId){
 				return dataTransferAEInstances.get(connection);
 			}
 		}

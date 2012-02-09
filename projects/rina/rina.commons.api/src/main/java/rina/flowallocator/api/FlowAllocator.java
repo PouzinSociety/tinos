@@ -1,8 +1,10 @@
 package rina.flowallocator.api;
 
+import java.net.Socket;
+
+import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcessComponent;
-import rina.ipcservice.api.APService;
-import rina.ipcservice.api.AllocateRequest;
+import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 
 /**
@@ -21,27 +23,93 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * with a status of success or failure.
 	 * @param allocateRequest the characteristics of the flow to be allocated.
 	 * @param APService the application process that requested the allocation of the flow
+	 * @return the portId
 	 * @throws IPCException if the request is not well formed or there are not enough resources
 	 * to honour the request
 	 */
-	public void submitAllocateRequest(AllocateRequest allocateRequest, APService applicationProcess);
+	public int submitAllocateRequest(FlowService allocateRequest) throws IPCException;
 	
 	/**
 	 * Forward the allocate response to the Flow Allocator Instance.
 	 * @param portId the portId associated to the allocate response
 	 * @param success successful or unsucessful allocate request
+	 * @throws IPCException
 	 */
-	public void submitAllocateResponse(int portId, boolean success);
+	public void submitAllocateResponse(int portId, boolean success, String reason) throws IPCException;
 	
 	/**
 	 * Forward the deallocate request to the Flow Allocator Instance.
 	 * @param portId
+	 * @throws IPCException
 	 */
-	public void submitDeallocate(int portId);
+	public void submitDeallocate(int portId) throws IPCException;
 	
 	/**
 	 * Returns the directory
 	 * @return
 	 */
 	public DirectoryForwardingTable getDirectoryForwardingTable();
+	
+	/**
+	 * When an Flow Allocator receives a Create_Request PDU for a Flow object, it consults its local Directory to see if it has an entry.
+	 * If there is an entry and the address is this IPC Process, it creates an FAI and passes the Create_request to it.If there is an 
+	 * entry and the address is not this IPC Process, it forwards the Create_Request to the IPC Process designated by the address.
+	 * @param cdapMessage
+	 * @param underlyingPortId
+	 */
+	public void createFlowRequestMessageReceived(CDAPMessage cdapMessage, int underlyingPortId);
+	
+	/**
+	 * The Flow Allocator TCP server notifies that a new TCP 
+	 * data flow has been accepted. This operation has to read the remote 
+	 * port id and either create a Flow Allocator instance or pass the 
+	 * information to an existing one.
+	 * @param socket
+	 */
+	public void newConnectionAccepted(Socket socket);
+	
+	/**
+	 * Called by the flow allocator instance when it finishes to cleanup the state.
+	 * @param portId
+	 */
+	public void removeFlowAllocatorInstance(int portId);
+	
+	/* Deal with local flows (flows between applications from the same system) */
+	
+	/**
+	 * Called by the flow allocator instance when a request for a local flow is received
+	 * @param flowService
+	 * @param objectname
+	 * @throws IPCException
+	 */
+	public void receivedLocalFlowRequest(FlowService flowService, String objectname) throws IPCException;
+	
+	/**
+	 * Called by the flow allocator instance when a response for a local flow is received
+	 * @param portId
+	 * @param remotePortId
+	 * @param result
+	 * @param resultReason
+	 * @throws IPCException
+	 */
+	public void receivedLocalFlowResponse(int portId, int remotePortId, boolean result, String resultReason) throws IPCException;
+	
+	/**
+	 * Request to deallocate a local flow
+	 * @param portId
+	 * @throws IPCException
+	 */
+	public void receivedDeallocateLocalFlowRequest(int portId) throws IPCException;
+	
+	/* Temporary, just for the RINA over TCP prototype */
+	
+	/**
+	 * Sends an SDU through the flow identified by portId
+	 * This function is just for the RINA prototype over TCP. When DTP and DTCP are implemented
+	 * this operation will be removed from here.
+	 * @param portId
+	 * @param sdu
+	 * @throws IPCException
+	 */
+	public void submitTransfer(int portId, byte[] sdu) throws IPCException;
 }

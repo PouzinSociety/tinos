@@ -6,27 +6,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import rina.cdap.api.CDAPSessionManagerFactory;
 import rina.delimiting.api.DelimiterFactory;
 import rina.efcp.api.DataTransferAEFactory;
 import rina.encoding.api.EncoderFactory;
 import rina.enrollment.api.EnrollmentTaskFactory;
 import rina.flowallocator.api.FlowAllocatorFactory;
+import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
-import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonFactory;
-import rina.ribdaemon.api.RIBObjectNames;
 import rina.rmt.api.RMTFactory;
 
 public class IPCProcessFactoryImpl implements IPCProcessFactory{
-	private static final Log log = LogFactory.getLog(IPCProcessFactoryImpl.class);
-	
 	/**
 	 * All the existing IPC processes in this system
 	 */
@@ -72,6 +66,11 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	 */
 	private EnrollmentTaskFactory enrollmentTaskFactory = null;
 	
+	/**
+	 * The IPCManager of this system
+	 */
+	private IPCManager ipcManager = null;
+	
 	public IPCProcessFactoryImpl(){
 		ipcProcesses = new HashMap<String, IPCProcess>();
 	}
@@ -107,6 +106,18 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	public void setEnrollmentTaskFactory(EnrollmentTaskFactory enrollmentTaskFactory){
 		this.enrollmentTaskFactory = enrollmentTaskFactory;
 	}
+	
+	public CDAPSessionManagerFactory getCDAPSessionManagerFactory(){
+		return this.cdapSessionManagerFactory;
+	}
+	
+	public EncoderFactory getEncoderFactory(){
+		return this.encoderFactory;
+	}
+	
+	public DelimiterFactory getDelimiterFactory(){
+		return this.delimiterFactory;
+	}
 
 	public IPCProcess createIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) throws Exception{
 		if (ipcProcesses.get(ipcProcessNamingInfo.getProcessKey()) != null){
@@ -116,6 +127,7 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		RIBDaemon ribDaemon = ribDaemonFactory.createRIBDaemon(ipcProcessNamingInfo);
 		IPCProcess ipcProcess = new IPCProcessImpl(ipcProcessNamingInfo.getApplicationProcessName(), 
 				ipcProcessNamingInfo.getApplicationProcessInstance(), ribDaemon);
+		ipcProcess.setIPCManager(this.ipcManager);
 		
 		ipcProcess.addIPCProcessComponent(ribDaemon);
 		ipcProcess.addIPCProcessComponent(delimiterFactory.createDelimiter(DelimiterFactory.DIF));
@@ -146,14 +158,9 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		ipcProcess.destroy();
 	}
 
-	public void destroyIPCProcess(IPCProcess ipcProcess) {
-		RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-
+	public void destroyIPCProcess(IPCProcess ipcProcess){
 		try{
-			ApplicationProcessNamingInfo apNamingInfo = (ApplicationProcessNamingInfo) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
-					RIBObjectNames.APNAME, 0);
-			this.destroyIPCProcess(apNamingInfo);
+			this.destroyIPCProcess(ipcProcess.getApplicationProcessNamingInfo());
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
@@ -161,6 +168,47 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 
 	public IPCProcess getIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
 		return ipcProcesses.get(ipcProcessNamingInfo.getProcessKey());
+	}
+	
+	/**
+	 * Return the IPC process that is a member of the DIF called "difname"
+	 * @param difname The name of the DIF
+	 * @return
+	 */
+	public IPCProcess getIPCProcessBelongingToDIF(String difName){
+		IPCProcess currentIPCProcess = null;
+		String candidateName = null;
+
+		Iterator<String> iterator = ipcProcesses.keySet().iterator();
+		while(iterator.hasNext()){
+			currentIPCProcess = ipcProcesses.get(iterator.next());
+			candidateName = currentIPCProcess.getDIFName();
+			if (candidateName != null && candidateName.equals(difName)){
+				return currentIPCProcess;
+			}
+		}
+
+		return null;
+	}
+	
+	/**
+	 * Return a list of the names of the DIFs currently available in the system
+	 * @return
+	 */
+	public List<String> listDIFNames(){
+		List<String> difNames = new ArrayList<String>();
+		String difName = null;
+		
+		Iterator<String> iterator = ipcProcesses.keySet().iterator();
+		while(iterator.hasNext()){
+			difName = ipcProcesses.get(iterator.next()).getDIFName();
+			if (difName != null){
+				difNames.add(difName);
+			}
+		}
+		
+		return difNames;
+		
 	}
 	
 	/**
@@ -175,6 +223,14 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		}
 		
 		return result;
+	}
+
+	/**
+	 * Set the IPCManager of this system
+	 * @param ipcManager
+	 */
+	public void setIPCManager(IPCManager ipcManager) {
+		this.ipcManager = ipcManager;
 	}
 
 }

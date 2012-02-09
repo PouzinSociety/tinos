@@ -6,6 +6,7 @@ import java.util.List;
 
 import rina.applicationprocess.api.WhatevercastName;
 import rina.cdap.api.CDAPException;
+import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Flags;
 import rina.cdap.api.message.ObjectValue;
@@ -31,10 +32,16 @@ public class EnrollmentInitializer implements Runnable{
 	private int invokeId = 0;
 	
 	private int counter = 0;
+	
+	private CDAPSessionManager cdapSessionManager = null;
+	
+	private int portId = 0;
 
-	public EnrollmentInitializer(CDAPEnrollmentWorker cdapEnrollmentWorker, int invokeId){
+	public EnrollmentInitializer(CDAPEnrollmentWorker cdapEnrollmentWorker, int invokeId, CDAPSessionManager cdapSessionManager, int portId){
 		this.cdapEnrollmentWorker = cdapEnrollmentWorker;
 		this.invokeId = invokeId;
+		this.cdapSessionManager = cdapSessionManager;
+		this.portId = portId;
 	}
 	
 	public void cancelread(){
@@ -90,8 +97,8 @@ public class EnrollmentInitializer implements Runnable{
 			ex.printStackTrace();
 		}
 		
-		CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(Flags.F_RD_INCOMPLETE, invokeId, 
-				"rina.messages.ApplicationProcessNameSynonym", 1, "/daf/management/currentSynonym", objectValue, 0, null);
+		CDAPMessage cdapMessage = cdapSessionManager.getReadObjectResponseMessage(portId, Flags.F_RD_INCOMPLETE,
+				"rina.messages.ApplicationProcessNameSynonym", 1, "/daf/management/currentSynonym", objectValue, 0, null,  invokeId);
 		
 		cdapEnrollmentWorker.sendCDAPMessage(cdapMessage);
 		state = State.WHATEVERCAST_NAMES;
@@ -126,8 +133,8 @@ public class EnrollmentInitializer implements Runnable{
 			ex.printStackTrace();
 		}
 		
-		CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(Flags.F_RD_INCOMPLETE, invokeId, 
-				"rina.messages.WhatevercastName", 2 + counter, "/daf/management/whatevercast", objectValue, 0, null);
+		CDAPMessage cdapMessage = cdapSessionManager.getReadObjectResponseMessage(portId, Flags.F_RD_INCOMPLETE,  
+				"rina.messages.WhatevercastName", 2 + counter, "/daf/management/whatevercast", objectValue, 0, null, invokeId);
 		
 		cdapEnrollmentWorker.sendCDAPMessage(cdapMessage);
 		
@@ -163,8 +170,8 @@ public class EnrollmentInitializer implements Runnable{
 			ex.printStackTrace();
 		}
 		
-		CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(Flags.F_RD_INCOMPLETE, invokeId, 
-				"rina.messages.DataTransferConstants", 4, "/dif/ipc/datatransfer/constants", objectValue, 0, null);
+		CDAPMessage cdapMessage = cdapSessionManager.getReadObjectResponseMessage(portId, Flags.F_RD_INCOMPLETE,
+				"rina.messages.DataTransferConstants", 4, "/dif/ipc/datatransfer/constants", objectValue, 0, null, invokeId);
 		
 		cdapEnrollmentWorker.sendCDAPMessage(cdapMessage);
 		state = State.QOS_CUBES;
@@ -211,8 +218,8 @@ public class EnrollmentInitializer implements Runnable{
 			ex.printStackTrace();
 		}
 		
-		CDAPMessage cdapMessage = CDAPMessage.getReadObjectResponseMessage(flags, invokeId, 
-				"rina.messages.qosCube", 5 + counter, "/dif/management/flowallocator/qoscube", objectValue, 0, null);
+		CDAPMessage cdapMessage = cdapSessionManager.getReadObjectResponseMessage(portId, flags,
+				"rina.messages.qosCube", 5 + counter, "/dif/management/flowallocator/qoscube", objectValue, 0, null,  invokeId);
 		cdapEnrollmentWorker.sendCDAPMessage(cdapMessage);
 		
 		if (counter == 0){

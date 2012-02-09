@@ -3,6 +3,8 @@ package rina.applicationprocess.api;
 import java.util.ArrayList;
 import java.util.List;
 
+import rina.ribdaemon.api.RIBObjectNames;
+
 /**
  * Defines a whatevercast name (or a name of a set of names).
  * In traditional architectures, sets that returned all members were called multicast; while 
@@ -13,6 +15,17 @@ import java.util.List;
  *
  */
 public class WhatevercastName {
+	
+	public static final String WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME = RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
+		RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + 
+		RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES;
+
+	public static final String WHATEVERCAST_NAME_SET_RIB_OBJECT_CLASS = "whatname set";
+
+	public static final String WHATEVERCAST_NAME_RIB_OBJECT_CLASS = "whatname";
+	
+	public static final String DIF_NAME_WHATEVERCAST_OBJECT_NAME = WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME +
+		RIBObjectNames.SEPARATOR + "any";
 	
 	/** The name **/
 	private String name = null;

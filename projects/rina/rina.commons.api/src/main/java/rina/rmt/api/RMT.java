@@ -2,7 +2,7 @@ package rina.rmt.api;
 
 import rina.ipcprocess.api.IPCProcessComponent;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
-import rina.ipcservice.api.QoSParameters;
+import rina.ipcservice.api.QualityOfServiceSpecification;
 
 /**
  * Specifies the interface of the Relaying and Multiplexing task. Mediates the access to one or more (N-1) DIFs 
@@ -39,7 +39,7 @@ public interface RMT extends IPCProcessComponent{
 	 * @return int the portId allocated to the flow
 	 * @throws Exception if there was an issue allocating the flow
 	 */
-	public int allocateFlow(ApplicationProcessNamingInfo apNamingInfo, QoSParameters qosparams) throws Exception;
+	public int allocateFlow(ApplicationProcessNamingInfo apNamingInfo, QualityOfServiceSpecification qosparams) throws Exception;
 	
 	/**
 	 * Cause the RMT to deallocate a flow through an N-1 DIF or the underlying physical media
@@ -47,4 +47,12 @@ public interface RMT extends IPCProcessComponent{
 	 * @throws Exception if the flow is not allocated or there are problems deallocating the flow
 	 */
 	public void deallocateFlow(int portId) throws Exception;
+	
+	/**
+	 * Returns the IP address of the IPC process identified by the tuple ipcProcessName, ipcProcessInstance
+	 * @param ipcProcessName
+	 * @param ipcProcessInstance
+	 * @return
+	 */
+	public String getIPAddressFromApplicationNamingInformation(String ipcProcessName, String ipcProcessInstance);
 }

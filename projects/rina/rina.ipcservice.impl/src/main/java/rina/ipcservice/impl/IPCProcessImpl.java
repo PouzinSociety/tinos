@@ -1,34 +1,22 @@
 package rina.ipcservice.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.efcp.api.DataTransferAE;
-import rina.efcp.api.DataTransferAEInstance;
+import rina.applicationprocess.api.WhatevercastName;
 import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.FlowAllocator;
 import rina.ipcprocess.api.BaseIPCProcess;
-import rina.ipcservice.api.APService;
-import rina.ipcservice.api.AllocateRequest;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
-import rina.ipcservice.impl.jobs.DeliverDeallocateJob;
-import rina.ipcservice.impl.jobs.DeliverSDUJob;
-import rina.ipcservice.impl.jobs.SubmitAllocateRequestJob;
-import rina.ipcservice.impl.ribobjects.ApplicationProcessNameRIBObject;
-import rina.ipcservice.impl.ribobjects.WhatevercastNameSetRIBObject;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
+import rina.ribdaemon.api.SimpleRIBObject;
+import rina.ribdaemon.api.SimpleSetRIBObject;
 
 /**
  * Point of entry to the IPC process for the application process. It is in charge 
@@ -41,21 +29,6 @@ import rina.ribdaemon.api.RIBObjectNames;
 public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 
 	private static final Log log = LogFactory.getLog(IPCProcessImpl.class);
-
-	/**
-	 * The maximum number of worker threads in the IPC Process thread pool
-	 */
-	private static int MAXWORKERTHREADS = 10;
-
-	/**
-	 * Stores the applications that have a port Id in transfer state
-	 */
-	private Map<Integer, APService> transferApplicationProcesses = null;
-
-	/**
-	 * The thread pool implementation
-	 */
-	private ExecutorService executorService = null;
 	
 	/**
 	 * The RIB Daemon
@@ -63,10 +36,18 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	private RIBDaemon ribDaemon = null;
 
 	public IPCProcessImpl(String applicationProcessName, String applicationProcessInstance, RIBDaemon ribDaemon){
-		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
-		this.transferApplicationProcesses = new HashMap<Integer, APService>();
 		this.ribDaemon = ribDaemon;
 		populateRIB(applicationProcessName, applicationProcessInstance);
+	}
+	
+	/**
+	 * Will call the execute operation of the IPCManager in order to execute a runnable.
+	 * Classes implementing IPCProcess should not create its own thread pool, but use 
+	 * the one managed by the IPCManager instead.
+	 * @param runnable
+	 */
+	public void execute(Runnable runnable){
+		this.getIPCManager().execute(runnable);
 	}
 
 	/**
@@ -75,10 +56,15 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	private void populateRIB(String applicationProcessName, String applicationProcessInstance){
 		try{
 			ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance);
-			RIBObject ribObject = new ApplicationProcessNameRIBObject(this);
-			ribObject.write(null, null, 0, apNamingInfo);
+			RIBObject ribObject = new SimpleRIBObject(this, 
+					ApplicationProcessNamingInfo.APPLICATION_PROCESS_NAMING_INFO_RIB_OBJECT_NAME, 
+					ApplicationProcessNamingInfo.APPLICATION_PROCESS_NAMING_INFO_RIB_OBJECT_CLASS, 
+					apNamingInfo);
 			ribDaemon.addRIBObject(ribObject);
-			ribObject = new WhatevercastNameSetRIBObject(this);
+			ribObject = new SimpleSetRIBObject(this, 
+					WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME, 
+					WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_CLASS, 
+					WhatevercastName.WHATEVERCAST_NAME_RIB_OBJECT_CLASS);
 			ribDaemon.addRIBObject(ribObject);
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();
@@ -86,32 +72,16 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 		}
 	}
 
-	public synchronized void deliverSDUsToApplicationProcess(List<byte[]> sdus, int portId) {
-		APService applicationProcess = transferApplicationProcesses.get(new Integer(portId));
-
-		if (applicationProcess == null ){
-			//TODO, log, throw Exception?
-			return;
-		}
-
-		if (sdus == null){
-			//TODO, log, throw Exception?
-			return;
-		}
-
-		executorService.execute(new DeliverSDUJob(applicationProcess, sdus, portId));
-	}
-
 	/**
 	 * Forward the allocate request to the Flow Allocator. Before, choose an available portId
 	 * @param allocateRequest
 	 * @param applicationProcess
+	 * @throws IPCException
 	 */
-	public synchronized void submitAllocateRequest(AllocateRequest allocateRequest, APService applicationProcess){
+	public synchronized int submitAllocateRequest(FlowService flowService) throws IPCException{
 		log.debug("Allocate request received, forwarding it to the Flow Allocator");
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(BaseFlowAllocator.getComponentName());
-		SubmitAllocateRequestJob job = new SubmitAllocateRequestJob(allocateRequest, flowAllocator, applicationProcess);
-		executorService.execute(job);
+		return flowAllocator.submitAllocateRequest(flowService);
 	}
 
 	/**
@@ -119,10 +89,10 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * @param portId
 	 * @param success
 	 */
-	public synchronized void submitAllocateResponse(int portId, boolean success) throws IPCException{
-		Integer key = new Integer(portId);
+	public synchronized void submitAllocateResponse(int portId, boolean success, String reason) throws IPCException{
+		log.debug("Allocate request received, forwarding it to the Flow Allocator");
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
-		flowAllocator.submitAllocateResponse(portId, success);
+		flowAllocator.submitAllocateResponse(portId, success, reason);
 	}
 
 	/**
@@ -130,50 +100,30 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * @param portId 
 	 */
 	public synchronized void submitDeallocate(int portId) throws IPCException{
-		Integer key = new Integer(portId);
-
-		if (!transferApplicationProcesses.keySet().contains(key)){
-			throw new IPCException(IPCException.PORTID_NOT_IN_TRANSFER_STATE);
-		}
-
-		transferApplicationProcesses.remove(key);
-
+		log.debug("Deallocate request received, forwarding it to the Flow Allocator");
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
 		flowAllocator.submitDeallocate(portId);
-	}
-
-	/**
-	 * Call the applicationProcess deallocate.deliver operation
-	 * @param portId
-	 */
-	public void deliverDeallocateRequestToApplicationProcess(int portId) {
-		Integer key = new Integer(portId);
-
-		if (!transferApplicationProcesses.keySet().contains(key)){
-			log.error("Could not find an application process with portId "+portId+" in transfer state");
-			return;
-		}
-
-		APService apService = transferApplicationProcesses.remove(key);
-		executorService.execute(new DeliverDeallocateJob(apService, portId));
 	}
 
 	public synchronized void submitStatus(int arg0) {
 		// TODO Auto-generated method stub
 	}
 
-	public synchronized  void submitTransfer(int portId, byte[] sdu) throws IPCException{
-		Integer key = new Integer(portId);
-
-		if (!transferApplicationProcesses.keySet().contains(key)){
-			throw new IPCException(IPCException.PORTID_NOT_IN_TRANSFER_STATE);
-		}
-
-		List<byte[]> sdus = new ArrayList<byte[]>();
+	/**
+	 * Send an SDU through the flow identified by portId
+	 * @param portId
+	 * @param sdu
+	 * @throws IPCException
+	 */
+	public synchronized void submitTransfer(int portId, byte[] sdu) throws IPCException{
+		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
+		flowAllocator.submitTransfer(portId, sdu);
+		
+		/*List<byte[]> sdus = new ArrayList<byte[]>();
 		sdus.add(sdu);
 		DataTransferAE dataTransferAE = (DataTransferAE) this.getIPCProcessComponent(DataTransferAE.class.getName());
 		DataTransferAEInstance dataTransferAEInstance = dataTransferAE.getDataTransferAEInstance(portId);
-		dataTransferAEInstance.sdusDelivered(sdus);
+		dataTransferAEInstance.sdusDelivered(sdus);*/
 	}
 
 	/**
@@ -202,7 +152,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 		}
 	}
 
-	public void destroy(){
-		executorService.shutdown();
+	public void destroy() {
+		// TODO Auto-generated method stub
 	}
 }

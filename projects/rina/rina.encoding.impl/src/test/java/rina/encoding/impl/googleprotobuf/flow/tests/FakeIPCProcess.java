@@ -4,6 +4,7 @@ import java.util.List;
 
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
+import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.BaseIPCProcess;
 import rina.ribdaemon.api.RIBDaemonException;
 
@@ -110,6 +111,36 @@ public class FakeIPCProcess extends BaseIPCProcess{
 			throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public IPCManager getIPCManager() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setIPCManager(IPCManager arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Long getAddress() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void execute(Runnable arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public String getApplicationProcessInstance() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String getApplicationProcessName() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	

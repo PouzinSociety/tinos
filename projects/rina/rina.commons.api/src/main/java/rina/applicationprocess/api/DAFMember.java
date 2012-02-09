@@ -1,11 +1,21 @@
 package rina.applicationprocess.api;
 
+import rina.ribdaemon.api.RIBObjectNames;
+
 /**
  * A synonim for an application process name
  * @author eduardgrasa
  *
  */
 public class DAFMember {
+	
+	public static final String DAF_MEMBER_SET_RIB_OBJECT_NAME = RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
+		RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + 
+		RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS;
+	
+	public static final String DAF_MEMBER_SET_RIB_OBJECT_CLASS = "dafmember set";
+	
+	public static final String DAF_MEMBER_RIB_OBJECT_CLASS = "dafmember";
 
 	/**
 	 * The application process name that is synonym refers to

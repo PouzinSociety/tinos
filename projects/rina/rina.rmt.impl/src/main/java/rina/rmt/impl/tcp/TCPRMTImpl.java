@@ -9,17 +9,16 @@ import java.net.Socket;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.delimiting.api.BaseDelimiter;
 import rina.delimiting.api.Delimiter;
+import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
-import rina.ipcservice.api.QoSParameters;
+import rina.ipcservice.api.QualityOfServiceSpecification;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.rmt.api.BaseRMT;
@@ -45,24 +44,28 @@ public class TCPRMTImpl extends BaseRMT{
 	private Map<Integer, Socket> flowTable = null;
 	
 	/**
-	 * The thread pool implementation
-	 */
-	private ExecutorService executorService = null;
-	
-	/**
-	 * The maximum number of worker threads in the RMT Thread pool
-	 * (1 for listening to incoming connections + MAX-1 for reading 
-	 * data from sockets)
-	 */
-	private static int MAXWORKERTHREADS = 10;
-	
-	/**
 	 * The server that will listen for incoming connections to this RMT
 	 */
 	private RMTServer rmtServer = null;
 
 	public TCPRMTImpl(){
 		this(RMTServer.DEFAULT_PORT);
+	}
+
+	
+	public TCPRMTImpl(int port){
+		this.flowTable = new Hashtable<Integer, Socket>();
+		this.rmtServer = new RMTServer(this, port);
+		readConfigurationFile();
+	}
+	
+	@Override
+	public void setIPCProcess(IPCProcess ipcProcess){
+		super.setIPCProcess(ipcProcess);
+		ipcProcess.execute(rmtServer);
+	}
+	
+	private void readConfigurationFile(){
 		try{
 			apToHostnameMappings = new Hashtable<String, String>();
 			FileInputStream fstream = new FileInputStream(CONFIG_FILE_NAME);
@@ -70,7 +73,7 @@ public class TCPRMTImpl extends BaseRMT{
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine = null;
 			String[] tokens = null;
-			log.debug("Reading configuration file to lean IPC processes AP naming to host mappings");
+			log.debug("Reading configuration file to learn IPC processes AP naming to host mappings");
 			while ((strLine = br.readLine()) != null)   {
 				if (strLine.startsWith("#")){
 					continue;
@@ -88,18 +91,26 @@ public class TCPRMTImpl extends BaseRMT{
 			log.error("Error initializing application process name to host mappings: " + e.getMessage());
 		}
 	}
-
 	
-	public TCPRMTImpl(int port){
-		this.flowTable = new Hashtable<Integer, Socket>();
-		this.executorService = Executors.newFixedThreadPool(MAXWORKERTHREADS);
-		this.rmtServer = new RMTServer(this, port);
-		executorService.execute(rmtServer);
+	/**
+	 * Returns the IP address of the IPC process identified by the tuple ipcProcessName, ipcProcessInstance
+	 * @param ipcProcessName
+	 * @param ipcProcessInstance
+	 * @return
+	 */
+	public String getIPAddressFromApplicationNamingInformation(String ipcProcessName, String ipcProcessInstance){
+		String result = apToHostnameMappings.get(ipcProcessName + ipcProcessInstance);
+		if (result != null){
+			return result.split("#")[0];
+		}else{
+			return null;
+		}
 	}
 	
 	/**
 	 * Close all the sockets and stop
 	 */
+	@Override
 	public void stop(){
 		Iterator<Integer> iterator = flowTable.keySet().iterator();
 		Socket socket = null;
@@ -135,7 +146,7 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @return int the portId allocated to the flow
 	 * @throws Exception if there was an issue allocating the flow
 	 */
-	public int allocateFlow(ApplicationProcessNamingInfo apNamingInfo, QoSParameters qosparams) throws Exception{
+	public int allocateFlow(ApplicationProcessNamingInfo apNamingInfo, QualityOfServiceSpecification qosparams) throws Exception{
 		//Map the application naming information to the DNS name of the interface of the IPC process
 		String[] contactInformation = apToHostnameMappings.get(apNamingInfo.getApplicationProcessName() + apNamingInfo.getApplicationProcessInstance()).split("#");
 		Socket socket = new Socket(contactInformation[0], Integer.parseInt(contactInformation[1]));
@@ -196,7 +207,7 @@ public class TCPRMTImpl extends BaseRMT{
 		Delimiter delimiter = (Delimiter) getIPCProcess().getIPCProcessComponent(BaseDelimiter.getComponentName());
 		RIBDaemon ribdaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		TCPSocketReader tcpSocketReader = new TCPSocketReader(socket, ribdaemon, delimiter, this);
-		executorService.execute(tcpSocketReader);
+		this.getIPCProcess().execute(tcpSocketReader);
 	}
 	
 	/**

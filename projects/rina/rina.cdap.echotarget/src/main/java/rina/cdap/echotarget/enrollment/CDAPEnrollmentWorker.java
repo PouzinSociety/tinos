@@ -126,21 +126,21 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 	private CDAPMessage processNullState(CDAPMessage cdapMessage) throws CDAPException, IOException{
 		if (!cdapMessage.getOpCode().equals(Opcode.M_CONNECT)){
 			end = true;
-			return CDAPMessage.getReleaseConnectionRequestMessage(null, 0);
+			return cdapSessionManager.getReleaseConnectionRequestMessage(socket.getPort(), null, false);
 		}
 		
 		//TODO authenticate sender
 		
 		//Send M_CONNECT_R
-		CDAPMessage outgoingCDAPMessage = CDAPMessage.getOpenConnectionResponseMessage(cdapMessage.getAuthMech(), cdapMessage.getAuthValue(), cdapMessage.getSrcAEInst(), 
-				cdapMessage.getSrcAEName(), cdapMessage.getSrcApInst(), cdapMessage.getSrcApName(), cdapMessage.getInvokeID(), 0, null, cdapMessage.getDestAEInst(), 
-				cdapMessage.getDestAEName(), cdapMessage.getDestApInst(), cdapMessage.getDestApName());
+		CDAPMessage outgoingCDAPMessage = cdapSessionManager.getOpenConnectionResponseMessage(socket.getPort(), cdapMessage.getAuthMech(), cdapMessage.getAuthValue(), cdapMessage.getSrcAEInst(), 
+				cdapMessage.getSrcAEName(), cdapMessage.getSrcApInst(), cdapMessage.getSrcApName(), 0, null, cdapMessage.getDestAEInst(), 
+				cdapMessage.getDestAEName(), cdapMessage.getDestApInst(), cdapMessage.getDestApName(), cdapMessage.getInvokeID());
 		
 		sendCDAPMessage(outgoingCDAPMessage);
 		
 		//Read the joining IPC process address
-		outgoingCDAPMessage = CDAPMessage.getReadObjectRequestMessage(null, null, 14, 
-				"rina.messages.ApplicationProcessNameSynonym", 0, "/daf/management/currentSynonym", 0);
+		outgoingCDAPMessage = cdapSessionManager.getReadObjectRequestMessage(socket.getPort(), null, null, 
+				"rina.messages.ApplicationProcessNameSynonym", 0, "/daf/management/currentSynonym", 0, true);
 		
 		//set timer (max time to wait before getting M_READ_R)
 		readAddressResponseTimer = getDisconnectTimerTask();
@@ -167,7 +167,7 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		}
 		
 		if (!cdapMessage.getOpCode().equals(Opcode.M_READ_R) || cdapMessage.getResult() != 0){
-			outgoingCDAPMessage = CDAPMessage.getReleaseConnectionRequestMessage(null, 0);
+			outgoingCDAPMessage = cdapSessionManager.getReleaseConnectionRequestMessage(socket.getPort(), null, false);
 			this.setState(State.NULL);
 			end = true;
 			return outgoingCDAPMessage;
@@ -187,15 +187,15 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		}
 		
 		if (address != 0 && !allocated){
-			outgoingCDAPMessage = CDAPMessage.getReleaseConnectionRequestMessage(null, 0);
+			outgoingCDAPMessage = cdapSessionManager.getReleaseConnectionRequestMessage(socket.getPort(), null, false);
 			this.setState(State.NULL);
 			end = true;
 			return outgoingCDAPMessage;
 		}
 		
 		if (address != 0 && allocated && !expired){
-			outgoingCDAPMessage = CDAPMessage.getStartObjectRequestMessage(null, null, 25, 
-					"rina.messages.operationalStatus", null, 0, "/dif/management/operationalStatus", 0);
+			outgoingCDAPMessage = cdapSessionManager.getStartObjectRequestMessage(socket.getPort(), null, null,
+					"rina.messages.operationalStatus", null, 0, "/dif/management/operationalStatus", 0, true);
 			this.setState(State.WAITING_FOR_STARTUP);
 			startResponseTimer = getDisconnectTimerTask();
 			timer.schedule(startResponseTimer, TIME_TO_WAIT_FOR_START_RESPONSE);
@@ -213,14 +213,14 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		if (!cdapMessage.getOpCode().equals(Opcode.M_READ) || cdapMessage.getObjName() == null || 
 				!cdapMessage.getObjName().equals("/daf/management/enrollment")){
 			end = true;
-			return CDAPMessage.getReleaseConnectionRequestMessage(null, 0);
+			return cdapSessionManager.getReleaseConnectionRequestMessage(socket.getPort(), null, false);
 		}
 		
 		this.setState(State.INITIALIZE_NEW_MEMBER_SEND_RESPONSE);
 		
 		//Start a new thread that sends as many M_READ_R as required. Has to be a separate thread 
 		//so that it can be stopped when the main worker receives an M_CANCELREAD
-		enrollmentInitializer = new EnrollmentInitializer(this, cdapMessage.getInvokeID());
+		enrollmentInitializer = new EnrollmentInitializer(this, cdapMessage.getInvokeID(), cdapSessionManager, socket.getPort());
 		executorService.execute(enrollmentInitializer);
 		
 		return null;
@@ -233,7 +233,7 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 			if (!cdapMessage.getOpCode().equals(Opcode.M_CANCELREAD) || cdapMessage.getObjName() == null || 
 					!cdapMessage.getObjName().equals("/daf/management/enrollment")){
 				end = true;
-				return CDAPMessage.getReleaseConnectionRequestMessage(null, 0);
+				return cdapSessionManager.getReleaseConnectionRequestMessage(socket.getPort(), null, false);
 			}
 
 			//Stop the thread that is sending M_READ_R (if still running).
@@ -252,8 +252,8 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		startResponseTimer = getDisconnectTimerTask();
 		timer.schedule(startResponseTimer, TIME_TO_WAIT_FOR_START_RESPONSE);
 		
-		outgoingCDAPMessage = CDAPMessage.getStartObjectRequestMessage(null, null, 25, 
-				"rina.messages.operationalStatus", null, 0, "/dif/management/operationalStatus", 0);
+		outgoingCDAPMessage = cdapSessionManager.getStartObjectRequestMessage(socket.getPort(), null, null,
+				"rina.messages.operationalStatus", null, 0, "/dif/management/operationalStatus", 0, true);
 		this.setState(State.WAITING_FOR_STARTUP);
 			
 		return outgoingCDAPMessage;
@@ -267,7 +267,7 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 		if (!cdapMessage.getOpCode().equals(Opcode.M_START_R) || cdapMessage.getObjName() == null || 
 				!cdapMessage.getObjName().equals("/dif/management/operationalStatus")){
 			end = true;
-			return CDAPMessage.getReleaseConnectionRequestMessage(null, 0);
+			return cdapSessionManager.getReleaseConnectionRequestMessage(socket.getPort(), null, false);
 		}
 		
 		this.setState(State.ENROLLED);
@@ -276,7 +276,7 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 	
 	private CDAPMessage processEnrolledState(CDAPMessage cdapMessage) throws CDAPException{
 		if (cdapMessage.getOpCode().equals(Opcode.M_RELEASE) && cdapMessage.getInvokeID() != 0){
-			return CDAPMessage.getReleaseConnectionResponseMessage(null, cdapMessage.getInvokeID(), 0, null);
+			return cdapSessionManager.getReleaseConnectionResponseMessage(socket.getPort(), null, 0, null, cdapMessage.getInvokeID());
 		}
 		
 		return null;
@@ -301,7 +301,7 @@ public class CDAPEnrollmentWorker extends CDAPWorker {
 			@Override
 			public void run() {
 				try{
-					CDAPMessage cdapMessage = CDAPMessage.getReleaseConnectionRequestMessage(null, 0);
+					CDAPMessage cdapMessage = cdapSessionManager.getReleaseConnectionRequestMessage(socket.getPort(), null, false);
 					sendCDAPMessage(cdapMessage);
 					setState(State.NULL);
 					end = true;;

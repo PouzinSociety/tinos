@@ -16,7 +16,7 @@ public class FlowAllocatorFactoryImpl implements FlowAllocatorFactory{
 	}
 	
 	public FlowAllocator createFlowAllocator(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
-		FlowAllocator flowAllocator = null;
+		FlowAllocatorImpl flowAllocator = null;
 		try {
 			flowAllocator = new FlowAllocatorImpl();
 		} catch (Exception e) {
@@ -28,7 +28,8 @@ public class FlowAllocatorFactoryImpl implements FlowAllocatorFactory{
 	}
 
 	public void destroyFlowAllocator(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
-		flowAllocatorRespository.remove(ipcProcessNamingInfo);
+		FlowAllocator flowAllocator = (FlowAllocatorImpl) flowAllocatorRespository.remove(ipcProcessNamingInfo);
+		flowAllocator.stop();
 	}
 
 	public FlowAllocator getFlowAllocator(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
