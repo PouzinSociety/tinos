@@ -3,12 +3,22 @@ package rina.flowallocator.api;
 import java.util.List;
 import java.util.Map;
 
+import rina.ribdaemon.api.RIBObjectNames;
+
 /**
  * Encapsulates the Quality of Service cube data.
  * @author eduardgrasa
  *
  */
 public class QoSCube {
+	
+	public static final String QOSCUBE_SET_RIB_OBJECT_NAME = RIBObjectNames.SEPARATOR + RIBObjectNames.DIF + 
+		RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.FLOW_ALLOCATOR + 
+		RIBObjectNames.SEPARATOR + RIBObjectNames.QOS_CUBES;
+
+	public static final String QOSCUBE_SET_RIB_OBJECT_CLASS = "qoscube set";
+	
+	public static final String QOSCUBE_RIB_OBJECT_CLASS = "qoscube";
 	
 	/**
 	 * Identifies the type of QoS-cube

@@ -1,5 +1,7 @@
 package rina.efcp.api;
 
+import rina.ribdaemon.api.RIBObjectNames;
+
 /**
  * Contains the constants for DTP and DTCP, defined at DIF compile time
  * TODO move to a config file after the demo
@@ -7,6 +9,12 @@ package rina.efcp.api;
  *
  */
 public class DataTransferConstants {
+	
+	public static final String DATA_TRANSFER_CONSTANTS_RIB_OBJECT_NAME = RIBObjectNames.SEPARATOR + RIBObjectNames.DIF + 
+		RIBObjectNames.SEPARATOR + RIBObjectNames.IPC + RIBObjectNames.SEPARATOR + RIBObjectNames.DATA_TRANSFER+ 
+		RIBObjectNames.SEPARATOR + RIBObjectNames.CONSTANTS;
+
+	public static final String DATA_TRANSFER_CONSTANTS_RIB_OBJECT_CLASS = "datatransfercons";
 	
 	/**
 	 * The length of QoS-id field in the DTP PCI, in bytes

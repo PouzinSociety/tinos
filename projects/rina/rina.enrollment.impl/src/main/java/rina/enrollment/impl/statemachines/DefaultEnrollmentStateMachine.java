@@ -19,6 +19,7 @@ import rina.cdap.api.message.CDAPMessage.AuthTypes;
 import rina.cdap.api.message.CDAPMessage.Flags;
 import rina.efcp.api.DataTransferConstants;
 import rina.encoding.api.Encoder;
+import rina.enrollment.api.EnrollmentTask;
 import rina.enrollment.impl.EnrollmentTaskImpl;
 import rina.flowallocator.api.QoSCube;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
@@ -186,8 +187,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 
 			//Read the joining IPC process address
 			outgoingCDAPMessage = cdapSessionManager.getReadObjectRequestMessage(portId, null, null,
-					"synonym", 0, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0, true);
+					RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_CLASS, 0, RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME, 0, true);
 			sendCDAPMessage(outgoingCDAPMessage);
 
 			//set timer (max time to wait before getting M_READ_R)
@@ -215,9 +215,8 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 
 		if (this.getState().equals(State.ENROLLED)){
 			try{
-				ribDaemon.delete(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-						RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS
-						+ RIBObjectNames.SEPARATOR + remotePeer.getApplicationProcessName()+remotePeer.getApplicationProcessInstance(), 
+				ribDaemon.delete(null, DAFMember.DAF_MEMBER_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + 
+						remotePeer.getApplicationProcessName()+remotePeer.getApplicationProcessInstance(), 
 						0, null);
 			}catch(RIBDaemonException ex){
 				log.error(ex);
@@ -312,7 +311,8 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		if (address != 0 && allocated && !expired){
 			try{
 				outgoingCDAPMessage = cdapSessionManager.getStartObjectRequestMessage(portId, null, null, 
-						"operationstatus", null, 0, "/dif/management/operationalStatus", 0, true);
+						RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_CLASS, null, 0, 
+						RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME, 0, true);
 				this.setState(State.WAITING_FOR_STARTUP);
 				startResponseTimer = getDisconnectTimerTask();
 				timer.schedule(startResponseTimer, TIME_TO_WAIT_FOR_START_RESPONSE);
@@ -351,8 +351,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		//Cancel timer
 		readInitializationDataTimer.cancel();
 		
-		if (cdapMessage.getObjName() == null || !cdapMessage.getObjName().equals(RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + 
-				RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT)){
+		if (cdapMessage.getObjName() == null || !cdapMessage.getObjName().equals(EnrollmentTask.ENROLLMENT_RIB_OBJECT_NAME)){
 			reset();
 			return;
 		}
@@ -389,8 +388,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 	}
 	
 	private void handleInitializeNewMemberCancelread(CDAPMessage cdapMessage){
-		if (cdapMessage.getObjName() == null || !cdapMessage.getObjName().equals(RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + 
-				RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT)){
+		if (cdapMessage.getObjName() == null || !cdapMessage.getObjName().equals(EnrollmentTask.ENROLLMENT_RIB_OBJECT_NAME)){
 			reset();
 			return;
 		}
@@ -420,8 +418,8 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		
 		try{
 			CDAPMessage outgoingCDAPMessage = cdapSessionManager.getStartObjectRequestMessage(portId, null, null, 
-					"operationstatus", null, 0, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.OPERATIONAL_STATUS, 0, true);
+					RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME, null, 0, 
+					RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME, 0, true);
 			this.sendCDAPMessage(outgoingCDAPMessage);
 			
 			//start timer
@@ -454,9 +452,8 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		timer.cancel();
 
 		try{
-			ribDaemon.create(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS
-					+ RIBObjectNames.SEPARATOR + remotePeer.getApplicationProcessName()+remotePeer.getApplicationProcessInstance(), 
+			ribDaemon.create(null, DAFMember.DAF_MEMBER_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + 
+					remotePeer.getApplicationProcessName()+remotePeer.getApplicationProcessInstance(), 
 					0, this.remotePeer);
 		}catch(RIBDaemonException ex){
 			log.error(ex);
@@ -483,9 +480,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		switch(state){
 		case NULL:
 			try{
-				ApplicationProcessNamingInfo apNamingInfo = (ApplicationProcessNamingInfo) this.getRIBDaemon().read(null, 
-						RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-						RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME, 0).getObjectValue();
+				ApplicationProcessNamingInfo apNamingInfo = (ApplicationProcessNamingInfo) this.getRIBDaemon().getIPCProcess().getApplicationProcessNamingInfo();
 				CDAPMessage requestMessage = cdapSessionManager.getOpenConnectionRequestMessage(portId, AuthTypes.AUTH_NONE, null, null, DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT, 
 						candidate.getApplicationProcessInstance(), candidate.getApplicationProcessName(), null, DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT, 
 						apNamingInfo.getApplicationProcessInstance(), apNamingInfo.getApplicationProcessName());
@@ -536,23 +531,20 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 	private void handleWaitingReadAddress(CDAPMessage cdapMessage){
 		//TODO cancel timer
 		
-		if (!cdapMessage.getObjName().equals(RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM)){
+		if (!cdapMessage.getObjName().equals(RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME)){
 			reset();
 			enrollmentTask.enrollmentCompleted(remotePeer, 1, "Wrong objectName");
 		}
 		
 		try{
 			CDAPMessage outgoingCDAPMessage = cdapSessionManager.getReadObjectResponseMessage(portId, null,
-					"synonym", 0, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, null, 
-					0, null, cdapMessage.getInvokeID());
+					"synonym", 0, RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME, null, 0, null, 
+					cdapMessage.getInvokeID());
 
 			sendCDAPMessage(outgoingCDAPMessage);
 
 			outgoingCDAPMessage = cdapSessionManager.getReadObjectRequestMessage(portId, null, null, 
-					"enrollment", 0, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT, 0, true);
+					EnrollmentTask.ENROLLMENT_RIB_OBJECT_CLASS, 0, EnrollmentTask.ENROLLMENT_RIB_OBJECT_NAME, 0, true);
 
 			//TODO set timer
 
@@ -572,16 +564,14 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			enrollmentTask.enrollmentCompleted(remotePeer, cdapMessage.getResult(), cdapMessage.getResultReason());
 		}
 		
-		if (cdapMessage.getObjName().equals(RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM)){
+		if (cdapMessage.getObjName().equals(RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME)){
 			try{
 				long synonym = cdapMessage.getObjValue().getInt64val();
 				ribDaemon.write(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), new Long(synonym));
 			}catch(Exception ex){
 				log.error(ex);
 			}
-		}else if (cdapMessage.getObjName().startsWith(RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES)){
+		}else if (cdapMessage.getObjName().startsWith(WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME)){
 			try{
 				WhatevercastName name = (WhatevercastName) encoder.decode(
 						cdapMessage.getObjValue().getByteval(), WhatevercastName.class.toString());
@@ -589,8 +579,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			}catch(Exception ex){
 				log.error(ex);
 			}
-		}else if (cdapMessage.getObjName().equals(RIBObjectNames.SEPARATOR + RIBObjectNames.DIF + RIBObjectNames.SEPARATOR + RIBObjectNames.IPC + 
-				RIBObjectNames.SEPARATOR + RIBObjectNames.DATA_TRANSFER+ RIBObjectNames.SEPARATOR + RIBObjectNames.CONSTANTS)){
+		}else if (cdapMessage.getObjName().equals(DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_NAME)){
 			try{
 				DataTransferConstants constants = (DataTransferConstants) encoder.decode(
 						cdapMessage.getObjValue().getByteval(), DataTransferConstants.class.toString());
@@ -598,8 +587,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			}catch(Exception ex){
 				log.error(ex);
 			}
-		}else if (cdapMessage.getObjName().startsWith(RIBObjectNames.SEPARATOR + RIBObjectNames.DIF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-				RIBObjectNames.SEPARATOR + RIBObjectNames.FLOW_ALLOCATOR + RIBObjectNames.SEPARATOR + RIBObjectNames.QOS_CUBES)){
+		}else if (cdapMessage.getObjName().startsWith(QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME)){
 			try{
 				QoSCube cube = (QoSCube) encoder.decode(
 						cdapMessage.getObjValue().getByteval(), QoSCube.class.toString());
@@ -607,8 +595,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			}catch(Exception ex){
 				log.error(ex);
 			}
-		}else if (cdapMessage.getObjName().startsWith(RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-				RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS)){
+		}else if (cdapMessage.getObjName().startsWith(DAFMember.DAF_MEMBER_SET_RIB_OBJECT_NAME)){
 			try{
 				DAFMember dafMember = (DAFMember) encoder.decode(cdapMessage.getObjValue().getByteval(), DAFMember.class.toString());
 				if (remotePeer.getApplicationProcessName().equals(dafMember.getApplicationProcessName()) && 
@@ -635,8 +622,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 	public void start(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor){
 		//TODO cancel timer
 		
-		if (!cdapMessage.getObjName().equals(RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-				RIBObjectNames.SEPARATOR + RIBObjectNames.OPERATIONAL_STATUS)){
+		if (!cdapMessage.getObjName().equals(RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME)){
 			reset();
 			enrollmentTask.enrollmentCompleted(remotePeer, 1, "Wrong objectname");
 		}

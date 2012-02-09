@@ -102,7 +102,7 @@ public abstract class BaseSocketReader implements Runnable{
 			ex.printStackTrace();
 		}
 		
-		log.debug("The remote endpoint of socket "+socket.getPort()+" has disconnected");
+		log.info("The remote endpoint of socket "+socket.getPort()+" has disconnected");
 		socketDisconnected();
 	}
 	

@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import rina.applicationprocess.api.WhatevercastName;
 import rina.cdap.api.CDAPSessionManagerFactory;
 import rina.delimiting.api.DelimiterFactory;
 import rina.efcp.api.DataTransferAEFactory;
@@ -17,12 +16,8 @@ import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
-import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
-import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBDaemonFactory;
-import rina.ribdaemon.api.RIBObject;
-import rina.ribdaemon.api.RIBObjectNames;
 import rina.rmt.api.RMTFactory;
 
 public class IPCProcessFactoryImpl implements IPCProcessFactory{
@@ -163,14 +158,9 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		ipcProcess.destroy();
 	}
 
-	public void destroyIPCProcess(IPCProcess ipcProcess) {
-		RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-
+	public void destroyIPCProcess(IPCProcess ipcProcess){
 		try{
-			ApplicationProcessNamingInfo apNamingInfo = (ApplicationProcessNamingInfo) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
-					RIBObjectNames.APNAME, 0);
-			this.destroyIPCProcess(apNamingInfo);
+			this.destroyIPCProcess(ipcProcess.getApplicationProcessNamingInfo());
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
@@ -187,24 +177,14 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	 */
 	public IPCProcess getIPCProcessBelongingToDIF(String difName){
 		IPCProcess currentIPCProcess = null;
-		RIBDaemon ribDaemon = null;
-		RIBObject ribObject = null;
+		String candidateName = null;
 
 		Iterator<String> iterator = ipcProcesses.keySet().iterator();
 		while(iterator.hasNext()){
 			currentIPCProcess = ipcProcesses.get(iterator.next());
-			ribDaemon = (RIBDaemon) currentIPCProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-			try{
-				ribObject = (RIBObject) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-						RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "any", 0);
-				if (ribObject != null){
-					WhatevercastName whatevercastName = (WhatevercastName) ribObject.getObjectValue();
-					if(whatevercastName.getName().equals(difName)){
-						return currentIPCProcess;
-					}
-				}
-			}catch(RIBDaemonException ex){
-				ex.printStackTrace();
+			candidateName = currentIPCProcess.getDIFName();
+			if (candidateName != null && candidateName.equals(difName)){
+				return currentIPCProcess;
 			}
 		}
 
@@ -216,24 +196,14 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	 * @return
 	 */
 	public List<String> listDIFNames(){
-		IPCProcess currentIPCProcess = null;
-		RIBDaemon ribDaemon = null;
-		RIBObject ribObject = null;
 		List<String> difNames = new ArrayList<String>();
+		String difName = null;
 		
 		Iterator<String> iterator = ipcProcesses.keySet().iterator();
 		while(iterator.hasNext()){
-			currentIPCProcess = ipcProcesses.get(iterator.next());
-			ribDaemon = (RIBDaemon) currentIPCProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-			try{
-				ribObject = (RIBObject) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-						RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES + RIBObjectNames.SEPARATOR + "any", 0);
-				if (ribObject != null){
-					WhatevercastName whatevercastName = (WhatevercastName) ribObject.getObjectValue();
-					difNames.add(whatevercastName.getName());
-				}
-			}catch(RIBDaemonException ex){
-				ex.printStackTrace();
+			difName = ipcProcesses.get(iterator.next()).getDIFName();
+			if (difName != null){
+				difNames.add(difName);
 			}
 		}
 		

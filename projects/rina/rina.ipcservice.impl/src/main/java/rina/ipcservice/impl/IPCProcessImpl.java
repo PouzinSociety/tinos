@@ -3,6 +3,7 @@ package rina.ipcservice.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.applicationprocess.api.WhatevercastName;
 import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.FlowAllocator;
 import rina.ipcprocess.api.BaseIPCProcess;
@@ -10,12 +11,12 @@ import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
-import rina.ipcservice.impl.ribobjects.ApplicationProcessNameRIBObject;
-import rina.ipcservice.impl.ribobjects.WhatevercastNameSetRIBObject;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
+import rina.ribdaemon.api.SimpleRIBObject;
+import rina.ribdaemon.api.SimpleSetRIBObject;
 
 /**
  * Point of entry to the IPC process for the application process. It is in charge 
@@ -55,10 +56,15 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	private void populateRIB(String applicationProcessName, String applicationProcessInstance){
 		try{
 			ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance);
-			RIBObject ribObject = new ApplicationProcessNameRIBObject(this);
-			ribObject.write(null, null, 0, apNamingInfo);
+			RIBObject ribObject = new SimpleRIBObject(this, 
+					ApplicationProcessNamingInfo.APPLICATION_PROCESS_NAMING_INFO_RIB_OBJECT_NAME, 
+					ApplicationProcessNamingInfo.APPLICATION_PROCESS_NAMING_INFO_RIB_OBJECT_CLASS, 
+					apNamingInfo);
 			ribDaemon.addRIBObject(ribObject);
-			ribObject = new WhatevercastNameSetRIBObject(this);
+			ribObject = new SimpleSetRIBObject(this, 
+					WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME, 
+					WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_CLASS, 
+					WhatevercastName.WHATEVERCAST_NAME_RIB_OBJECT_CLASS);
 			ribDaemon.addRIBObject(ribObject);
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();
@@ -148,43 +154,5 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 
 	public void destroy() {
 		// TODO Auto-generated method stub
-	}
-	
-	public Long getAddress(){
-		Long result = null;
-		try{
-			result = (Long) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT +
-					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 0).getObjectValue();
-		}catch(Exception ex){
-			log.error(ex);
-		}
-
-		return result;
-	}
-	
-	public String getApplicationProcessName(){
-		String result = null;
-		try{
-			result = ((ApplicationProcessNamingInfo) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME, 0).getObjectValue()).
-					getApplicationProcessName();
-		}catch(Exception ex){
-			ex.printStackTrace();
-		}
-		
-		return result;
-	}
-	
-	public String getApplicationProcessInstance(){
-		String result = null;
-		try{
-			result = ((ApplicationProcessNamingInfo) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME, 0).getObjectValue()).
-					getApplicationProcessInstance();
-		}catch(Exception ex){
-			ex.printStackTrace();
-		}
-		
-		return result;
 	}
 }

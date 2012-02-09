@@ -18,10 +18,9 @@ import rina.encoding.api.Encoder;
 import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.FlowAllocatorInstance;
+import rina.flowallocator.api.QoSCube;
 import rina.flowallocator.api.message.Flow;
-import rina.flowallocator.impl.ribobjects.DirectoryForwardingTableRIBObject;
 import rina.flowallocator.impl.ribobjects.FlowSetRIBObject;
-import rina.flowallocator.impl.ribobjects.QoSCubesSetRIBObject;
 import rina.flowallocator.impl.tcp.TCPServer;
 import rina.flowallocator.impl.validation.AllocateRequestValidator;
 import rina.ipcprocess.api.IPCProcess;
@@ -31,6 +30,8 @@ import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
+import rina.ribdaemon.api.SimpleRIBObject;
+import rina.ribdaemon.api.SimpleSetRIBObject;
 import rina.utils.types.Unsigned;
 
 /** 
@@ -95,6 +96,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		flowAllocatorInstances = new HashMap<Integer, FlowAllocatorInstance>();
 		tcpServer = new TCPServer(this);
 		pendingSockets = new Hashtable<Integer, Socket>();
+		directoryForwardingTable = new DirectoryForwardingTableImpl();
 	}
 	
 	@Override
@@ -125,12 +127,17 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	
 	private void populateRIB(IPCProcess ipcProcess){
 		try{
-			RIBObject ribObject = new QoSCubesSetRIBObject(ipcProcess);
+			RIBObject ribObject = new FlowSetRIBObject(this, ipcProcess);
 			ribDaemon.addRIBObject(ribObject);
-			ribObject = new FlowSetRIBObject(this, ipcProcess);
+		    ribObject = new SimpleSetRIBObject(ipcProcess, 
+					QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME, 
+					QoSCube.QOSCUBE_SET_RIB_OBJECT_CLASS, 
+					QoSCube.QOSCUBE_RIB_OBJECT_CLASS);
 			ribDaemon.addRIBObject(ribObject);
-			directoryForwardingTable = new DirectoryForwardingTableImpl();
-			ribObject = new DirectoryForwardingTableRIBObject(ipcProcess, directoryForwardingTable);
+			ribObject = new SimpleRIBObject(ipcProcess, 
+					DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_RIB_OBJECT_NAME, 
+					DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_RIB_OBJECT_CLASS, 
+					directoryForwardingTable);
 			ribDaemon.addRIBObject(ribObject);
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();

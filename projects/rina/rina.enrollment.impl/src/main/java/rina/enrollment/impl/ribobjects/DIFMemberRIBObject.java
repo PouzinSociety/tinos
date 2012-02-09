@@ -14,7 +14,7 @@ public class DIFMemberRIBObject extends BaseRIBObject{
 	private DAFMember member = null;
 	
 	public DIFMemberRIBObject(IPCProcess ipcProcess, String objectName, DAFMember member) {
-		super(ipcProcess, objectName, "dafmember", ObjectInstanceGenerator.getObjectInstance());
+		super(ipcProcess, objectName, DAFMember.DAF_MEMBER_RIB_OBJECT_CLASS, ObjectInstanceGenerator.getObjectInstance());
 		this.member = member;
 	}
 	

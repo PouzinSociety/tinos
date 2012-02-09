@@ -4,20 +4,19 @@ import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.flowallocator.api.FlowAllocator;
 import rina.flowallocator.api.FlowAllocatorInstance;
+import rina.flowallocator.api.message.Flow;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
 import rina.ribdaemon.api.ObjectInstanceGenerator;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
-import rina.ribdaemon.api.RIBObjectNames;
 
 public class FlowSetRIBObject extends BaseRIBObject{
 	
 	private FlowAllocator flowAllocator = null;
 	
 	public FlowSetRIBObject(FlowAllocator flowAllocator, IPCProcess ipcProcess){
-		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DIF + RIBObjectNames.SEPARATOR + RIBObjectNames.RESOURCE_ALLOCATION + RIBObjectNames.SEPARATOR +
-				RIBObjectNames.FLOW_ALLOCATOR + RIBObjectNames.SEPARATOR + RIBObjectNames.FLOWS, "flow set", ObjectInstanceGenerator.getObjectInstance());
+		super(ipcProcess, Flow.FLOW_SET_RIB_OBJECT_NAME, Flow.FLOW_SET_RIB_OBJECT_CLASS, ObjectInstanceGenerator.getObjectInstance());
 		this.flowAllocator = flowAllocator;
 	}
 	

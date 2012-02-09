@@ -8,6 +8,7 @@ import java.util.Map;
 import rina.flowallocator.api.ConnectionId;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QualityOfServiceSpecification;
+import rina.ribdaemon.api.RIBObjectNames;
 
 /**
  * Encapsulates all the information required to manage a Flow
@@ -15,6 +16,14 @@ import rina.ipcservice.api.QualityOfServiceSpecification;
  *
  */
 public class Flow {
+	
+	public static final String FLOW_SET_RIB_OBJECT_NAME = RIBObjectNames.SEPARATOR + RIBObjectNames.DIF + 
+		RIBObjectNames.SEPARATOR + RIBObjectNames.RESOURCE_ALLOCATION + RIBObjectNames.SEPARATOR + 
+		RIBObjectNames.FLOW_ALLOCATOR + RIBObjectNames.SEPARATOR + RIBObjectNames.FLOWS;
+	
+	public static final String FLOW_SET_RIB_OBJECT_CLASS = "flow set";
+	
+	public static final String FLOW_RIB_OBJECT_CLASS = "flow";
 
 	/**
 	 * The application that requested the flow

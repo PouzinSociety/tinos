@@ -31,9 +31,9 @@ public class CurrentSynonymRIBObject extends BaseRIBObject{
 	private CDAPSessionManager cdapSessionManager = null;
 	
 	public CurrentSynonymRIBObject(IPCProcess ipcProcess, EnrollmentTaskImpl enrollmentTask){
-		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM, 
-				"synonym", ObjectInstanceGenerator.getObjectInstance());
+		super(ipcProcess, RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME, 
+				RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_CLASS, 
+				ObjectInstanceGenerator.getObjectInstance());
 		this.enrollmentTask = enrollmentTask;
 		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 	}

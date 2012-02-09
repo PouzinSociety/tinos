@@ -327,7 +327,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 			serializedCDAPMessageToBeSend = getCDAPSessionManager().encodeNextMessageToBeSent(cdapMessage, portId);
 			rmt.sendCDAPMessage(portId, serializedCDAPMessageToBeSend);
 			cdapSessionManager.messageSent(cdapMessage, portId);
-			log.info("Sent CDAP Message: "+ cdapMessage.toString());
+			log.debug("Sent CDAP Message: "+ cdapMessage.toString());
 		}catch(Exception ex){
 			ex.printStackTrace();
 			if (ex.getMessage().equals("Flow closed")){

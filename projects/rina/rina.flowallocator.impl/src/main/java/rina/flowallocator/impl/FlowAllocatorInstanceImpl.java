@@ -230,9 +230,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		long sourceAddress = flowAllocator.getIPCProcess().getAddress().longValue();
 		flow.setSourceAddress(sourceAddress);
 		String flowName = ""+sourceAddress+"-"+this.portId;
-		this.objectName = RIBObjectNames.SEPARATOR + 
-			RIBObjectNames.DIF + RIBObjectNames.SEPARATOR + RIBObjectNames.RESOURCE_ALLOCATION + RIBObjectNames.SEPARATOR +
-			RIBObjectNames.FLOW_ALLOCATOR + RIBObjectNames.SEPARATOR + RIBObjectNames.FLOWS + RIBObjectNames.SEPARATOR + flowName;
+		this.objectName = Flow.FLOW_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + flowName;
 		if (destinationAddress == sourceAddress){
 			local = true;
 			this.flowAllocator.receivedLocalFlowRequest(flowService, this.objectName);

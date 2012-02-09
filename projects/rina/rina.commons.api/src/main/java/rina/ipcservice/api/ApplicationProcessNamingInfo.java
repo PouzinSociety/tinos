@@ -1,9 +1,17 @@
 package rina.ipcservice.api;
 
+import rina.ribdaemon.api.RIBObjectNames;
+
 /**
  * All the elements needed to name an application process.
  */
 public class ApplicationProcessNamingInfo {
+	
+	public static final String APPLICATION_PROCESS_NAMING_INFO_RIB_OBJECT_NAME = RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
+		RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + 
+		RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME;
+
+	public static final String APPLICATION_PROCESS_NAMING_INFO_RIB_OBJECT_CLASS = "apnaminginfo";
 	
 	private String applicationProcessName = null;
 	private String applicationProcessInstance = null;

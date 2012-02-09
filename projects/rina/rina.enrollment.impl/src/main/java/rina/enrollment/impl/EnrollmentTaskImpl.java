@@ -26,7 +26,6 @@ import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
-import rina.ribdaemon.api.RIBObjectNames;
 import rina.rmt.api.BaseRMT;
 import rina.rmt.api.RMT;
 
@@ -100,9 +99,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 */
 	private EnrollmentStateMachine getEnrollmentStateMachine(CDAPSessionDescriptor cdapSessionDescriptor) throws Exception{
 		try{
-			ApplicationProcessNamingInfo myNamingInfo = (ApplicationProcessNamingInfo) ribDaemon.read(null, 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + 
-					RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME, 0).getObjectValue();
+			ApplicationProcessNamingInfo myNamingInfo = this.getIPCProcess().getApplicationProcessNamingInfo();
 			ApplicationProcessNamingInfo sourceNamingInfo = cdapSessionDescriptor.getSourceApplicationProcessNamingInfo();
 			ApplicationProcessNamingInfo destinationNamingInfo = cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo();
 			

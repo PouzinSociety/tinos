@@ -1,9 +1,16 @@
 package rina.ipcprocess.api;
 
+import java.util.List;
 import java.util.Map;
 
+import rina.applicationprocess.api.DAFMember;
+import rina.applicationprocess.api.WhatevercastName;
+import rina.efcp.api.DataTransferConstants;
+import rina.flowallocator.api.QoSCube;
+import rina.flowallocator.api.message.Flow;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcservice.api.APService;
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 /**
  * Represents an IPC Process. Holds together the different components of the IPC 
@@ -59,10 +66,16 @@ public interface IPCProcess{
 	 */
 	public void execute(Runnable runnable);
 	
-	/* Information from RIB objects managed by the IPC Process */
-	public Long getAddress();
-	
+	/* Convenience methods to get information from the RIB */
+	public ApplicationProcessNamingInfo getApplicationProcessNamingInfo();
 	public String getApplicationProcessName();
-	
 	public String getApplicationProcessInstance();
+	public List<WhatevercastName> getWhatevercastNames();
+	public String getDIFName();
+	public List<DAFMember> getDAFMembers();
+	public Long getAddress();
+	public Boolean getOperationalStatus();
+	public List<QoSCube> getQoSCubes();
+	public List<Flow> getAllocatedFlows();
+	public DataTransferConstants getDataTransferConstants();
 }
