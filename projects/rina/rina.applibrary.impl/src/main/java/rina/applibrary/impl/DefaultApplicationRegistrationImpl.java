@@ -11,10 +11,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.applibrary.api.ApplicationRegistrationImpl;
-import rina.applibrary.api.Flow;
 import rina.applibrary.api.FlowAcceptor;
+import rina.applibrary.api.FlowImpl;
 import rina.applibrary.api.FlowListener;
-import rina.applibrary.api.SDUListener;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
@@ -68,7 +67,7 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 	 * This queue will be used for communication between 
 	 * the ApplicationRegistrationSocketReader and this class
 	 */
-	private BlockingQueue<Flow> acceptedFlowsQueue = null;
+	private BlockingQueue<FlowImpl> acceptedFlowsQueue = null;
 	
 	/**
 	 * The TCP server that will process incoming flow 
@@ -110,17 +109,18 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 			FlowAcceptor flowAcceptor, FlowListener flowListener) throws IPCException{
 		this.flowListener = flowListener;
 		if (this.flowListener == null){
-			this.acceptedFlowsQueue = new LinkedBlockingQueue<Flow>();
+			this.acceptedFlowsQueue = new LinkedBlockingQueue<FlowImpl>();
 		}
 		CDAPMessage cdapMessage = null;
 		byte[] message = null;
 		
 		try{
-			//1 Connect to the local RINA software
-			socket = new Socket("localhost", RINAFactory.DEFAULT_PORT);
+			//1 Connect to the local RINA software, using the standard Sockets implementation
+			socket = new Socket(false, "localhost", RINAFactory.DEFAULT_PORT);
 			
-			//2 Start a server socket to listen for incoming flow establishment attempts
-			serverSocket = new ServerSocket(0);
+			//2 Start a server socket to listen for incoming flow establishment attempts, using the 
+			//standard Sockets implementation
+			serverSocket = new ServerSocket(0, false);
 			
 			//3 Create and start the registration socket reader
 			this.arSocketReader = new ApplicationRegistrationSocketReader(socket, delimiter, registrationQueue, this);
@@ -193,12 +193,28 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 	 * @param SDUListener the SDUs received by this flow will be sent to the SDUListener
 	 * @return the accepted Flow
 	 */
-	public Flow accept(SDUListener sduListener) throws IPCException{
+	public FlowImpl accept() throws IPCException{
 		try{
-			Flow newFlow = acceptedFlowsQueue.take();
-			newFlow.setSDUListener(sduListener);
-			return newFlow;
-		}catch(Exception ex){
+			FlowImpl flowImpl =  acceptedFlowsQueue.take();
+			if (flowImpl.getState() == FlowImpl.State.ALLOCATED){
+				return flowImpl;
+			}
+			
+			try{
+				if (!this.socket.isClosed()){
+					this.socket.close();
+				}
+				if (this.state == State.REGISTERED){
+					flowRequestsServer.setEnd(true);
+					this.state = State.UNREGISTERED;
+				}
+				this.registeredApp = null;
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			
+			throw new IPCException("Registration cancelled");
+		}catch(InterruptedException ex){
 			IPCException ipcException = new IPCException(IPCException.PROBLEMS_ACCEPTING_FLOW + " " + ex.getMessage());
 			ipcException.setErrorCode(IPCException.PROBLEMS_ACCEPTING_FLOW_CODE);
 			throw ipcException;

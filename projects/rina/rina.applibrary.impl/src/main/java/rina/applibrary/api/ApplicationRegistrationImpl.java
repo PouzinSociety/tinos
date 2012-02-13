@@ -31,10 +31,9 @@ public interface ApplicationRegistrationImpl {
 	
 	/**
 	 * This operation will block until a new incoming flow is accepted.
-	 * @param SDUListener the SDUs received by this flow will be sent to the SDUListener
 	 * @return the accepted Flow
 	 */
-	public Flow accept(SDUListener sduListener) throws IPCException;
+	public FlowImpl accept() throws IPCException;
 	
 	/**
 	 * Cancel the registration

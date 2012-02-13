@@ -39,7 +39,7 @@ public class FlowRequestsServer implements Runnable{
 	
 	private FlowListener flowListener = null;
 	
-	private BlockingQueue<Flow> acceptedFlowsQueue = null;
+	private BlockingQueue<FlowImpl> acceptedFlowsQueue = null;
 	
 	private Delimiter delimiter = null;
 	
@@ -65,7 +65,7 @@ public class FlowRequestsServer implements Runnable{
 		this.flowListener = flowListener;
 	}
 	
-	public FlowRequestsServer(ServerSocket serverSocket, FlowAcceptor flowAcceptor, BlockingQueue<Flow> acceptedFlowsQueue){
+	public FlowRequestsServer(ServerSocket serverSocket, FlowAcceptor flowAcceptor, BlockingQueue<FlowImpl> acceptedFlowsQueue){
 		this(serverSocket, flowAcceptor);
 		this.acceptedFlowsQueue = acceptedFlowsQueue;
 	}
@@ -109,6 +109,14 @@ public class FlowRequestsServer implements Runnable{
 			}
 		}catch(IOException e){
 			log.info(e.getMessage());
+			if (flowListener == null){
+				try{
+					FlowImpl flowImpl = new DefaultFlowImpl();
+					acceptedFlowsQueue.put(flowImpl);
+				}catch(Exception ex){
+					ex.printStackTrace();
+				}
+			}
 		}
 		
 		log.info("Application registration terminated. No longer listening for incoming TCP connections");
@@ -127,7 +135,6 @@ public class FlowRequestsServer implements Runnable{
 		CDAPMessage cdapMessage = null;
 		FlowService flowService = null;
 		String result = null;
-		Flow flow = null;
 		
 		//1 Get the first PDU from the socket
 		pdu = getFirstPDUFromSocket(socket);
@@ -188,12 +195,11 @@ public class FlowRequestsServer implements Runnable{
 		//TODO ignoring QoS parameters for now
 		//SDU listener has to be set by the flowListerner (non-blocking) or will be set by the accept() (blocking) call in the Flow object
 		
-		flow = new Flow(flowImpl);
-		flowImpl.setFlow(flow);
 		try{
 			if (flowListener == null){
-				acceptedFlowsQueue.put(flow);
+				acceptedFlowsQueue.put(flowImpl);
 			}else{
+				Flow flow = new Flow(flowImpl);
 				flow.setFlowListener(flowListener);
 				flowListener.flowAllocated(flow);
 			}

@@ -142,7 +142,10 @@ public class ApplicationRegistration {
 			throw ipcException;
 		}
 		
-		return this.applicationRegistrationImplementation.accept(sduListener);
+		FlowImpl flowImpl = this.applicationRegistrationImplementation.accept();
+		Flow flow = new Flow(flowImpl);
+		flow.setSDUListener(sduListener);
+		return flow;
 	}
 	
 	/**

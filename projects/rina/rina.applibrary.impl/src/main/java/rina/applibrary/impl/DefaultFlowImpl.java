@@ -126,8 +126,8 @@ public class DefaultFlowImpl implements FlowImpl{
 		try{
 			log.debug("Attempting to allocate a flow from "+sourceApplication.toString()+ " to "+destinationApplication.toString());
 			
-			//1 Connect to the local RINA Software, and start the socket reader
-			socket = new Socket("localhost", RINAFactory.DEFAULT_PORT);
+			//1 Connect to the local RINA Software, and start the socket reader and the standard sockets implementation
+			socket = new Socket(false, "localhost", RINAFactory.DEFAULT_PORT);
 			flowSocketReader = new FlowSocketReader(socket, delimiter, cdapSessionManager, flowQueue, this);
 			flowSocketReader.setSDUListener(sduListener);
 			RINAFactory.execute(flowSocketReader);

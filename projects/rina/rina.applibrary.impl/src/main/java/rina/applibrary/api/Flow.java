@@ -31,6 +31,7 @@ public class Flow {
 	
 	public Flow(FlowImpl flowImplementation){
 		this.flowImplementation = flowImplementation;
+		this.flowImplementation.setFlow(this);
 	}
 	
 	/**
