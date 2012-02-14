@@ -191,9 +191,9 @@ public class RINASocketImpl extends SocketImpl implements SDUListener{
 		log.info("Create called. Is stream? "+stream);
 		fd = new FileDescriptor();
 		if (isServerSocket()){
-			applicationRegistration = new DefaultApplicationRegistrationImpl();
+			applicationRegistration = new DefaultApplicationRegistrationImpl(true);
 		}else{
-			flowImpl = new DefaultFlowImpl();
+			flowImpl = new DefaultFlowImpl(true);
 		}
 	}
 	

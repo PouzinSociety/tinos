@@ -10,11 +10,13 @@ public class TCPServer implements Runnable{
 	
 	private ServerSocket serverSocket = null;
 	private ExecutorService executorService = null;
+	private ChatServer chatServer = null;
 	
 	private boolean end = false;
 	
 	public TCPServer(ExecutorService executorService){
 		this.executorService = executorService;
+		chatServer = new ChatServer();
 	}
 	
 	public void finish(){
@@ -32,10 +34,10 @@ public class TCPServer implements Runnable{
 			Socket socket = null;
 			
 			while(!end){
-				System.out.println("Waiting for chat clients to connect");
+				System.out.println("ChatServer: Waiting for chat clients to connect");
 				socket = serverSocket.accept();
-				System.out.println("Accepted socket! "+socket.getLocalPort()+" "+socket.getPort());
-				ChatWorker chatWorker = new ChatWorker(socket);
+				System.out.println("ChatServer: Accepted socket! "+socket.getLocalPort()+" "+socket.getPort());
+				ChatWorker chatWorker = new ChatWorker(socket, chatServer);
 				executorService.execute(chatWorker);
 			}
 		}catch(Exception ex){

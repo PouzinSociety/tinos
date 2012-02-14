@@ -49,6 +49,12 @@ public class FlowRequestsServer implements Runnable{
 	
 	private boolean end = false;
 	
+	/**
+	 * Controls if this object was created by the fauxSockets implementation and 
+	 * therefore needs to use the faux Sockets constructors
+	 */
+	private boolean fauxSockets = false;
+	
 	public void setEnd(boolean end){
 		this.end = end;
 		if (end){
@@ -58,6 +64,10 @@ public class FlowRequestsServer implements Runnable{
 				ex.printStackTrace();
 			}
 		}
+	}
+	
+	public void setFauxSockets(boolean fauxSockets){
+		this.fauxSockets = fauxSockets;
 	}
 	
 	public FlowRequestsServer(ServerSocket serverSocket, FlowAcceptor flowAcceptor, FlowListener flowListener){
@@ -179,7 +189,7 @@ public class FlowRequestsServer implements Runnable{
 		
 		//5 Create the flow object, and either notify the flowListener or put it in the queue
 		//(depending if we are on blocking or non-blocking operation)
-		FlowImpl flowImpl = new DefaultFlowImpl();
+		FlowImpl flowImpl = new DefaultFlowImpl(fauxSockets);
 		flowImpl.setSourceApplication(flowService.getSourceAPNamingInfo());
 		flowImpl.setDestinationApplication(flowService.getDestinationAPNamingInfo());
 		flowImpl.setQosSpec(flowService.getQoSSpecification());

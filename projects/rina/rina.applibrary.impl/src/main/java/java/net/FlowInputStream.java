@@ -36,7 +36,7 @@ public class FlowInputStream extends InputStream{
 	}
 	
 	@Override
-	public int read() throws IOException {
+	public int read() throws IOException {		
 		if (isClosed()){
 			return -1;
 		}

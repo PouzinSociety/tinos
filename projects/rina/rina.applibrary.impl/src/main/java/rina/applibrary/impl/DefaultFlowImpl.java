@@ -93,6 +93,12 @@ public class DefaultFlowImpl implements FlowImpl{
 	 */
 	private BlockingQueue<CDAPMessage> flowQueue = null;
 	
+	/**
+	 * Controls if this object was created by the fauxSockets implementation and 
+	 * therefore needs to use the faux Sockets constructors
+	 */
+	private boolean fauxSockets = false;
+	
 	/* RINA Infrastructure */
 	private Delimiter delimiter = null;
 	private CDAPSessionManager cdapSessionManager = null;
@@ -105,6 +111,11 @@ public class DefaultFlowImpl implements FlowImpl{
 	
 	public DefaultFlowImpl(){
 		this.flowQueue = new LinkedBlockingQueue<CDAPMessage>();	
+	}
+	
+	public DefaultFlowImpl(boolean fauxSockets){
+		this();	
+		this.fauxSockets = fauxSockets;
 	}
 
 	/**
@@ -127,7 +138,12 @@ public class DefaultFlowImpl implements FlowImpl{
 			log.debug("Attempting to allocate a flow from "+sourceApplication.toString()+ " to "+destinationApplication.toString());
 			
 			//1 Connect to the local RINA Software, and start the socket reader and the standard sockets implementation
-			socket = new Socket(false, "localhost", RINAFactory.DEFAULT_PORT);
+			if (fauxSockets){
+				socket = new Socket(false, "localhost", RINAFactory.DEFAULT_PORT);
+			}else{
+				socket = new Socket("localhost", RINAFactory.DEFAULT_PORT);
+			}
+			
 			flowSocketReader = new FlowSocketReader(socket, delimiter, cdapSessionManager, flowQueue, this);
 			flowSocketReader.setSDUListener(sduListener);
 			RINAFactory.execute(flowSocketReader);

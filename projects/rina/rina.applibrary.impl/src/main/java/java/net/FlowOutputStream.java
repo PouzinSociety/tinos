@@ -55,7 +55,7 @@ public class FlowOutputStream extends OutputStream{
         }
 		
 		try{
-			flowImpl.write(data);
+			flowImpl.write(aux);
 		}catch(IPCException ex){
 			throw new IOException(ex);
 		}

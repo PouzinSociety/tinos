@@ -85,11 +85,22 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 	 */
 	private State state = State.UNREGISTERED;
 	
+	/**
+	 * Controls if this object was created by the fauxSockets implementation and 
+	 * therefore needs to use the faux Sockets constructors
+	 */
+	private boolean fauxSockets = false;
+	
 	public DefaultApplicationRegistrationImpl(){
 		this.cdapSessionManager = RINAFactory.getCDAPSessionManagerInstance();
 		this.delimiter = RINAFactory.getDelimiterInstance();
 		this.encoder = RINAFactory.getEncoderInstance();
 		this.registrationQueue = new LinkedBlockingQueue<byte[]>();
+	}
+	
+	public DefaultApplicationRegistrationImpl(boolean fauxSockets){
+		this();
+		this.fauxSockets = fauxSockets;
 	}
 	
 	/**
@@ -116,11 +127,19 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 		
 		try{
 			//1 Connect to the local RINA software, using the standard Sockets implementation
-			socket = new Socket(false, "localhost", RINAFactory.DEFAULT_PORT);
+			if (fauxSockets){
+				socket = new Socket(false, "localhost", RINAFactory.DEFAULT_PORT);
+			}else{
+				socket = new Socket("localhost", RINAFactory.DEFAULT_PORT);
+			}
 			
 			//2 Start a server socket to listen for incoming flow establishment attempts, using the 
 			//standard Sockets implementation
-			serverSocket = new ServerSocket(0, false);
+			if (fauxSockets){
+				serverSocket = new ServerSocket(0, false);
+			}else{
+				serverSocket = new ServerSocket(0);
+			}
 			
 			//3 Create and start the registration socket reader
 			this.arSocketReader = new ApplicationRegistrationSocketReader(socket, delimiter, registrationQueue, this);
@@ -164,6 +183,7 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 			this.flowRequestsServer.setCDAPSessionManager(cdapSessionManager);
 			this.flowRequestsServer.setDelimiter(delimiter);
 			this.flowRequestsServer.setEncoder(encoder);
+			this.flowRequestsServer.setFauxSockets(fauxSockets);
 			RINAFactory.execute(this.flowRequestsServer);
 			this.registeredApp = applicationProcess;
 			this.state = State.REGISTERED;
