@@ -1,5 +1,6 @@
 package rina.applibrary.impl;
 
+import java.net.FauxSocketFactory;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
@@ -14,6 +15,7 @@ import rina.applibrary.api.ApplicationRegistrationImpl;
 import rina.applibrary.api.FlowAcceptor;
 import rina.applibrary.api.FlowImpl;
 import rina.applibrary.api.FlowListener;
+import rina.applibrary.api.SocketFactory;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
@@ -91,16 +93,27 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 	 */
 	private boolean fauxSockets = false;
 	
+	/**
+	 * The class that creates the socket instances
+	 */
+	private SocketFactory socketFactory = null;
+	
 	public DefaultApplicationRegistrationImpl(){
 		this.cdapSessionManager = RINAFactory.getCDAPSessionManagerInstance();
 		this.delimiter = RINAFactory.getDelimiterInstance();
 		this.encoder = RINAFactory.getEncoderInstance();
 		this.registrationQueue = new LinkedBlockingQueue<byte[]>();
+		this.socketFactory = new StandardSocketFactory();
 	}
 	
 	public DefaultApplicationRegistrationImpl(boolean fauxSockets){
 		this();
 		this.fauxSockets = fauxSockets;
+		if (fauxSockets){
+			this.socketFactory = new FauxSocketFactory();
+		}else{
+			this.socketFactory = new StandardSocketFactory();
+		}
 	}
 	
 	/**
@@ -127,19 +140,11 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 		
 		try{
 			//1 Connect to the local RINA software, using the standard Sockets implementation
-			if (fauxSockets){
-				socket = new Socket(false, "localhost", RINAFactory.DEFAULT_PORT);
-			}else{
-				socket = new Socket("localhost", RINAFactory.DEFAULT_PORT);
-			}
+			socket = socketFactory.createSocket(fauxSockets, "localhost", RINAFactory.DEFAULT_PORT);
 			
 			//2 Start a server socket to listen for incoming flow establishment attempts, using the 
 			//standard Sockets implementation
-			if (fauxSockets){
-				serverSocket = new ServerSocket(0, false);
-			}else{
-				serverSocket = new ServerSocket(0);
-			}
+			serverSocket = socketFactory.createServerSocket(fauxSockets, 0);
 			
 			//3 Create and start the registration socket reader
 			this.arSocketReader = new ApplicationRegistrationSocketReader(socket, delimiter, registrationQueue, this);

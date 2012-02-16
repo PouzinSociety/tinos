@@ -1,5 +1,6 @@
 package rina.applibrary.impl;
 
+import java.net.FauxSocketFactory;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -12,6 +13,7 @@ import rina.applibrary.api.Flow;
 import rina.applibrary.api.FlowImpl;
 import rina.applibrary.api.FlowListener;
 import rina.applibrary.api.SDUListener;
+import rina.applibrary.api.SocketFactory;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
@@ -99,6 +101,11 @@ public class DefaultFlowImpl implements FlowImpl{
 	 */
 	private boolean fauxSockets = false;
 	
+	/**
+	 * The class that creates the socket instances
+	 */
+	private SocketFactory socketFactory = null;
+	
 	/* RINA Infrastructure */
 	private Delimiter delimiter = null;
 	private CDAPSessionManager cdapSessionManager = null;
@@ -110,12 +117,18 @@ public class DefaultFlowImpl implements FlowImpl{
 	private CDAPMessage writeCDAPMessage = null;
 	
 	public DefaultFlowImpl(){
-		this.flowQueue = new LinkedBlockingQueue<CDAPMessage>();	
+		this.flowQueue = new LinkedBlockingQueue<CDAPMessage>();
+		this.socketFactory = new StandardSocketFactory();
 	}
 	
 	public DefaultFlowImpl(boolean fauxSockets){
-		this();	
+		this.flowQueue = new LinkedBlockingQueue<CDAPMessage>();
 		this.fauxSockets = fauxSockets;
+		if (fauxSockets){
+			this.socketFactory = new FauxSocketFactory();
+		}else{
+			this.socketFactory = new StandardSocketFactory();
+		}
 	}
 
 	/**
@@ -138,11 +151,7 @@ public class DefaultFlowImpl implements FlowImpl{
 			log.debug("Attempting to allocate a flow from "+sourceApplication.toString()+ " to "+destinationApplication.toString());
 			
 			//1 Connect to the local RINA Software, and start the socket reader and the standard sockets implementation
-			if (fauxSockets){
-				socket = new Socket(false, "localhost", RINAFactory.DEFAULT_PORT);
-			}else{
-				socket = new Socket("localhost", RINAFactory.DEFAULT_PORT);
-			}
+			socket = socketFactory.createSocket(fauxSockets, "localhost", RINAFactory.DEFAULT_PORT);
 			
 			flowSocketReader = new FlowSocketReader(socket, delimiter, cdapSessionManager, flowQueue, this);
 			flowSocketReader.setSDUListener(sduListener);
