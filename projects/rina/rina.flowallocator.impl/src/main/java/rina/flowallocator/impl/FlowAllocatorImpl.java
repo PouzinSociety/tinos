@@ -162,7 +162,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 */
 	public void newConnectionAccepted(Socket socket){
 		byte[] buffer = new byte[2];
-		int portId = -1;
+		int tcpRendezvousId = -1;
 		try{
 			int dataRead = socket.getInputStream().read(buffer);
 			if (dataRead <1){
@@ -171,12 +171,14 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			}
 			Unsigned unsigned = new Unsigned(2);
 			unsigned.setValue(buffer);
-			portId = new Long(unsigned.getValue()).intValue();
-			pendingSockets.put(new Integer(portId), socket);
-			notifyFlowAllocatorInstanceIfExists(portId, socket);
-			log.debug("The source portId is: "+portId);
+			tcpRendezvousId = new Long(unsigned.getValue()).intValue();
+			synchronized(pendingSockets){
+				pendingSockets.put(new Integer(tcpRendezvousId), socket);
+				notifyFlowAllocatorInstanceIfExists(tcpRendezvousId, socket);
+			}
+			log.debug("The TCP Rendez-vous Id is: "+tcpRendezvousId);
 		}catch(Exception ex){
-			log.error("Accepted incoming TCP connection, but could not read remote portId, closing the socket.");
+			log.error("Accepted incoming TCP connection, but could not read the TCP Rendez-vous Id, closing the socket.");
 			try{
 				socket.close();
 			}catch(Exception e){
@@ -271,12 +273,14 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			flowAllocatorInstance.createFlowRequestMessageReceived(flow, cdapMessage, underlyingPortId);
 			flowAllocatorInstances.put(new Integer(new Integer(portId)), flowAllocatorInstance);
 			//Check if the socket was already established
+			log.debug("Looking for the socket associated to TCP rendez-vous Id "+flow.getTcpRendezvousId());
 			Socket socket = pendingSockets.remove(new Integer((int)flow.getTcpRendezvousId()));
 			if (socket != null){
 				flowAllocatorInstance.setSocket(socket);
 			}
 
 			//TODO, if socket is null, add a timer to avoid waiting forever. Upon expiration, send a negative M_CREATE response
+			log.debug("Could not find a socket associated to TCP rendez-vous Id "+flow.getTcpRendezvousId()+ ". Waiting for it.");
 			return;
 		}
 		
