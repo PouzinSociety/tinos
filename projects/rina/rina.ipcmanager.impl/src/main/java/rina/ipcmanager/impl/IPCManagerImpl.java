@@ -168,6 +168,7 @@ public class IPCManagerImpl implements IPCManager{
 			information = information + "DIF name: " + difName + "\n";
 			information = information + "Application process name: "+apNamingInfo.getApplicationProcessName() + "\n";
 			information = information + "Application process instance: "+apNamingInfo.getApplicationProcessInstance() + "\n";
+			information = information + "Address: "+ipcProcesses.get(i).getAddress().longValue() + "\n";
 			ipcProcessesInformation.add(information);
 		}
 

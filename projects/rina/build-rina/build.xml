@@ -4,7 +4,6 @@
 	<!-- NOTE: Beware the build order -->
 	<path id="bundles">
 		<pathelement location="../com.google.protobuf"/>
-		<pathelement location="../rina.utils.types"/>
 		<pathelement location="../rina.commons.api"/>
 		<pathelement location="../rina.cdap.impl"/>
 		<pathelement location="../rina.delimiting.impl"/>

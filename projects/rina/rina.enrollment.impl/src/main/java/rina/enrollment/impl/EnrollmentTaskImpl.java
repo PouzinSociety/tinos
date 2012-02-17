@@ -13,6 +13,7 @@ import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
+import rina.enrollment.api.AddressManager;
 import rina.enrollment.api.BaseEnrollmentTask;
 import rina.enrollment.impl.ribobjects.CurrentSynonymRIBObject;
 import rina.enrollment.impl.ribobjects.DIFMemberSetRIBObject;
@@ -48,6 +49,11 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 * Stores the enrollment requests that have to be replied back
 	 */
 	private Map<String, PendingEnrollmentRequest> ongoingInitiateEnrollmentRequests = null;
+	
+	/**
+	 * The class that manages the address allocation
+	 */
+	private AddressManager addressManager = null;
 	
 	private RIBDaemon ribDaemon = null;
 	private Encoder encoder = null;
@@ -359,5 +365,18 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 				log.error(e);
 			}
 		}
+	}
+	
+	/**
+	 * Returns the address manager, the object that manages the allocation and usage 
+	 * of addresses within a DIF
+	 * @return
+	 */
+	public AddressManager getAddressManager(){
+		if (this.addressManager == null){
+			this.addressManager = new SimpleAddressManager(this);
+		}
+		
+		return this.addressManager;
 	}
 }

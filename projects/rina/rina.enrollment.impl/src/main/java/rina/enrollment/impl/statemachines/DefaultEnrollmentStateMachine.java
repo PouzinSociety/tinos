@@ -2,8 +2,6 @@ package rina.enrollment.impl.statemachines;
 
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -20,7 +18,6 @@ import rina.cdap.api.message.CDAPMessage.Flags;
 import rina.efcp.api.DataTransferConstants;
 import rina.encoding.api.Encoder;
 import rina.enrollment.api.EnrollmentTask;
-import rina.enrollment.impl.EnrollmentTaskImpl;
 import rina.flowallocator.api.QoSCube;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBDaemon;
@@ -65,10 +62,8 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 	private EnrollmentInitializer enrollmentInitializer = null;
 	
 	/**
-	 * The thread pool implementation
+	 * The timer that will execute the different timer tasks of this class
 	 */
-	private ExecutorService executorService = null;
-	
 	private Timer timer = null;
 	
 	/**
@@ -104,21 +99,24 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 	/**
 	 * The enrollment task
 	 */
-	private EnrollmentTaskImpl enrollmentTask = null;
+	private EnrollmentTask enrollmentTask = null;
 	
 	public DefaultEnrollmentStateMachine(RIBDaemon ribDaemon, CDAPSessionManager cdapSessionManager, Encoder encoder, 
-			ApplicationProcessNamingInfo remoteNamingInfo, EnrollmentTaskImpl enrollmentTask){
+			ApplicationProcessNamingInfo remoteNamingInfo, EnrollmentTask enrollmentTask){
 		this.ribDaemon = ribDaemon;
 		this.cdapSessionManager = cdapSessionManager;
 		this.encoder = encoder;
 		this.remoteNamingInfo = remoteNamingInfo;
 		this.enrollmentTask = enrollmentTask;
-		this.executorService = Executors.newFixedThreadPool(2);
 		this.remotePeer = new DAFMember();
 	}
 	
 	protected synchronized void setState(State state){
 		this.state = state;
+	}
+	
+	protected EnrollmentTask getEnrollmentTask(){
+		return this.enrollmentTask;
 	}
 	
 	public State getState(){
@@ -363,7 +361,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		//Start a new thread that sends as many M_READ_R as required. Has to be a separate thread 
 		//so that it can be stopped when the main worker receives an M_CANCELREAD
 		enrollmentInitializer = new EnrollmentInitializer(this, cdapMessage.getInvokeID(), portId, cdapSessionManager);
-		executorService.execute(enrollmentInitializer);
+		enrollmentTask.getIPCProcess().execute(enrollmentInitializer);
 	}
 	
 	/**
@@ -609,7 +607,6 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 				log.error(ex);
 			}
 		}
-		//TODO add QoS cubes info
 		
 		if (cdapMessage.getFlags() != null && cdapMessage.getFlags().equals(Flags.F_RD_INCOMPLETE)){
 			//TODO set timer, more read response messages to come
@@ -668,8 +665,9 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		
 	}
 	
-	private void reset(){
-		log.error("Received a failed response message or a message in the wrong orther");
+	protected void reset(){
+		log.error("An error happened during enrollment of remote IPC Process "+ 
+				this.getRemoteNamingInfo().toString()+ ". Aborting the operation");
 		try{
 			sendCDAPMessage(cdapSessionManager.getReleaseConnectionRequestMessage(portId, null, false));
 		}catch(CDAPException ex){

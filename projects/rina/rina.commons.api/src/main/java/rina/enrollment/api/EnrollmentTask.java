@@ -1,5 +1,6 @@
 package rina.enrollment.api;
 
+import rina.applicationprocess.api.DAFMember;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcessComponent;
@@ -52,4 +53,19 @@ public interface EnrollmentTask extends IPCProcessComponent{
 	 * @param cdapSessionDescriptor
 	 */
 	public void initiateEnrollment(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor);
+	
+	/**
+	 * Called by the enrollment state machine when the enrollment request has been completed, either successfully or unsuccessfully
+	 * @param candidate the IPC process we were trying to enroll to
+	 * @param result the result of the operation (0 = successful, >0 errors)
+	 * @param resultReason if result >0, a String explaining what was the problem
+	 */
+	public void enrollmentCompleted(DAFMember candidate, int result, String resultReason);
+	
+	/**
+	 * Returns the address manager, the object that manages the allocation and usage 
+	 * of addresses within a DIF
+	 * @return
+	 */
+	public AddressManager getAddressManager();
 }

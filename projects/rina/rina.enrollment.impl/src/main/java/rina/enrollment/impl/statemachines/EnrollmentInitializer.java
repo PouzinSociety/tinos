@@ -15,6 +15,7 @@ import rina.cdap.api.message.CDAPMessage.Flags;
 import rina.cdap.api.message.ObjectValue;
 import rina.efcp.api.DataTransferConstants;
 import rina.flowallocator.api.QoSCube;
+import rina.ipcservice.api.IPCException;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
@@ -30,7 +31,7 @@ public class EnrollmentInitializer implements Runnable{
 	private static final Log log = LogFactory.getLog(EnrollmentInitializer.class);
 	
 	private enum State {ADDRESS, WHATEVERCAST_NAMES, DATA_TRANSFER_CONSTANTS, QOS_CUBES, 
-		EFCP_POLICIES, FLOW_ALLOCATOR_POLICIES, DAF_MEMBERS, DONE};
+		EFCP_POLICIES, FLOW_ALLOCATOR_POLICIES, DAF_MEMBERS, DONE, ERROR};
 	
 	private DefaultEnrollmentStateMachine enrollmentStateMachine = null;
 	
@@ -98,8 +99,28 @@ public class EnrollmentInitializer implements Runnable{
 	
 	private void sendAddress() throws CDAPException, IOException{
 		ObjectValue objectValue = null;
+		CDAPMessage cdapMessage = null;
+		long address = 0;
 		
-		long address = 2;
+		//1 Get an address
+		try{
+			address = enrollmentStateMachine.getEnrollmentTask().getAddressManager().getAvailableAddress();
+		}catch(IPCException ex){
+			//Signal the error and abort the enrollment
+			log.error(ex);
+			state = State.ERROR;
+			try{
+				cdapMessage = cdapSessionManager.getReadObjectResponseMessage(portId, null, 
+						RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_CLASS, 1, RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME, 
+						null, ex.getErrorCode(), ex.getMessage(), invokeId);
+				enrollmentStateMachine.sendCDAPMessage(cdapMessage);
+				enrollmentStateMachine.reset();
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		
+		//2 Send it back
 		try{
 			objectValue = new ObjectValue();
 			objectValue.setInt64val(address);
@@ -107,7 +128,7 @@ public class EnrollmentInitializer implements Runnable{
 			ex.printStackTrace();
 		}
 		
-		CDAPMessage cdapMessage = cdapSessionManager.getReadObjectResponseMessage(portId, Flags.F_RD_INCOMPLETE, 
+	    cdapMessage = cdapSessionManager.getReadObjectResponseMessage(portId, Flags.F_RD_INCOMPLETE, 
 				RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_CLASS, 1, RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME, 
 				objectValue, 0, null, invokeId);
 		
