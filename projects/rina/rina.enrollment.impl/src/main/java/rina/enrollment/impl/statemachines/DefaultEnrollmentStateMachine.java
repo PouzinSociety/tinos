@@ -34,6 +34,13 @@ public class DefaultEnrollmentStateMachine implements CDAPMessageHandler, Enroll
 private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.class);
 
 	public static final String DEFAULT_ENROLLMENT = "default_enrollment";
+	public static final String CONNECT_IN_NOT_NULL = "Received a CONNECT message while not in NULL state";
+	public static final String READ_RESPONSE_IN_BAD_STATE = "Received a READ response in a wrong state";
+	public static final String READ_IN_BAD_STATE = "Received a READ message in a wrong state";
+	public static final String CANCEL_READ_IN_BAD_STATE = "Received a CANCEL READ message in a wrong state";
+	public static final String UNSUCCESSFUL_REPLY = "Received an unsuccessful response message";
+	public static final String WRONG_OBJECT_NAME = "Received a wrong objectName or objectName is null";
+	public static final String START_RESPONSE_IN_BAD_STATE = "Received a START response in a wrong state";
 	
 	private static final long TIME_TO_WAIT_FOR_READ_ADDRESS_RESPONSE = 5*1000;
 	private static final long TIME_TO_WAIT_FOR_READ_INITIALIZATION_DATA = 5*1000;
@@ -158,7 +165,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			handleNullState(cdapMessage, portId);
 			break;
 		default:
-			reset();
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, CONNECT_IN_NOT_NULL);
 			break;
 		}
 	}
@@ -264,7 +271,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			handleInitializingData(cdapMessage);
 			break;
 		default:
-			reset();
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, READ_RESPONSE_IN_BAD_STATE);
 			break;
 		}
 	}
@@ -281,7 +288,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		readAddressResponseTimer.cancel();
 		
 		if (cdapMessage.getResult() != 0){
-			reset();
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, UNSUCCESSFUL_REPLY);
 			return;
 		}
 		
@@ -302,7 +309,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		}
 		
 		if (address != 0 && !allocated){
-			reset();
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, null);
 			return;
 		}
 		
@@ -340,7 +347,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			handleWaitingReadAddress(cdapMessage);
 			break;
 		default:
-			reset();
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, READ_IN_BAD_STATE);
 			break;
 		}
 	}
@@ -350,7 +357,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		readInitializationDataTimer.cancel();
 		
 		if (cdapMessage.getObjName() == null || !cdapMessage.getObjName().equals(EnrollmentTask.ENROLLMENT_RIB_OBJECT_NAME)){
-			reset();
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, WRONG_OBJECT_NAME);
 			return;
 		}
 		
@@ -380,14 +387,14 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			handleInitializeNewMemberCancelread(cdapMessage);
 			break;
 		default:
-			reset();
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, CANCEL_READ_IN_BAD_STATE);
 			break;
 		}
 	}
 	
 	private void handleInitializeNewMemberCancelread(CDAPMessage cdapMessage){
 		if (cdapMessage.getObjName() == null || !cdapMessage.getObjName().equals(EnrollmentTask.ENROLLMENT_RIB_OBJECT_NAME)){
-			reset();
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, WRONG_OBJECT_NAME);
 			return;
 		}
 		
@@ -439,7 +446,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			handleStartup(cdapMessage, cdapSessionDescriptor);
 			break;
 		default:
-			reset();
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, START_RESPONSE_IN_BAD_STATE);
 			break;
 		}
 	}
@@ -530,8 +537,8 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		//TODO cancel timer
 		
 		if (!cdapMessage.getObjName().equals(RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME)){
-			reset();
-			enrollmentTask.enrollmentCompleted(remotePeer, 1, "Wrong objectName");
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, WRONG_OBJECT_NAME);
+			enrollmentTask.enrollmentCompleted(remotePeer, 1, WRONG_OBJECT_NAME);
 		}
 		
 		try{
@@ -558,7 +565,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		//TODO cancel timer
 		
 		if (cdapMessage.getResult() != 0){
-			reset();
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, UNSUCCESSFUL_REPLY);
 			enrollmentTask.enrollmentCompleted(remotePeer, cdapMessage.getResult(), cdapMessage.getResultReason());
 		}
 		
@@ -620,8 +627,8 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		//TODO cancel timer
 		
 		if (!cdapMessage.getObjName().equals(RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME)){
-			reset();
-			enrollmentTask.enrollmentCompleted(remotePeer, 1, "Wrong objectname");
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, WRONG_OBJECT_NAME);
+			enrollmentTask.enrollmentCompleted(remotePeer, 1, WRONG_OBJECT_NAME);
 		}
 		
 		try{
@@ -663,17 +670,6 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		
-	}
-	
-	protected void reset(){
-		log.error("An error happened during enrollment of remote IPC Process "+ 
-				this.getRemoteNamingInfo().toString()+ ". Aborting the operation");
-		try{
-			sendCDAPMessage(cdapSessionManager.getReleaseConnectionRequestMessage(portId, null, false));
-		}catch(CDAPException ex){
-			log.error(ex);
-		}
-		this.setState(State.NULL);
 	}
 	
 	private boolean isValidPortId(CDAPSessionDescriptor cdapSessionDescriptor){

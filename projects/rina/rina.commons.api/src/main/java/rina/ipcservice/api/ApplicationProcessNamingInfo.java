@@ -52,8 +52,24 @@ public class ApplicationProcessNamingInfo {
 	}
 
 	public String getProcessKey(){
-		return this.applicationProcessName + "-" + this.getApplicationProcessInstance() + "-" 
-		+ this.applicationEntityName + "-" + this.applicationEntityInstance;
+		boolean apInstanceNull = true;
+		String key = this.applicationProcessName;
+		
+		if (this.applicationProcessInstance != null){
+			key = key + "-" + this.applicationProcessInstance;
+			apInstanceNull = false;
+		}
+		if (this.applicationEntityName != null){
+			if (apInstanceNull){
+				key = key + "-";
+			}
+			key = key + "-" + this.applicationEntityName;
+		}
+		if (this.applicationEntityInstance != null){
+			key = key + "-" + this.applicationEntityInstance;
+		}
+		
+		return key;
 	}
 	
 	public String getApplicationEntityName() {

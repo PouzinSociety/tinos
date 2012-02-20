@@ -4,6 +4,7 @@ import rina.applicationprocess.api.DAFMember;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcessComponent;
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBObjectNames;
 
 /**
@@ -61,6 +62,14 @@ public interface EnrollmentTask extends IPCProcessComponent{
 	 * @param resultReason if result >0, a String explaining what was the problem
 	 */
 	public void enrollmentCompleted(DAFMember candidate, int result, String resultReason);
+	
+	/**
+	 * Called by the enrollment state machine when the enrollment request fails
+	 * @param remotePeer
+	 * @param portId
+	 * @param reason
+	 */
+	public void enrollmentFailed(ApplicationProcessNamingInfo remotePeerNamingInfo, int portId, String reason);
 	
 	/**
 	 * Returns the address manager, the object that manages the allocation and usage 

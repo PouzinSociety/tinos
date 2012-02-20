@@ -114,7 +114,8 @@ public class EnrollmentInitializer implements Runnable{
 						RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_CLASS, 1, RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME, 
 						null, ex.getErrorCode(), ex.getMessage(), invokeId);
 				enrollmentStateMachine.sendCDAPMessage(cdapMessage);
-				enrollmentStateMachine.reset();
+				enrollmentStateMachine.getEnrollmentTask().enrollmentFailed(
+						enrollmentStateMachine.getRemoteNamingInfo(), portId, "No addresses available");
 			}catch(Exception e){
 				e.printStackTrace();
 			}
