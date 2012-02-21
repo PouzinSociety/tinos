@@ -1,4 +1,4 @@
-package rina.ipcmanager.impl;
+package rina.idd.impl;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -12,7 +12,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.ipcmanager.api.InterDIFDirectory;
+import rina.idd.api.InterDIFDirectory;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 /**

@@ -16,13 +16,8 @@
 	</publications>
 
 	<dependencies>
-<!-- RINA -->
-		<dependency org="org.pouzinsociety.rina" name="rina.idd.api" rev="${rina.idd.api}"  />
-<!--
-		<dependency org="org.pouzinsociety.rina" name="rina.transport.api" rev="${rina.transport.api}" />
-		<dependency org="org.pouzinsociety.bootstrap" name="org.pouzinsociety.bootstrap.api" rev="1.0.0"  />
--->
-
+<!-- RINA Commons API -->
+		<dependency org="org.pouzinsociety.rina" name="rina.commons.api" rev="1.0.0"  conf="compile->runtime" />
 <!-- Logging -->
 		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" />
 <!-- Tests -->

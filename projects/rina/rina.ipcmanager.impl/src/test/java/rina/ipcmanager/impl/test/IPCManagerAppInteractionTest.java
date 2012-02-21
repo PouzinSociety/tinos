@@ -16,7 +16,7 @@ import rina.cdap.api.message.ObjectValue;
 import rina.delimiting.api.Delimiter;
 import rina.delimiting.api.DelimiterFactory;
 import rina.encoding.api.Encoder;
-import rina.ipcmanager.api.InterDIFDirectory;
+import rina.idd.api.InterDIFDirectoryFactory;
 import rina.ipcmanager.impl.IPCManagerImpl;
 import rina.ipcmanager.impl.apservice.APServiceTCPServer;
 import rina.ipcprocess.api.IPCProcessFactory;
@@ -32,7 +32,7 @@ public class IPCManagerAppInteractionTest {
 	private CDAPSessionManager cdapSessionManager = null;
 	private Delimiter delimiter = null;
 	private Encoder encoder = null;
-	private InterDIFDirectory idd = null;
+	private InterDIFDirectoryFactory iddFactory = null;
 	private ExecutorService executorService = null;
 	
 	@Before
@@ -40,8 +40,8 @@ public class IPCManagerAppInteractionTest {
 		ipcManager = new IPCManagerImpl();
 		mockIPCProcessFactory = new MockIPCProcessFactory(ipcManager.getAPService());
 		ipcManager.setIPCProcessFactory(mockIPCProcessFactory);
-		idd = new MockInterDIFDirectory();
-		ipcManager.setInterDIFDirectory(idd);
+		iddFactory = new MockInterDIFDirectoryFactory();
+		ipcManager.setInterDIFDirectoryFactory(iddFactory);
 		cdapSessionManager = mockIPCProcessFactory.getCDAPSessionManagerFactory().createCDAPSessionManager();
 		delimiter = mockIPCProcessFactory.getDelimiterFactory().createDelimiter(DelimiterFactory.DIF);
 		encoder = mockIPCProcessFactory.getEncoderFactory().createEncoderInstance();

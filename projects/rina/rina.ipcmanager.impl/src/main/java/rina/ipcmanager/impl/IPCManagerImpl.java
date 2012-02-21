@@ -21,8 +21,8 @@ import rina.enrollment.api.EnrollmentTask;
 import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.flowallocator.api.QoSCube;
 import rina.flowallocator.api.message.Flow;
+import rina.idd.api.InterDIFDirectoryFactory;
 import rina.ipcmanager.api.IPCManager;
-import rina.ipcmanager.api.InterDIFDirectory;
 import rina.ipcmanager.impl.apservice.APServiceImpl;
 import rina.ipcmanager.impl.console.IPCManagerConsole;
 import rina.ipcprocess.api.IPCProcess;
@@ -83,8 +83,8 @@ public class IPCManagerImpl implements IPCManager{
 		executorService.shutdownNow();
 	}
 	
-	public void setInterDIFDirectory(InterDIFDirectory idd){
-		apService.setInterDIFDirectory(idd);
+	public void setInterDIFDirectoryFactory(InterDIFDirectoryFactory iddFactory){
+		apService.setInterDIFDirectory(iddFactory.createIDD(this));
 	}
 	
 	public void setIPCProcessFactory(IPCProcessFactory ipcProcessFactory){

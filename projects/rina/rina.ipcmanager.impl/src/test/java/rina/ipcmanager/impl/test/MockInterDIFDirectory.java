@@ -3,7 +3,7 @@ package rina.ipcmanager.impl.test;
 import java.util.ArrayList;
 import java.util.List;
 
-import rina.ipcmanager.api.InterDIFDirectory;
+import rina.idd.api.InterDIFDirectory;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 public class MockInterDIFDirectory implements InterDIFDirectory{

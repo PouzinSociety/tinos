@@ -14,6 +14,7 @@
 		<pathelement location="../rina.ribdaemon.impl"/>
 		<pathelement location="../rina.rmt.impl"/>
 		<pathelement location="../rina.flowallocator.impl"/>
+		<pathelement location="../rina.idd.impl"/>
 		<pathelement location="../rina.ipcmanager.impl"/>
 		<pathelement location="../rina.applibrary.impl"/>
 	</path>

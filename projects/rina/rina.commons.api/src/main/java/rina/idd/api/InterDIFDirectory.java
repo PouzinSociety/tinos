@@ -1,4 +1,4 @@
-package rina.ipcmanager.api;
+package rina.idd.api;
 
 import java.util.List;
 

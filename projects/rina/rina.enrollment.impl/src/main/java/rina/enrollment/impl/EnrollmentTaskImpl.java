@@ -301,7 +301,6 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 					cdapSessionDescriptor.getPortId(), false);
 			enrollmentStateMachine.connect(cdapMessage, cdapSessionDescriptor.getPortId());
 		}catch(Exception ex){
-			//Error creating or getting the enrollment state machine
 			log.error(ex.getMessage());
 			try{
 				int portId = cdapSessionDescriptor.getPortId();

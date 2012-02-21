@@ -8,7 +8,10 @@
        http://www.springframework.org/schema/beans   
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-<!-- Update for your own service
-    <osgi:service id="bundleServiceOsgi" ref="bundleService" interface="rina.idd.impl.BundleService" />
- -->
+	<!--  Export the iddFactory to the OSGi registry-->
+    <osgi:service id="iddFactory" ref="iddFactoryBean">
+     	<osgi:interfaces>
+ 			<value>rina.idd.api.InterDIFDirectoryFactory</value>
+ 		</osgi:interfaces>
+    </osgi:service>
 </beans>           
