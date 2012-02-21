@@ -115,7 +115,8 @@ public class EnrollmentInitializer implements Runnable{
 						null, ex.getErrorCode(), ex.getMessage(), invokeId);
 				enrollmentStateMachine.sendCDAPMessage(cdapMessage);
 				enrollmentStateMachine.getEnrollmentTask().enrollmentFailed(
-						enrollmentStateMachine.getRemoteNamingInfo(), portId, "No addresses available");
+						enrollmentStateMachine.getRemoteNamingInfo(), portId, "No addresses available", 
+						enrollmentStateMachine.isEnrollee(), true);
 			}catch(Exception e){
 				e.printStackTrace();
 			}

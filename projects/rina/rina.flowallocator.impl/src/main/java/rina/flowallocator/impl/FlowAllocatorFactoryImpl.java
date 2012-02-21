@@ -9,10 +9,10 @@ import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 public class FlowAllocatorFactoryImpl implements FlowAllocatorFactory{
 
-	private Map<ApplicationProcessNamingInfo, FlowAllocator> flowAllocatorRespository = null;
+	private Map<String, FlowAllocator> flowAllocatorRespository = null;
 	
 	public FlowAllocatorFactoryImpl(){
-		flowAllocatorRespository = new HashMap<ApplicationProcessNamingInfo, FlowAllocator>();
+		flowAllocatorRespository = new HashMap<String, FlowAllocator>();
 	}
 	
 	public FlowAllocator createFlowAllocator(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
@@ -23,17 +23,17 @@ public class FlowAllocatorFactoryImpl implements FlowAllocatorFactory{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		flowAllocatorRespository.put(ipcProcessNamingInfo, flowAllocator);
+		flowAllocatorRespository.put(ipcProcessNamingInfo.getProcessKey(), flowAllocator);
 		return flowAllocator;
 	}
 
 	public void destroyFlowAllocator(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
-		FlowAllocator flowAllocator = (FlowAllocatorImpl) flowAllocatorRespository.remove(ipcProcessNamingInfo);
+		FlowAllocator flowAllocator = (FlowAllocatorImpl) flowAllocatorRespository.remove(ipcProcessNamingInfo.getProcessKey());
 		flowAllocator.stop();
 	}
 
 	public FlowAllocator getFlowAllocator(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
-		return flowAllocatorRespository.get(ipcProcessNamingInfo);
+		return flowAllocatorRespository.get(ipcProcessNamingInfo.getProcessKey());
 	}
 
 }

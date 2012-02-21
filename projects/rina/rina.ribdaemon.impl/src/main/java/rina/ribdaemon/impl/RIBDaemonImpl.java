@@ -268,12 +268,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		cleanMessageHandlersWaitingForReply(portId);
 		//Inform the enrollment task
 		EnrollmentTask enrollmentTask = (EnrollmentTask) this.getIPCProcess().getIPCProcessComponent(BaseEnrollmentTask.getComponentName());
-		try {
-			enrollmentTask.release(cdapSessionManager.getReleaseConnectionRequestMessage(portId, null, false), cdapSessionDescriptor);
-		} catch (Exception ex) {
-			log.error(ex);
-			ex.printStackTrace();
-		}
+		enrollmentTask.flowDeallocated(cdapSessionDescriptor);
 	}
 	
 	/**

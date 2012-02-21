@@ -55,21 +55,31 @@ public interface EnrollmentTask extends IPCProcessComponent{
 	 */
 	public void initiateEnrollment(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor);
 	
-	/**
+	 /**
 	 * Called by the enrollment state machine when the enrollment request has been completed, either successfully or unsuccessfully
 	 * @param candidate the IPC process we were trying to enroll to
-	 * @param result the result of the operation (0 = successful, >0 errors)
-	 * @param resultReason if result >0, a String explaining what was the problem
+	 * @param enrollee true if this IPC process is the one that initiated the 
+	 * enrollment sequence (i.e. it is the application process that wants to 
+	 * join the DIF)
 	 */
-	public void enrollmentCompleted(DAFMember candidate, int result, String resultReason);
+	public void enrollmentCompleted(DAFMember candidate, boolean enrollee);
 	
 	/**
-	 * Called by the enrollment state machine when the enrollment request fails
+	 * Called by the enrollment state machine when the enrollment sequence fails
 	 * @param remotePeer
 	 * @param portId
+	 * @param enrollee
+	 * @param sendMessage
 	 * @param reason
 	 */
-	public void enrollmentFailed(ApplicationProcessNamingInfo remotePeerNamingInfo, int portId, String reason);
+	 public void enrollmentFailed(ApplicationProcessNamingInfo remotePeerNamingInfo, int portId, String reason, boolean enrolle, boolean sendReleaseMessage);
+	
+	/**
+	 * Called by the RIB Daemon when the flow supporting the CDAP session with the remote peer
+	 * has been deallocated
+	 * @param cdapSessionDescriptor
+	 */
+	public void flowDeallocated(CDAPSessionDescriptor cdapSessionDescriptor);
 	
 	/**
 	 * Returns the address manager, the object that manages the allocation and usage 

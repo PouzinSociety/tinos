@@ -20,6 +20,7 @@ import rina.encoding.api.Encoder;
 import rina.enrollment.api.EnrollmentTask;
 import rina.flowallocator.api.QoSCube;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.IPCException;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObjectNames;
@@ -108,14 +109,32 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 	 */
 	private EnrollmentTask enrollmentTask = null;
 	
+	/**
+	 * True if this IPC process is the one that initiated the 
+	 * enrollment sequence (i.e. it is the application process that wants to 
+	 * join the DIF)
+	 */
+	private boolean enrollee = false;
+	
 	public DefaultEnrollmentStateMachine(RIBDaemon ribDaemon, CDAPSessionManager cdapSessionManager, Encoder encoder, 
-			ApplicationProcessNamingInfo remoteNamingInfo, EnrollmentTask enrollmentTask){
+			ApplicationProcessNamingInfo remoteNamingInfo, EnrollmentTask enrollmentTask, boolean enrollee){
 		this.ribDaemon = ribDaemon;
 		this.cdapSessionManager = cdapSessionManager;
 		this.encoder = encoder;
 		this.remoteNamingInfo = remoteNamingInfo;
 		this.enrollmentTask = enrollmentTask;
 		this.remotePeer = new DAFMember();
+		this.enrollee = enrollee;
+	}
+	
+	/**
+	 * Returns true if this IPC process is the one that initiated the 
+	 * enrollment sequence (i.e. it is the application process that wants to 
+	 * join the DIF)
+	 * @return
+	 */
+	public boolean isEnrollee(){
+		return enrollee;
 	}
 	
 	protected synchronized void setState(State state){
@@ -165,7 +184,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			handleNullState(cdapMessage, portId);
 			break;
 		default:
-			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, CONNECT_IN_NOT_NULL);
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, CONNECT_IN_NOT_NULL, enrollee, true);
 			break;
 		}
 	}
@@ -256,6 +275,34 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 	}
 	
 	/**
+	 * Called by the EnrollmentTask when the flow supporting the CDAP session with the remote peer
+	 * has been deallocated
+	 * @param cdapSessionDescriptor
+	 */
+	public void flowDeallocated(CDAPSessionDescriptor cdapSessionDescriptor){
+		log.info("The flow supporting the CDAP session identified by "+cdapSessionDescriptor.getPortId()
+				+" has been deallocated.");
+		
+		if (!isValidPortId(cdapSessionDescriptor)){
+			return;
+		}
+		
+		//Delete the DAF member entry in the RIB
+		if (this.getState().equals(State.ENROLLED)){
+			try{
+				ribDaemon.delete(null, DAFMember.DAF_MEMBER_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + 
+						remotePeer.getApplicationProcessName()+remotePeer.getApplicationProcessInstance(), 
+						0, null);
+			}catch(RIBDaemonException ex){
+				log.error(ex);
+			}
+			
+			this.setState(State.NULL);
+			this.remotePeer = new DAFMember();
+		}
+	}
+	
+	/**
 	 * Called by the RIB Daemon when an M_READ_R message has been delivered
 	 */
 	public void readResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
@@ -271,7 +318,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			handleInitializingData(cdapMessage);
 			break;
 		default:
-			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, READ_RESPONSE_IN_BAD_STATE);
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, READ_RESPONSE_IN_BAD_STATE, enrollee, true);
 			break;
 		}
 	}
@@ -288,7 +335,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		readAddressResponseTimer.cancel();
 		
 		if (cdapMessage.getResult() != 0){
-			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, UNSUCCESSFUL_REPLY);
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, UNSUCCESSFUL_REPLY, enrollee, true);
 			return;
 		}
 		
@@ -309,7 +356,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		}
 		
 		if (address != 0 && !allocated){
-			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, null);
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, null, enrollee, true);
 			return;
 		}
 		
@@ -347,7 +394,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			handleWaitingReadAddress(cdapMessage);
 			break;
 		default:
-			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, READ_IN_BAD_STATE);
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, READ_IN_BAD_STATE, enrollee, true);
 			break;
 		}
 	}
@@ -357,7 +404,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		readInitializationDataTimer.cancel();
 		
 		if (cdapMessage.getObjName() == null || !cdapMessage.getObjName().equals(EnrollmentTask.ENROLLMENT_RIB_OBJECT_NAME)){
-			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, WRONG_OBJECT_NAME);
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, WRONG_OBJECT_NAME, enrollee, true);
 			return;
 		}
 		
@@ -387,14 +434,14 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			handleInitializeNewMemberCancelread(cdapMessage);
 			break;
 		default:
-			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, CANCEL_READ_IN_BAD_STATE);
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, CANCEL_READ_IN_BAD_STATE, enrollee, true);
 			break;
 		}
 	}
 	
 	private void handleInitializeNewMemberCancelread(CDAPMessage cdapMessage){
 		if (cdapMessage.getObjName() == null || !cdapMessage.getObjName().equals(EnrollmentTask.ENROLLMENT_RIB_OBJECT_NAME)){
-			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, WRONG_OBJECT_NAME);
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, WRONG_OBJECT_NAME, enrollee, true);
 			return;
 		}
 		
@@ -446,7 +493,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			handleStartup(cdapMessage, cdapSessionDescriptor);
 			break;
 		default:
-			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, START_RESPONSE_IN_BAD_STATE);
+			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, START_RESPONSE_IN_BAD_STATE, enrollee, true);
 			break;
 		}
 	}
@@ -455,16 +502,8 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		//Cancel timer
 		startResponseTimer.cancel();
 		timer.cancel();
-
-		try{
-			ribDaemon.create(null, DAFMember.DAF_MEMBER_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + 
-					remotePeer.getApplicationProcessName()+remotePeer.getApplicationProcessInstance(), 
-					0, this.remotePeer);
-		}catch(RIBDaemonException ex){
-			log.error(ex);
-		}
-
 		this.setState(State.ENROLLED);
+		enrollmentTask.enrollmentCompleted(remotePeer, enrollee);
 		log.info("Remote IPC Process enrolled!");
 	}
 
@@ -479,7 +518,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 	 * @param cdapMessage
 	 * @param portId
 	 */
-	public void initiateEnrollment(DAFMember candidate, int portId){
+	public void initiateEnrollment(DAFMember candidate, int portId) throws IPCException{
 		remoteNamingInfo = new ApplicationProcessNamingInfo(candidate.getApplicationProcessName(), candidate.getApplicationProcessInstance());
 		remotePeer = candidate;
 		switch(state){
@@ -499,7 +538,8 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			}
 			break;
 		default:
-			enrollmentTask.enrollmentCompleted(candidate, 1, "Enrollment state machine was not in NULL state");
+			throw new IPCException(IPCException.ENROLLMENT_PROBLEM_CODE, 
+					IPCException.ENROLLMENT_PROBLEM + "Enrollment state machine not in NULL state");
 		}
 	}
 	
@@ -515,7 +555,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			break;
 		default:
 			this.state = State.NULL;;
-			enrollmentTask.enrollmentCompleted(remotePeer, 1, "Message received in wrong order");
+			enrollmentTask.enrollmentFailed(remoteNamingInfo, portId, "Message received in wrong order", enrollee, true);
 			break;
 		}
 	}
@@ -525,7 +565,8 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		
 		if (cdapMessage.getResult() != 0){
 			this.state = State.NULL;
-			enrollmentTask.enrollmentCompleted(remotePeer, cdapMessage.getResult(), cdapMessage.getResultReason());
+			enrollmentTask.enrollmentFailed(remoteNamingInfo, portId, cdapMessage.getResultReason(), enrollee, true);
+			return;
 		}
 		
 		//TODO set timer
@@ -537,8 +578,9 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		//TODO cancel timer
 		
 		if (!cdapMessage.getObjName().equals(RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME)){
-			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, WRONG_OBJECT_NAME);
-			enrollmentTask.enrollmentCompleted(remotePeer, 1, WRONG_OBJECT_NAME);
+			this.state = State.NULL;
+			enrollmentTask.enrollmentFailed(remoteNamingInfo, portId, WRONG_OBJECT_NAME, enrollee, true);
+			return;
 		}
 		
 		try{
@@ -565,8 +607,9 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		//TODO cancel timer
 		
 		if (cdapMessage.getResult() != 0){
-			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, UNSUCCESSFUL_REPLY);
-			enrollmentTask.enrollmentCompleted(remotePeer, cdapMessage.getResult(), cdapMessage.getResultReason());
+			this.state = State.NULL;
+			enrollmentTask.enrollmentFailed(remoteNamingInfo, portId, UNSUCCESSFUL_REPLY, enrollee, true);
+			return;
 		}
 		
 		if (cdapMessage.getObjName().equals(RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME)){
@@ -627,8 +670,9 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		//TODO cancel timer
 		
 		if (!cdapMessage.getObjName().equals(RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME)){
-			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, WRONG_OBJECT_NAME);
-			enrollmentTask.enrollmentCompleted(remotePeer, 1, WRONG_OBJECT_NAME);
+			this.state = State.NULL;
+			enrollmentTask.enrollmentFailed(remoteNamingInfo, portId, WRONG_OBJECT_NAME, enrollee, true);
+			return;
 		}
 		
 		try{
@@ -636,7 +680,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 			sendCDAPMessage(outgoingCDAPMessage);
 			log.info("IPC Process enrolled!");
 			state = State.ENROLLED;
-			enrollmentTask.enrollmentCompleted(remotePeer, 0, null);
+			enrollmentTask.enrollmentCompleted(remotePeer, enrollee);
 		}catch(CDAPException ex){
 			log.error(ex);
 		}

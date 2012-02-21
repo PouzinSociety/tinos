@@ -3,6 +3,7 @@ package rina.enrollment.impl.statemachines;
 import rina.applicationprocess.api.DAFMember;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
+import rina.ipcservice.api.IPCException;
 
 /**
  * Interface that all the enrollment state machines have to implement
@@ -57,7 +58,7 @@ public interface EnrollmentStateMachine {
 	 * @param cdapMessage
 	 * @param portId
 	 */
-	public void initiateEnrollment(DAFMember candidate, int portId);
+	public void initiateEnrollment(DAFMember candidate, int portId) throws IPCException;
 	
 	/**
 	 * Called by the EnrollmentTask when it receives an M_READ CDAP mesasge 
@@ -81,4 +82,19 @@ public interface EnrollmentStateMachine {
 	 * @param cdapSessionDescriptor
 	 */
 	public void start(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor);
+	
+	/**
+	 * Called by the EnrollmentTask when the flow supporting the CDAP session with the remote peer
+	 * has been deallocated
+	 * @param cdapSessionDescriptor
+	 */
+	public void flowDeallocated(CDAPSessionDescriptor cdapSessionDescriptor);
+	
+	/**
+	 * Returns true if this IPC process is the one that initiated the 
+	 * enrollment sequence (i.e. it is the application process that wants to 
+	 * join the DIF)
+	 * @return
+	 */
+	public boolean isEnrollee();
 }

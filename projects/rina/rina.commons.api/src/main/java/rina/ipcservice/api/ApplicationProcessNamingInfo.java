@@ -100,23 +100,7 @@ public class ApplicationProcessNamingInfo {
 		
 		ApplicationProcessNamingInfo candidate = (ApplicationProcessNamingInfo) object;
 		
-		if (!this.applicationProcessName.equals(candidate.getApplicationProcessName())){
-			return false;
-		}
-		
-		if (this.applicationProcessInstance != null && !this.applicationProcessInstance.equals(candidate.getApplicationProcessInstance())){
-			return false;
-		}
-		
-		if (this.applicationEntityName != null && !this.applicationEntityName.equals(candidate.getApplicationEntityName())){
-			return false;
-		}
-		
-		if (this.applicationEntityInstance != null && !this.applicationEntityInstance.equals(candidate.getApplicationEntityInstance())){
-			return false;
-		}
-		
-		return true;
+		return this.getProcessKey().equals(candidate.getProcessKey());
 	}
 	
 	@Override
