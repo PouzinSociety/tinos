@@ -1,7 +1,9 @@
 package rina.enrollment.impl;
 
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -113,7 +115,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 			
 			if (myNamingInfo.getApplicationProcessName().equals(sourceNamingInfo.getApplicationProcessName()) && 
 					myNamingInfo.getApplicationProcessInstance().equals(sourceNamingInfo.getApplicationProcessInstance())){
-				return getEnrollmentStateMachine(destinationNamingInfo, remove);
+				return getEnrollmentStateMachine(destinationNamingInfo, cdapSessionDescriptor.getPortId(), remove);
 			}else{
 				throw new Exception("This IPC process is not the intended recipient of the CDAP message");
 			}
@@ -129,21 +131,27 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 * @param remove
 	 * @return
 	 */
-	public EnrollmentStateMachine getEnrollmentStateMachine(ApplicationProcessNamingInfo apNamingInfo, boolean remove){
+	public EnrollmentStateMachine getEnrollmentStateMachine(ApplicationProcessNamingInfo apNamingInfo, int portId, boolean remove){
 		if (remove){
-			return enrollmentStateMachines.remove(apNamingInfo.getProcessKey());
+			return enrollmentStateMachines.remove(apNamingInfo.getProcessKey()+"-"+portId);
 		}else{
-			return enrollmentStateMachines.get(apNamingInfo.getProcessKey());
+			return enrollmentStateMachines.get(apNamingInfo.getProcessKey()+"-"+portId);
 		}
 	}
 	
+	/**
+	 * Finds out if the ICP process is already enrolled to the IPC process identified by 
+	 * the provided apNamingInfo
+	 * @param apNamingInfo
+	 * @return
+	 */
 	private boolean isEnrolledTo(ApplicationProcessNamingInfo apNamingInfo){
-		EnrollmentStateMachine enrollmentStateMachine = enrollmentStateMachines.get(apNamingInfo.getProcessKey());
-		if (enrollmentStateMachine == null){
-			return false;
-		}
-		if (!enrollmentStateMachine.getState().equals(EnrollmentStateMachine.State.NULL)){
-			return true;
+		Iterator<Entry<String, EnrollmentStateMachine>> iterator  = enrollmentStateMachines.entrySet().iterator();
+		
+		while(iterator.hasNext()){
+			if (iterator.next().getValue().getRemotePeerNamingInfo().getProcessKey().equals(apNamingInfo.getProcessKey())){
+				return true;
+			}
 		}
 		
 		return false;
@@ -157,7 +165,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 * join the DIF)
 	 * @return
 	 */
-	private EnrollmentStateMachine createEnrollmentStateMachine(ApplicationProcessNamingInfo apNamingInfo, boolean enrollee) throws Exception{
+	private EnrollmentStateMachine createEnrollmentStateMachine(ApplicationProcessNamingInfo apNamingInfo, int portId, boolean enrollee) throws Exception{
 		CDAPSessionManager cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 		RIBDaemon ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		Encoder encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
@@ -165,7 +173,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		
 		if (apNamingInfo.getApplicationEntityName().equals(DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT)){
 			enrollmentStateMachine = new DefaultEnrollmentStateMachine(ribDaemon, cdapSessionManager, encoder, apNamingInfo, this, enrollee);
-			enrollmentStateMachines.put(apNamingInfo.getProcessKey(), enrollmentStateMachine);
+			enrollmentStateMachines.put(apNamingInfo.getProcessKey()+"-"+portId, enrollmentStateMachine);
 			log.debug("Created a new Enrollment state machine for remote IPC process: " + apNamingInfo.getProcessKey());
 			return enrollmentStateMachine;
 		}
@@ -179,11 +187,11 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 * @param cdapSessionDescriptor
 	 */
 	public synchronized void initiateEnrollment(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor){
-		//TODO
 		DAFMember candidate = null;
 		ApplicationProcessNamingInfo candidateNamingInfo = null;
 		EnrollmentStateMachine enrollmentStateMachine = null;
 		PendingEnrollmentRequest pendingEnrollmentRequest = null;
+		CDAPMessage responseMessage = null;
 		int portId = 0;
 		
 		//1 Check that we're not already enrolled to the IPC Process
@@ -193,13 +201,28 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 					candidate.getApplicationProcessInstance(), DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT, null);
 		}catch(Exception ex){
 			log.error(ex);
-			//TODO return M_CREATE_R with error code answer.
+			try{
+				responseMessage = cdapSessionManager.getCreateObjectResponseMessage(cdapSessionDescriptor.getPortId(), 
+						null, cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName(), null, -2, 
+						ex.getMessage(), cdapMessage.getInvokeID());
+				ribDaemon.sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
+			}catch(Exception e) {
+				log.error(e);
+			}
 			return;
 		}
 		
 		if (this.isEnrolledTo(candidateNamingInfo)){
-			log.error("Already enrolled to IPC Process "+candidateNamingInfo.getProcessKey());
-			//TODO return M_CREATE_R with error code answer
+			String message = "Already enrolled to IPC Process "+candidateNamingInfo.getProcessKey();
+			log.error(message);
+			try{
+				responseMessage = cdapSessionManager.getCreateObjectResponseMessage(cdapSessionDescriptor.getPortId(), 
+						null, cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName(), null, -2, 
+						message, cdapMessage.getInvokeID());
+				ribDaemon.sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
+			}catch(Exception ex) {
+				log.error(ex);
+			}
 			return;
 		}
 		
@@ -215,7 +238,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		
 		//3 Tell the enrollment task to create a new Enrollment state machine
 		try{
-			enrollmentStateMachine = this.createEnrollmentStateMachine(candidateNamingInfo, true);
+			enrollmentStateMachine = this.createEnrollmentStateMachine(candidateNamingInfo, portId, true);
 		}catch(Exception ex){
 			//Should never happen, fix it!
 			log.error(ex);
@@ -231,7 +254,15 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 			enrollmentStateMachine.initiateEnrollment(candidate, portId);
 		}catch(IPCException ex){
 			log.error(ex);
-			//TODO return M_CREATE_R with error code answer
+			ongoingInitiateEnrollmentRequests.remove(candidateNamingInfo.getProcessKey());
+			try{
+				responseMessage = cdapSessionManager.getCreateObjectResponseMessage(cdapSessionDescriptor.getPortId(), 
+						null, cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName(), null, -2, 
+						ex.getMessage(), cdapMessage.getInvokeID());
+				ribDaemon.sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
+			}catch(Exception e) {
+				log.error(e);
+			}
 		}
 	}
 
@@ -244,35 +275,40 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		log.debug("Received M_CONNECT cdapMessage from portId "+cdapSessionDescriptor.getPortId());
 		cdapSessionDescriptor.setDestAEName(cdapSessionDescriptor.getSrcAEName());
 
-		try{
-			EnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor, false);
-			if (enrollmentStateMachine == null){
-				enrollmentStateMachine = this.createEnrollmentStateMachine(
-						cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo(), false);
-				enrollmentStateMachine.connect(cdapMessage, cdapSessionDescriptor.getPortId());
-			}else{
-				try{
-					String message = "Received an enrollment request for an IPC process I'm already enrolled to";
-					log.error(message);
-					int portId = cdapSessionDescriptor.getPortId();
-					CDAPMessage errorMessage = 
-							cdapSessionManager.getOpenConnectionResponseMessage(portId, cdapMessage.getAuthMech(), null, cdapMessage.getSrcAEInst(), cdapMessage.getSrcAEName(), 
-									cdapMessage.getSrcApInst(), cdapMessage.getSrcApName(), -2, message, null, cdapMessage.getDestAEName(), cdapMessage.getDestApInst(), 
-									cdapMessage.getDestApName(), cdapMessage.getInvokeID());
-					sendErrorMessageAndDeallocateFlow(errorMessage, portId);
-				}catch(Exception e){
-					log.error(e);
-				}
+		//1 Find out if we are already enrolled to the remote IPC process
+		if (this.isEnrolledTo(cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo())){
+			try{
+				String message = "Received an enrollment request for an IPC process I'm already enrolled to";
+				log.error(message);
+				int portId = cdapSessionDescriptor.getPortId();
+				CDAPMessage errorMessage = 
+						cdapSessionManager.getOpenConnectionResponseMessage(portId, cdapMessage.getAuthMech(), null, cdapMessage.getSrcAEInst(), cdapMessage.getSrcAEName(), 
+								cdapMessage.getSrcApInst(), cdapMessage.getSrcApName(), -2, message, null, cdapMessage.getDestAEName(), cdapMessage.getDestApInst(), 
+								cdapMessage.getDestApName(), cdapMessage.getInvokeID());
+				sendErrorMessageAndDeallocateFlow(errorMessage, portId);
+			}catch(Exception e){
+				log.error(e);
 			}
+			
+			return;
+		}
+		
+		//2 Initiate the enrollment
+		try{
+
+			EnrollmentStateMachine enrollmentStateMachine = this.createEnrollmentStateMachine(
+					cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo(), 
+					cdapSessionDescriptor.getPortId(), false);
+			enrollmentStateMachine.connect(cdapMessage, cdapSessionDescriptor.getPortId());
 		}catch(Exception ex){
 			//Error creating or getting the enrollment state machine
 			log.error(ex.getMessage());
 			try{
 				int portId = cdapSessionDescriptor.getPortId();
 				CDAPMessage errorMessage =
-						cdapSessionManager.getOpenConnectionResponseMessage(portId, cdapMessage.getAuthMech(), null, cdapMessage.getSrcAEInst(), cdapMessage.getSrcAEName(), 
-								cdapMessage.getSrcApInst(), cdapMessage.getSrcApName(), -2, ex.getMessage(), null, cdapMessage.getDestAEName(), cdapMessage.getDestApInst(), 
-								cdapMessage.getDestApName(), cdapMessage.getInvokeID());
+					cdapSessionManager.getOpenConnectionResponseMessage(portId, cdapMessage.getAuthMech(), null, cdapMessage.getSrcAEInst(), cdapMessage.getSrcAEName(), 
+							cdapMessage.getSrcApInst(), cdapMessage.getSrcApName(), -2, ex.getMessage(), null, cdapMessage.getDestAEName(), cdapMessage.getDestApInst(), 
+							cdapMessage.getDestApName(), cdapMessage.getInvokeID());
 				sendErrorMessageAndDeallocateFlow(errorMessage, portId);
 			}catch(Exception e){
 				log.error(e);
@@ -381,7 +417,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		 log.error("An error happened during enrollment of remote IPC Process "+ 
 					remotePeerNamingInfo.getProcessKey()+ " because of " +reason+". Aborting the operation");
 		 //1 Remove enrollment state machine from the store
-		 this.getEnrollmentStateMachine(remotePeerNamingInfo, true);
+		 this.getEnrollmentStateMachine(remotePeerNamingInfo, portId, true);
 		 
 		 //2 Send message and deallocate flow if required
 		 if(sendReleaseMessage){

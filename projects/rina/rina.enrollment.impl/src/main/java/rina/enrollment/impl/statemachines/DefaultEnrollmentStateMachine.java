@@ -137,6 +137,14 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		return enrollee;
 	}
 	
+	/**
+	 * Return the naming information of the remote peer we are trying to enroll
+	 * @return
+	 */
+	public ApplicationProcessNamingInfo getRemotePeerNamingInfo(){
+		return remoteNamingInfo;
+	}
+	
 	protected synchronized void setState(State state){
 		this.state = state;
 	}

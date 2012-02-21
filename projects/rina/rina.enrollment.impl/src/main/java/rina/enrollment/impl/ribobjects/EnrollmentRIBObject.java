@@ -39,7 +39,8 @@ public class EnrollmentRIBObject extends BaseRIBObject{
 		EnrollmentStateMachine enrollmentStateMachine = null;
 		
 		try{
-			enrollmentStateMachine = enrollmentTask.getEnrollmentStateMachine(cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo(), false);
+			enrollmentStateMachine = enrollmentTask.getEnrollmentStateMachine(cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo(), 
+					cdapSessionDescriptor.getPortId(), false);
 		}catch(Exception ex){
 			log.error(ex);
 			try{
@@ -63,7 +64,8 @@ public class EnrollmentRIBObject extends BaseRIBObject{
 		EnrollmentStateMachine enrollmentStateMachine = null;
 		
 		try{
-			enrollmentStateMachine = enrollmentTask.getEnrollmentStateMachine(cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo(), false);
+			enrollmentStateMachine = enrollmentTask.getEnrollmentStateMachine(cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo(), 
+					cdapSessionDescriptor.getPortId(), false);
 		}catch(Exception ex){
 			log.error(ex);
 			try{

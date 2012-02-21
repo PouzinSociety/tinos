@@ -3,6 +3,7 @@ package rina.enrollment.impl.statemachines;
 import rina.applicationprocess.api.DAFMember;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
+import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 
 /**
@@ -97,4 +98,10 @@ public interface EnrollmentStateMachine {
 	 * @return
 	 */
 	public boolean isEnrollee();
+	
+	/**
+	 * Return the naming information of the remote peer we are trying to enroll
+	 * @return
+	 */
+	public ApplicationProcessNamingInfo getRemotePeerNamingInfo();
 }
