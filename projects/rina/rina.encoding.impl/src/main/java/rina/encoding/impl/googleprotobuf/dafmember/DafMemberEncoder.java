@@ -6,9 +6,9 @@ import rina.encoding.api.BaseEncoder;
 
 public class DafMemberEncoder extends BaseEncoder{
 
-	public Object decode(byte[] encodedObject, String objectClass) throws Exception {
-		if (objectClass == null || !(objectClass.equals(DAFMember.class.toString()))){
-			throw new Exception("This is not the encoder for objects of type "+objectClass);
+	public Object decode(byte[] encodedObject, Class<?> objectClass) throws Exception {
+		if (objectClass == null || !(objectClass.equals(DAFMember.class))){
+			throw new Exception("This is not the encoder for objects of type "+objectClass.getName());
 		}
 		
 		DafMemberMessage.dafMember_t gpbDafMember = DafMemberMessage.dafMember_t.parseFrom(encodedObject);

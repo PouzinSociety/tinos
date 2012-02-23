@@ -13,25 +13,25 @@ import rina.ribdaemon.api.RIBObjectNames;
  */
 public class ObjectNametoClassMapper {
 	
-	public static String getObjectClass(String objectName){
+	public static Class<?> getObjectClass(String objectName){
 		if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.APNAME)){
-			return ApplicationProcessNamingInfo.class.getName();
+			return ApplicationProcessNamingInfo.class;
 		}
 		
 		if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM)){
-			return DAFMember.class.getName();
+			return DAFMember.class;
 		}
 		
 		if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 					RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.SYNONYMS)){
-			return List.class.getName();
+			return List.class;
 		}
 		
 		if (objectName.equals(RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
 				RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + RIBObjectNames.WHATEVERCAST_NAMES)){
-			return List.class.getName();
+			return List.class;
 		}
 		
 		return null;

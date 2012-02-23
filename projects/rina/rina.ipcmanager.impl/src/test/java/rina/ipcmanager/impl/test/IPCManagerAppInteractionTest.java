@@ -70,7 +70,7 @@ public class IPCManagerAppInteractionTest {
 			Assert.assertEquals(cdapMessage.getResult(), 0);
 			Assert.assertEquals(cdapMessage.getOpCode(), Opcode.M_CREATE_R);
 			byte[] encodedValue = cdapMessage.getObjValue().getByteval();
-			FlowService flowService = (FlowService) encoder.decode(encodedValue, FlowService.class.toString());
+			FlowService flowService = (FlowService) encoder.decode(encodedValue, FlowService.class);
 			System.out.println("Allocated portId: "+flowService.getPortId());
 			
 			//5 Write data

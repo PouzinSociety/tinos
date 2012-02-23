@@ -40,7 +40,7 @@ public class WhatevercastNameEncoderTest {
 			System.out.print(serializedWN[i] + " ");
 		}
 		
-		WhatevercastName recoveredWhatevercastName = (WhatevercastName) whatevercastNameEncoder.decode(serializedWN, WhatevercastName.class.toString());
+		WhatevercastName recoveredWhatevercastName = (WhatevercastName) whatevercastNameEncoder.decode(serializedWN, WhatevercastName.class);
 		Assert.assertEquals(whatevercastName.getName(), recoveredWhatevercastName.getName());
 		Assert.assertEquals(whatevercastName.getRule(), recoveredWhatevercastName.getRule());
 		Assert.assertEquals(whatevercastName.getSetMembers().size(), recoveredWhatevercastName.getSetMembers().size());

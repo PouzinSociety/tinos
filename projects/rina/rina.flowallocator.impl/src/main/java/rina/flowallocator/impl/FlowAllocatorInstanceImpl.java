@@ -517,7 +517,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		}
 
 		try{
-			this.flow = (Flow) this.encoder.decode(cdapMessage.getObjValue().getByteval(), Flow.class.toString());
+			this.flow = (Flow) this.encoder.decode(cdapMessage.getObjValue().getByteval(), Flow.class);
 			log.debug("Successfull create flow message response received for flow "+cdapMessage.getObjName()+".\n "+this.flow.toString());
 			this.ribDaemon.create("flow", objectName, 0, this);
 			this.tcpSocketReader = new TCPSocketReader(socket, this.delimiter, this.apService, this.portId);

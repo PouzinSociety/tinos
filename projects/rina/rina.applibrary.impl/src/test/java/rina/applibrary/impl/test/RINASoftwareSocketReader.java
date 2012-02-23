@@ -66,7 +66,7 @@ public class RINASoftwareSocketReader extends BaseSocketReader{
 	 */
 	private void handleMCreateReceived(CDAPMessage cdapMessage){
 		try{
-			FlowService flowService = (FlowService) encoder.decode(cdapMessage.getObjValue().getByteval(), FlowService.class.toString());
+			FlowService flowService = (FlowService) encoder.decode(cdapMessage.getObjValue().getByteval(), FlowService.class);
 			System.out.println("RINASoftware: Flow allocation request received.");
 			System.out.println("RINASoftware: Source application: "+flowService.getSourceAPNamingInfo().toString());
 			System.out.println("RINASoftware: Destination application: "+flowService.getDestinationAPNamingInfo().toString());
@@ -120,7 +120,7 @@ public class RINASoftwareSocketReader extends BaseSocketReader{
 	 */
 	private void handleMStartReceived(CDAPMessage cdapMessage){
 		try{
-			ApplicationRegistration apReg = (ApplicationRegistration) encoder.decode(cdapMessage.getObjValue().getByteval(), ApplicationRegistration.class.toString());
+			ApplicationRegistration apReg = (ApplicationRegistration) encoder.decode(cdapMessage.getObjValue().getByteval(), ApplicationRegistration.class);
 			System.out.println("RINASoftware: Registered application.");
 			System.out.println("RINASoftware: Application: "+apReg.getApNamingInfo().toString());
 			System.out.println("RINASoftware: Contact socket number: "+apReg.getSocketNumber());

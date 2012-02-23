@@ -29,13 +29,13 @@ public class GPBEncoderFactory implements EncoderFactory{
 	public Encoder createEncoderInstance() {
 		EncoderImpl encoder = new EncoderImpl();
 		
-		encoder.addEncoder(DAFMember.class.toString(), new DafMemberEncoder());
-		encoder.addEncoder(DataTransferConstants.class.toString(), new DataTransferConstantsEncoder());
-		encoder.addEncoder(Flow.class.toString(), new FlowEncoder());
-		encoder.addEncoder(QoSCube.class.toString(), new QoSCubeEncoder());
-		encoder.addEncoder(WhatevercastName.class.toString(), new WhatevercastNameEncoder());
-		encoder.addEncoder(FlowService.class.toString(), new FlowServiceEncoder());
-		encoder.addEncoder(ApplicationRegistration.class.toString(), new ApplicationRegistrationEncoder());
+		encoder.addEncoder(DAFMember.class.getName(), new DafMemberEncoder());
+		encoder.addEncoder(DataTransferConstants.class.getName(), new DataTransferConstantsEncoder());
+		encoder.addEncoder(Flow.class.getName(), new FlowEncoder());
+		encoder.addEncoder(QoSCube.class.getName(), new QoSCubeEncoder());
+		encoder.addEncoder(WhatevercastName.class.getName(), new WhatevercastNameEncoder());
+		encoder.addEncoder(FlowService.class.getName(), new FlowServiceEncoder());
+		encoder.addEncoder(ApplicationRegistration.class.getName(), new ApplicationRegistrationEncoder());
 		
 		return encoder;
 	}

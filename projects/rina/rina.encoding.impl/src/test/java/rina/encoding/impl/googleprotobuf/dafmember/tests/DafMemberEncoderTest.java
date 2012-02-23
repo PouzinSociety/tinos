@@ -34,7 +34,7 @@ public class DafMemberEncoderTest {
 			System.out.print(serializedApns[i] + " ");
 		}
 		
-		DAFMember recoveredDm = (DAFMember) dafMemberEncoder.decode(serializedApns, DAFMember.class.toString());
+		DAFMember recoveredDm = (DAFMember) dafMemberEncoder.decode(serializedApns, DAFMember.class);
 		Assert.assertEquals(dafMember.getApplicationProcessName(), recoveredDm.getApplicationProcessName());
 		Assert.assertEquals(dafMember.getApplicationProcessInstance(), recoveredDm.getApplicationProcessInstance());
 		Assert.assertEquals(dafMember.getSynonym(), recoveredDm.getSynonym());

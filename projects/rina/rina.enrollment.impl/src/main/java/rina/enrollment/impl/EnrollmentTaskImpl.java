@@ -196,7 +196,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		
 		//1 Check that we're not already enrolled to the IPC Process
 		try{
-			candidate = (DAFMember) encoder.decode(cdapMessage.getObjValue().getByteval(), DAFMember.class.toString());
+			candidate = (DAFMember) encoder.decode(cdapMessage.getObjValue().getByteval(), DAFMember.class);
 			candidateNamingInfo = new ApplicationProcessNamingInfo(candidate.getApplicationProcessName(), 
 					candidate.getApplicationProcessInstance(), DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT, null);
 		}catch(Exception ex){

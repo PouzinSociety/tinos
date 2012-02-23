@@ -6,9 +6,9 @@ import rina.flowallocator.api.QoSCube;
 
 public class QoSCubeEncoder extends BaseEncoder{
 
-	public Object decode(byte[] serializedObject, String objectClass) throws Exception {
-		if (objectClass == null || !(objectClass.equals(QoSCube.class.toString()))){
-			throw new Exception("This is not the encoder for objects of type "+objectClass);
+	public Object decode(byte[] serializedObject, Class<?> objectClass) throws Exception {
+		if (objectClass == null || !(objectClass.equals(QoSCube.class))){
+			throw new Exception("This is not the encoder for objects of type "+objectClass.getName());
 		}
 		
 		QoSCubeMessage.qosCube_t gpbQoSCube = QoSCubeMessage.qosCube_t.parseFrom(serializedObject);

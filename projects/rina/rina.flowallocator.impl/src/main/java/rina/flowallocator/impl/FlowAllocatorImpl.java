@@ -248,10 +248,9 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		long myAddress = 0;
 		
 		try{
-			flow = (Flow) encoder.decode(cdapMessage.getObjValue().getByteval(), Flow.class.toString());
+			flow = (Flow) encoder.decode(cdapMessage.getObjValue().getByteval(), Flow.class);
 		}catch (Exception ex){
-			//Error that has to be fixed, we cannot continue, log it and return
-			log.error("Fatal error when deserializing a Flow object. " +ex.getMessage());
+			ex.printStackTrace();
 			return;
 		}
 		

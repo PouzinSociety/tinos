@@ -630,7 +630,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		}else if (cdapMessage.getObjName().startsWith(WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME)){
 			try{
 				WhatevercastName name = (WhatevercastName) encoder.decode(
-						cdapMessage.getObjValue().getByteval(), WhatevercastName.class.toString());
+						cdapMessage.getObjValue().getByteval(), WhatevercastName.class);
 				ribDaemon.create(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), name);
 			}catch(Exception ex){
 				log.error(ex);
@@ -638,7 +638,7 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		}else if (cdapMessage.getObjName().equals(DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_NAME)){
 			try{
 				DataTransferConstants constants = (DataTransferConstants) encoder.decode(
-						cdapMessage.getObjValue().getByteval(), DataTransferConstants.class.toString());
+						cdapMessage.getObjValue().getByteval(), DataTransferConstants.class);
 				ribDaemon.write(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), constants);
 			}catch(Exception ex){
 				log.error(ex);
@@ -646,14 +646,14 @@ private static final Log log = LogFactory.getLog(DefaultEnrollmentStateMachine.c
 		}else if (cdapMessage.getObjName().startsWith(QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME)){
 			try{
 				QoSCube cube = (QoSCube) encoder.decode(
-						cdapMessage.getObjValue().getByteval(), QoSCube.class.toString());
+						cdapMessage.getObjValue().getByteval(), QoSCube.class);
 				ribDaemon.create(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), cube);
 			}catch(Exception ex){
 				log.error(ex);
 			}
 		}else if (cdapMessage.getObjName().startsWith(DAFMember.DAF_MEMBER_SET_RIB_OBJECT_NAME)){
 			try{
-				DAFMember dafMember = (DAFMember) encoder.decode(cdapMessage.getObjValue().getByteval(), DAFMember.class.toString());
+				DAFMember dafMember = (DAFMember) encoder.decode(cdapMessage.getObjValue().getByteval(), DAFMember.class);
 				if (remotePeer.getApplicationProcessName().equals(dafMember.getApplicationProcessName()) && 
 						(remotePeer.getApplicationProcessInstance() == null || remotePeer.getApplicationProcessInstance().equals(dafMember.getApplicationProcessInstance()))){
 					//This is the DAFMember object representing the remote peer I'm enrolling with

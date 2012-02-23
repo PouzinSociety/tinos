@@ -184,7 +184,7 @@ public class DefaultFlowImpl implements FlowImpl{
 			
 			//6 Response was successful, update the state and return
 			setState(State.ALLOCATED);
-			flowService = (FlowService) encoder.decode(cdapMessage.getObjValue().getByteval(), FlowService.class.toString());
+			flowService = (FlowService) encoder.decode(cdapMessage.getObjValue().getByteval(), FlowService.class);
 			this.portId = flowService.getPortId();
 			
 			log.debug("Flow allocated successfully! PortId: "+getPortId());

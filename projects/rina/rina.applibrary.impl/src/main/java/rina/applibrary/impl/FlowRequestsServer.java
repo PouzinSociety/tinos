@@ -164,7 +164,7 @@ public class FlowRequestsServer implements Runnable{
 			}
 			
 			//3 Parse the flowService
-			flowService = (FlowService) encoder.decode(cdapMessage.getObjValue().getByteval(), FlowService.class.toString());
+			flowService = (FlowService) encoder.decode(cdapMessage.getObjValue().getByteval(), FlowService.class);
 			
 			//4 Invoke the flowAcceptor class
 			result = flowAcceptor.acceptFlow(flowService.getSourceAPNamingInfo(), flowService.getDestinationAPNamingInfo());

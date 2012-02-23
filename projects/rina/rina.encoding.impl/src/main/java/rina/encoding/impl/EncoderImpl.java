@@ -31,18 +31,26 @@ public class EncoderImpl extends BaseEncoder{
 		encoders.put(objectClass, encoder);
 	}
 
-	public synchronized Object decode(byte[] serializedObject, String objectClass) throws Exception{
+	/**
+	 * Converts a byte array to an object of the type specified by "className"
+	 * @param serializedObject
+	 * @param The type of object to be decoded
+	 * @throws exception if the byte array is not an encoded in a way that the encoder can recognize, or the 
+	 * byte array value doesn't correspond to an object of the type "className"
+	 * @return
+	 */
+	public Object decode(byte[] serializedObject, Class<?> objectClass) throws Exception{
 		return getEncoder(objectClass).decode(serializedObject, objectClass);
 	}
 
 	public synchronized byte[] encode(Object object) throws Exception {
-		return getEncoder(object.getClass().toString()).encode(object);
+		return getEncoder(object.getClass()).encode(object);
 	}
 	
-	private Encoder getEncoder(String objectClass) throws Exception{
-		Encoder encoder = encoders.get(objectClass);
+	private Encoder getEncoder(Class<?> objectClass) throws Exception{
+		Encoder encoder = encoders.get(objectClass.getName());
 		if (encoder == null){
-			throw new Exception("No encoders found for class "+objectClass);
+			throw new Exception("No encoders found for class "+objectClass.getName());
 		}
 		
 		return encoder;

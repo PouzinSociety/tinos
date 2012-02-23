@@ -41,7 +41,7 @@ public class QoSCubeEncoderTest {
 			System.out.print(serializedQoSCube[i] + " ");
 		}
 		
-		QoSCube recoveredQoSCube = (QoSCube) qosCubeEncoder.decode(serializedQoSCube, QoSCube.class.toString());
+		QoSCube recoveredQoSCube = (QoSCube) qosCubeEncoder.decode(serializedQoSCube, QoSCube.class);
 		Assert.assertEquals(qosCube.getAverageBandwidth(), recoveredQoSCube.getAverageBandwidth());
 		Assert.assertEquals(qosCube.getAverageSDUBandwidth(), recoveredQoSCube.getAverageSDUBandwidth());
 		Assert.assertEquals(qosCube.getDelay(), recoveredQoSCube.getDelay());

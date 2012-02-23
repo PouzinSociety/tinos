@@ -21,9 +21,9 @@ import rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSp
  */
 public class FlowEncoder extends BaseEncoder{
 
-	public Object decode(byte[] serializedObject, String objectClass) throws Exception {
-		if (objectClass == null || !(objectClass.equals(Flow.class.toString()))){
-			throw new Exception("This is not the serializer for objects of type "+objectClass);
+	public Object decode(byte[] serializedObject, Class<?> objectClass) throws Exception {
+		if (objectClass == null || !(objectClass.equals(Flow.class))){
+			throw new Exception("This is not the serializer for objects of type "+objectClass.getName());
 		}
 		
 		FlowMessage.Flow gpbFlow = FlowMessage.Flow.parseFrom(serializedObject);

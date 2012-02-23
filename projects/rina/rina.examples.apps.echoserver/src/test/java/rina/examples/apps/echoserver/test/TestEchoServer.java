@@ -75,7 +75,7 @@ public class TestEchoServer {
 		sdu = getNextSDU(registerSocket);
 		cdapMessage = cdapSessionManager.decodeCDAPMessage(sdu);
 		Assert.assertEquals(Opcode.M_START, cdapMessage.getOpCode());
-		applicationRegistration = (ApplicationRegistration) encoder.decode(cdapMessage.getObjValue().getByteval(), ApplicationRegistration.class.toString());
+		applicationRegistration = (ApplicationRegistration) encoder.decode(cdapMessage.getObjValue().getByteval(), ApplicationRegistration.class);
 		Assert.assertEquals(EchoServer.APPLICATION_PROCESS_NAME, applicationRegistration.getApNamingInfo().getApplicationProcessName());
 		serverPort = applicationRegistration.getSocketNumber();
 		cdapMessage = cdapMessage.getReplyMessage();

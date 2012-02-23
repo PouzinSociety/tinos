@@ -42,7 +42,7 @@ public class ApplicationRegistrationEncoderTest {
 		}
 		System.out.println("");
 		
-		ApplicationRegistration recoveredRegistration= (ApplicationRegistration) applicationRegistrationEncoder.decode(encodedRequest, ApplicationRegistration.class.toString());
+		ApplicationRegistration recoveredRegistration= (ApplicationRegistration) applicationRegistrationEncoder.decode(encodedRequest, ApplicationRegistration.class);
 		Assert.assertEquals(applicationRegistration.getApNamingInfo().getApplicationProcessName(), recoveredRegistration.getApNamingInfo().getApplicationProcessName());
 		Assert.assertEquals(applicationRegistration.getApNamingInfo().getApplicationProcessInstance(), recoveredRegistration.getApNamingInfo().getApplicationProcessInstance());
 		Assert.assertEquals(applicationRegistration.getSocketNumber(), recoveredRegistration.getSocketNumber());

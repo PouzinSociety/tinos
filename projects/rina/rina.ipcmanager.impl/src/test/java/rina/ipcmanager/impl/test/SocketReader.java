@@ -6,7 +6,6 @@ import junit.framework.Assert;
 
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
-import rina.cdap.api.message.ObjectValue;
 import rina.delimiting.api.BaseSocketReader;
 import rina.delimiting.api.Delimiter;
 import rina.encoding.api.Encoder;
@@ -39,7 +38,7 @@ public class SocketReader extends BaseSocketReader{
 			case M_CREATE:
 				System.out.println(cdapMessage);
 				try{
-					FlowService flowService = (FlowService) encoder.decode(cdapMessage.getObjValue().getByteval(), FlowService.class.toString());
+					FlowService flowService = (FlowService) encoder.decode(cdapMessage.getObjValue().getByteval(), FlowService.class);
 					Assert.assertEquals(flowService.getPortId(), 24);
 					Assert.assertEquals(flowService.getSourceAPNamingInfo().getApplicationProcessName(), "B");
 					Assert.assertEquals(flowService.getDestinationAPNamingInfo().getApplicationProcessName(), "A");
