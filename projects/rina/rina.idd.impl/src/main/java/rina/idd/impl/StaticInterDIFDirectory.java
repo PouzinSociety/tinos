@@ -36,7 +36,7 @@ public class StaticInterDIFDirectory implements InterDIFDirectory{
 	
 	private void readConfigurationFile(){
 		try{
-			apToDIFMappings = new Hashtable<String, List<String>>();
+			apToDIFMappings.clear();
 			FileInputStream fstream = new FileInputStream(CONFIG_FILE_NAME);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));

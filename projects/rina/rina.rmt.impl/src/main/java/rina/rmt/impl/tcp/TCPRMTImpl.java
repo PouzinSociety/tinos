@@ -56,6 +56,7 @@ public class TCPRMTImpl extends BaseRMT{
 	public TCPRMTImpl(int port){
 		this.flowTable = new Hashtable<Integer, Socket>();
 		this.rmtServer = new RMTServer(this, port);
+		this.apToHostnameMappings = new Hashtable<String, String>();
 		readConfigurationFile();
 	}
 	
@@ -67,7 +68,7 @@ public class TCPRMTImpl extends BaseRMT{
 	
 	private void readConfigurationFile(){
 		try{
-			apToHostnameMappings = new Hashtable<String, String>();
+			apToHostnameMappings.clear();
 			FileInputStream fstream = new FileInputStream(CONFIG_FILE_NAME);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
@@ -93,12 +94,14 @@ public class TCPRMTImpl extends BaseRMT{
 	}
 	
 	/**
-	 * Returns the IP address of the IPC process identified by the tuple ipcProcessName, ipcProcessInstance
+	 * Returns the IP address of the IPC process identified by the tuple ipcProcessName, ipcProcessInstance.
+	 * It will read the configuration file every time this operation is called (to get updates)
 	 * @param ipcProcessName
 	 * @param ipcProcessInstance
 	 * @return
 	 */
 	public String getIPAddressFromApplicationNamingInformation(String ipcProcessName, String ipcProcessInstance){
+		readConfigurationFile();
 		String result = apToHostnameMappings.get(ipcProcessName + ipcProcessInstance);
 		if (result != null){
 			return result.split("#")[0];
@@ -147,7 +150,7 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @throws Exception if there was an issue allocating the flow
 	 */
 	public int allocateFlow(ApplicationProcessNamingInfo apNamingInfo, QualityOfServiceSpecification qosparams) throws Exception{
-		//Map the application naming information to the DNS name of the interface of the IPC process
+		readConfigurationFile();
 		String[] contactInformation = apToHostnameMappings.get(apNamingInfo.getApplicationProcessName() + apNamingInfo.getApplicationProcessInstance()).split("#");
 		Socket socket = new Socket(contactInformation[0], Integer.parseInt(contactInformation[1]));
 		newConnectionAccepted(socket);
