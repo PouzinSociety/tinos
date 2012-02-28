@@ -19,14 +19,9 @@ public class ConnectionStateMachine {
 	private static final Log log = LogFactory.getLog(ConnectionStateMachine.class);
 	
 	/**
-	 * The maximum time the library will wait to receive the M_CONNECT_R message, in milliseconds
+	 * The maximum time the CDAP state machine of a session will wait for connect or release responses (in ms)
 	 */
-	private final long OPEN_CON_DELAY = 5000;
-	
-	/**
-	 * The maximum time the library will wait to receive the M_RELEASE_R message, in milliseconds
-	 */
-	private final long CLOSE_CON_DELAY = 5000;
+	private long timeout = 0;
 	
 	/**
 	 * The flow that this CDAP connection operates over
@@ -43,8 +38,9 @@ public class ConnectionStateMachine {
 	
 	private Timer closeTimer = null;
 	
-	public ConnectionStateMachine(CDAPSessionImpl cdapSession){
+	public ConnectionStateMachine(CDAPSessionImpl cdapSession, long timeout){
 		this.cdapSession = cdapSession;
+		this.timeout = timeout;
 	}
 	
 	public boolean isConnected(){
@@ -80,12 +76,12 @@ public class ConnectionStateMachine {
 		openTimer = new Timer();
 		openTimer.schedule(new TimerTask(){
 			public void run(){
-				log.error("M_CONNECT_R message not received within "+OPEN_CON_DELAY+" ms." +
+				log.error("M_CONNECT_R message not received within "+timeout+" ms." +
 				"Reseting the connection");
 				connectionState = ConnectionState.NULL;
 				cdapSession.stopConnection();
 			}
-		}, OPEN_CON_DELAY);
+		}, timeout);
 	}
 	
 	/**
@@ -176,12 +172,12 @@ public class ConnectionStateMachine {
 			closeTimer = new Timer();
 			closeTimer.schedule(new TimerTask(){
 				public void run(){
-					log.error("M_RELEASE_R message not received within "+OPEN_CON_DELAY+" ms." +
+					log.error("M_RELEASE_R message not received within "+timeout+" ms." +
 					"Seting the connection to NULL");
 					connectionState = ConnectionState.NULL;
 					cdapSession.stopConnection();
 				}
-			}, CLOSE_CON_DELAY);
+			}, timeout);
 		}
 	}
 	

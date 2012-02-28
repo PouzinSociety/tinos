@@ -3,7 +3,9 @@ package rina.ribdaemon.api;
 import rina.ipcprocess.api.IPCProcess;
 
 /**
- * A simple RIB object that just acts as a wrapper 
+ * A simple RIB object that just acts as a wrapper. Represents an object in the RIB that just 
+ * can be read or written, and whose read/write operations have no side effects other than 
+ * updating the value of the object
  * for an object value
  * @author eduardgrasa
  *

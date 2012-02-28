@@ -1,7 +1,16 @@
 #Configuration file of the RINA Prototype
 #IPC Manager
+#The port where the IPC Manager is listening for incoming local TCP connections from administrators
 rina.ipcmanager.consoleport=32766
+#CDAP
+#The maximum time the CDAP state machine of a session will wait for connect or release responses (in ms)
+rina.cdap.timeout=5000
 #RMT
+#The port where the RMT is listening for incoming TCP connections from remote RMTs
 rina.rmt.port=32769
+#Enrollment Task
+#The maximum time to wait between steps of the enrollment sequence (in ms)
+rina.enrollment.timeout=5000
 #Flow Allocator
+#The port where the Flow Allocator is listening for incoming TCP connections from remote Flow Allocators
 rina.flowallocator.port=32770

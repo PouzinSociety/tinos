@@ -59,6 +59,11 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 */
 	private AddressManager addressManager = null;
 	
+	/**
+	 * The maximum time to wait between steps of the enrollment sequence (in ms)
+	 */
+	private long timeout = 0;
+	
 	private RIBDaemon ribDaemon = null;
 	private Encoder encoder = null;
 	private RMT rmt = null;
@@ -67,6 +72,13 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	public EnrollmentTaskImpl(){
 		enrollmentStateMachines = new Hashtable<String, EnrollmentStateMachine>();
 		ongoingInitiateEnrollmentRequests = new Hashtable<String, PendingEnrollmentRequest>();
+		try{
+			timeout = Long.parseLong(System.getProperty(BaseEnrollmentTask.ENROLLMENT_TASK_TIMEOUT_PROPERTY));
+		}catch(Exception ex){
+			log.info("Property "+BaseEnrollmentTask.ENROLLMENT_TASK_TIMEOUT_PROPERTY+" not found or invalid, " +
+					"using default timeout ("+BaseEnrollmentTask.DEFAULT_TIMEOUT+" ms)");
+			timeout = BaseEnrollmentTask.DEFAULT_TIMEOUT;
+		}
 	}
 	
 	@Override
@@ -173,7 +185,8 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		
 		if (apNamingInfo.getApplicationEntityName() == null || 
 				apNamingInfo.getApplicationEntityName().equals(DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT)){
-			enrollmentStateMachine = new DefaultEnrollmentStateMachine(ribDaemon, cdapSessionManager, encoder, apNamingInfo, this, enrollee);
+			enrollmentStateMachine = new DefaultEnrollmentStateMachine(ribDaemon, cdapSessionManager, encoder, 
+					apNamingInfo, this, enrollee, timeout);
 			enrollmentStateMachines.put(apNamingInfo.getProcessKey()+"-"+portId, enrollmentStateMachine);
 			log.debug("Created a new Enrollment state machine for remote IPC process: " + apNamingInfo.getProcessKey());
 			return enrollmentStateMachine;

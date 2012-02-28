@@ -34,12 +34,24 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 */
 	private WireMessageProvider wireMessageProvider =  null;
 	
+	/**
+	 * The maximum time the CDAP state machine of a session will wait for connect or release responses (in ms)
+	 */
+	private long timeout = 0;
+	
 	public CDAPSessionManagerImpl(){
 		cdapSessions = new HashMap<Integer, CDAPSession>();
+		try{
+			timeout = Long.parseLong(System.getProperty(BaseCDAPSessionManager.CDAP_TIMEOUT_PROPERTY));
+		}catch(Exception ex){
+			log.info("Property "+BaseCDAPSessionManager.CDAP_TIMEOUT_PROPERTY+" not found or invalid, " +
+					"using default timeout ("+BaseCDAPSessionManager.DEFAULT_TIMEOUT+" ms)");
+			timeout = BaseCDAPSessionManager.DEFAULT_TIMEOUT;
+		}
 	}
 
 	public synchronized CDAPSession createCDAPSession(int portId) {
-		CDAPSessionImpl cdapSession = new CDAPSessionImpl(this, new CDAPSessionInvokeIdManagerImpl());
+		CDAPSessionImpl cdapSession = new CDAPSessionImpl(this, new CDAPSessionInvokeIdManagerImpl(), timeout);
 		cdapSession.setWireMessageProvider(wireMessageProviderFactory.createWireMessageProvider());
 		CDAPSessionDescriptor descriptor = new CDAPSessionDescriptor();
 		descriptor.setPortId(portId);

@@ -43,12 +43,12 @@ public class CDAPSessionImpl implements CDAPSession{
 	
 	private CDAPSessionInvokeIdManager invokeIdManager = null;
 	
-	public CDAPSessionImpl(CDAPSessionManager cdapSessionManager, CDAPSessionInvokeIdManager invokeIdManager){
+	public CDAPSessionImpl(CDAPSessionManager cdapSessionManager, CDAPSessionInvokeIdManager invokeIdManager, long timeout){
 		this.cdapSessionManager = cdapSessionManager;
 		this.invokeIdManager = invokeIdManager;
 		pendingMessages = new HashMap<Integer, CDAPOperationState>();
 		this.cancelReadPendingMessages = new HashMap<Integer, CDAPOperationState>();
-		this.connectionStateMachine = new ConnectionStateMachine(this);
+		this.connectionStateMachine = new ConnectionStateMachine(this, timeout);
 	}
 	
 	public CDAPSessionInvokeIdManager getInvokeIdManager(){
