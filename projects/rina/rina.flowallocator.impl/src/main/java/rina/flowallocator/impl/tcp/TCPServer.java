@@ -7,6 +7,7 @@ import java.net.Socket;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.FlowAllocator;
 
 /**
@@ -17,8 +18,6 @@ import rina.flowallocator.api.FlowAllocator;
 public class TCPServer implements Runnable{
 
 	private static final Log log = LogFactory.getLog(TCPServer.class);
-	
-	public static final int DEFAULT_PORT = 32770;
 	
 	/**
 	 * The Flow Allocator
@@ -41,12 +40,18 @@ public class TCPServer implements Runnable{
 	private ServerSocket serverSocket = null;
 	
 	public TCPServer(FlowAllocator flowAllocator){
-		this(flowAllocator, DEFAULT_PORT);
+		this.flowAllocator = flowAllocator;
+		try{
+			this.port = Integer.parseInt(System.getProperty(BaseFlowAllocator.FLOW_ALLOCATOR_PORT_PROPERTY));
+		}catch(Exception ex){
+			this.port = BaseFlowAllocator.DEFAULT_PORT;
+			log.info("Property "+BaseFlowAllocator.FLOW_ALLOCATOR_PORT_PROPERTY+" not found or invalid, " +
+					"using default port ("+BaseFlowAllocator.DEFAULT_PORT+")");
+		}
 	}
 	
-	public TCPServer(FlowAllocator flowAllocator, int port){
-		this.flowAllocator = flowAllocator;
-		this.port = port;
+	public int getPort(){
+		return this.port;
 	}
 	
 	public void setEnd(boolean end){

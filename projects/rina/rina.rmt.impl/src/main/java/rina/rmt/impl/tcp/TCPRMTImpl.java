@@ -47,15 +47,10 @@ public class TCPRMTImpl extends BaseRMT{
 	 * The server that will listen for incoming connections to this RMT
 	 */
 	private RMTServer rmtServer = null;
-
-	public TCPRMTImpl(){
-		this(RMTServer.DEFAULT_PORT);
-	}
-
 	
-	public TCPRMTImpl(int port){
+	public TCPRMTImpl(){
 		this.flowTable = new Hashtable<Integer, Socket>();
-		this.rmtServer = new RMTServer(this, port);
+		this.rmtServer = new RMTServer(this);
 		this.apToHostnameMappings = new Hashtable<String, String>();
 		readConfigurationFile();
 	}

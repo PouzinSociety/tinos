@@ -19,13 +19,13 @@ import rina.delimiting.api.Delimiter;
 import rina.efcp.api.DataTransferAEInstance;
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
+import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.Connection;
 import rina.flowallocator.api.FlowAllocator;
 import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.flowallocator.api.message.Flow;
 import rina.flowallocator.impl.policies.NewFlowRequestPolicy;
 import rina.flowallocator.impl.policies.NewFlowRequestPolicyImpl;
-import rina.flowallocator.impl.tcp.TCPServer;
 import rina.flowallocator.impl.tcp.TCPSocketReader;
 import rina.flowallocator.impl.timertasks.SocketClosedTimerTask;
 import rina.ipcprocess.api.IPCProcess;
@@ -269,19 +269,25 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	private Socket connectToRemoteFlowAllocator(long address) throws IPCException{
 		String ipAddress = null;
 		Socket socket = null;
+		int port = 0;
+		
+		
+		try{
+			port = Integer.parseInt(System.getProperty(BaseFlowAllocator.FLOW_ALLOCATOR_PORT_PROPERTY));
+		}catch(Exception ex){
+			port = BaseFlowAllocator.DEFAULT_PORT;
+		}
 		
 		try{
 			ipAddress = Utils.getRemoteIPCProcessIPAddress(address, flowAllocator.getIPCProcess());
-			socket = new Socket(ipAddress, TCPServer.DEFAULT_PORT);
+			socket = new Socket(ipAddress, port);
 			Unsigned unsigned = new Unsigned(2);
 			unsigned.setValue(new Integer(socket.getLocalPort()).longValue());
 			socket.getOutputStream().write(unsigned.getBytes());
-			log.debug("Started a socket to the Flow Allocator at "+ipAddress+":"+TCPServer.DEFAULT_PORT+". The local socket number is "+socket.getLocalPort());
+			log.debug("Started a socket to the Flow Allocator at "+ipAddress+":"+port+". The local socket number is "+socket.getLocalPort());
 			return socket;
 		}catch(Exception ex){
-			ex.printStackTrace();
-			log.error("Problems connecting to remote Flow Allocator at: "+ipAddress+":"+TCPServer.DEFAULT_PORT);
-			throw new IPCException(5, ex.getMessage());
+			throw new IPCException(5, "Problems connecting to remote Flow Allocator. "+ex.getMessage());
 		}
 	}
 

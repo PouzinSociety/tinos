@@ -1,7 +1,12 @@
 package rina.ipcmanager.impl;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -46,6 +51,8 @@ import rina.ribdaemon.api.RIBObjectNames;
 public class IPCManagerImpl implements IPCManager{
 	private static final Log log = LogFactory.getLog(IPCManagerImpl.class);
 	
+	public static final String CONFIG_FILE_LOCATION = "config/rina/config.rina"; 
+	
 	private IPCManagerConsole console = null;
 	
 	/**
@@ -61,11 +68,32 @@ public class IPCManagerImpl implements IPCManager{
 	private APServiceImpl apService = null;
 	
 	public IPCManagerImpl(){
+		readConfigurationFile();
 		executorService = Executors.newCachedThreadPool();
 		console = new IPCManagerConsole(this);
 		apService = new APServiceImpl(this);
 		executorService.execute(console);
 		log.debug("IPC Manager started");
+	}
+	
+	/**
+	 * Read the configuration parameters from the properties file
+	 */
+	private void readConfigurationFile(){
+		Properties properties = new Properties();
+		 
+    	try {
+    		properties.load(new FileInputStream(CONFIG_FILE_LOCATION));
+    		Iterator<Entry<Object, Object>> iterator = properties.entrySet().iterator();
+    		Entry<Object, Object> currentEntry = null;
+    		while (iterator.hasNext()){
+    			currentEntry = iterator.next();
+    			System.setProperty((String) currentEntry.getKey(), (String) currentEntry.getValue());
+    			log.debug("Added the property: "+currentEntry.getKey()+"="+currentEntry.getValue());
+    		}
+    	} catch (IOException ex) {
+    		log.debug("Could not find the main configuration file. Using default values!");
+        }
 	}
 	
 	/**

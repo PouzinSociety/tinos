@@ -7,6 +7,8 @@ import java.net.Socket;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.rmt.api.BaseRMT;
+
 /**
  * TCP server that listens for incoming connections.
  * @author eduardgrasa
@@ -15,8 +17,6 @@ import org.apache.commons.logging.LogFactory;
 public class RMTServer implements Runnable{
 
 	private static final Log log = LogFactory.getLog(RMTServer.class);
-	
-	public static final int DEFAULT_PORT = 32769;
 	
 	/**
 	 * A relaying and multiplexing task that operates on top of a TCP/IP network
@@ -37,14 +37,15 @@ public class RMTServer implements Runnable{
 	 * The server socket that listens for incoming connections
 	 */
 	private ServerSocket serverSocket = null;
-	
+
 	public RMTServer(TCPRMTImpl tcpRmtImpl){
-		this(tcpRmtImpl, DEFAULT_PORT);
-	}
-	
-	public RMTServer(TCPRMTImpl tcpRmtImpl, int port){
 		this.tcpRmtImpl = tcpRmtImpl;
-		this.port = port;
+		try{
+			this.port = Integer.parseInt(System.getProperty(BaseRMT.RMT_PORT_PROPERTY));
+		}catch(Exception ex){
+			this.port = BaseRMT.DEFAULT_PORT;
+			log.info("Property "+BaseRMT.RMT_PORT_PROPERTY+" not found or invalid, using default port ("+BaseRMT.DEFAULT_PORT+")");
+		}
 	}
 	
 	public void setEnd(boolean end){

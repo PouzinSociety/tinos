@@ -26,8 +26,9 @@ public class IPCManagerConsole implements Runnable{
 
 	private static final Log log = LogFactory.getLog(IPCManagerConsole.class);
 	
+	public static final String CONSOLE_PORT_PROPERTY = "rina.ipcmanager.consoleport";
 	private static final String PROMPT = "ipcmanager> ";
-	private static final int PORT = 32766;
+	private static int DEFAULT_PORT = 32766;
 	
 	private ServerSocket serverSocket = null;
 	
@@ -58,10 +59,18 @@ public class IPCManagerConsole implements Runnable{
 		String[] splittedCommand = null;
 		ConsoleCommand command = null;
 		String answer = null;
+		int port = 0;
 		
 		try{
-			serverSocket = new ServerSocket(PORT);
-			log.info("Waiting for connections to the IPC Manager console at port "+PORT);
+			port = Integer.parseInt(System.getProperty(CONSOLE_PORT_PROPERTY));
+		}catch(Exception ex){
+			log.info("Property "+CONSOLE_PORT_PROPERTY+" not found or invalid, using default port ("+DEFAULT_PORT+")");
+			port = DEFAULT_PORT;
+		}
+		
+		try{
+			serverSocket = new ServerSocket(port);
+			log.info("Waiting for connections to the IPC Manager console at port "+port);
 			while (true){
 				Socket socket = serverSocket.accept();
 				String address = socket.getInetAddress().getHostAddress();

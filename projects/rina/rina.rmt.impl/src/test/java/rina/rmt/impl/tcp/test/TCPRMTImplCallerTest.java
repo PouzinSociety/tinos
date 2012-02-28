@@ -11,6 +11,7 @@ import rina.delimiting.api.BaseDelimiter;
 import rina.delimiting.api.Delimiter;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBDaemon;
+import rina.rmt.api.BaseRMT;
 import rina.rmt.impl.tcp.TCPRMTImpl;
 
 /**
@@ -28,7 +29,8 @@ public class TCPRMTImplCallerTest {
 	
 	@Before
 	public void setup(){
-		this.rmt = new TCPRMTImpl(40001);
+		System.setProperty(BaseRMT.RMT_PORT_PROPERTY, ""+40001);
+		this.rmt = new TCPRMTImpl();
 		IPCProcess fakeIPCProcess = new FakeIPCProcess();
 		this.rmt.setIPCProcess(fakeIPCProcess);
 		fakeIPCProcess.addIPCProcessComponent(rmt);
@@ -40,7 +42,8 @@ public class TCPRMTImplCallerTest {
 	public void testConnectionFromRemoteProcess() throws Exception{
 		byte[] buffer = new byte[50];
 
-		Socket clientSocket = new Socket("localhost", 40001);
+		int port = Integer.parseInt(System.getProperty(BaseRMT.RMT_PORT_PROPERTY));
+		Socket clientSocket = new Socket("localhost", port);
 		byte[] delimitedSdu = delimiter.getDelimitedSdu("CDAP message coming".getBytes());
 		clientSocket.getOutputStream().write(delimitedSdu);
 		try{

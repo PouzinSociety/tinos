@@ -1,0 +1,7 @@
+#Configuration file of the RINA Prototype
+#IPC Manager
+rina.ipcmanager.consoleport=32766
+#RMT
+rina.rmt.port=32769
+#Flow Allocator
+rina.flowallocator.port=32770

@@ -171,7 +171,8 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		Encoder encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
 		EnrollmentStateMachine enrollmentStateMachine = null;
 		
-		if (apNamingInfo.getApplicationEntityName().equals(DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT)){
+		if (apNamingInfo.getApplicationEntityName() == null || 
+				apNamingInfo.getApplicationEntityName().equals(DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT)){
 			enrollmentStateMachine = new DefaultEnrollmentStateMachine(ribDaemon, cdapSessionManager, encoder, apNamingInfo, this, enrollee);
 			enrollmentStateMachines.put(apNamingInfo.getProcessKey()+"-"+portId, enrollmentStateMachine);
 			log.debug("Created a new Enrollment state machine for remote IPC process: " + apNamingInfo.getProcessKey());
