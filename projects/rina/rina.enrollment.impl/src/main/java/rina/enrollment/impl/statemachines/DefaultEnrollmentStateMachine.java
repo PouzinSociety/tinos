@@ -307,6 +307,11 @@ public class DefaultEnrollmentStateMachine implements CDAPMessageHandler, Enroll
 			this.setState(State.NULL);
 			this.remotePeer = new DAFMember();
 		}
+		
+		//Cancel any timers
+		if (timer != null){
+			timer.cancel();
+		}
 	}
 
 	/**

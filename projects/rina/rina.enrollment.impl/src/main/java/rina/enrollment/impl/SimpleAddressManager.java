@@ -35,8 +35,8 @@ public class SimpleAddressManager implements AddressManager{
 	private void initializeMaxAddress(){
 		DataTransferConstants dataTransferConstants = enrollmentTask.getIPCProcess().getDataTransferConstants();
 		if (dataTransferConstants != null){
-			int addressLengthInBytes = dataTransferConstants.getAddressLength();
-			maxAddress = 2^addressLengthInBytes -1;
+			int addressLengthInBits = 8*dataTransferConstants.getAddressLength();
+			maxAddress = new Double(Math.pow(2, new Long(addressLengthInBits).doubleValue()) - 1).longValue();
 		}
 	}
 
@@ -47,7 +47,7 @@ public class SimpleAddressManager implements AddressManager{
 	public synchronized long getAvailableAddress() throws IPCException{
 		Long myAddress = this.enrollmentTask.getIPCProcess().getAddress();
 		List<DAFMember> dafMembers = enrollmentTask.getIPCProcess().getDAFMembers();
-		if (dafMembers.size() == maxAddress){
+		if (dafMembers.size() + 1 == maxAddress){
 			throw new IPCException(IPCException.NO_AVAILABLE_ADDRESSES_CODE, IPCException.NO_AVAILABLE_ADDRESSES);
 		}
 		
