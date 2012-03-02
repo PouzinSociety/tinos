@@ -1,5 +1,7 @@
 package rina.utils.apps.connectiongenerator.cliclient;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
@@ -24,6 +26,9 @@ public class FlowGenerator {
 	private boolean end = false;
 	private ExecutorService executorService = null;
 	
+	private List<Long> flowSetupTimes = null;
+	private List<Long> flowTearDownTimes = null;
+	
 	//Locks
 	private Object successFulFlowsLock = new Object();
 	private Object failedFlowsLock = new Object();
@@ -42,6 +47,8 @@ public class FlowGenerator {
 		
 		timer = new Timer();
 		executorService = Executors.newCachedThreadPool();
+		flowSetupTimes = new ArrayList<Long>();
+		flowTearDownTimes = new ArrayList<Long>();
 	}
 	
 	public void runTest(){
@@ -53,6 +60,7 @@ public class FlowGenerator {
 				printStatistics();
 				if (activeFlows == 0){
 					timer.cancel();
+					printFinalStatistics();
 					System.exit(0);
 				}
 			}
@@ -117,13 +125,14 @@ public class FlowGenerator {
 		}
 	}
 	
-	public void flowCompletedSuccessfully(){
+	public void flowCompletedSuccessfully(long tearDownTime){
 		synchronized(successFulFlowsLock){
 			successfulFlows++;
 		}
 		
 		synchronized(completedFlowsLock){
 			completedFlows++;
+			flowTearDownTimes.add(new Long(tearDownTime));
 		}
 		
 		synchronized(activeFlowsLock){
@@ -131,9 +140,10 @@ public class FlowGenerator {
 		}
 	}
 	
-	public void flowAllocatedSuccessfully(){
+	public void flowAllocatedSuccessfully(long setupTime){
 		synchronized(activeFlowsLock){
 			activeFlows++;
+			flowSetupTimes.add(new Long(setupTime));
 		}
 	}
 	
@@ -155,5 +165,43 @@ public class FlowGenerator {
 	
 	public void printStatistics(){
 		System.out.println("Generated flows: "+generatedFlows+". Active flows: "+activeFlows+". Completed flows: "+completedFlows);
+	}
+	
+	public void printFinalStatistics(){
+		System.out.println("Flow setup time: ");
+		System.out.println("Min: "+min(flowSetupTimes)+" ms; Max: "+max(flowSetupTimes)+" ms; Mean: "+ mean(flowSetupTimes)+ " ms");
+		System.out.println("Flow teardown time: ");
+		System.out.println("Min: "+min(flowTearDownTimes)+" ms; Max: "+max(flowTearDownTimes)+" ms; Mean: "+ mean(flowTearDownTimes)+ " ms");
+	}
+	
+	private long min(List<Long> values){
+		Long minimum = Long.MAX_VALUE;
+		for(int i=0; i<values.size(); i++){
+			if (values.get(i).longValue() < minimum.longValue()){
+				minimum = values.get(i);
+			}
+		}
+		
+		return minimum.longValue();
+	}
+	
+	private long max(List<Long> values){
+		Long maximum = new Long(0);
+		for(int i=0; i<values.size(); i++){
+			if (values.get(i).longValue() > maximum.longValue()){
+				maximum = values.get(i);
+			}
+		}
+		
+		return maximum.longValue();
+	}
+	
+	private long mean(List<Long> values){
+		long total = 0;
+		for(int i=0; i<values.size(); i++){
+			total = total + values.get(i).longValue();
+		}
+		
+		return total/values.size();
 	}
 }

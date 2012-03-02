@@ -20,11 +20,14 @@ public class SingleFlowGenerator implements Runnable, SDUListener{
 	}
 	
 	public void run() {
+		long before = 0;
+		
 		//Allocate flow
 		try{
+			before = System.currentTimeMillis();
 			flow = new Flow(new ApplicationProcessNamingInfo(Main.SOURCE_APPLICATION, null), 
 					new ApplicationProcessNamingInfo(destinationApplication, null), null, this);
-			flowGenerator.flowAllocatedSuccessfully();
+			flowGenerator.flowAllocatedSuccessfully(System.currentTimeMillis() - before);
 		}catch(IPCException ex){
 			flowGenerator.flowWithError();
 			return;
@@ -39,13 +42,12 @@ public class SingleFlowGenerator implements Runnable, SDUListener{
 		
 		//Deallocate flow
 		try{
+			before = System.currentTimeMillis();
 			flow.deallocate();
+			flowGenerator.flowCompletedSuccessfully(System.currentTimeMillis() - before);
 		}catch(IPCException ex){
 			flowGenerator.flowCompletedWithError();
-			return;
 		}
-		
-		flowGenerator.flowCompletedSuccessfully();
 	}
 
 	public void sduDelivered(byte[] sdu) {
