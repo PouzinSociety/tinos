@@ -40,6 +40,8 @@ import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
+import rina.rmt.api.BaseRMT;
+import rina.rmt.api.RMT;
 
 /**
  * The IPC Manager is the component of a DAF that manages the local IPC resources. In its current implementation it 
@@ -174,6 +176,9 @@ public class IPCManagerImpl implements IPCManager{
 			qosCube.setQosId(new byte[]{0x02});
 			qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
 			ribDaemon.create(null, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + "reliable", 0, qosCube);
+			
+			RMT rmt = (RMT) ipcProcess.getIPCProcessComponent(BaseRMT.getComponentName());
+			rmt.startListening();
 		}
 	}
 	

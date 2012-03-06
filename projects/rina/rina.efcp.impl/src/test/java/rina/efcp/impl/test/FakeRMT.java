@@ -145,4 +145,9 @@ public class FakeRMT implements RMT{
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	public void startListening() {
+		// TODO Auto-generated method stub
+		
+	}
 }

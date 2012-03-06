@@ -247,8 +247,7 @@ public class DefaultEnrollmentStateMachine implements CDAPMessageHandler, Enroll
 		if (this.getState().equals(State.ENROLLED)){
 			try{
 				ribDaemon.delete(null, DAFMember.DAF_MEMBER_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + 
-						remotePeer.getApplicationProcessName()+remotePeer.getApplicationProcessInstance(), 
-						0, null);
+						remotePeer.getApplicationProcessName()+remotePeer.getApplicationProcessInstance(), 0);
 			}catch(RIBDaemonException ex){
 				log.error(ex);
 			}
@@ -298,8 +297,7 @@ public class DefaultEnrollmentStateMachine implements CDAPMessageHandler, Enroll
 		if (this.getState().equals(State.ENROLLED)){
 			try{
 				ribDaemon.delete(null, DAFMember.DAF_MEMBER_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + 
-						remotePeer.getApplicationProcessName()+remotePeer.getApplicationProcessInstance(), 
-						0, null);
+						remotePeer.getApplicationProcessName()+remotePeer.getApplicationProcessInstance(), 0);
 			}catch(RIBDaemonException ex){
 				log.error(ex);
 			}

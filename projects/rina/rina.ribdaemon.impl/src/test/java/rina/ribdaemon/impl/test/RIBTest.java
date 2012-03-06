@@ -1,6 +1,5 @@
 package rina.ribdaemon.impl.test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
@@ -25,7 +24,7 @@ public class RIBTest {
 	}
 	
 	@Test
-	public void testPrintRIB(){
+	public void testPrintRIB() throws RIBDaemonException{
 		RIBObject aux = new FakeRIBObject(null, "daf/management/naming/whatevercastnames", null, 0);
 		rib.addRIBObject(aux);
 		aux = new FakeRIBObject(null, "daf/management/naming/applicationprocessname", null, 0);

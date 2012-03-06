@@ -58,7 +58,6 @@ public class TCPRMTImpl extends BaseRMT{
 	@Override
 	public void setIPCProcess(IPCProcess ipcProcess){
 		super.setIPCProcess(ipcProcess);
-		ipcProcess.execute(rmtServer);
 	}
 	
 	private void readConfigurationFile(){
@@ -86,6 +85,17 @@ public class TCPRMTImpl extends BaseRMT{
 		}catch (Exception e){
 			log.error("Error initializing application process name to host mappings: " + e.getMessage());
 		}
+	}
+	
+	/**
+	 * Start listening for connections from remote IPC Processes
+	 */
+	public void startListening(){
+		if (rmtServer.isListening()){
+			return;
+		}
+		
+		this.getIPCProcess().execute(rmtServer);
 	}
 	
 	/**

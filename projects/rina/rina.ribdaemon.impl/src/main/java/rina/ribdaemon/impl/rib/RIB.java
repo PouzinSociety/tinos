@@ -30,15 +30,25 @@ public class RIB{
      * @return
      */
     public RIBObject getRIBObject(String objectName) throws RIBDaemonException{
-    	return rib.get(objectName);
+    	RIBObject ribObject = rib.get(objectName);
+    	if (ribObject == null){
+    		throw new RIBDaemonException(RIBDaemonException.OBJECTNAME_NOT_PRESENT_IN_THE_RIB, "Could not find an object named "+objectName+" in the RIB");
+    	}
+    	
+    	return ribObject;
     }
     
-    public void addRIBObject(RIBObject ribObject){
+    public void addRIBObject(RIBObject ribObject) throws RIBDaemonException{
+    	if (rib.get(ribObject.getObjectName()) != null){
+    		throw new RIBDaemonException(RIBDaemonException.OBJECT_ALREADY_EXISTS, 
+    				"There is already an object with objectname "+ribObject.getObjectName()+" in the RIB.");
+    	}
+    	
     	rib.put(ribObject.getObjectName(), ribObject);
     }
     
-    public void removeRIBObject(String objectName){
-    	rib.remove(objectName);
+    public RIBObject removeRIBObject(String objectName){
+    	return rib.remove(objectName);
     }
     
     public List<RIBObject> getRIBObjects(){

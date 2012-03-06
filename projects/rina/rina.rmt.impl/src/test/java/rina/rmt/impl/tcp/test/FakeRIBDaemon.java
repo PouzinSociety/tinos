@@ -138,7 +138,7 @@ public class FakeRIBDaemon implements RIBDaemon {
 		
 	}
 
-	public void delete(String arg0, String arg1, long arg2, Object arg3)
+	public void delete(String arg0, String arg1, long arg2)
 			throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		

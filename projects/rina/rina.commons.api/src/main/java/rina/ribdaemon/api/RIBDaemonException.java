@@ -24,6 +24,8 @@ public class RIBDaemonException extends Exception{
 	public static final int OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME = 11;
 	public static final int OBJECT_ALREADY_HAS_THIS_CHILD = 12;
 	public static final int CHILD_NOT_FOUND = 13;
+	public static final int OBJECT_ALREADY_EXISTS = 14;
+	public static final int RIB_OBJECT_AND_OBJECT_NAME_NULL = 15;
 	
 	private int errorCode = 0;
 	

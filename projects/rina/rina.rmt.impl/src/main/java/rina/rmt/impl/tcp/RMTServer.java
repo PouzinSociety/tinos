@@ -29,6 +29,11 @@ public class RMTServer implements Runnable{
 	private boolean end = false;
 	
 	/**
+	 * Controls whether the server is listening
+	 */
+	private boolean listening = false;
+	
+	/**
 	 * The TCP port to listen for incoming connections
 	 */
 	private int port = 0;
@@ -55,13 +60,20 @@ public class RMTServer implements Runnable{
 				this.serverSocket.close();
 			}catch(IOException ex){
 				log.error(ex.getMessage());
+			}finally{
+				listening = false;
 			}
 		}
+	}
+	
+	public boolean isListening(){
+		return listening;
 	}
 
 	public void run() {
 		try{
 			serverSocket = new ServerSocket(port);
+			listening = true;
 			log.info("Waiting for incoming TCP connections on port "+port);
 			while (!end){
 				Socket socket = serverSocket.accept();
@@ -70,6 +82,8 @@ public class RMTServer implements Runnable{
 			}
 		}catch(IOException e){
 			log.error(e.getMessage());
+		}finally{
+			listening = false;
 		}
 	}
 }

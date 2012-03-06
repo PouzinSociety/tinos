@@ -428,7 +428,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		if (local){
 			this.flowAllocator.receivedDeallocateLocalFlowRequest(this.remotePortId);
 			try{
-				this.ribDaemon.delete("flow", objectName, 0, null);
+				this.ribDaemon.delete("flow", objectName, 0);
 				this.flowAllocator.removeFlowAllocatorInstance(this.portId);
 			}catch(Exception ex){
 				ex.printStackTrace();
@@ -469,7 +469,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			CDAPMessage responseMessage = cdapSessionManager.getDeleteObjectResponseMessage(underlyingPortId, null, 
 					cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName(), 0, null, cdapMessage.getInvokeID());
 			this.ribDaemon.sendMessage(responseMessage, underlyingPortId, null);
-			this.ribDaemon.delete(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), null);
+			this.ribDaemon.delete(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst());
 		}catch(Exception ex){
 			ex.printStackTrace(); 
 		}
@@ -488,7 +488,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		
 		//2 Cleanup
 		try{
-			this.ribDaemon.delete("flow", objectName, 0, null);
+			this.ribDaemon.delete("flow", objectName, 0);
 			this.flowAllocator.removeFlowAllocatorInstance(this.portId);
 		}catch(Exception ex){
 			ex.printStackTrace();
@@ -614,7 +614,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		
 		RIBDaemon ribDaemon = (RIBDaemon) flowAllocator.getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		try{
-			ribDaemon.delete(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), null);
+			ribDaemon.delete(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst());
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();
 		}

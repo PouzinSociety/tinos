@@ -30,14 +30,14 @@ public class SimpleSetRIBObject extends BaseRIBObject{
 	}
 
 	@Override
-	public void delete(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+	public void delete(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
 		String childName = null;
 		List<String> childrenNames = new ArrayList<String>();
 		
 		for(int i=0; i<this.getChildren().size(); i++){
 			childName = this.getChildren().get(i).getObjectName();
 			childrenNames.add(childName);
-			getRIBDaemon().delete(null, childName, 0, null);
+			getRIBDaemon().delete(null, childName, 0);
 		}
 		
 		for(int i=0; i<childrenNames.size(); i++){

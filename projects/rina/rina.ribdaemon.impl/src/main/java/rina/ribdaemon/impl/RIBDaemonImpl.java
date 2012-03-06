@@ -374,7 +374,25 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	 * @throws RIBDaemonException
 	 */
 	public void removeRIBObject(RIBObject ribObject, String objectName) throws RIBDaemonException{
-		rib.removeRIBObject(ribObject.getObjectName());
+		if (ribObject != null){
+			removeRIBObject(ribObject.getObjectName());
+		}else if (objectName != null){
+			removeRIBObject(objectName);
+		}else{
+			throw new RIBDaemonException(RIBDaemonException.RIB_OBJECT_AND_OBJECT_NAME_NULL, 
+					"Both the RIBObject and objectname parameters are null");
+		}
+		
+		
+	}
+	
+	private void removeRIBObject(String objectName) throws RIBDaemonException{
+		RIBObject ribObject = rib.removeRIBObject(objectName);
+		if (ribObject == null){
+			throw new RIBDaemonException(RIBDaemonException.OBJECTNAME_NOT_PRESENT_IN_THE_RIB, 
+					"Could not find "+objectName+ " in the RIB");
+		}
+		
 		log.info("RIBObject with objectname "+ribObject.getObjectName()+", objectClass "+ribObject.getObjectClass()+", " +
 				"objectInstance "+ribObject.getObjectInstance()+" removed from the RIB");
 	}
@@ -389,7 +407,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	 */
 	public void processOperation(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
 		log.debug("Remote operation "+cdapMessage.getOpCode()+" called on object "+cdapMessage.getObjName());
-		RIBObject ribObject = getRIBObject(cdapMessage.getObjName(), cdapMessage.getObjClass(), cdapMessage.getObjInst());
+		RIBObject ribObject = null;
 		
 		switch(cdapMessage.getOpCode()){
 		case M_CREATE:
@@ -399,21 +417,27 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 			ribObject.create(cdapMessage, cdapSessionDescriptor);
 			break;
 		case M_DELETE:
+			ribObject =  getRIBObject(cdapMessage.getObjName(), cdapMessage.getObjClass(), cdapMessage.getObjInst());
 			ribObject.delete(cdapMessage, cdapSessionDescriptor);
 			break;
 		case M_READ:
+			ribObject =  getRIBObject(cdapMessage.getObjName(), cdapMessage.getObjClass(), cdapMessage.getObjInst());
 			ribObject.read(cdapMessage, cdapSessionDescriptor);
 			break;
 		case M_CANCELREAD:
+			ribObject =  getRIBObject(cdapMessage.getObjName(), cdapMessage.getObjClass(), cdapMessage.getObjInst());
 			ribObject.cancelRead(cdapMessage, cdapSessionDescriptor);
 			break;
 		case M_WRITE:
+			ribObject =  getRIBObject(cdapMessage.getObjName(), cdapMessage.getObjClass(), cdapMessage.getObjInst());
 			ribObject.write(cdapMessage, cdapSessionDescriptor);
 			break;
 		case M_START:
+			ribObject =  getRIBObject(cdapMessage.getObjName(), cdapMessage.getObjClass(), cdapMessage.getObjInst());
 			ribObject.start(cdapMessage, cdapSessionDescriptor);
 			break;
 		case M_STOP:
+			ribObject =  getRIBObject(cdapMessage.getObjName(), cdapMessage.getObjClass(), cdapMessage.getObjInst());
 			ribObject.stop(cdapMessage, cdapSessionDescriptor);
 			break;
 		default:
@@ -435,11 +459,11 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		ribObject.create(objectClass, objectName, objectInstance, object);
 	}
 
-	public synchronized void delete(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+	public synchronized void delete(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
 		log.debug("Local operation delete called on object "+objectName);
 		validateObjectArguments(objectClass, objectName, objectInstance);
 		RIBObject ribObject = getRIBObject(objectName, objectClass, objectInstance);
-		ribObject.delete(objectClass, objectName, objectInstance, object);
+		ribObject.delete(objectClass, objectName, objectInstance);
 		this.rib.removeRIBObject(objectName);
 	}
 

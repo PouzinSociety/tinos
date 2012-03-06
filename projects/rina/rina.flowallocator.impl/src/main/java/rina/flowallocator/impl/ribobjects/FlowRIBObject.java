@@ -26,7 +26,7 @@ public class FlowRIBObject extends BaseRIBObject{
 	}
 	
 	@Override
-	public void delete(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+	public void delete(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
 		this.getParent().removeChild(objectName);
 	}
 	

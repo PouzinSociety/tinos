@@ -55,4 +55,9 @@ public interface RMT extends IPCProcessComponent{
 	 * @return
 	 */
 	public String getIPAddressFromApplicationNamingInformation(String ipcProcessName, String ipcProcessInstance);
+	
+	/**
+	 * Start listening for connections from remote IPC Processes
+	 */
+	public void startListening();
 }

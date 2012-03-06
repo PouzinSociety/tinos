@@ -124,19 +124,66 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 			throw new Exception("An IPC Process with this naming information already exists in this system");
 		}
 		
-		RIBDaemon ribDaemon = ribDaemonFactory.createRIBDaemon(ipcProcessNamingInfo);
-		IPCProcess ipcProcess = new IPCProcessImpl(ipcProcessNamingInfo.getApplicationProcessName(), 
-				ipcProcessNamingInfo.getApplicationProcessInstance(), ribDaemon);
-		ipcProcess.setIPCManager(this.ipcManager);
+		RIBDaemon ribDaemon = null;
+		IPCProcess ipcProcess = null;
+		
+		if (this.ribDaemonFactory != null){
+			ribDaemon = this.ribDaemonFactory.createRIBDaemon(ipcProcessNamingInfo);
+		}else{
+			throw new Exception("RIB Daemon Factory is null");
+		}
+
+		if (this.ipcManager != null){
+			ipcProcess = new IPCProcessImpl(ipcProcessNamingInfo.getApplicationProcessName(), 
+					ipcProcessNamingInfo.getApplicationProcessInstance(), ribDaemon);
+			ipcProcess.setIPCManager(this.ipcManager);
+		}else{
+			throw new Exception("IPC Manager is null");
+		}
 		
 		ipcProcess.addIPCProcessComponent(ribDaemon);
-		ipcProcess.addIPCProcessComponent(delimiterFactory.createDelimiter(DelimiterFactory.DIF));
-		ipcProcess.addIPCProcessComponent(encoderFactory.createEncoderInstance());
-		ipcProcess.addIPCProcessComponent(rmtFactory.createRMT(ipcProcessNamingInfo));
-		ipcProcess.addIPCProcessComponent(cdapSessionManagerFactory.createCDAPSessionManager());
-		ipcProcess.addIPCProcessComponent(enrollmentTaskFactory.createEnrollmentTask(ipcProcessNamingInfo));
-		ipcProcess.addIPCProcessComponent(dataTransferAEFactory.createDataTransferAE(ipcProcessNamingInfo));
-		ipcProcess.addIPCProcessComponent(flowAllocatorFactory.createFlowAllocator(ipcProcessNamingInfo));
+		
+		if (this.delimiterFactory != null){
+			ipcProcess.addIPCProcessComponent(this.delimiterFactory.createDelimiter(DelimiterFactory.DIF));
+		}else{
+			throw new Exception("Delimiter Factory is null");
+		}
+		
+		if (this.encoderFactory != null){
+			ipcProcess.addIPCProcessComponent(this.encoderFactory.createEncoderInstance());
+		}else{
+			throw new Exception("Encoder Factory is null");
+		}
+		
+		if (this.rmtFactory != null){
+			ipcProcess.addIPCProcessComponent(this.rmtFactory.createRMT(ipcProcessNamingInfo));
+		}else{
+			throw new Exception("RMT Factory is null");
+		}
+		
+		if (this.cdapSessionManagerFactory != null){
+			ipcProcess.addIPCProcessComponent(this.cdapSessionManagerFactory.createCDAPSessionManager());
+		}else{
+			throw new Exception("CDAP Session Manager Factory is null");
+		}
+		
+		if (this.enrollmentTaskFactory != null){
+			ipcProcess.addIPCProcessComponent(this.enrollmentTaskFactory.createEnrollmentTask(ipcProcessNamingInfo));
+		}else{
+			throw new Exception("Enrollment Task Factory is null");
+		}
+		
+		if (this.dataTransferAEFactory != null){
+			ipcProcess.addIPCProcessComponent(dataTransferAEFactory.createDataTransferAE(ipcProcessNamingInfo));
+		}else{
+			throw new Exception("Data Transfer AE Factory is null");
+		}
+		
+		if (this.flowAllocatorFactory != null){
+			ipcProcess.addIPCProcessComponent(this.flowAllocatorFactory.createFlowAllocator(ipcProcessNamingInfo));
+		}else{
+			throw new Exception("Flow Allocator Factory is null");
+		}
 		
 		ipcProcesses.put(ipcProcessNamingInfo.getProcessKey(), ipcProcess);
 		return ipcProcess;

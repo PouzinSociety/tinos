@@ -482,8 +482,14 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 				return;
 			}
 
-			//2 Reply back to the entity that requested the enrollment
+			//2 Tell the RMT it can start listening for remote IPC processes
 			if (enrollee){
+				RMT rmt = (RMT) this.getIPCProcess().getIPCProcessComponent(BaseRMT.getComponentName());
+				rmt.startListening();
+			}
+			
+			//3 Reply back to the entity that requested the enrollment
+			if (enrollee){			
 				ApplicationProcessNamingInfo candidateNamingInfo = new ApplicationProcessNamingInfo(dafMember.getApplicationProcessName(), 
 						dafMember.getApplicationProcessInstance(), DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT, null);
 				PendingEnrollmentRequest pendingEnrollmentRequest = ongoingInitiateEnrollmentRequests.remove(candidateNamingInfo.getProcessKey());
