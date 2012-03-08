@@ -114,6 +114,11 @@ public class DefaultEnrollmentStateMachine implements CDAPMessageHandler, Enroll
 	 */
 	private long timeout = 0;
 	
+	/**
+	 * Stores the initialization information received by the joining IPC Process
+	 */
+	private EnrollmentInitializationInformation enrollmentInformation = null;
+	
 	public DefaultEnrollmentStateMachine(RIBDaemon ribDaemon, CDAPSessionManager cdapSessionManager, Encoder encoder, 
 			ApplicationProcessNamingInfo remoteNamingInfo, EnrollmentTask enrollmentTask, boolean enrollee, long timeout){
 		this.ribDaemon = ribDaemon;
@@ -636,11 +641,25 @@ public class DefaultEnrollmentStateMachine implements CDAPMessageHandler, Enroll
 			enrollmentTask.enrollmentFailed(remoteNamingInfo, portId, UNSUCCESSFUL_REPLY, enrollee, true);
 			return;
 		}
+		
+		if (this.enrollmentInformation == null){
+			enrollmentInformation = new EnrollmentInitializationInformation();
+		}
 
 		if (cdapMessage.getObjName().equals(RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME)){
 			try{
 				long synonym = cdapMessage.getObjValue().getInt64val();
-				ribDaemon.write(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), new Long(synonym));
+				enrollmentInformation.setSynonym(new Long(synonym));
+			}catch(Exception ex){
+				log.error(ex);
+			}
+		}else if (cdapMessage.getObjName().equals(WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME)){
+			try{
+				WhatevercastName[] namesArray = (WhatevercastName[]) encoder.decode(
+						cdapMessage.getObjValue().getByteval(), WhatevercastName[].class);
+				for(int i=0; i<namesArray.length; i++){
+					enrollmentInformation.addWhatevercastName(namesArray[i]);
+				}
 			}catch(Exception ex){
 				log.error(ex);
 			}
@@ -648,7 +667,8 @@ public class DefaultEnrollmentStateMachine implements CDAPMessageHandler, Enroll
 			try{
 				WhatevercastName name = (WhatevercastName) encoder.decode(
 						cdapMessage.getObjValue().getByteval(), WhatevercastName.class);
-				ribDaemon.create(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), name);
+				enrollmentInformation.addWhatevercastName(name);
+				//ribDaemon.create(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), name);
 			}catch(Exception ex){
 				log.error(ex);
 			}
@@ -656,7 +676,18 @@ public class DefaultEnrollmentStateMachine implements CDAPMessageHandler, Enroll
 			try{
 				DataTransferConstants constants = (DataTransferConstants) encoder.decode(
 						cdapMessage.getObjValue().getByteval(), DataTransferConstants.class);
-				ribDaemon.write(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), constants);
+				enrollmentInformation.setDataTransferConstants(constants);
+				//ribDaemon.write(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), constants);
+			}catch(Exception ex){
+				log.error(ex);
+			}
+		}else if (cdapMessage.getObjName().equals(QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME)){
+			try{
+				QoSCube[] cubesArray = (QoSCube[]) encoder.decode(
+						cdapMessage.getObjValue().getByteval(), QoSCube[].class);
+				for(int i=0; i<cubesArray.length; i++){
+					enrollmentInformation.addQoSCube(cubesArray[i]);
+				}
 			}catch(Exception ex){
 				log.error(ex);
 			}
@@ -664,7 +695,8 @@ public class DefaultEnrollmentStateMachine implements CDAPMessageHandler, Enroll
 			try{
 				QoSCube cube = (QoSCube) encoder.decode(
 						cdapMessage.getObjValue().getByteval(), QoSCube.class);
-				ribDaemon.create(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), cube);
+				enrollmentInformation.addQoSCube(cube);
+				//ribDaemon.create(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), cube);
 			}catch(Exception ex){
 				log.error(ex);
 			}
@@ -698,6 +730,9 @@ public class DefaultEnrollmentStateMachine implements CDAPMessageHandler, Enroll
 	}
 
 	public void start(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor){
+		WhatevercastName whatevercastName = null;
+		QoSCube qosCube = null;
+		
 		//Cancel timer
 		timerTask.cancel();
 		timer.cancel();
@@ -707,7 +742,31 @@ public class DefaultEnrollmentStateMachine implements CDAPMessageHandler, Enroll
 			enrollmentTask.enrollmentFailed(remoteNamingInfo, portId, WRONG_OBJECT_NAME, enrollee, true);
 			return;
 		}
+		
+		//TODO verify Enrollment Information
 
+		//Commit
+		try{
+			ribDaemon.write(RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_CLASS, RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME, 
+					0, enrollmentInformation.getSynonym());
+			ribDaemon.write(DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_CLASS, 
+					DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_NAME, 0, enrollmentInformation.getDataTransferConstants());
+			for(int i=0; i<enrollmentInformation.getWhatevercastNames().size(); i++){
+				whatevercastName = enrollmentInformation.getWhatevercastNames().get(i);
+				ribDaemon.create(WhatevercastName.WHATEVERCAST_NAME_RIB_OBJECT_CLASS, 
+						WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + whatevercastName.getName(), 
+						0, enrollmentInformation.getWhatevercastNames().get(i));
+			}
+			for(int i=0; i<enrollmentInformation.getQosCubes().size(); i++){
+				qosCube = enrollmentInformation.getQosCubes().get(i);
+				ribDaemon.create(QoSCube.QOSCUBE_RIB_OBJECT_CLASS, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME + 
+						RIBObjectNames.SEPARATOR + qosCube.getQosId(), 0, qosCube);
+			}
+		}catch(Exception ex){
+			ex.printStackTrace();
+			//TODO sent bad M_START_R
+		}
+		
 		try{
 			CDAPMessage outgoingCDAPMessage = cdapSessionManager.getStartObjectResponseMessage(portId, null, 0, null, cdapMessage.getInvokeID());
 			sendCDAPMessage(outgoingCDAPMessage);

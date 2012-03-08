@@ -3,6 +3,7 @@ package rina.encoding.impl.googleprotobuf.dafmember;
 import rina.applicationprocess.api.DAFMember;
 import rina.efcp.api.DataTransferConstants;
 import rina.encoding.api.BaseEncoder;
+import rina.encoding.impl.googleprotobuf.dafmember.DafMemberMessage.dafMember_t;
 
 public class DafMemberEncoder extends BaseEncoder{
 
@@ -11,7 +12,11 @@ public class DafMemberEncoder extends BaseEncoder{
 			throw new Exception("This is not the encoder for objects of type "+objectClass.getName());
 		}
 		
-		DafMemberMessage.dafMember_t gpbDafMember = DafMemberMessage.dafMember_t.parseFrom(encodedObject);
+		dafMember_t gpbDafMember = DafMemberMessage.dafMember_t.parseFrom(encodedObject);
+		return convertGPBToModel(gpbDafMember);
+	}
+	
+	public static DAFMember convertGPBToModel(dafMember_t gpbDafMember){
 		DAFMember dafMember = new DAFMember();
 		dafMember.setApplicationProcessInstance(gpbDafMember.getApplicationProcessInstance());
 		dafMember.setApplicationProcessName(gpbDafMember.getApplicationProcessName());
@@ -25,14 +30,17 @@ public class DafMemberEncoder extends BaseEncoder{
 			throw new Exception("This is not the encoder for objects of type " + DataTransferConstants.class.toString());
 		}
 		
-		DAFMember dafMember = (DAFMember) object;
-		DafMemberMessage.dafMember_t gpbDafMember = DafMemberMessage.dafMember_t.newBuilder().
-						setApplicationProcessName(dafMember.getApplicationProcessName()).
-						setApplicationProcessInstance(dafMember.getApplicationProcessInstance()).
-						setSynonym(dafMember.getSynonym()).
-						build();
+		return convertModelToGPB((DAFMember)object).toByteArray();
+	}
+	
+	public static dafMember_t convertModelToGPB(DAFMember dafMember){
+		dafMember_t gpbDafMember = DafMemberMessage.dafMember_t.newBuilder().
+			setApplicationProcessName(dafMember.getApplicationProcessName()).
+			setApplicationProcessInstance(dafMember.getApplicationProcessInstance()).
+			setSynonym(dafMember.getSynonym()).
+			build();
 		
-		return gpbDafMember.toByteArray();
+		return gpbDafMember;
 	}
 
 }

@@ -2,6 +2,7 @@ package rina.encoding.impl.googleprotobuf.qoscube;
 
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.impl.googleprotobuf.GPBUtils;
+import rina.encoding.impl.googleprotobuf.qoscube.QoSCubeMessage.qosCube_t;
 import rina.flowallocator.api.QoSCube;
 
 public class QoSCubeEncoder extends BaseEncoder{
@@ -12,7 +13,10 @@ public class QoSCubeEncoder extends BaseEncoder{
 		}
 		
 		QoSCubeMessage.qosCube_t gpbQoSCube = QoSCubeMessage.qosCube_t.parseFrom(serializedObject);
-		
+		return convertGPBToModel(gpbQoSCube);
+	}
+	
+	public static QoSCube convertGPBToModel(qosCube_t gpbQoSCube){
 		byte[] qosId = GPBUtils.getByteArray(gpbQoSCube.getQosId());
 		
 		QoSCube qosCube = new QoSCube();
@@ -37,21 +41,25 @@ public class QoSCubeEncoder extends BaseEncoder{
 		}
 		
 		QoSCube qosCube = (QoSCube) object;
-		
+		return convertModelToGPB(qosCube).toByteArray();
+	}
+	
+	public static qosCube_t convertModelToGPB(QoSCube qosCube){
 		QoSCubeMessage.qosCube_t gpbQoSCube = QoSCubeMessage.qosCube_t.newBuilder().
-													setAverageBandwidth(qosCube.getAverageBandwidth()).
-													setAverageSDUBandwidth(qosCube.getAverageSDUBandwidth()).
-													setDelay(qosCube.getDelay()).
-													setJitter(qosCube.getJitter()).
-													setMaxAllowableGapSdu(qosCube.getMaxAllowableGapSdu()).
-													setOrder(qosCube.isOrder()).
-													setPartialDelivery(qosCube.isPartialDelivery()).
-													setPeakBandwidthDuration(qosCube.getPeakBandwidthDuration()).
-													setPeakSDUBandwidthDuration(qosCube.getPeakSDUBandwidthDuration()).
-													setQosId(GPBUtils.getByteString(qosCube.getQosId())).
-													setUndetectedBitErrorRate(qosCube.getUndetectedBitErrorRate()).
-													build();
-		return gpbQoSCube.toByteArray();
+			setAverageBandwidth(qosCube.getAverageBandwidth()).
+			setAverageSDUBandwidth(qosCube.getAverageSDUBandwidth()).
+			setDelay(qosCube.getDelay()).
+			setJitter(qosCube.getJitter()).
+			setMaxAllowableGapSdu(qosCube.getMaxAllowableGapSdu()).
+			setOrder(qosCube.isOrder()).
+			setPartialDelivery(qosCube.isPartialDelivery()).
+			setPeakBandwidthDuration(qosCube.getPeakBandwidthDuration()).
+			setPeakSDUBandwidthDuration(qosCube.getPeakSDUBandwidthDuration()).
+			setQosId(GPBUtils.getByteString(qosCube.getQosId())).
+			setUndetectedBitErrorRate(qosCube.getUndetectedBitErrorRate()).
+			build();
+		
+		return gpbQoSCube;
 	}
 
 }

@@ -1,0 +1,7 @@
+package rina.messages;
+option java_package="rina.encoding.impl.googleprotobuf.dafmember";
+import "protofiles/DafMemberMessage.proto";
+
+message dafMembers_t{   //carries information about all the DAF members
+	repeated dafMember_t member = 1;
+}
