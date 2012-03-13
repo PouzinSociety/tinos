@@ -155,13 +155,14 @@ public class IPCManagerImpl implements IPCManager{
 			qosCube.setDelay(0);
 			qosCube.setJitter(0);
 			qosCube.setMaxAllowableGapSdu(-1);
+			qosCube.setName("unreliable");
 			qosCube.setOrder(false);
 			qosCube.setPartialDelivery(true);
 			qosCube.setPeakBandwidthDuration(0);
 			qosCube.setPeakSDUBandwidthDuration(0);
-			qosCube.setQosId(new byte[]{0x01});
+			qosCube.setQosId(1);
 			qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
-			ribDaemon.create(null, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + "unreliable", 0, qosCube);
+			ribDaemon.create(null, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + qosCube.getQosId(), 0, qosCube);
 			
 			qosCube = new QoSCube();
 			qosCube.setAverageBandwidth(0);
@@ -169,13 +170,14 @@ public class IPCManagerImpl implements IPCManager{
 			qosCube.setDelay(0);
 			qosCube.setJitter(0);
 			qosCube.setMaxAllowableGapSdu(0);
+			qosCube.setName("reliable");
 			qosCube.setOrder(true);
 			qosCube.setPartialDelivery(false);
 			qosCube.setPeakBandwidthDuration(0);
 			qosCube.setPeakSDUBandwidthDuration(0);
-			qosCube.setQosId(new byte[]{0x02});
+			qosCube.setQosId(2);
 			qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
-			ribDaemon.create(null, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + "reliable", 0, qosCube);
+			ribDaemon.create(null, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + qosCube.getQosId(), 0, qosCube);
 			
 			RMT rmt = (RMT) ipcProcess.getIPCProcessComponent(BaseRMT.getComponentName());
 			rmt.startListening();

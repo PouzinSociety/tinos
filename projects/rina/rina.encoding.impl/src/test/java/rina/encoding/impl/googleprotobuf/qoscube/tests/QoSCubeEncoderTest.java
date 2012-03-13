@@ -29,11 +29,12 @@ public class QoSCubeEncoderTest {
 		qosCube.setDelay(500);
 		qosCube.setJitter(200);
 		qosCube.setMaxAllowableGapSdu(0);
+		qosCube.setName("test");
 		qosCube.setOrder(true);
 		qosCube.setPartialDelivery(false);
 		qosCube.setPeakBandwidthDuration(20000);
 		qosCube.setPeakSDUBandwidthDuration(15000);
-		qosCube.setQosId(new byte[]{0x01});
+		qosCube.setQosId(1);
 		qosCube.setUndetectedBitErrorRate(new Double("1E-9").doubleValue());
 		
 		qosCube2 = new QoSCube();
@@ -42,11 +43,12 @@ public class QoSCubeEncoderTest {
 		qosCube2.setDelay(50);
 		qosCube2.setJitter(2000);
 		qosCube2.setMaxAllowableGapSdu(0);
+		qosCube.setName("test2");
 		qosCube2.setOrder(false);
 		qosCube2.setPartialDelivery(true);
 		qosCube2.setPeakBandwidthDuration(200);
 		qosCube2.setPeakSDUBandwidthDuration(100);
-		qosCube2.setQosId(new byte[]{0x02});
+		qosCube.setQosId(2);
 		qosCube2.setUndetectedBitErrorRate(new Double("1E-6").doubleValue());
 		
 		qosCubes = new QoSCube[]{qosCube, qosCube2};
@@ -69,11 +71,12 @@ public class QoSCubeEncoderTest {
 		Assert.assertEquals(qosCube.getDelay(), recoveredQoSCube.getDelay());
 		Assert.assertEquals(qosCube.getJitter(), recoveredQoSCube.getJitter());
 		Assert.assertEquals(qosCube.getMaxAllowableGapSdu(), recoveredQoSCube.getMaxAllowableGapSdu());
+		Assert.assertEquals(qosCube.getName(), recoveredQoSCube.getName());
 		Assert.assertEquals(qosCube.isOrder(), recoveredQoSCube.isOrder());
 		Assert.assertEquals(qosCube.isPartialDelivery(), recoveredQoSCube.isPartialDelivery());
 		Assert.assertEquals(qosCube.getPeakBandwidthDuration(), recoveredQoSCube.getPeakBandwidthDuration());
 		Assert.assertEquals(qosCube.getPeakSDUBandwidthDuration(), recoveredQoSCube.getPeakSDUBandwidthDuration());
-		Assert.assertArrayEquals(qosCube.getQosId(), recoveredQoSCube.getQosId());
+		Assert.assertEquals(qosCube.getQosId(), recoveredQoSCube.getQosId());
 		Assert.assertEquals(qosCube.getUndetectedBitErrorRate(), recoveredQoSCube.getUndetectedBitErrorRate(), 0);
 	}
 	
@@ -91,11 +94,12 @@ public class QoSCubeEncoderTest {
 		Assert.assertEquals(qosCubes[0].getDelay(), recoveredQoSCubes[0].getDelay());
 		Assert.assertEquals(qosCubes[0].getJitter(), recoveredQoSCubes[0].getJitter());
 		Assert.assertEquals(qosCubes[0].getMaxAllowableGapSdu(), recoveredQoSCubes[0].getMaxAllowableGapSdu());
+		Assert.assertEquals(qosCubes[0].getName(), recoveredQoSCubes[0].getName());
 		Assert.assertEquals(qosCubes[0].isOrder(), recoveredQoSCubes[0].isOrder());
 		Assert.assertEquals(qosCubes[0].isPartialDelivery(), recoveredQoSCubes[0].isPartialDelivery());
 		Assert.assertEquals(qosCubes[0].getPeakBandwidthDuration(), recoveredQoSCubes[0].getPeakBandwidthDuration());
 		Assert.assertEquals(qosCubes[0].getPeakSDUBandwidthDuration(), recoveredQoSCubes[0].getPeakSDUBandwidthDuration());
-		Assert.assertArrayEquals(qosCubes[0].getQosId(), recoveredQoSCubes[0].getQosId());
+		Assert.assertEquals(qosCubes[0].getQosId(), recoveredQoSCubes[0].getQosId());
 		Assert.assertEquals(qosCubes[0].getUndetectedBitErrorRate(), recoveredQoSCubes[0].getUndetectedBitErrorRate(), 0);
 		
 		Assert.assertEquals(qosCubes[1].getAverageBandwidth(), recoveredQoSCubes[1].getAverageBandwidth());
@@ -103,11 +107,12 @@ public class QoSCubeEncoderTest {
 		Assert.assertEquals(qosCubes[1].getDelay(), recoveredQoSCubes[1].getDelay());
 		Assert.assertEquals(qosCubes[1].getJitter(), recoveredQoSCubes[1].getJitter());
 		Assert.assertEquals(qosCubes[1].getMaxAllowableGapSdu(), recoveredQoSCubes[1].getMaxAllowableGapSdu());
+		Assert.assertEquals(qosCubes[1].getName(), recoveredQoSCubes[1].getName());
 		Assert.assertEquals(qosCubes[1].isOrder(), recoveredQoSCubes[1].isOrder());
 		Assert.assertEquals(qosCubes[1].isPartialDelivery(), recoveredQoSCubes[1].isPartialDelivery());
 		Assert.assertEquals(qosCubes[1].getPeakBandwidthDuration(), recoveredQoSCubes[1].getPeakBandwidthDuration());
 		Assert.assertEquals(qosCubes[1].getPeakSDUBandwidthDuration(), recoveredQoSCubes[1].getPeakSDUBandwidthDuration());
-		Assert.assertArrayEquals(qosCubes[1].getQosId(), recoveredQoSCubes[1].getQosId());
+		Assert.assertEquals(qosCubes[1].getQosId(), recoveredQoSCubes[1].getQosId());
 		Assert.assertEquals(qosCubes[1].getUndetectedBitErrorRate(), recoveredQoSCubes[1].getUndetectedBitErrorRate(), 0);
 	}
 }

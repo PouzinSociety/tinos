@@ -23,7 +23,12 @@ public class QoSCube {
 	/**
 	 * Identifies the type of QoS-cube
 	 */
-	private byte[] qosId = null;
+	private int qosId = 0;
+	
+	/**
+	 * A descriptive name (human readable) for the QoS-cube
+	 */
+	private String name = null;
 	
 	/**
 	 * in bytes/s, a value of 0 indicates 'don't care'
@@ -97,12 +102,20 @@ public class QoSCube {
 	 */
 	private Map<String, String> policyDefaultParameters = null;
 
-	public byte[] getQosId() {
+	public int getQosId() {
 		return qosId;
 	}
 
-	public void setQosId(byte[] qosId) {
+	public void setQosId(int qosId) {
 		this.qosId = qosId;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public long getAverageBandwidth() {
@@ -206,6 +219,7 @@ public class QoSCube {
 	public String toString(){
 		String result = "";
 		result = result + "QoS id: " + this.getQosId() +  "\n";
+		result = result + "Name: " + this.getName() + "\n";
 		result = result + "Average bandwidth: " + this.getAverageBandwidth() +  "\n";
 		result = result + "Average SDU bandwidth: " + this.getAverageSDUBandwidth() +  "\n";
 		result = result + "Peak bandwidth duration: " + this.getPeakBandwidthDuration() +  "\n";

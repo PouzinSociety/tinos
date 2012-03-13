@@ -17,19 +17,18 @@ public class QoSCubeEncoder extends BaseEncoder{
 	}
 	
 	public static QoSCube convertGPBToModel(qosCube_t gpbQoSCube){
-		byte[] qosId = GPBUtils.getByteArray(gpbQoSCube.getQosId());
-		
 		QoSCube qosCube = new QoSCube();
 		qosCube.setAverageBandwidth(gpbQoSCube.getAverageBandwidth());
 		qosCube.setAverageSDUBandwidth(gpbQoSCube.getAverageSDUBandwidth());
 		qosCube.setDelay(gpbQoSCube.getDelay());
 		qosCube.setJitter(gpbQoSCube.getJitter());
 		qosCube.setMaxAllowableGapSdu(gpbQoSCube.getMaxAllowableGapSdu());
+		qosCube.setName(GPBUtils.getString(gpbQoSCube.getName()));
 		qosCube.setOrder(gpbQoSCube.getOrder());
 		qosCube.setPartialDelivery(gpbQoSCube.getPartialDelivery());
 		qosCube.setPeakBandwidthDuration(gpbQoSCube.getPeakBandwidthDuration());
 		qosCube.setPeakSDUBandwidthDuration(gpbQoSCube.getPeakSDUBandwidthDuration());
-		qosCube.setQosId(qosId);
+		qosCube.setQosId(gpbQoSCube.getQosId());
 		qosCube.setUndetectedBitErrorRate(gpbQoSCube.getUndetectedBitErrorRate());
 		
 		return qosCube;
@@ -51,11 +50,12 @@ public class QoSCubeEncoder extends BaseEncoder{
 			setDelay(qosCube.getDelay()).
 			setJitter(qosCube.getJitter()).
 			setMaxAllowableGapSdu(qosCube.getMaxAllowableGapSdu()).
+			setName(GPBUtils.getGPBString(qosCube.getName())).
 			setOrder(qosCube.isOrder()).
 			setPartialDelivery(qosCube.isPartialDelivery()).
 			setPeakBandwidthDuration(qosCube.getPeakBandwidthDuration()).
 			setPeakSDUBandwidthDuration(qosCube.getPeakSDUBandwidthDuration()).
-			setQosId(GPBUtils.getByteString(qosCube.getQosId())).
+			setQosId(qosCube.getQosId()).
 			setUndetectedBitErrorRate(qosCube.getUndetectedBitErrorRate()).
 			build();
 		

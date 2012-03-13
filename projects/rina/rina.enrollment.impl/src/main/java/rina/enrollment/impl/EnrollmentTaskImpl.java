@@ -30,7 +30,6 @@ import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
-import rina.ribdaemon.api.RIBObjectNames;
 import rina.rmt.api.BaseRMT;
 import rina.rmt.api.RMT;
 
@@ -471,24 +470,13 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		 * join the DIF)
 		 */
 		public synchronized void enrollmentCompleted(DAFMember dafMember, boolean enrollee){
-			//1 Create the DAFMember object in the RIB
-			try{
-				ribDaemon.create(null, DAFMember.DAF_MEMBER_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + 
-						dafMember.getApplicationProcessName()+dafMember.getApplicationProcessInstance(), 
-						0, dafMember);
-			}catch(RIBDaemonException ex){
-				log.error(ex);
-				//This must not happen, log the error and fix it
-				return;
-			}
-
-			//2 Tell the RMT it can start listening for remote IPC processes
+			//1 Tell the RMT it can start listening for remote IPC processes
 			if (enrollee){
 				RMT rmt = (RMT) this.getIPCProcess().getIPCProcessComponent(BaseRMT.getComponentName());
 				rmt.startListening();
 			}
 			
-			//3 Reply back to the entity that requested the enrollment
+			//Reply back to the entity that requested the enrollment
 			if (enrollee){			
 				ApplicationProcessNamingInfo candidateNamingInfo = new ApplicationProcessNamingInfo(dafMember.getApplicationProcessName(), 
 						dafMember.getApplicationProcessInstance(), DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT, null);
