@@ -6,13 +6,14 @@ package rina.ribdaemon.api;
  */
 public interface RIBObjectNames {
 	/* Partial names */
+	public static final String ADDRESS = "address";
 	public static final String APNAME = "applicationprocessname";
 	public static final String CONSTANTS = "constants";
 	public static final String CURRENT_SYNONYM = "currentsynonym";
 	public static final String DATA_TRANSFER = "datatransfer";
 	public static final String DAF = "daf";
 	public static final String DIF = "dif";
-	public static final String DIRECTORY_FORWARDING_TABLE = "directoryforwardingtable";
+	public static final String DIRECTORY_FORWARDING_TABLE_ENTRIES = "directoryforwardingtableentries";
 	public static final String ENROLLMENT = "enrollment";
 	public static final String FLOWS = "flows";
 	public static final String FLOW_ALLOCATOR = "flowallocator";

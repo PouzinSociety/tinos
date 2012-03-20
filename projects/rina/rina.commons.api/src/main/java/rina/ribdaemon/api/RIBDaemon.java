@@ -41,10 +41,17 @@ public interface RIBDaemon extends IPCProcessComponent{
 	
 	/**
 	 * Remove a ribObject from the RIB
+	 * @param ribObject
+	 * @throws RIBDaemonException
+	 */
+	public void removeRIBObject(RIBObject ribObject) throws RIBDaemonException;
+	
+	/**
+	 * Remove a ribObject from the RIB
 	 * @param objectName
 	 * @throws RIBDaemonException
 	 */
-	public void removeRIBObject(RIBObject ribObject, String objectName) throws RIBDaemonException;
+	public void removeRIBObject(String objectName) throws RIBDaemonException;
 	
 	/**
 	 * Send an information update, consisting on a set of CDAP messages, using the updateStrategy update strategy
@@ -73,13 +80,40 @@ public interface RIBDaemon extends IPCProcessComponent{
 	 */
 	public void processOperation(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException;
 	
-	public void create(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
+	/**
+	 * Create or update an object in the RIB
+	 * @param objectClass the class of the object
+	 * @param objectName the name of the object
+	 * @param objectInstance the instance of the object
+	 * @param objectValue the value of the object
+	 * @param notify if not null notify some of the neighbors about the change
+	 * @throws RIBDaemonException
+	 */
+	public void create(String objectClass, String objectName, long objectInstance, Object objectValue, NotificationPolicy notify) throws RIBDaemonException;
 	
-	public void delete(String objectClass, String objectName, long objectInstance) throws RIBDaemonException;
+	/**
+	 * Delete an object from the RIB
+	 * @param objectClass the class of the object
+	 * @param objectName the name of the object
+	 * @param objectInstance the instance of the object
+	 * @param object the value of the object
+	 * @param notify if not null notify some of the neighbors about the change
+	 * @throws RIBDaemonException 
+	 */
+	public void delete(String objectClass, String objectName, long objectInstance, Object objectValue, NotificationPolicy notify) throws RIBDaemonException;
 	
 	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException;
 	
-	public void write(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
+	/**
+	 * Update the value of an object in the RIB
+	 * @param objectClass the class of the object
+	 * @param objectName the name of the object
+	 * @param objectInstance the instance of the object
+	 * @param objectValue the new value of the object
+	 * @param notify if not null notify some of the neighbors about the change
+	 * @throws RIBDaemonException
+	 */
+	public void write(String objectClass, String objectName, long objectInstance, Object objectValue, NotificationPolicy notify) throws RIBDaemonException;
 	
 	public void start(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
 	

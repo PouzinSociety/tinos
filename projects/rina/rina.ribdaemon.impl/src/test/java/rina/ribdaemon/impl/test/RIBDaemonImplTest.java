@@ -59,10 +59,10 @@ public class RIBDaemonImplTest {
 		Assert.assertEquals(String.class, ribObject.getObjectValue().getClass());
 		Assert.assertEquals("Test RIB Object 1", ribObject.getObjectValue().toString());
 		
-		ribDaemon.create(TEST_CLASS, TEST_RIB_OBJECT_2+"/child1", 0, new String("Test RIB Object 2 child 1"));
+		ribDaemon.create(TEST_CLASS, TEST_RIB_OBJECT_2+"/child1", 0, new String("Test RIB Object 2 child 1"), null);
 		Assert.assertEquals(3, ribDaemon.getRIBObjects().size());
 		try{
-			ribDaemon.create(TEST_CLASS, TEST_RIB_OBJECT_2+"/child1", 0, new String("Test RIB Object 2 child 1"));
+			ribDaemon.create(TEST_CLASS, TEST_RIB_OBJECT_2+"/child1", 0, new String("Test RIB Object 2 child 1"), null);
 			Assert.assertFalse(true);
 		}catch(Exception ex){
 			ex.printStackTrace();
@@ -70,10 +70,10 @@ public class RIBDaemonImplTest {
 		}
 		Assert.assertEquals(3, ribDaemon.getRIBObjects().size());
 		
-		ribDaemon.create(TEST_CLASS, TEST_RIB_OBJECT_2+"/child2", 0, new String("Test RIB Object 2 child 2"));
+		ribDaemon.create(TEST_CLASS, TEST_RIB_OBJECT_2+"/child2", 0, new String("Test RIB Object 2 child 2"), null);
 		Assert.assertEquals(4, ribDaemon.getRIBObjects().size());
 		try{
-			ribDaemon.create(TEST_CLASS, TEST_RIB_OBJECT_2, 0, new String("Test RIB Object 2 child 2"));
+			ribDaemon.create(TEST_CLASS, TEST_RIB_OBJECT_2, 0, new String("Test RIB Object 2 child 2"), null);
 			Assert.assertFalse(true);
 		}catch(Exception ex){
 			ex.printStackTrace();
@@ -97,25 +97,25 @@ public class RIBDaemonImplTest {
 	@Test
 	public void testWriteDeleteObjects() throws RIBDaemonException{
 		try{
-			ribDaemon.write(TEST_CLASS, TEST_RIB_OBJECT_2, 0, new String("Written object"));
+			ribDaemon.write(TEST_CLASS, TEST_RIB_OBJECT_2, 0, new String("Written object"), null);
 			Assert.assertFalse(true);
 		}catch(Exception ex){
 			ex.printStackTrace();
 			Assert.assertTrue(true);
 		}
 		
-		ribDaemon.write(TEST_CLASS, TEST_RIB_OBJECT_1, 0, new String("Written object"));
+		ribDaemon.write(TEST_CLASS, TEST_RIB_OBJECT_1, 0, new String("Written object"), null);
 		RIBObject ribObject = ribDaemon.read(TEST_CLASS, TEST_RIB_OBJECT_1, 0L);
 		Assert.assertEquals("Written object", ribObject.getObjectValue().toString());
 		
-		ribDaemon.delete(TEST_CLASS, TEST_RIB_OBJECT_2+"/child2", 0);
+		ribDaemon.delete(TEST_CLASS, TEST_RIB_OBJECT_2+"/child2", 0, null, null);
 		Assert.assertEquals(3, ribDaemon.getRIBObjects().size());
 		
-		ribDaemon.delete(TEST_CLASS, TEST_RIB_OBJECT_2+"/child1", 0);
+		ribDaemon.delete(TEST_CLASS, TEST_RIB_OBJECT_2+"/child1", 0, null, null);
 		Assert.assertEquals(2, ribDaemon.getRIBObjects().size());
 		
 		try{
-			ribDaemon.delete(TEST_CLASS, TEST_RIB_OBJECT_1, 0);
+			ribDaemon.delete(TEST_CLASS, TEST_RIB_OBJECT_1, 0, null, null);
 			Assert.assertFalse(true);
 		}catch(Exception ex){
 			ex.printStackTrace();
@@ -125,18 +125,18 @@ public class RIBDaemonImplTest {
 	
 	@Test
 	public void testRemoveRIBObjects() throws RIBDaemonException{
-		ribDaemon.removeRIBObject(null, TEST_RIB_OBJECT_2);
+		ribDaemon.removeRIBObject(TEST_RIB_OBJECT_2);
 		Assert.assertEquals(1, ribDaemon.getRIBObjects().size());
 		
 		try{
-			ribDaemon.removeRIBObject(null, TEST_RIB_OBJECT_2);
+			ribDaemon.removeRIBObject(TEST_RIB_OBJECT_2);
 		}catch(Exception ex){
 			ex.printStackTrace();
 			Assert.assertTrue(true);
 		}
 		Assert.assertEquals(1, ribDaemon.getRIBObjects().size());
 		
-		ribDaemon.removeRIBObject(null, TEST_RIB_OBJECT_1);
+		ribDaemon.removeRIBObject(TEST_RIB_OBJECT_1);
 		Assert.assertEquals(0, ribDaemon.getRIBObjects().size());
 	}
 

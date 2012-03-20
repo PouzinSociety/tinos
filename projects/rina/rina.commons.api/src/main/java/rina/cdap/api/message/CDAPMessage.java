@@ -301,13 +301,15 @@ public class CDAPMessage implements Serializable{
 		return cdapMessage;
 	}
 	
-	public static CDAPMessage getDeleteObjectRequestMessage(byte[] filter, Flags flags, String objClass, long objInst, String objName, int scope) throws CDAPException{
+	public static CDAPMessage getDeleteObjectRequestMessage(byte[] filter, Flags flags, String objClass, long objInst, String objName, 
+			ObjectValue objectValue, int scope) throws CDAPException{
 		CDAPMessage cdapMessage = new CDAPMessage();
 		cdapMessage.setFilter(filter);
 		cdapMessage.setFlags(flags);
 		cdapMessage.setObjClass(objClass);
 		cdapMessage.setObjInst(objInst);
 		cdapMessage.setObjName(objName);
+		cdapMessage.setObjValue(objectValue);
 		cdapMessage.setOpCode(Opcode.M_DELETE);
 		cdapMessage.setScope(scope);
 		CDAPMessageValidator.validate(cdapMessage);
@@ -349,6 +351,22 @@ public class CDAPMessage implements Serializable{
 		cdapMessage.setFlags(flags);
 		cdapMessage.setInvokeID(invokeID);
 		cdapMessage.setOpCode(Opcode.M_START_R);
+		cdapMessage.setResult(result);
+		cdapMessage.setResultReason(resultReason);
+		CDAPMessageValidator.validate(cdapMessage);
+		return cdapMessage;
+	}
+	
+	public static CDAPMessage getStartObjectResponseMessage(Flags flags, String objectClass, ObjectValue objectValue, long objInst, 
+			String objName, int result, String resultReason, int invokeID) throws CDAPException{
+		CDAPMessage cdapMessage = new CDAPMessage();
+		cdapMessage.setFlags(flags);
+		cdapMessage.setInvokeID(invokeID);
+		cdapMessage.setOpCode(Opcode.M_START_R);
+		cdapMessage.setObjClass(objectClass);
+		cdapMessage.setObjInst(objInst);
+		cdapMessage.setObjName(objName);
+		cdapMessage.setObjValue(objectValue);
 		cdapMessage.setResult(result);
 		cdapMessage.setResultReason(resultReason);
 		CDAPMessageValidator.validate(cdapMessage);
@@ -711,28 +729,86 @@ public class CDAPMessage implements Serializable{
 	
 	public String toString(){
 		String result = "\n"+this.getOpCode()+"\n";
-		result = result + "abstract syntax: "+ this.getAbsSyntax() + "\n";
-		result = result + "authentication mechanism: "+ this.getAuthMech() + "\n";
-		result = result + "authentication value: "+ this.getAuthValue() + "\n";
-		result = result + "destination AP name: "+ this.getDestApName() + "\n";
-		result = result + "destination AP instance: "+ this.getDestApInst() + "\n";
-		result = result + "destination AE name: "+ this.getDestAEName() + "\n";
-		result = result + "destination AE instance: "+ this.getDestAEInst() + "\n";
-		result = result + "Filter: "+ this.getFilter() + "\n";
-		result = result + "Flags: "+ this.getFlags() + "\n";
-		result = result + "Invoke id: "+ this.getInvokeID() + "\n";
-		result = result + "Object class: "+ this.getObjClass()+ "\n";
-		result = result + "Object name: "+ this.getObjName()+ "\n";
-		result = result + "Object instance: "+ this.getObjInst()+ "\n";
-		result = result + "Object value: "+ this.getObjValue()+ "\n";
-		result = result + "Result: "+ this.getResult()+ "\n";
-		result = result + "Result Reason: "+ this.getResultReason()+ "\n";
-		result = result + "Scope: "+ this.getScope()+ "\n";
-		result = result + "source AP name: "+ this.getSrcApName() + "\n";
-		result = result + "source AP instance: "+ this.getSrcApInst() + "\n";
-		result = result + "source AE name: "+ this.getSrcAEName() + "\n";
-		result = result + "source AE instance: "+ this.getSrcAEInst() + "\n";
-		result = result + "Version: "+ this.getVersion()+ "\n";
+		if (this.getOpCode() == Opcode.M_CONNECT|| this.getOpCode() == Opcode.M_CONNECT_R){
+			result = result + "Abstract syntax: "+ this.getAbsSyntax() + "\n";
+			result = result + "Authentication mechanism: "+ this.getAuthMech() + "\n";
+			result = result + "Authentication value: "+ this.getAuthValue() + "\n";
+			if (this.getSrcApName() != null){
+				result = result + "Source AP name: "+ this.getSrcApName() + "\n";
+			}
+			if (this.getSrcApInst() != null){
+				result = result + "Source AP instance: "+ this.getSrcApInst() + "\n";
+			}
+			if (this.getSrcAEName() != null){
+				result = result + "Source AE name: "+ this.getSrcAEName() + "\n";
+			}
+			if (this.getSrcAEInst() != null){
+				result = result + "Source AE instance: "+ this.getSrcAEInst() + "\n";
+			}
+			if (this.getDestApName() != null){
+				result = result + "Destination AP name: "+ this.getDestApName() + "\n";
+			}
+			if (this.getDestApInst() != null){
+				result = result + "Destination AP instance: "+ this.getDestApInst() + "\n";
+			}
+			if (this.getDestAEName() != null){
+				result = result + "Destination AE name: "+ this.getDestAEName() + "\n";
+			}
+			if (this.getDestAEInst() != null){
+				result = result + "Destination AE instance: "+ this.getDestAEInst() + "\n";
+			}
+		}
+
+		if (this.getFilter() != null){
+			result = result + "Filter: "+ this.getFilter() + "\n";
+		}
+
+		if (this.getFlags() != null){
+			result = result + "Flags: "+ this.getFlags() + "\n";
+		}
+
+		if (this.getInvokeID() != 0){
+			result = result + "Invoke id: "+ this.getInvokeID() + "\n";
+		}
+
+		if (this.getObjClass() != null){
+			result = result + "Object class: "+ this.getObjClass()+ "\n";
+		}
+
+		if (this.getObjName() != null){
+			result = result + "Object name: "+ this.getObjName()+ "\n";
+		}
+
+		if (this.getObjInst() != 0){
+			result = result + "Object instance: "+ this.getObjInst()+ "\n";
+		}
+
+		if (this.getObjValue() != null){
+			result = result + "Object value: "+ this.getObjValue()+ "\n";
+		}
+
+		if (this.getOpCode() == Opcode.M_CONNECT_R || this.getOpCode() == Opcode.M_RELEASE_R 
+				|| this.getOpCode() == Opcode.M_READ_R || this.getOpCode() == Opcode.M_WRITE_R 
+				|| this.getOpCode() == Opcode.M_CANCELREAD_R || this.getOpCode() == Opcode.M_START_R 
+				|| this.getOpCode() == Opcode.M_STOP_R || this.getOpCode() == Opcode.M_CREATE_R
+				|| this.getOpCode() == Opcode.M_DELETE_R){
+			result = result + "Result: "+ this.getResult()+ "\n";
+			if (this.getResultReason() != null){
+				result = result + "Result Reason: "+ this.getResultReason()+ "\n";
+			}
+		}
+
+		if (this.getOpCode() == Opcode.M_READ || this.getOpCode() == Opcode.M_WRITE
+				|| this.getOpCode() == Opcode.M_CANCELREAD || this.getOpCode() == Opcode.M_START
+				|| this.getOpCode() == Opcode.M_STOP || this.getOpCode() == Opcode.M_CREATE
+				|| this.getOpCode() == Opcode.M_DELETE){
+			result = result + "Scope: "+ this.getScope()+ "\n";
+		}
+		
+		if (this.getVersion() != 0){
+			result = result + "Version: "+ this.getVersion() + "\n";
+		}
+
 		return result;
 	}
 }

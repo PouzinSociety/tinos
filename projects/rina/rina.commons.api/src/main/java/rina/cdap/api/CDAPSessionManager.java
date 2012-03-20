@@ -52,6 +52,12 @@ public interface CDAPSessionManager extends IPCProcessComponent{
 	public CDAPSession getCDAPSession(int portId);
 	
 	/**
+	 * Get the identifiers of all the CDAP sessions
+	 * @return
+	 */
+	public int[] getAllCDAPSessionIds();
+	
+	/**
 	 * Called by the CDAPSession state machine when the cdap session is terminated
 	 * @param portId
 	 */
@@ -199,13 +205,14 @@ public interface CDAPSessionManager extends IPCProcessComponent{
 	 * @param objClass
 	 * @param objInst
 	 * @param objName
+	 * @param objectValue
 	 * @param scope
 	 * @param invokeId
 	 * @return
 	 * @throws CDAPException
 	 */
 	public CDAPMessage getDeleteObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, long objInst, String objName, 
-			int scope, boolean invokeId) throws CDAPException;
+			ObjectValue objectValue, int scope, boolean invokeId) throws CDAPException;
 	
 	/**
 	 * Create a M_DELETE_R CDAP MESSAGE
@@ -251,6 +258,19 @@ public interface CDAPSessionManager extends IPCProcessComponent{
 	 * @throws CDAPException
 	 */
 	public CDAPMessage getStartObjectResponseMessage(int portId, Flags flags, int result, String resultReason, int invokeId) throws CDAPException;
+	
+	/**
+	 * Create a M_START_R CDAP Message
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param flags
+	 * @param result
+	 * @param resultReason
+	 * @param invokeId
+	 * @return
+	 * @throws CDAPException
+	 */
+	public CDAPMessage getStartObjectResponseMessage(int portId, Flags flags, String objClass, ObjectValue objValue, long objInst, String objName, 
+			int result, String resultReason, int invokeId) throws CDAPException;
 	
 	/**
 	 * Create a M_STOP CDAP Message

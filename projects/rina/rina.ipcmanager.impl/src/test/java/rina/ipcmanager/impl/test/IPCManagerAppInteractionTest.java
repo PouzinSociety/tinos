@@ -194,7 +194,7 @@ public class IPCManagerAppInteractionTest {
 	}
 	
 	private CDAPMessage getDeallocateRequest() throws Exception{
-		CDAPMessage cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, null, 0, null, 0);
+		CDAPMessage cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, null, 0, null, null, 0);
 		return cdapMessage;
 	}
 	

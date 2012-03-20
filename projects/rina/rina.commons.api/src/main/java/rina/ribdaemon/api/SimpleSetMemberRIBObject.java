@@ -18,7 +18,8 @@ public class SimpleSetMemberRIBObject extends SimpleRIBObject{
 	}
 
 	@Override
-	public void delete(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
+	public void delete(String objectClass, String objectName, long objectInstance, Object objectValue) throws RIBDaemonException {
 		this.getParent().removeChild(objectName);
+		this.getRIBDaemon().removeRIBObject(this);
 	}
 }

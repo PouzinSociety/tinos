@@ -71,6 +71,23 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 		
 		return this.wireMessageProvider;
 	}
+	
+	/**
+	 * Get the identifiers of all the CDAP sessions
+	 * @return
+	 */
+	public int[] getAllCDAPSessionIds(){
+		Iterator<Integer> iterator = cdapSessions.keySet().iterator();
+		int[] result = new int[cdapSessions.keySet().size()];
+		
+		int i=0;
+		while(iterator.hasNext()){
+			result[i] = iterator.next();
+			i++;
+		}
+		
+		return result;
+	}
 
 	public List<CDAPSession> getAllCDAPSessions() {
 		Iterator<Entry<Integer, CDAPSession>> iterator =  cdapSessions.entrySet().iterator();
@@ -356,14 +373,15 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @param objClass
 	 * @param objInst
 	 * @param objName
+	 * @param objectValue
 	 * @param scope
 	 * @param invokeId
 	 * @return
 	 * @throws CDAPException
 	 */
 	public synchronized CDAPMessage getDeleteObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, long objInst, String objName, 
-			int scope, boolean invokeId) throws CDAPException{
-		CDAPMessage cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(filter, flags, objClass, objInst, objName, scope);
+			ObjectValue objectValue, int scope, boolean invokeId) throws CDAPException{
+		CDAPMessage cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(filter, flags, objClass, objInst, objName, objectValue, scope);
 		assignInvokeId(cdapMessage, invokeId, portId);
 		
 		return cdapMessage;
@@ -421,6 +439,21 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 */
 	public synchronized CDAPMessage getStartObjectResponseMessage(int portId, Flags flags, int result, String resultReason, int invokeId) throws CDAPException{
 		return CDAPMessage.getStartObjectResponseMessage(flags, result, resultReason, invokeId);
+	}
+	
+	/**
+	 * Create a M_START_R CDAP Message
+	 * @param portId identifies the CDAP Session that this message is part of
+	 * @param flags
+	 * @param result
+	 * @param resultReason
+	 * @param invokeId
+	 * @return
+	 * @throws CDAPException
+	 */
+	public CDAPMessage getStartObjectResponseMessage(int portId, Flags flags, String objClass, ObjectValue objValue, long objInst, String objName, 
+			int result, String resultReason, int invokeId) throws CDAPException{
+		return CDAPMessage.getStartObjectResponseMessage(flags, objClass, objValue, objInst, objName, result, resultReason, invokeId);
 	}
 	
 	/**

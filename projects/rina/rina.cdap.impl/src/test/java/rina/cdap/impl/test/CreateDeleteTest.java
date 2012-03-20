@@ -131,7 +131,7 @@ public class CreateDeleteTest extends BaseCDAPTest{
 		CDAPMessage cdapMessage = null;
 		byte[] message = null;
 		
-		cdapMessage = cdapSessionManager.getDeleteObjectRequestMessage(32768, null, null, "org.pouzinsociety.flow.Flow", 0, "123", 0, true);
+		cdapMessage = cdapSessionManager.getDeleteObjectRequestMessage(32768, null, null, "org.pouzinsociety.flow.Flow", 0, "123", null, 0, true);
 		message = sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 		
@@ -160,7 +160,7 @@ public class CreateDeleteTest extends BaseCDAPTest{
 		CDAPMessage cdapMessage = null;
 		byte[] message = null;
 
-		cdapMessage = cdapSessionManager.getDeleteObjectRequestMessage(32768, null, null, "org.pouzinsociety.flow.Flow", 0, "123", 0, false);
+		cdapMessage = cdapSessionManager.getDeleteObjectRequestMessage(32768, null, null, "org.pouzinsociety.flow.Flow", 0, "123", null, 0, false);
 		message = sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 
@@ -185,14 +185,14 @@ public class CreateDeleteTest extends BaseCDAPTest{
 		int invokeId1 = 0;
 		int invokeId2 = 0;
 
-		cdapMessage = cdapSessionManager.getDeleteObjectRequestMessage(32768, null, null, "org.pouzinsociety.flow.Flow", 0, "123", 0, true);
+		cdapMessage = cdapSessionManager.getDeleteObjectRequestMessage(32768, null, null, "org.pouzinsociety.flow.Flow", 0, "123", null, 0, true);
 		invokeId1 = cdapMessage.getInvokeID();
 		message = sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
 		
 		receivingCDAPSession.messageReceived(message);
 		
-		cdapMessage = cdapSessionManager.getDeleteObjectRequestMessage(32768, null, null, "org.pouzinsociety.flow.Flow", 0, "789", 0, true);
+		cdapMessage = cdapSessionManager.getDeleteObjectRequestMessage(32768, null, null, "org.pouzinsociety.flow.Flow", 0, "789", null, 0, true);
 		invokeId2 = cdapMessage.getInvokeID();
 		message = sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		sendingCDAPSession.messageSent(cdapMessage);
@@ -218,7 +218,7 @@ public class CreateDeleteTest extends BaseCDAPTest{
 		CDAPMessage cdapMessage = null;
 
 		boolean failed = false;
-		cdapMessage = cdapSessionManager.getDeleteObjectRequestMessage(32768, null, null, "org.pouzinsociety.flow.Flow", 0, "123", 0, true);
+		cdapMessage = cdapSessionManager.getDeleteObjectRequestMessage(32768, null, null, "org.pouzinsociety.flow.Flow", 0, "123", null, 0, true);
 		try{
 			sendingCDAPSession.encodeNextMessageToBeSent(cdapMessage);
 		}catch(CDAPException ex){

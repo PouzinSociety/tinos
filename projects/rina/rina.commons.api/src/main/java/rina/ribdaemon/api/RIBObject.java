@@ -28,8 +28,8 @@ public interface RIBObject{
 	public void removeChild(String objectName) throws RIBDaemonException;
 
 	/* LOCAL API */
-	public void create(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
-	public void delete(String objectClass, String objectName, long objectInstance) throws RIBDaemonException;
+	public void create(String objectClass, String objectName, long objectInstance, Object objectValue) throws RIBDaemonException;
+	public void delete(String objectClass, String objectName, long objectInstance, Object objectValue) throws RIBDaemonException;
 	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException;
 	public void write(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;
 	public void start(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException;

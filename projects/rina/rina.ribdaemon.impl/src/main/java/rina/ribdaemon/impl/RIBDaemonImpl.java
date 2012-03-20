@@ -17,9 +17,14 @@ import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Flags;
 import rina.cdap.api.message.CDAPMessage.Opcode;
+import rina.cdap.api.message.ObjectValue;
+import rina.encoding.api.BaseEncoder;
+import rina.encoding.api.Encoder;
 import rina.enrollment.api.BaseEnrollmentTask;
 import rina.enrollment.api.EnrollmentTask;
+import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBDaemon;
+import rina.ribdaemon.api.NotificationPolicy;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
@@ -40,6 +45,9 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	/** Create, retrieve and delete CDAP sessions **/
 	private CDAPSessionManager cdapSessionManager = null;
 	
+	/** Encode and decode objects **/
+	private Encoder encoder = null;
+	
 	/** The RIB **/
 	private RIB rib = null;
 	
@@ -51,12 +59,11 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		messageHandlersWaitingForReply = new Hashtable<String, CDAPMessageHandler>();
 	}
 	
-	private CDAPSessionManager getCDAPSessionManager(){
-		if (this.cdapSessionManager == null){
-			this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
-		}
-		
-		return this.cdapSessionManager;
+	@Override
+	public void setIPCProcess(IPCProcess ipcProcess){
+		super.setIPCProcess(ipcProcess);
+		this.encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
+		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 	}
 
 	/**
@@ -75,8 +82,8 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		
 		//1 Decode the message and obtain the CDAP session descriptor
 		try{
-			cdapMessage = getCDAPSessionManager().messageReceived(encodedCDAPMessage, portId);
-			cdapSessionDescriptor = getCDAPSessionManager().getCDAPSession(portId).getSessionDescriptor();
+			cdapMessage = cdapSessionManager.messageReceived(encodedCDAPMessage, portId);
+			cdapSessionDescriptor = cdapSessionManager.getCDAPSession(portId).getSessionDescriptor();
 		}catch(CDAPException ex){
 			log.error("Error decoding CDAP message: " + ex.getMessage());
 			ex.printStackTrace();
@@ -113,7 +120,8 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 			//All the other request messages (M_READ, M_WRITE, M_CREATE, M_DELETE, M_START, M_STOP, M_CANCELREAD) are 
 			//handled by the RIB
 			else if (opcode.equals(Opcode.M_READ) || opcode.equals(Opcode.M_WRITE) || opcode.equals(Opcode.M_CREATE) || 
-					opcode.equals(Opcode.M_DELETE) || opcode.equals(Opcode.M_START) || opcode.equals(Opcode.M_STOP) || opcode.equals(Opcode.M_CANCELREAD)){
+					opcode.equals(Opcode.M_DELETE) || opcode.equals(Opcode.M_START) || opcode.equals(Opcode.M_STOP) || 
+					opcode.equals(Opcode.M_CANCELREAD)){
 				this.processOperation(cdapMessage, cdapSessionDescriptor);
 			}
 			//All the response messages must be handled by the entities that are waiting for the reply
@@ -124,7 +132,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 					cdapMessageHandler = messageHandlersWaitingForReply.remove(cdapSessionDescriptor.getPortId()+"-"+cdapMessage.getInvokeID());
 				}
 				if (cdapMessageHandler == null){
-					log.error("Nobody was waiting for this response message");
+					log.error("Nobody was waiting for this response message "+cdapMessage.toString());
 				}else{
 					switch(opcode){
 					case M_READ_R:
@@ -261,9 +269,9 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	 * @param portId identifies the flow that has been deallocated
 	 */
 	public void flowDeallocated(int portId) {
-		CDAPSessionDescriptor cdapSessionDescriptor = getCDAPSessionManager().getCDAPSession(portId).getSessionDescriptor();
+		CDAPSessionDescriptor cdapSessionDescriptor = cdapSessionManager.getCDAPSession(portId).getSessionDescriptor();
 		//Remove the CDAP session
-		getCDAPSessionManager().removeCDAPSession(portId);
+		cdapSessionManager.removeCDAPSession(portId);
 		//Clean the messageHandlersWaitingForReply queue
 		cleanMessageHandlersWaitingForReply(portId);
 		//Inform the enrollment task
@@ -319,7 +327,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		}
 		
 		try{
-			serializedCDAPMessageToBeSend = getCDAPSessionManager().encodeNextMessageToBeSent(cdapMessage, portId);
+			serializedCDAPMessageToBeSend = cdapSessionManager.encodeNextMessageToBeSent(cdapMessage, portId);
 			rmt.sendCDAPMessage(portId, serializedCDAPMessageToBeSend);
 			cdapSessionManager.messageSent(cdapMessage, portId);
 			log.debug("Sent CDAP Message: "+ cdapMessage.toString());
@@ -373,11 +381,9 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	 * @param objectName
 	 * @throws RIBDaemonException
 	 */
-	public void removeRIBObject(RIBObject ribObject, String objectName) throws RIBDaemonException{
+	public void removeRIBObject(RIBObject ribObject) throws RIBDaemonException{
 		if (ribObject != null){
 			removeRIBObject(ribObject.getObjectName());
-		}else if (objectName != null){
-			removeRIBObject(objectName);
 		}else{
 			throw new RIBDaemonException(RIBDaemonException.RIB_OBJECT_AND_OBJECT_NAME_NULL, 
 					"Both the RIBObject and objectname parameters are null");
@@ -386,7 +392,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		
 	}
 	
-	private void removeRIBObject(String objectName) throws RIBDaemonException{
+	public void removeRIBObject(String objectName) throws RIBDaemonException{
 		RIBObject ribObject = rib.removeRIBObject(objectName);
 		if (ribObject == null){
 			throw new RIBDaemonException(RIBDaemonException.OBJECTNAME_NOT_PRESENT_IN_THE_RIB, 
@@ -411,9 +417,20 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		
 		switch(cdapMessage.getOpCode()){
 		case M_CREATE:
-			/* Creation is delegated to the parent objects */
-			String parentObjectName = cdapMessage.getObjName().substring(0, cdapMessage.getObjName().lastIndexOf(RIBObjectNames.SEPARATOR));
-			ribObject = getRIBObject(parentObjectName, null, 0);
+			/* Creation is delegated to the parent objects if the object doesn't exist. Create semantics are CREATE or UPDATE. If the 
+			 * object exists it is an update, therefore the message is handled to the object. If the object doesn't exist it is a CREATE, 
+			 * therefore it is handled to the parent object*/
+			try{
+				ribObject = getRIBObject(cdapMessage.getObjName(), cdapMessage.getObjClass(), cdapMessage.getObjInst());
+			}catch(RIBDaemonException ex){
+				if(ex.getErrorCode() == RIBDaemonException.OBJECTNAME_NOT_PRESENT_IN_THE_RIB){
+					//The object does not exist, call the parent object
+					String parentObjectName = cdapMessage.getObjName().substring(0, cdapMessage.getObjName().lastIndexOf(RIBObjectNames.SEPARATOR));
+					ribObject = getRIBObject(parentObjectName, null, 0);
+				}else{
+					throw ex;
+				}
+			}
 			ribObject.create(cdapMessage, cdapSessionDescriptor);
 			break;
 		case M_DELETE:
@@ -450,21 +467,121 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		return rib.getRIBObject(objectName);
 	}
 
-	public synchronized void create(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+	/**
+	 * Create or update an object in the RIB
+	 * @param objectClass the class of the object
+	 * @param objectName the name of the object
+	 * @param objectInstance the instance of the object
+	 * @param objectValue the value of the object
+	 * @param notify if not null notify some of the neighbors about the change
+	 * @throws RIBDaemonException
+	 */
+	public synchronized void create(String objectClass, String objectName, long objectInstance, 
+			Object objectValue, NotificationPolicy notificationPolicy) throws RIBDaemonException {
 		log.debug("Local operation create called on object "+objectName);
 		validateObjectArguments(objectClass, objectName, objectInstance);
-		/* Creation is delegated to the parent objects */
-		String parentObjectName = objectName.substring(0, objectName.lastIndexOf(RIBObjectNames.SEPARATOR));
-		RIBObject ribObject = getRIBObject(parentObjectName, null, 0);
-		ribObject.create(objectClass, objectName, objectInstance, object);
+
+		RIBObject ribObject = null;
+		try{
+			ribObject = getRIBObject(objectName, objectClass, objectInstance);
+		}catch(RIBDaemonException ex){
+			/* Creation is delegated to the parent objects if the object doesn't exist*/
+			String parentObjectName = objectName.substring(0, objectName.lastIndexOf(RIBObjectNames.SEPARATOR));
+			ribObject = getRIBObject(parentObjectName, null, 0);
+		}
+
+		//Create the object
+		ribObject.create(objectClass, objectName, objectInstance, objectValue);
+		
+		//If we don't need to notify, we're done
+		if (notificationPolicy == null){
+			return;
+		}
+		
+		//We need to notify, find out to whom the notifications must be sent to, and do it
+		int[] peersNotToNotify = notificationPolicy.getCdapSessionIds();
+		int[] peers = cdapSessionManager.getAllCDAPSessionIds();
+		ObjectValue cdapObjectValue = new ObjectValue();
+		
+		try{
+			cdapObjectValue.setByteval(encoder.encode(objectValue));
+		}catch(Exception ex){
+			log.error("Could not send notification of create object to remote peers because: "+ex.getMessage());
+			return;
+		}
+		
+		CDAPMessage cdapMessage = null;
+		for(int i=0; i<peers.length; i++){
+			if (!isOnList(peers[i], peersNotToNotify)){
+				try{
+					cdapMessage = cdapSessionManager.getCreateObjectRequestMessage(peers[i], null, null, 
+							objectClass, objectInstance, objectName, cdapObjectValue, 0, false);
+					this.sendMessage(cdapMessage, peers[i], null);
+				}catch(Exception ex){
+					log.error(ex);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Finds out of the candidate number is on the list
+	 * @param candidate
+	 * @param list
+	 * @return
+	 */
+	private boolean isOnList(int candidate, int[] list){
+		for(int i=0; i<list.length; i++){
+			if (list[i] == candidate){
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
-	public synchronized void delete(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
+	public synchronized void delete(String objectClass, String objectName, long objectInstance, 
+			Object objectValue, NotificationPolicy notificationPolicy) throws RIBDaemonException {
 		log.debug("Local operation delete called on object "+objectName);
 		validateObjectArguments(objectClass, objectName, objectInstance);
 		RIBObject ribObject = getRIBObject(objectName, objectClass, objectInstance);
-		ribObject.delete(objectClass, objectName, objectInstance);
-		this.rib.removeRIBObject(objectName);
+		ribObject.delete(objectClass, objectName, objectInstance, objectValue);
+		
+		//Create the object
+		ribObject.create(objectClass, objectName, objectInstance, objectValue);
+		
+		//If we don't need to notify, we're done
+		if (notificationPolicy == null){
+			return;
+		}
+		
+		//We need to notify, find out to whom the notifications must be sent to, and do it
+		int[] peersNotToNotify = notificationPolicy.getCdapSessionIds();
+		int[] peers = cdapSessionManager.getAllCDAPSessionIds();
+		ObjectValue cdapObjectValue = null;
+		
+		if (objectValue != null){
+			try{
+				cdapObjectValue = new ObjectValue();
+				cdapObjectValue.setByteval(encoder.encode(objectValue));
+			}catch(Exception ex){
+				log.error("Could not send notification of create object to remote peers because: "+ex.getMessage());
+				return;
+			}
+		}
+		
+		CDAPMessage cdapMessage = null;
+		for(int i=0; i<peers.length; i++){
+			if (!isOnList(peers[i], peersNotToNotify)){
+				try{
+					cdapMessage = cdapSessionManager.getDeleteObjectRequestMessage(peers[i], null, null, 
+							objectClass, objectInstance, objectName, cdapObjectValue, 0, false);
+					this.sendMessage(cdapMessage, peers[i], null);
+				}catch(Exception ex){
+					log.error(ex);
+				}
+			}
+		}
 	}
 
 	public synchronized RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
@@ -495,7 +612,8 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	 * @param objectToWrite the object to be written to the RIB
 	 * @throws RIBDaemonException if there are problems performing the "write" operation to the RIB
 	 */
-	public synchronized void write(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+	public synchronized void write(String objectClass, String objectName, long objectInstance, 
+			Object object, NotificationPolicy notification) throws RIBDaemonException {
 		log.debug("Local operation write called on object "+objectName);
 		validateObjectArguments(objectClass, objectName, objectInstance);
 		RIBObject ribObject = getRIBObject(objectName, objectClass, objectInstance);

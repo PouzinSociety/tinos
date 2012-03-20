@@ -6,6 +6,7 @@ import java.util.List;
 import rina.applicationprocess.api.DAFMember;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.efcp.api.DataTransferConstants;
+import rina.flowallocator.api.DirectoryForwardingTableEntry;
 import rina.flowallocator.api.QoSCube;
 
 /**
@@ -19,12 +20,14 @@ public class EnrollmentInitializationInformation {
 	private List<QoSCube> qosCubes = null;
 	private List<DAFMember> dafMembers = null;
 	private List<WhatevercastName> whatevercastNames = null;
+	private List<DirectoryForwardingTableEntry> directoryEntries = null;
 	private DataTransferConstants dataTransferConstants = null;
 	
 	public EnrollmentInitializationInformation(){
 		qosCubes = new ArrayList<QoSCube>();
 		dafMembers = new ArrayList<DAFMember>();
 		whatevercastNames = new ArrayList<WhatevercastName>();
+		directoryEntries = new ArrayList<DirectoryForwardingTableEntry>();
 	}
 
 	public Long getSynonym() {
@@ -66,5 +69,12 @@ public class EnrollmentInitializationInformation {
 	public void addWhatevercastName(WhatevercastName whatevercastName){
 		this.whatevercastNames.add(whatevercastName);
 	}
-
+	
+	public void addDirectoryEntry(DirectoryForwardingTableEntry entry){
+		this.directoryEntries.add(entry);
+	}
+	
+	public List<DirectoryForwardingTableEntry> getDirectoryEntries() {
+		return directoryEntries;
+	}
 }

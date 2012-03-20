@@ -7,11 +7,10 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.flowallocator.api.message.Flow;
 import rina.ipcprocess.api.IPCProcess;
-import rina.ribdaemon.api.BaseRIBObject;
 import rina.ribdaemon.api.RIBDaemonException;
-import rina.ribdaemon.api.RIBObject;
+import rina.ribdaemon.api.SimpleSetMemberRIBObject;
 
-public class FlowRIBObject extends BaseRIBObject{
+public class FlowRIBObject extends SimpleSetMemberRIBObject{
 	
 	private FlowAllocatorInstance flowAllocatorInstance = null;
 	
@@ -23,16 +22,6 @@ public class FlowRIBObject extends BaseRIBObject{
 	@Override
 	public void delete(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
 		flowAllocatorInstance.deleteFlowRequestMessageReceived(cdapMessage, cdapSessionDescriptor.getPortId());
-	}
-	
-	@Override
-	public void delete(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
-		this.getParent().removeChild(objectName);
-	}
-	
-	@Override
-	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
-		return this;
 	}
 	
 	@Override

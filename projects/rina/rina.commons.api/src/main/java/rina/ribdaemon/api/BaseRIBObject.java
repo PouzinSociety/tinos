@@ -164,7 +164,7 @@ public abstract class BaseRIBObject implements RIBObject{
 				"Operation CREATE not allowed for objectName "+objectName);
 	}
 
-	public void delete(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
+	public void delete(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
 		throw new RIBDaemonException(RIBDaemonException.OPERATION_NOT_ALLOWED_AT_THIS_OBJECT, 
 				"Operation DELETE not allowed for objectName "+objectName);
 	}
@@ -261,7 +261,7 @@ public abstract class BaseRIBObject implements RIBObject{
 		CDAPMessage responseMessage = null;
 
 		try{
-			this.delete(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst());
+			this.delete(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), cdapMessage.getObjValue());
 			if (cdapMessage.getInvokeID() != 0){
 				responseMessage = CDAPMessage.getDeleteObjectResponseMessage(null, cdapMessage.getObjClass(), 0, cdapMessage.getObjName(), 0, 
 						null, cdapMessage.getInvokeID());

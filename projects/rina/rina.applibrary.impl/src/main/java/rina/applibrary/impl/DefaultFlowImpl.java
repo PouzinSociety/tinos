@@ -257,7 +257,7 @@ public class DefaultFlowImpl implements FlowImpl{
 		
 		try{
 			//1 Create M_DELETE message, encode it and send it through socket
-			CDAPMessage cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, null, 0, null, 0);
+			CDAPMessage cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, null, 0, null, null, 0);
 			byte[] encodedMessage = cdapSessionManager.encodeCDAPMessage(cdapMessage);
 			socket.getOutputStream().write(delimiter.getDelimitedSdu(encodedMessage));
 			

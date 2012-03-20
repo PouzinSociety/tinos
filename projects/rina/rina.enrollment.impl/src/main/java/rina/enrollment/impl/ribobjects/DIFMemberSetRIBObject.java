@@ -68,14 +68,14 @@ public class DIFMemberSetRIBObject extends BaseRIBObject{
 	}
 
 	@Override
-	public void delete(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
+	public void delete(String objectClass, String objectName, long objectInstance, Object objectValue) throws RIBDaemonException {
 		String childName = null;
 		List<String> childrenNames = new ArrayList<String>();
 		
 		for(int i=0; i<this.getChildren().size(); i++){
 			childName = this.getChildren().get(i).getObjectName();
 			childrenNames.add(childName);
-			getRIBDaemon().delete(null, childName, 0);
+			getRIBDaemon().delete(null, childName, 0, null, null);
 		}
 		
 		for(int i=0; i<childrenNames.size(); i++){

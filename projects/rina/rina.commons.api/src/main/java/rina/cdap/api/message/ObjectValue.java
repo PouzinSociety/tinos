@@ -15,6 +15,7 @@ public class ObjectValue {
 	private byte[] byteval = null;
 	private int floatval = 0;
 	private long doubleval = 0;
+	private boolean booleanval = false;
 	
 	public int getIntval() {
 		return intval;
@@ -78,5 +79,13 @@ public class ObjectValue {
 	
 	public void setDoubleval(long doubleval) {
 		this.doubleval = doubleval;
+	}
+
+	public void setBooleanval(boolean booleanval) {
+		this.booleanval = booleanval;
+	}
+
+	public boolean isBooleanval() {
+		return booleanval;
 	}
 }

@@ -133,8 +133,8 @@ public class IPCManagerImpl implements IPCManager{
 			dan.setRule("Any member");
 
 			RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-			ribDaemon.create(null, WhatevercastName.DIF_NAME_WHATEVERCAST_OBJECT_NAME, 0, dan);
-			ribDaemon.write(null, RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME, 0, new Long(1));
+			ribDaemon.create(null, WhatevercastName.DIF_NAME_WHATEVERCAST_OBJECT_NAME, 0, dan, null);
+			ribDaemon.write(null, RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME, 0, new Long(1), null);
 			
 			DataTransferConstants dataTransferConstants = new DataTransferConstants();
 			dataTransferConstants.setAddressLength(2);
@@ -147,7 +147,7 @@ public class IPCManagerImpl implements IPCManager{
 			dataTransferConstants.setPortIdLength(2);
 			dataTransferConstants.setQosIdLength(1);
 			dataTransferConstants.setSequenceNumberLength(2);
-			ribDaemon.write(null, DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_NAME, 0, dataTransferConstants);
+			ribDaemon.write(null, DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_NAME, 0, dataTransferConstants, null);
 			
 			QoSCube qosCube = new QoSCube();
 			qosCube.setAverageBandwidth(0);
@@ -162,7 +162,7 @@ public class IPCManagerImpl implements IPCManager{
 			qosCube.setPeakSDUBandwidthDuration(0);
 			qosCube.setQosId(1);
 			qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
-			ribDaemon.create(null, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + qosCube.getQosId(), 0, qosCube);
+			ribDaemon.create(null, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + qosCube.getQosId(), 0, qosCube, null);
 			
 			qosCube = new QoSCube();
 			qosCube.setAverageBandwidth(0);
@@ -177,7 +177,7 @@ public class IPCManagerImpl implements IPCManager{
 			qosCube.setPeakSDUBandwidthDuration(0);
 			qosCube.setQosId(2);
 			qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
-			ribDaemon.create(null, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + qosCube.getQosId(), 0, qosCube);
+			ribDaemon.create(null, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + qosCube.getQosId(), 0, qosCube, null);
 			
 			RMT rmt = (RMT) ipcProcess.getIPCProcessComponent(BaseRMT.getComponentName());
 			rmt.startListening();

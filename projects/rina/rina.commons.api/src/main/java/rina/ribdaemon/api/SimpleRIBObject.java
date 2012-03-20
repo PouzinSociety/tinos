@@ -28,6 +28,14 @@ public class SimpleRIBObject extends BaseRIBObject{
 	public void write(String objectClass, String objectName, long objectInstance, Object value) throws RIBDaemonException {		
 		this.value = value;
 	}
+	
+	@Override
+	/**
+	 * In this case create has the semantics of update 
+	 */
+	public void create(String objectClass, String objectName, long objectInstance, Object value) throws RIBDaemonException{
+		this.value = value;
+	}
 
 	@Override
 	public Object getObjectValue() {

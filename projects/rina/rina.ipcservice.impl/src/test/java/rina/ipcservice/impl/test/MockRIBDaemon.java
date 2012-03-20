@@ -6,6 +6,7 @@ import rina.cdap.api.CDAPMessageHandler;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ribdaemon.api.BaseRIBDaemon;
+import rina.ribdaemon.api.NotificationPolicy;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.UpdateStrategy;
@@ -22,14 +23,14 @@ public class MockRIBDaemon extends BaseRIBDaemon{
 		
 	}
 
-	public void create(String arg0, String arg1, long arg2, Object arg3)
-			throws RIBDaemonException {
+	public void create(String arg0, String arg1, long arg2, Object arg3,
+			NotificationPolicy arg4) throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void delete(String arg0, String arg1, long arg2)
-			throws RIBDaemonException {
+	public void delete(String arg0, String arg1, long arg2, Object arg3,
+			NotificationPolicy arg4) throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		
 	}
@@ -56,8 +57,12 @@ public class MockRIBDaemon extends BaseRIBDaemon{
 		return null;
 	}
 
-	public void removeRIBObject(RIBObject arg0, String arg1)
-			throws RIBDaemonException {
+	public void removeRIBObject(RIBObject arg0) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void removeRIBObject(String arg0) throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		
 	}
@@ -85,10 +90,11 @@ public class MockRIBDaemon extends BaseRIBDaemon{
 		
 	}
 
-	public void write(String arg0, String arg1, long arg2, Object arg3)
-			throws RIBDaemonException {
+	public void write(String arg0, String arg1, long arg2, Object arg3,
+			NotificationPolicy arg4) throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		
 	}
+
 
 }

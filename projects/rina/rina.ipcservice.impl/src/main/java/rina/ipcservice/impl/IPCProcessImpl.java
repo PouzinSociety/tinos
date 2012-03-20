@@ -5,12 +5,16 @@ import org.apache.commons.logging.LogFactory;
 
 import rina.applicationprocess.api.WhatevercastName;
 import rina.flowallocator.api.BaseFlowAllocator;
+import rina.flowallocator.api.DirectoryForwardingTable;
+import rina.flowallocator.api.DirectoryForwardingTableEntry;
 import rina.flowallocator.api.FlowAllocator;
 import rina.ipcprocess.api.BaseIPCProcess;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
+import rina.ribdaemon.api.BaseRIBDaemon;
+import rina.ribdaemon.api.NotificationPolicy;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
@@ -130,23 +134,32 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * An application says it is no longer available through this DIF
 	 */
 	public synchronized void unregister(ApplicationProcessNamingInfo apNamingInfo) {
-		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
-		flowAllocator.getDirectoryForwardingTable().removeEntry(apNamingInfo);
-		//TODO tell the RIB Daemon to disseminate this
+		RIBDaemon ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+		try{
+			NotificationPolicy notificationPolicy = new NotificationPolicy(new int[0]);
+			ribDaemon.delete(DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_ENTRY_RIB_OBJECT_CLASS, 
+					DirectoryForwardingTable.DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR 
+					+ apNamingInfo.getProcessKey(), 0, null, notificationPolicy);
+		}catch(RIBDaemonException ex){
+			log.error(ex);
+		}
 	}
 
 	/**
 	 * An application process says it is available through this DIF
 	 */
 	public synchronized void register(ApplicationProcessNamingInfo apNamingInfo) {
-		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
+		RIBDaemon ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		try{
-			Long currentSynonym = (Long) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
-					RIBObjectNames.CURRENT_SYNONYM, 0).getObjectValue();
-			//TODO fix this
-			//flowAllocator.getDirectoryForwardingTable().addEntry(apNamingInfo, currentSynonym.);
-			//TODO tell the RIB Daemon to disseminate this
+			DirectoryForwardingTableEntry entry = new DirectoryForwardingTableEntry();
+			entry.setAddress(this.getAddress().longValue());
+			entry.setApNamingInfo(apNamingInfo);
+			entry.setTimestamp(System.nanoTime()/1000L);
+			
+			NotificationPolicy notificationPolicy = new NotificationPolicy(new int[0]);
+			ribDaemon.create(DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_ENTRY_RIB_OBJECT_CLASS, 
+					DirectoryForwardingTable.DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR 
+					+ apNamingInfo.getProcessKey(), 0, entry, notificationPolicy);
 		}catch(RIBDaemonException ex){
 			log.error(ex);
 		}

@@ -13,6 +13,7 @@ import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.MessageSubscriber;
 import rina.ribdaemon.api.MessageSubscription;
+import rina.ribdaemon.api.NotificationPolicy;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
@@ -132,13 +133,13 @@ public class FakeRIBDaemon implements RIBDaemon {
 		
 	}
 
-	public void create(String arg0, String arg1, long arg2, Object arg3)
+	public void create(String arg0, String arg1, long arg2, Object arg3, NotificationPolicy notify)
 			throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void delete(String arg0, String arg1, long arg2)
+	public void delete(String arg0, String arg1, long arg2, Object arg4, NotificationPolicy notify)
 			throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		
@@ -162,7 +163,7 @@ public class FakeRIBDaemon implements RIBDaemon {
 		
 	}
 
-	public void write(String arg0, String arg1, long arg2, Object arg3)
+	public void write(String arg0, String arg1, long arg2, Object arg3, NotificationPolicy notify)
 			throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		
@@ -173,7 +174,7 @@ public class FakeRIBDaemon implements RIBDaemon {
 		
 	}
 
-	public void removeRIBObject(RIBObject arg0, String arg1)
+	public void removeRIBObject(RIBObject arg0)
 			throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		
@@ -192,6 +193,11 @@ public class FakeRIBDaemon implements RIBDaemon {
 	public IPCProcess getIPCProcess() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public void removeRIBObject(String arg0) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

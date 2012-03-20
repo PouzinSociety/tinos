@@ -330,6 +330,13 @@ public final class CDAP {
     public boolean hasDoubleval() { return hasDoubleval; }
     public long getDoubleval() { return doubleval_; }
     
+    // optional bool boolval = 9;
+    public static final int BOOLVAL_FIELD_NUMBER = 9;
+    private boolean hasBoolval;
+    private boolean boolval_ = false;
+    public boolean hasBoolval() { return hasBoolval; }
+    public boolean getBoolval() { return boolval_; }
+    
     private void initFields() {
     }
     public final boolean isInitialized() {
@@ -362,6 +369,9 @@ public final class CDAP {
       }
       if (hasDoubleval()) {
         output.writeFixed64(8, getDoubleval());
+      }
+      if (hasBoolval()) {
+        output.writeBool(9, getBoolval());
       }
       getUnknownFields().writeTo(output);
     }
@@ -403,6 +413,10 @@ public final class CDAP {
       if (hasDoubleval()) {
         size += com.google.protobuf.CodedOutputStream
           .computeFixed64Size(8, getDoubleval());
+      }
+      if (hasBoolval()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(9, getBoolval());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -586,6 +600,9 @@ public final class CDAP {
         if (other.hasDoubleval()) {
           setDoubleval(other.getDoubleval());
         }
+        if (other.hasBoolval()) {
+          setBoolval(other.getBoolval());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -641,6 +658,10 @@ public final class CDAP {
             }
             case 65: {
               setDoubleval(input.readFixed64());
+              break;
+            }
+            case 72: {
+              setBoolval(input.readBool());
               break;
             }
           }
@@ -795,6 +816,24 @@ public final class CDAP {
       public Builder clearDoubleval() {
         result.hasDoubleval = false;
         result.doubleval_ = 0L;
+        return this;
+      }
+      
+      // optional bool boolval = 9;
+      public boolean hasBoolval() {
+        return result.hasBoolval();
+      }
+      public boolean getBoolval() {
+        return result.getBoolval();
+      }
+      public Builder setBoolval(boolean value) {
+        result.hasBoolval = true;
+        result.boolval_ = value;
+        return this;
+      }
+      public Builder clearBoolval() {
+        result.hasBoolval = false;
+        result.boolval_ = false;
         return this;
       }
       
@@ -2465,39 +2504,40 @@ public final class CDAP {
   static {
     java.lang.String[] descriptorData = {
       "\n\nCDAP.proto\022\035rina.cdap.impl.googleproto" +
-      "buf\"\226\001\n\010objVal_t\022\016\n\006intval\030\001 \001(\005\022\017\n\007sint" +
+      "buf\"\247\001\n\010objVal_t\022\016\n\006intval\030\001 \001(\005\022\017\n\007sint" +
       "val\030\002 \001(\021\022\020\n\010int64val\030\003 \001(\003\022\021\n\tsint64val" +
       "\030\004 \001(\022\022\016\n\006strval\030\005 \001(\t\022\017\n\007byteval\030\006 \001(\014\022" +
-      "\020\n\010floatval\030\007 \001(\007\022\021\n\tdoubleval\030\010 \001(\006\"H\n\013" +
-      "authValue_t\022\020\n\010authName\030\001 \001(\t\022\024\n\014authPas" +
-      "sword\030\002 \001(\t\022\021\n\tauthOther\030\003 \001(\014\"\210\005\n\013CDAPM" +
-      "essage\022\021\n\tabsSyntax\030\001 \001(\005\0227\n\006opCode\030\002 \002(" +
-      "\0162\'.rina.cdap.impl.googleprotobuf.opCode" +
-      "_t\022\020\n\010invokeID\030\003 \001(\005\022:\n\005flags\030\004 \001(\0162+.ri",
-      "na.cdap.impl.googleprotobuf.flagValues_t" +
-      "\022\020\n\010objClass\030\005 \001(\t\022\017\n\007objName\030\006 \001(\t\022\017\n\007o" +
-      "bjInst\030\007 \001(\003\0229\n\010objValue\030\010 \001(\0132\'.rina.cd" +
-      "ap.impl.googleprotobuf.objVal_t\022\021\n\006resul" +
-      "t\030\t \001(\005:\0010\022\r\n\005scope\030\n \001(\005\022\016\n\006filter\030\013 \001(" +
-      "\014\022<\n\010authMech\030\021 \001(\0162*.rina.cdap.impl.goo" +
-      "gleprotobuf.authTypes_t\022=\n\tauthValue\030\022 \001" +
-      "(\0132*.rina.cdap.impl.googleprotobuf.authV" +
-      "alue_t\022\022\n\ndestAEInst\030\023 \001(\t\022\022\n\ndestAEName" +
-      "\030\024 \001(\t\022\022\n\ndestApInst\030\025 \001(\t\022\022\n\ndestApName",
-      "\030\026 \001(\t\022\021\n\tsrcAEInst\030\027 \001(\t\022\021\n\tsrcAEName\030\030" +
-      " \001(\t\022\021\n\tsrcApInst\030\031 \001(\t\022\021\n\tsrcApName\030\032 \001" +
-      "(\t\022\024\n\014resultReason\030\033 \001(\t\022\017\n\007version\030\034 \001(" +
-      "\003*\230\002\n\010opCode_t\022\r\n\tM_CONNECT\020\000\022\017\n\013M_CONNE" +
-      "CT_R\020\001\022\r\n\tM_RELEASE\020\002\022\017\n\013M_RELEASE_R\020\003\022\014" +
-      "\n\010M_CREATE\020\004\022\016\n\nM_CREATE_R\020\005\022\014\n\010M_DELETE" +
-      "\020\006\022\016\n\nM_DELETE_R\020\007\022\n\n\006M_READ\020\010\022\014\n\010M_READ" +
-      "_R\020\t\022\020\n\014M_CANCELREAD\020\n\022\022\n\016M_CANCELREAD_R" +
-      "\020\013\022\013\n\007M_WRITE\020\014\022\r\n\tM_WRITE_R\020\r\022\013\n\007M_STAR" +
-      "T\020\016\022\r\n\tM_START_R\020\017\022\n\n\006M_STOP\020\020\022\014\n\010M_STOP",
-      "_R\020\021*?\n\014flagValues_t\022\016\n\nF_NO_FLAGS\020\000\022\n\n\006" +
-      "F_SYNC\020\001\022\023\n\017F_RD_INCOMPLETE\020\002*O\n\013authTyp" +
-      "es_t\022\r\n\tAUTH_NONE\020\000\022\017\n\013AUTH_PASSWD\020\001\022\017\n\013" +
-      "AUTH_SSHRSA\020\002\022\017\n\013AUTH_SSHDSA\020\003"
+      "\020\n\010floatval\030\007 \001(\007\022\021\n\tdoubleval\030\010 \001(\006\022\017\n\007" +
+      "boolval\030\t \001(\010\"H\n\013authValue_t\022\020\n\010authName" +
+      "\030\001 \001(\t\022\024\n\014authPassword\030\002 \001(\t\022\021\n\tauthOthe" +
+      "r\030\003 \001(\014\"\210\005\n\013CDAPMessage\022\021\n\tabsSyntax\030\001 \001" +
+      "(\005\0227\n\006opCode\030\002 \002(\0162\'.rina.cdap.impl.goog" +
+      "leprotobuf.opCode_t\022\020\n\010invokeID\030\003 \001(\005\022:\n",
+      "\005flags\030\004 \001(\0162+.rina.cdap.impl.googleprot" +
+      "obuf.flagValues_t\022\020\n\010objClass\030\005 \001(\t\022\017\n\007o" +
+      "bjName\030\006 \001(\t\022\017\n\007objInst\030\007 \001(\003\0229\n\010objValu" +
+      "e\030\010 \001(\0132\'.rina.cdap.impl.googleprotobuf." +
+      "objVal_t\022\021\n\006result\030\t \001(\005:\0010\022\r\n\005scope\030\n \001" +
+      "(\005\022\016\n\006filter\030\013 \001(\014\022<\n\010authMech\030\021 \001(\0162*.r" +
+      "ina.cdap.impl.googleprotobuf.authTypes_t" +
+      "\022=\n\tauthValue\030\022 \001(\0132*.rina.cdap.impl.goo" +
+      "gleprotobuf.authValue_t\022\022\n\ndestAEInst\030\023 " +
+      "\001(\t\022\022\n\ndestAEName\030\024 \001(\t\022\022\n\ndestApInst\030\025 ",
+      "\001(\t\022\022\n\ndestApName\030\026 \001(\t\022\021\n\tsrcAEInst\030\027 \001" +
+      "(\t\022\021\n\tsrcAEName\030\030 \001(\t\022\021\n\tsrcApInst\030\031 \001(\t" +
+      "\022\021\n\tsrcApName\030\032 \001(\t\022\024\n\014resultReason\030\033 \001(" +
+      "\t\022\017\n\007version\030\034 \001(\003*\230\002\n\010opCode_t\022\r\n\tM_CON" +
+      "NECT\020\000\022\017\n\013M_CONNECT_R\020\001\022\r\n\tM_RELEASE\020\002\022\017" +
+      "\n\013M_RELEASE_R\020\003\022\014\n\010M_CREATE\020\004\022\016\n\nM_CREAT" +
+      "E_R\020\005\022\014\n\010M_DELETE\020\006\022\016\n\nM_DELETE_R\020\007\022\n\n\006M" +
+      "_READ\020\010\022\014\n\010M_READ_R\020\t\022\020\n\014M_CANCELREAD\020\n\022" +
+      "\022\n\016M_CANCELREAD_R\020\013\022\013\n\007M_WRITE\020\014\022\r\n\tM_WR" +
+      "ITE_R\020\r\022\013\n\007M_START\020\016\022\r\n\tM_START_R\020\017\022\n\n\006M",
+      "_STOP\020\020\022\014\n\010M_STOP_R\020\021*?\n\014flagValues_t\022\016\n" +
+      "\nF_NO_FLAGS\020\000\022\n\n\006F_SYNC\020\001\022\023\n\017F_RD_INCOMP" +
+      "LETE\020\002*O\n\013authTypes_t\022\r\n\tAUTH_NONE\020\000\022\017\n\013" +
+      "AUTH_PASSWD\020\001\022\017\n\013AUTH_SSHRSA\020\002\022\017\n\013AUTH_S" +
+      "SHDSA\020\003"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -2509,7 +2549,7 @@ public final class CDAP {
           internal_static_rina_cdap_impl_googleprotobuf_objVal_t_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rina_cdap_impl_googleprotobuf_objVal_t_descriptor,
-              new java.lang.String[] { "Intval", "Sintval", "Int64Val", "Sint64Val", "Strval", "Byteval", "Floatval", "Doubleval", },
+              new java.lang.String[] { "Intval", "Sintval", "Int64Val", "Sint64Val", "Strval", "Byteval", "Floatval", "Doubleval", "Boolval", },
               rina.cdap.impl.googleprotobuf.CDAP.objVal_t.class,
               rina.cdap.impl.googleprotobuf.CDAP.objVal_t.Builder.class);
           internal_static_rina_cdap_impl_googleprotobuf_authValue_t_descriptor =

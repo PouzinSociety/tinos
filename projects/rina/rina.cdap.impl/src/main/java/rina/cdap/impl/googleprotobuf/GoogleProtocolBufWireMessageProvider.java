@@ -181,6 +181,7 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 		objectValue.setIntval(cdapMessage.getObjValue().getIntval());
 		objectValue.setSint64val(cdapMessage.getObjValue().getSint64Val());
 		objectValue.setSintval(cdapMessage.getObjValue().getSintval());
+		objectValue.setBooleanval(cdapMessage.getObjValue().getBoolval());
 		strVal = cdapMessage.getObjValue().getStrval();
 		if (!strVal.equals("")){
 			objectValue.setStrval(strVal);
@@ -414,6 +415,7 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 											setSint64Val(cdapMessage.getObjValue().getSint64val()).
 											setSintval(cdapMessage.getObjValue().getSintval()).
 											setStrval(strVal).
+											setBoolval(cdapMessage.getObjValue().isBooleanval()).
 											build();
 		return objValue;
 	}

@@ -10,12 +10,17 @@ import rina.encoding.impl.googleprotobuf.applicationregistration.ApplicationRegi
 import rina.encoding.impl.googleprotobuf.dafmember.DafMemberArrayEncoder;
 import rina.encoding.impl.googleprotobuf.dafmember.DafMemberEncoder;
 import rina.encoding.impl.googleprotobuf.datatransferconstants.DataTransferConstantsEncoder;
+import rina.encoding.impl.googleprotobuf.directoryforwardingtable.DirectoryForwardingTableEntryArrayEncoder;
+import rina.encoding.impl.googleprotobuf.directoryforwardingtable.DirectoryForwardingTableEntryEncoder;
+import rina.encoding.impl.googleprotobuf.enrollment.EnrollmentInformationEncoder;
 import rina.encoding.impl.googleprotobuf.flow.FlowEncoder;
 import rina.encoding.impl.googleprotobuf.flowservice.FlowServiceEncoder;
 import rina.encoding.impl.googleprotobuf.qoscube.QoSCubeArrayEncoder;
 import rina.encoding.impl.googleprotobuf.qoscube.QoSCubeEncoder;
 import rina.encoding.impl.googleprotobuf.whatevercast.WhatevercastNameArrayEncoder;
 import rina.encoding.impl.googleprotobuf.whatevercast.WhatevercastNameEncoder;
+import rina.enrollment.api.EnrollmentInformationRequest;
+import rina.flowallocator.api.DirectoryForwardingTableEntry;
 import rina.flowallocator.api.QoSCube;
 import rina.flowallocator.api.message.Flow;
 import rina.ipcservice.api.ApplicationRegistration;
@@ -35,6 +40,9 @@ public class GPBEncoderFactory implements EncoderFactory{
 		encoder.addEncoder(DAFMember.class.getName(), new DafMemberEncoder());
 		encoder.addEncoder(DAFMember[].class.getName(), new DafMemberArrayEncoder());
 		encoder.addEncoder(DataTransferConstants.class.getName(), new DataTransferConstantsEncoder());
+		encoder.addEncoder(DirectoryForwardingTableEntry.class.getName(), new DirectoryForwardingTableEntryEncoder());
+		encoder.addEncoder(DirectoryForwardingTableEntry[].class.getName(), new DirectoryForwardingTableEntryArrayEncoder());
+		encoder.addEncoder(EnrollmentInformationRequest.class.getName(), new EnrollmentInformationEncoder());
 		encoder.addEncoder(Flow.class.getName(), new FlowEncoder());
 		encoder.addEncoder(QoSCube.class.getName(), new QoSCubeEncoder());
 		encoder.addEncoder(QoSCube[].class.getName(), new QoSCubeArrayEncoder());

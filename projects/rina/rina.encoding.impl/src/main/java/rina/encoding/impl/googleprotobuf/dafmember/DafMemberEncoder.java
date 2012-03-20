@@ -1,7 +1,6 @@
 package rina.encoding.impl.googleprotobuf.dafmember;
 
 import rina.applicationprocess.api.DAFMember;
-import rina.efcp.api.DataTransferConstants;
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.impl.googleprotobuf.dafmember.DafMemberMessage.dafMember_t;
 
@@ -27,7 +26,7 @@ public class DafMemberEncoder extends BaseEncoder{
 
 	public byte[] encode(Object object) throws Exception {
 		if (object == null || !(object instanceof DAFMember)){
-			throw new Exception("This is not the encoder for objects of type " + DataTransferConstants.class.toString());
+			throw new Exception("This is not the encoder for objects of type " + DAFMember.class.toString());
 		}
 		
 		return convertModelToGPB((DAFMember)object).toByteArray();

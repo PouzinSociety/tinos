@@ -545,7 +545,7 @@ public class APServiceImpl implements APService{
 		}
 		
 		try{
-			CDAPMessage cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, null, 0, null, 0);
+			CDAPMessage cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, null, 0, null, null, 0);
 			sendCDAPMessage(cdapMessage, flowServiceState.getSocket());
 			flowServices.remove(new Integer(portId));
 			ApplicationRegistrationState arState = applicationRegistrations.get(flowServiceState.getFlowService().getDestinationAPNamingInfo().getProcessKey());

@@ -7,6 +7,7 @@ import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
+import rina.enrollment.api.EnrollmentInformationRequest;
 import rina.enrollment.impl.EnrollmentTaskImpl;
 import rina.enrollment.impl.statemachines.EnrollmentStateMachine;
 import rina.ipcprocess.api.IPCProcess;
@@ -28,10 +29,34 @@ public class EnrollmentRIBObject extends BaseRIBObject{
 	private CDAPSessionManager cdapSessionManager = null;
 	
 	public EnrollmentRIBObject(EnrollmentTaskImpl enrollmentTaskImpl, IPCProcess ipcProcess){
-		super(ipcProcess, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT, "enrollment", ObjectInstanceGenerator.getObjectInstance());
+		super(ipcProcess, EnrollmentInformationRequest.ENROLLMENT_INFO_OBJECT_NAME, 
+				EnrollmentInformationRequest.ENROLLMENT_INFO_OBJECT_CLASS, ObjectInstanceGenerator.getObjectInstance());
 		this.enrollmentTask = enrollmentTaskImpl;
 		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
+	}
+	
+	@Override
+	/**
+	 * Called when the IPC Process has received the M_START enrollment message received
+	 */
+	public void start(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
+		EnrollmentStateMachine enrollmentStateMachine = null;
+	}
+	
+	@Override
+	/**
+	 * Called when the IPC Process has received the M_START enrollment message received
+	 */
+	public void create(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
+		EnrollmentStateMachine enrollmentStateMachine = null;
+	}
+	
+	@Override
+	/**
+	 * Called when the IPC Process has received the M_START enrollment message received
+	 */
+	public void stop(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
+		EnrollmentStateMachine enrollmentStateMachine = null;
 	}
 	
 	@Override

@@ -59,8 +59,8 @@ public class MockCDAPSessionManager extends BaseCDAPSessionManager{
 	}
 
 	public CDAPMessage getDeleteObjectRequestMessage(int arg0, byte[] arg1,
-			Flags arg2, String arg3, long arg4, String arg5, int arg6,
-			boolean arg7) throws CDAPException {
+			Flags arg2, String arg3, long arg4, String arg5, ObjectValue arg6, int arg7,
+			boolean arg8) throws CDAPException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -173,6 +173,11 @@ public class MockCDAPSessionManager extends BaseCDAPSessionManager{
 	public void removeCDAPSession(int arg0) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public int[] getAllCDAPSessionIds() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

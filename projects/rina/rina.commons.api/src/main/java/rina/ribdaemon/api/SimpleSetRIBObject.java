@@ -1,8 +1,5 @@
 package rina.ribdaemon.api;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
 import rina.ribdaemon.api.RIBDaemonException;
@@ -30,18 +27,12 @@ public class SimpleSetRIBObject extends BaseRIBObject{
 	}
 
 	@Override
-	public void delete(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
-		String childName = null;
-		List<String> childrenNames = new ArrayList<String>();
+	public void delete(String objectClass, String objectName, long objectInstance, Object objectValue) throws RIBDaemonException {
+		RIBObject ribObject = null;
 		
-		for(int i=0; i<this.getChildren().size(); i++){
-			childName = this.getChildren().get(i).getObjectName();
-			childrenNames.add(childName);
-			getRIBDaemon().delete(null, childName, 0);
-		}
-		
-		for(int i=0; i<childrenNames.size(); i++){
-			this.removeChild(childrenNames.get(i));
+		while(this.getChildren().size() > 0){
+			ribObject = this.getChildren().remove(0);
+			this.getRIBDaemon().removeRIBObject(ribObject);
 		}
 	}
 
@@ -52,6 +43,11 @@ public class SimpleSetRIBObject extends BaseRIBObject{
 	
 	@Override
 	public Object getObjectValue(){
-		return null;
+		Object[] result = new Object[this.getChildren().size()];
+		for(int i=0; i<result.length; i++){
+			result[i] = this.getChildren().get(i).getObjectValue();
+		}
+		
+		return result;
 	}
 }
