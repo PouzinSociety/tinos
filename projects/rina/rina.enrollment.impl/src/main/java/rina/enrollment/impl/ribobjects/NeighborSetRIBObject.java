@@ -6,9 +6,9 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applicationprocess.api.DAFMember;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
+import rina.enrollment.api.Neighbor;
 import rina.enrollment.impl.EnrollmentTaskImpl;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
@@ -21,14 +21,14 @@ import rina.ribdaemon.api.RIBObject;
  * @author eduardgrasa
  *
  */
-public class DIFMemberSetRIBObject extends BaseRIBObject{
+public class NeighborSetRIBObject extends BaseRIBObject{
 	
-	private static final Log log = LogFactory.getLog(DIFMemberSetRIBObject.class);
+	private static final Log log = LogFactory.getLog(NeighborSetRIBObject.class);
 	private EnrollmentTaskImpl enrollmentTask = null;
 	
-	public DIFMemberSetRIBObject(EnrollmentTaskImpl enrollmentTask, IPCProcess ipcProcess){
-		super(ipcProcess, DAFMember.DAF_MEMBER_SET_RIB_OBJECT_NAME, 
-				DAFMember.DAF_MEMBER_SET_RIB_OBJECT_CLASS, ObjectInstanceGenerator.getObjectInstance());
+	public NeighborSetRIBObject(EnrollmentTaskImpl enrollmentTask, IPCProcess ipcProcess){
+		super(ipcProcess, Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME, 
+				Neighbor.NEIGHBOR_SET_RIB_OBJECT_CLASS, ObjectInstanceGenerator.getObjectInstance());
 		this.enrollmentTask = enrollmentTask;
 	}
 	
@@ -57,12 +57,12 @@ public class DIFMemberSetRIBObject extends BaseRIBObject{
 	
 	@Override
 	public void create(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException{
-		if (!(object instanceof DAFMember)){
+		if (!(object instanceof Neighbor)){
 			throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME, 
 					"Object class ("+object.getClass().getName()+") does not match object name "+objectName);
 		}
 		
-		DIFMemberRIBObject ribObject = new DIFMemberRIBObject(this.getIPCProcess(), objectName, (DAFMember) object);
+		NeighborRIBObject ribObject = new NeighborRIBObject(this.getIPCProcess(), objectName, (Neighbor) object);
 		this.addChild(ribObject);
 		getRIBDaemon().addRIBObject(ribObject);
 	}
@@ -85,6 +85,11 @@ public class DIFMemberSetRIBObject extends BaseRIBObject{
 	
 	@Override
 	public Object getObjectValue(){
-		return null;
+		Neighbor[] dafMembers = new Neighbor[this.getChildren().size()];
+		for(int i=0; i<dafMembers.length; i++){
+			dafMembers[i] = (Neighbor) this.getChildren().get(i).getObjectValue();
+		}
+		
+		return dafMembers;
 	}
 }

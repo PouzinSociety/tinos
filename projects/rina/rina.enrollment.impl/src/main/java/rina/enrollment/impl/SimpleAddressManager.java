@@ -2,10 +2,10 @@ package rina.enrollment.impl;
 
 import java.util.List;
 
-import rina.applicationprocess.api.DAFMember;
 import rina.efcp.api.DataTransferConstants;
 import rina.enrollment.api.AddressManager;
 import rina.enrollment.api.EnrollmentTask;
+import rina.enrollment.api.Neighbor;
 import rina.ipcservice.api.IPCException;
 
 /**
@@ -46,7 +46,7 @@ public class SimpleAddressManager implements AddressManager{
 	 */
 	public synchronized long getAvailableAddress() throws IPCException{
 		Long myAddress = this.enrollmentTask.getIPCProcess().getAddress();
-		List<DAFMember> dafMembers = enrollmentTask.getIPCProcess().getDAFMembers();
+		List<Neighbor> dafMembers = enrollmentTask.getIPCProcess().getNeighbors();
 		if (dafMembers.size() + 1 == maxAddress){
 			throw new IPCException(IPCException.NO_AVAILABLE_ADDRESSES_CODE, IPCException.NO_AVAILABLE_ADDRESSES);
 		}
@@ -79,17 +79,17 @@ public class SimpleAddressManager implements AddressManager{
 	 */
 	public synchronized boolean addressInUse(long address) {
 		return addressInUse(address, 
-				enrollmentTask.getIPCProcess().getDAFMembers(), 
+				enrollmentTask.getIPCProcess().getNeighbors(), 
 				this.enrollmentTask.getIPCProcess().getAddress());
 	}
 	
-	private boolean addressInUse(long address, List<DAFMember> dafMembers, Long myAddress){
+	private boolean addressInUse(long address, List<Neighbor> dafMembers, Long myAddress){
 		if (myAddress != null && (myAddress.longValue() == address)){
 			return true;
 		}
 		
 		for(int i=0; i<dafMembers.size(); i++){
-			if (dafMembers.get(i).getSynonym() == address){
+			if (dafMembers.get(i).getAddress() == address){
 				return true;
 			}
 		}

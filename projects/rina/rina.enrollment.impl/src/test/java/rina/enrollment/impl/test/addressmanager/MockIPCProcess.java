@@ -3,16 +3,16 @@ package rina.enrollment.impl.test.addressmanager;
 import java.util.ArrayList;
 import java.util.List;
 
-import rina.applicationprocess.api.DAFMember;
 import rina.efcp.api.DataTransferConstants;
+import rina.enrollment.api.Neighbor;
 import rina.ipcprocess.api.BaseIPCProcess;
 
 public class MockIPCProcess extends BaseIPCProcess {
 	
-	List<DAFMember> members = null;
+	List<Neighbor> members = null;
 	
 	public MockIPCProcess(){
-		members = new ArrayList<DAFMember>();
+		members = new ArrayList<Neighbor>();
 	}
 
 	public void destroy() {
@@ -25,7 +25,7 @@ public class MockIPCProcess extends BaseIPCProcess {
 		
 	}
 	
-	public void addDAFMember(DAFMember dafMember){
+	public void addDAFMember(Neighbor dafMember){
 		members.add(dafMember);
 	}
 	
@@ -35,7 +35,7 @@ public class MockIPCProcess extends BaseIPCProcess {
 	}
 	
 	@Override
-	public List<DAFMember> getDAFMembers(){
+	public List<Neighbor> getNeighbors(){
 		return members;
 	}
 	

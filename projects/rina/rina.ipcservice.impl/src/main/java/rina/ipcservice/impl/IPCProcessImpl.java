@@ -68,7 +68,17 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 			ribObject = new SimpleSetRIBObject(this, 
 					WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME, 
 					WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_CLASS, 
-					WhatevercastName.WHATEVERCAST_NAME_RIB_OBJECT_CLASS);
+					WhatevercastName.WHATEVERCAST_NAME_RIB_OBJECT_CLASS){
+				@Override
+				public Object getObjectValue(){
+					WhatevercastName[] result = new WhatevercastName[this.getChildren().size()];
+					for(int i=0; i<result.length; i++){
+						result[i] = (WhatevercastName) this.getChildren().get(i).getObjectValue();
+					}
+					
+					return result;
+				}
+			};
 			ribDaemon.addRIBObject(ribObject);
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();

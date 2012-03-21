@@ -180,4 +180,11 @@ public class MockCDAPSessionManager extends BaseCDAPSessionManager{
 		return null;
 	}
 
+	public CDAPMessage getStartObjectResponseMessage(int arg0, Flags arg1,
+			String arg2, ObjectValue arg3, long arg4, String arg5, int arg6,
+			String arg7, int arg8) throws CDAPException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

@@ -63,7 +63,7 @@ public class ApplicationProcessNamingInfo {
 		key = key + ".";
 		
 		if (this.applicationEntityName != null){
-			key = this.applicationEntityName;
+			key = key + this.applicationEntityName;
 		}else{
 			key = key + "*";
 		}

@@ -216,45 +216,9 @@ public abstract class BaseRIBObject implements RIBObject{
 	}
 
 	public void write(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		CDAPMessage responseMessage = null;
-		
-		try{
-			Object object = getEncoder().decode(cdapMessage.getObjValue().getByteval(), ObjectNametoClassMapper.getObjectClass(cdapMessage.getObjName()));
-			this.write(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), object);
-			if (cdapMessage.getInvokeID() != 0){
-				responseMessage = CDAPMessage.getWriteObjectResponseMessage(null, cdapMessage.getInvokeID(), 0, null);
-				getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
-			}
-		}catch(Exception ex){
-			try{
-				responseMessage = CDAPMessage.getWriteObjectResponseMessage(null, cdapMessage.getInvokeID(), 1, ex.getMessage());
-				getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
-			}catch(CDAPException cdapEx){
-				log.error(ex);
-			}
-		}
 	}
 	
 	public void create(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		CDAPMessage responseMessage = null;
-		
-		try{
-			Object object = getEncoder().decode(cdapMessage.getObjValue().getByteval(), ObjectNametoClassMapper.getObjectClass(cdapMessage.getObjName()));
-			this.create(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), object);
-			if (cdapMessage.getInvokeID() != 0){
-				responseMessage = CDAPMessage.getCreateObjectResponseMessage(null, cdapMessage.getObjClass(), 0, cdapMessage.getObjName(),
-						cdapMessage.getObjValue(), 0, null, cdapMessage.getInvokeID());
-				getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
-			}
-		}catch(Exception ex){
-			try{
-				responseMessage = CDAPMessage.getCreateObjectResponseMessage(null, cdapMessage.getObjClass(), 0, cdapMessage.getObjName(), 
-						cdapMessage.getObjValue(), 1, ex.getMessage(), cdapMessage.getInvokeID());
-				getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
-			}catch(CDAPException cdapEx){
-				log.error(ex);
-			}
-		}
 	}
 
 	public void delete(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {

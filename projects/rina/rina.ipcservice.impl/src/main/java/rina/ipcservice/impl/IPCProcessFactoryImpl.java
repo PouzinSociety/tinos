@@ -141,7 +141,11 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 			throw new Exception("IPC Manager is null");
 		}
 		
-		ipcProcess.addIPCProcessComponent(ribDaemon);
+		if (this.cdapSessionManagerFactory != null){
+			ipcProcess.addIPCProcessComponent(this.cdapSessionManagerFactory.createCDAPSessionManager());
+		}else{
+			throw new Exception("CDAP Session Manager Factory is null");
+		}
 		
 		if (this.delimiterFactory != null){
 			ipcProcess.addIPCProcessComponent(this.delimiterFactory.createDelimiter(DelimiterFactory.DIF));
@@ -155,16 +159,12 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 			throw new Exception("Encoder Factory is null");
 		}
 		
+		ipcProcess.addIPCProcessComponent(ribDaemon);
+		
 		if (this.rmtFactory != null){
 			ipcProcess.addIPCProcessComponent(this.rmtFactory.createRMT(ipcProcessNamingInfo));
 		}else{
 			throw new Exception("RMT Factory is null");
-		}
-		
-		if (this.cdapSessionManagerFactory != null){
-			ipcProcess.addIPCProcessComponent(this.cdapSessionManagerFactory.createCDAPSessionManager());
-		}else{
-			throw new Exception("CDAP Session Manager Factory is null");
 		}
 		
 		if (this.enrollmentTaskFactory != null){

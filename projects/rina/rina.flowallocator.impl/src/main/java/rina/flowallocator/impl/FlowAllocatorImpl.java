@@ -140,7 +140,17 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		    ribObject = new SimpleSetRIBObject(ipcProcess, 
 					QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME, 
 					QoSCube.QOSCUBE_SET_RIB_OBJECT_CLASS, 
-					QoSCube.QOSCUBE_RIB_OBJECT_CLASS);
+					QoSCube.QOSCUBE_RIB_OBJECT_CLASS){
+		    	@Override
+				public Object getObjectValue(){
+		    		QoSCube[] result = new QoSCube[this.getChildren().size()];
+		    		for(int i=0; i<result.length; i++){
+		    			result[i] = (QoSCube) this.getChildren().get(i).getObjectValue();
+		    		}
+		    		
+		    		return result;
+		    	}
+		    };
 			ribDaemon.addRIBObject(ribObject);
 			ribObject = new DirectoryForwardingTableEntrySetRIBObject(ipcProcess);
 			ribDaemon.addRIBObject(ribObject);

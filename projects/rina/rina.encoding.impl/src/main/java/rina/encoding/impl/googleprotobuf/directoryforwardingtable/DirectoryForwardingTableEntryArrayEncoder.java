@@ -13,14 +13,20 @@ public class DirectoryForwardingTableEntryArrayEncoder extends BaseEncoder{
 		if (objectClass == null || !(objectClass.equals(DirectoryForwardingTableEntry[].class))){
 			throw new Exception("This is not the encoder for objects of type "+objectClass.getName());
 		}
-		
-		List<directoryForwardingTableEntry_t> gpbDirectoryForwardingTableEntrySet = DirectoryForwardingTableEntryArrayMessage.
-					directoryForwardingTableEntrySet_t.parseFrom(encodedObject).getDirectoryForwardingTableEntryList();
-		DirectoryForwardingTableEntry[] result = new DirectoryForwardingTableEntry[gpbDirectoryForwardingTableEntrySet.size()];
-		for(int i=0; i<gpbDirectoryForwardingTableEntrySet.size(); i++){
-			result[i] = DirectoryForwardingTableEntryEncoder.convertGPBToModel(gpbDirectoryForwardingTableEntrySet.get(i));
-		} 
-		
+
+		List<directoryForwardingTableEntry_t> gpbDirectoryForwardingTableEntrySet = null;
+		DirectoryForwardingTableEntry[] result = null;
+
+		try{
+			gpbDirectoryForwardingTableEntrySet = DirectoryForwardingTableEntryArrayMessage.
+			directoryForwardingTableEntrySet_t.parseFrom(encodedObject).getDirectoryForwardingTableEntryList();
+			result = new DirectoryForwardingTableEntry[gpbDirectoryForwardingTableEntrySet.size()];
+			for(int i=0; i<gpbDirectoryForwardingTableEntrySet.size(); i++){
+				result[i] = DirectoryForwardingTableEntryEncoder.convertGPBToModel(gpbDirectoryForwardingTableEntrySet.get(i));
+			} 
+		}catch(NullPointerException ex){
+			result = new DirectoryForwardingTableEntry[0];
+		}
 		
 		return result;
 	}

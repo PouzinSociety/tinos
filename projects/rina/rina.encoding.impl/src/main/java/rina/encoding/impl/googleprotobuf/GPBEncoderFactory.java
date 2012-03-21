@@ -1,25 +1,25 @@
 package rina.encoding.impl.googleprotobuf;
 
-import rina.applicationprocess.api.DAFMember;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.efcp.api.DataTransferConstants;
 import rina.encoding.api.Encoder;
 import rina.encoding.api.EncoderFactory;
 import rina.encoding.impl.EncoderImpl;
 import rina.encoding.impl.googleprotobuf.applicationregistration.ApplicationRegistrationEncoder;
-import rina.encoding.impl.googleprotobuf.dafmember.DafMemberArrayEncoder;
-import rina.encoding.impl.googleprotobuf.dafmember.DafMemberEncoder;
 import rina.encoding.impl.googleprotobuf.datatransferconstants.DataTransferConstantsEncoder;
 import rina.encoding.impl.googleprotobuf.directoryforwardingtable.DirectoryForwardingTableEntryArrayEncoder;
 import rina.encoding.impl.googleprotobuf.directoryforwardingtable.DirectoryForwardingTableEntryEncoder;
 import rina.encoding.impl.googleprotobuf.enrollment.EnrollmentInformationEncoder;
 import rina.encoding.impl.googleprotobuf.flow.FlowEncoder;
 import rina.encoding.impl.googleprotobuf.flowservice.FlowServiceEncoder;
+import rina.encoding.impl.googleprotobuf.neighbor.NeighborArrayEncoder;
+import rina.encoding.impl.googleprotobuf.neighbor.NeighborEncoder;
 import rina.encoding.impl.googleprotobuf.qoscube.QoSCubeArrayEncoder;
 import rina.encoding.impl.googleprotobuf.qoscube.QoSCubeEncoder;
 import rina.encoding.impl.googleprotobuf.whatevercast.WhatevercastNameArrayEncoder;
 import rina.encoding.impl.googleprotobuf.whatevercast.WhatevercastNameEncoder;
 import rina.enrollment.api.EnrollmentInformationRequest;
+import rina.enrollment.api.Neighbor;
 import rina.flowallocator.api.DirectoryForwardingTableEntry;
 import rina.flowallocator.api.QoSCube;
 import rina.flowallocator.api.message.Flow;
@@ -37,8 +37,8 @@ public class GPBEncoderFactory implements EncoderFactory{
 	public Encoder createEncoderInstance() {
 		EncoderImpl encoder = new EncoderImpl();
 		
-		encoder.addEncoder(DAFMember.class.getName(), new DafMemberEncoder());
-		encoder.addEncoder(DAFMember[].class.getName(), new DafMemberArrayEncoder());
+		encoder.addEncoder(Neighbor.class.getName(), new NeighborEncoder());
+		encoder.addEncoder(Neighbor[].class.getName(), new NeighborArrayEncoder());
 		encoder.addEncoder(DataTransferConstants.class.getName(), new DataTransferConstantsEncoder());
 		encoder.addEncoder(DirectoryForwardingTableEntry.class.getName(), new DirectoryForwardingTableEntryEncoder());
 		encoder.addEncoder(DirectoryForwardingTableEntry[].class.getName(), new DirectoryForwardingTableEntryArrayEncoder());

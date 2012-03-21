@@ -13,14 +13,21 @@ public class WhatevercastNameArrayEncoder extends BaseEncoder{
 		if (objectClass == null || !(objectClass.equals(WhatevercastName[].class))){
 			throw new Exception("This is not the encoder for objects of type "+objectClass.getName());
 		}
-		
-		List<whatevercastName_t> gpbWhatnameSet = WhatevercastNameArrayMessage.whatevercastNames_t.
-				parseFrom(encodedObject).getWhatevercastNameList();
-		WhatevercastName[] result = new WhatevercastName[gpbWhatnameSet.size()];
-		for(int i=0; i<gpbWhatnameSet.size(); i++){
-			result[i] = WhatevercastNameEncoder.convertGPBToModel(gpbWhatnameSet.get(i));
-		} 
-		
+
+		List<whatevercastName_t> gpbWhatnameSet = null;
+		WhatevercastName[] result = null;
+
+		try{
+			gpbWhatnameSet = WhatevercastNameArrayMessage.whatevercastNames_t.
+			parseFrom(encodedObject).getWhatevercastNameList();
+			result = new WhatevercastName[gpbWhatnameSet.size()];
+			for(int i=0; i<gpbWhatnameSet.size(); i++){
+				result[i] = WhatevercastNameEncoder.convertGPBToModel(gpbWhatnameSet.get(i));
+			} 
+		}catch(NullPointerException ex){
+			result = new WhatevercastName[0];
+		}
+
 		return result;
 	}
 

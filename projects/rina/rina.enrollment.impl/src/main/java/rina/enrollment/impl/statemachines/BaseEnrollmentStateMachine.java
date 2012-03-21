@@ -6,7 +6,6 @@ import java.util.TimerTask;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applicationprocess.api.DAFMember;
 import rina.cdap.api.BaseCDAPMessageHandler;
 import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPSessionDescriptor;
@@ -14,11 +13,9 @@ import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.encoding.api.Encoder;
 import rina.enrollment.api.EnrollmentTask;
-import rina.enrollment.impl.statemachines.EnrollmentStateMachine.State;
+import rina.enrollment.api.Neighbor;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBDaemon;
-import rina.ribdaemon.api.RIBDaemonException;
-import rina.ribdaemon.api.RIBObjectNames;
 
 /**
  * The base class that contains the common aspects of both 
@@ -31,38 +28,31 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 	private static final Log log = LogFactory.getLog(BaseEnrollmentStateMachine.class);
 	
 	public static final String CONNECT_IN_NOT_NULL = "Received a CONNECT message while not in NULL state";
+	public static final String CONNECT_RESPONSE_TIMEOUT = "Timeout waiting for connect response";
 	public static final String CREATE_IN_BAD_STATE = "Received a CREATE message in a wrong state";
+	public static final String PROBLEMS_COMITING_ENROLLMENT_INFO = "Problems comiting enrollment information";
+	public static final String READ_RESPONSE_IN_BAD_STATE = "Received a READ response in a wrong state";
+	public static final String READ_RESPONSE_TIMEOUT = "Timeout waiting for read response";
 	public static final String START_ENROLLMENT_TIMEOUT = "Timeout waiting for start enrollment request";
 	public static final String START_IN_BAD_STATE = "Received a START message in a wrong state";
 	public static final String START_RESPONSE_IN_BAD_STATE = "Received a START response in a wrong state";
 	public static final String START_RESPONSE_TIMEOUT = "Timeout waiting for start response";
+	public static final String START_TIMEOUT = "Timeout waiting for start";
 	public static final String STOP_ENROLLMENT_RESPONSE_TIMEOUT = "Timeout waiting for stop enrolment response";
 	public static final String STOP_IN_BAD_STATE = "Received a STOP message in a wrong state";
 	public static final String STOP_RESPONSE_IN_BAD_STATE = "Received a STOP response in a wrong state";
 	public static final String STOP_ENROLLMENT_TIMEOUT = "Timeout waiting for stop enrollment request";
+	public static final String STOP_WITH_NO_OBJECT_VALUE = "Received STOP message with null object value";
 	public static final String UNEXPECTED_ERROR = "Unexpected error. ";
-	
+	public static final String UNSUCCESSFULL_READ_RESPONSE = "Received an unsuccessful read response or a read response with a null object value";
+	public static final String UNSUCCESSFULL_START = "Received unsuccessful start request";
 	public static final String DEFAULT_ENROLLMENT = "default_enrollment";
-	
-	public static final String READ_RESPONSE_IN_BAD_STATE = "Received a READ response in a wrong state";
-	public static final String READ_IN_BAD_STATE = "Received a READ message in a wrong state";
-	public static final String CANCEL_READ_IN_BAD_STATE = "Received a CANCEL READ message in a wrong state";
-	public static final String UNSUCCESSFUL_REPLY = "Received an unsuccessful response message";
-	public static final String WRONG_OBJECT_NAME = "Received a wrong objectName or objectName is null";
-	
-	public static final String READ_INITIALIZATION_DATA_TIMEOUT = "Timeout waiting for read enrollment data";
-	
-	public static final String CONNECT_RESPONSE_TIMEOUT = "Timeout waiting for connect response";
-	public static final String READ_ADDRESS_TIMEOUT = "Timeout waiting for read address";
-	public static final String READ_INITIALIZATION_DATA_RESPONSE_TIMEOUT = "Timeout waiting for read initialization data";
-	public static final String START_TIMEOUT = "Timeout waiting for start";
 	
 	/**
 	 * All the possible states of all the enroller state machines
 	 */
-	public enum State {NULL, WAIT_CONNECT_R, WAIT_START_ENROLLMENT_R, PUSHING_INFORMATION, 
-		PULLING_INFORMATION, AWAIT_START, ENROLLED, WAIT_START_ENROLLMENT, 
-		WAIT_STOP_ENROLLMENT_RESPONSE};
+	public enum State {NULL, WAIT_CONNECT_RESPONSE, WAIT_START_ENROLLMENT_RESPONSE, WAIT_READ_RESPONSE, 
+		WAIT_START, ENROLLED, WAIT_START_ENROLLMENT, WAIT_STOP_ENROLLMENT_RESPONSE};
 		
 	/**
 	 * the current state
@@ -112,12 +102,24 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 	/**
 	 * The information of the remote IPC Process being enrolled
 	 */
-	protected DAFMember remotePeer = null;
+	protected Neighbor remotePeer = null;
 	
 	/**
 	 * The naming information of the remote IPC process
 	 */
 	protected ApplicationProcessNamingInfo remoteNamingInfo = null;
+	
+	protected BaseEnrollmentStateMachine(RIBDaemon ribDaemon, CDAPSessionManager cdapSessionManager, Encoder encoder, 
+			ApplicationProcessNamingInfo remoteNamingInfo, EnrollmentTask enrollmentTask, long timeout){
+		this.ribDaemon = ribDaemon;
+		this.cdapSessionManager = cdapSessionManager;
+		this.encoder = encoder;
+		this.remoteNamingInfo = remoteNamingInfo;
+		this.enrollmentTask = enrollmentTask;
+		this.remotePeer = new Neighbor();
+		this.timeout = timeout;
+		this.timer = new Timer();
+	}
 	
 	public State getState(){
 		return this.state;
@@ -129,6 +131,10 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 	
 	public int getPortId(){
 		return this.portId;
+	}
+	
+	public ApplicationProcessNamingInfo getRemotePeerNamingInfo(){
+		return remoteNamingInfo;
 	}
 	
 	/**
@@ -160,8 +166,7 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 			@Override
 			public void run() {
 				try{
-					enrollmentTask.enrollmentFailed(remoteNamingInfo, portId, message, isEnrollee, true);
-					setState(State.NULL);
+					abortEnrollment(remoteNamingInfo, portId, message, isEnrollee, true);
 				}catch(Exception ex){
 					ex.printStackTrace();
 				}
@@ -176,6 +181,28 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 		}
 
 		return true;
+	}
+	
+	protected void enrollmentCompleted(boolean enrollee){
+		timer.cancel();
+		enrollmentTask.enrollmentCompleted(remotePeer, enrollee);
+		this.setState(State.ENROLLED);
+		log.info("Remote IPC Process enrolled!");
+	}
+	
+	/**
+	 * Called by the enrollment state machine when the enrollment sequence fails
+	 * @param remotePeer
+	 * @param portId
+	 * @param enrollee
+	 * @param sendMessage
+	 * @param reason
+	 */
+	protected void abortEnrollment(ApplicationProcessNamingInfo remotePeerNamingInfo, int portId, 
+			 String reason, boolean enrollee, boolean sendReleaseMessage){
+		timer.cancel();
+		setState(State.NULL);
+		enrollmentTask.enrollmentFailed(remotePeerNamingInfo, portId, reason, enrollee, sendReleaseMessage);
 	}
 	
 	/**
@@ -202,7 +229,11 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 		}
 
 		this.setState(State.NULL);
-		this.remotePeer = new DAFMember();
+		this.remotePeer = new Neighbor();
+		//Cancel any timers
+		if (timer != null){
+			timer.cancel();
+		}
 
 		if (cdapMessage.getInvokeID() != 0){
 			try{
@@ -252,7 +283,7 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 			}*/
 
 			this.setState(State.NULL);
-			this.remotePeer = new DAFMember();
+			this.remotePeer = new Neighbor();
 		}
 		
 		//Cancel any timers

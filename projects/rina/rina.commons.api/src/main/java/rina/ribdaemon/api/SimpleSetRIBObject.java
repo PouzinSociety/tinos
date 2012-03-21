@@ -10,7 +10,7 @@ import rina.ribdaemon.api.RIBObject;
  * child RIB objects.
  *
  */
-public class SimpleSetRIBObject extends BaseRIBObject{
+public abstract class SimpleSetRIBObject extends BaseRIBObject{
 	
 	private String childObjectClass = null;
 	
@@ -42,12 +42,5 @@ public class SimpleSetRIBObject extends BaseRIBObject{
 	}
 	
 	@Override
-	public Object getObjectValue(){
-		Object[] result = new Object[this.getChildren().size()];
-		for(int i=0; i<result.length; i++){
-			result[i] = this.getChildren().get(i).getObjectValue();
-		}
-		
-		return result;
-	}
+	public abstract Object getObjectValue();
 }

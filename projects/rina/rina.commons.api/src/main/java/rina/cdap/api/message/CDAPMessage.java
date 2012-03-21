@@ -732,7 +732,9 @@ public class CDAPMessage implements Serializable{
 		if (this.getOpCode() == Opcode.M_CONNECT|| this.getOpCode() == Opcode.M_CONNECT_R){
 			result = result + "Abstract syntax: "+ this.getAbsSyntax() + "\n";
 			result = result + "Authentication mechanism: "+ this.getAuthMech() + "\n";
-			result = result + "Authentication value: "+ this.getAuthValue() + "\n";
+			if (this.getAuthValue() != null){
+				result = result + "Authentication value: "+ this.getAuthValue() + "\n";
+			}
 			if (this.getSrcApName() != null){
 				result = result + "Source AP name: "+ this.getSrcApName() + "\n";
 			}

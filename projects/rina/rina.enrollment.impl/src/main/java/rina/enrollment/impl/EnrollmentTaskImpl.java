@@ -8,7 +8,6 @@ import java.util.Map.Entry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applicationprocess.api.DAFMember;
 import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
@@ -17,12 +16,14 @@ import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
 import rina.enrollment.api.AddressManager;
 import rina.enrollment.api.BaseEnrollmentTask;
-import rina.enrollment.impl.ribobjects.CurrentSynonymRIBObject;
-import rina.enrollment.impl.ribobjects.DIFMemberSetRIBObject;
+import rina.enrollment.api.Neighbor;
+import rina.enrollment.impl.ribobjects.AddressRIBObject;
+import rina.enrollment.impl.ribobjects.NeighborSetRIBObject;
 import rina.enrollment.impl.ribobjects.EnrollmentRIBObject;
 import rina.enrollment.impl.ribobjects.OperationalStatusRIBObject;
-import rina.enrollment.impl.statemachines.DefaultEnrollmentStateMachine;
-import rina.enrollment.impl.statemachines.EnrollmentStateMachine;
+import rina.enrollment.impl.statemachines.BaseEnrollmentStateMachine;
+import rina.enrollment.impl.statemachines.EnrolleeStateMachine;
+import rina.enrollment.impl.statemachines.EnrollerStateMachine;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
@@ -43,10 +44,10 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	private static final Log log = LogFactory.getLog(EnrollmentTaskImpl.class);
 	
 	/**
-	 * Stores the enrollment state machines, one per remote IPC process that this IPC 
+	 * Stores the enrollee state machines, one per remote IPC process that this IPC 
 	 * process is enrolled to.
 	 */
-	private Map<String, EnrollmentStateMachine> enrollmentStateMachines = null;
+	private Map<String, BaseEnrollmentStateMachine> enrollmentStateMachines = null;
 	
 	/**
 	 * Stores the enrollment requests that have to be replied back
@@ -69,7 +70,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	private CDAPSessionManager cdapSessionManager = null;
 
 	public EnrollmentTaskImpl(){
-		enrollmentStateMachines = new Hashtable<String, EnrollmentStateMachine>();
+		enrollmentStateMachines = new Hashtable<String, BaseEnrollmentStateMachine>();
 		ongoingInitiateEnrollmentRequests = new Hashtable<String, PendingEnrollmentRequest>();
 		try{
 			timeout = Long.parseLong(System.getProperty(BaseEnrollmentTask.ENROLLMENT_TASK_TIMEOUT_PROPERTY));
@@ -95,13 +96,13 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 */
 	private void populateRIB(IPCProcess ipcProcess){
 		try{
-			RIBObject ribObject = new DIFMemberSetRIBObject(this, ipcProcess);
+			RIBObject ribObject = new NeighborSetRIBObject(this, ipcProcess);
 			ribDaemon.addRIBObject(ribObject);
 			ribObject = new EnrollmentRIBObject(this, ipcProcess);
 			ribDaemon.addRIBObject(ribObject);
 			ribObject = new OperationalStatusRIBObject(this, ipcProcess);
 			ribDaemon.addRIBObject(ribObject);
-			ribObject = new CurrentSynonymRIBObject(ipcProcess, this);
+			ribObject = new AddressRIBObject(ipcProcess, this);
 			ribDaemon.addRIBObject(ribObject);
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();
@@ -118,7 +119,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 * @param cdapSessionDescriptor
 	 * @return
 	 */
-	private EnrollmentStateMachine getEnrollmentStateMachine(CDAPSessionDescriptor cdapSessionDescriptor, boolean remove) throws Exception{
+	private BaseEnrollmentStateMachine getEnrollmentStateMachine(CDAPSessionDescriptor cdapSessionDescriptor, boolean remove) throws Exception{
 		try{
 			ApplicationProcessNamingInfo myNamingInfo = this.getIPCProcess().getApplicationProcessNamingInfo();
 			ApplicationProcessNamingInfo sourceNamingInfo = cdapSessionDescriptor.getSourceApplicationProcessNamingInfo();
@@ -142,7 +143,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 * @param remove
 	 * @return
 	 */
-	public EnrollmentStateMachine getEnrollmentStateMachine(ApplicationProcessNamingInfo apNamingInfo, int portId, boolean remove){
+	public BaseEnrollmentStateMachine getEnrollmentStateMachine(ApplicationProcessNamingInfo apNamingInfo, int portId, boolean remove){
 		if (remove){
 			return enrollmentStateMachines.remove(apNamingInfo.getProcessKey()+"-"+portId);
 		}else{
@@ -157,7 +158,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 * @return
 	 */
 	private boolean isEnrolledTo(ApplicationProcessNamingInfo apNamingInfo){
-		Iterator<Entry<String, EnrollmentStateMachine>> iterator  = enrollmentStateMachines.entrySet().iterator();
+		Iterator<Entry<String, BaseEnrollmentStateMachine>> iterator  = enrollmentStateMachines.entrySet().iterator();
 		
 		while(iterator.hasNext()){
 			if (iterator.next().getValue().getRemotePeerNamingInfo().getProcessKey().equals(apNamingInfo.getProcessKey())){
@@ -176,16 +177,22 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 * join the DIF)
 	 * @return
 	 */
-	private EnrollmentStateMachine createEnrollmentStateMachine(ApplicationProcessNamingInfo apNamingInfo, int portId, boolean enrollee) throws Exception{
+	private BaseEnrollmentStateMachine createEnrollmentStateMachine(ApplicationProcessNamingInfo apNamingInfo, int portId, boolean enrollee) throws Exception{
 		CDAPSessionManager cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 		RIBDaemon ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		Encoder encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
-		EnrollmentStateMachine enrollmentStateMachine = null;
+		BaseEnrollmentStateMachine enrollmentStateMachine = null;
 		
 		if (apNamingInfo.getApplicationEntityName() == null || 
-				apNamingInfo.getApplicationEntityName().equals(DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT)){
-			enrollmentStateMachine = new DefaultEnrollmentStateMachine(ribDaemon, cdapSessionManager, encoder, 
-					apNamingInfo, this, enrollee, timeout);
+				apNamingInfo.getApplicationEntityName().equals(BaseEnrollmentStateMachine.DEFAULT_ENROLLMENT)){
+			if (enrollee){
+				enrollmentStateMachine = new EnrolleeStateMachine(ribDaemon, cdapSessionManager, encoder, 
+					apNamingInfo, this, timeout);
+			}else{
+				enrollmentStateMachine = new EnrollerStateMachine(ribDaemon, cdapSessionManager, encoder, 
+						apNamingInfo, this, timeout);
+			}
+			
 			enrollmentStateMachines.put(apNamingInfo.getProcessKey()+"-"+portId, enrollmentStateMachine);
 			log.debug("Created a new Enrollment state machine for remote IPC process: " + apNamingInfo.getProcessKey());
 			return enrollmentStateMachine;
@@ -200,18 +207,18 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 * @param cdapSessionDescriptor
 	 */
 	public synchronized void initiateEnrollment(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor){
-		DAFMember candidate = null;
+		Neighbor candidate = null;
 		ApplicationProcessNamingInfo candidateNamingInfo = null;
-		EnrollmentStateMachine enrollmentStateMachine = null;
+		EnrolleeStateMachine enrollmentStateMachine = null;
 		PendingEnrollmentRequest pendingEnrollmentRequest = null;
 		CDAPMessage responseMessage = null;
 		int portId = 0;
 		
 		//1 Check that we're not already enrolled to the IPC Process
 		try{
-			candidate = (DAFMember) encoder.decode(cdapMessage.getObjValue().getByteval(), DAFMember.class);
+			candidate = (Neighbor) encoder.decode(cdapMessage.getObjValue().getByteval(), Neighbor.class);
 			candidateNamingInfo = new ApplicationProcessNamingInfo(candidate.getApplicationProcessName(), 
-					candidate.getApplicationProcessInstance(), DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT, null);
+					candidate.getApplicationProcessInstance(), BaseEnrollmentStateMachine.DEFAULT_ENROLLMENT, null);
 		}catch(Exception ex){
 			log.error(ex);
 			try{
@@ -251,7 +258,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		
 		//3 Tell the enrollment task to create a new Enrollment state machine
 		try{
-			enrollmentStateMachine = this.createEnrollmentStateMachine(candidateNamingInfo, portId, true);
+			enrollmentStateMachine = (EnrolleeStateMachine) this.createEnrollmentStateMachine(candidateNamingInfo, portId, true);
 		}catch(Exception ex){
 			//Should never happen, fix it!
 			log.error(ex);
@@ -309,7 +316,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		//2 Initiate the enrollment
 		try{
 
-			EnrollmentStateMachine enrollmentStateMachine = this.createEnrollmentStateMachine(
+			EnrollerStateMachine enrollmentStateMachine = (EnrollerStateMachine) this.createEnrollmentStateMachine(
 					cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo(), 
 					cdapSessionDescriptor.getPortId(), false);
 			enrollmentStateMachine.connect(cdapMessage, cdapSessionDescriptor.getPortId());
@@ -337,7 +344,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		log.debug("Received M_CONNECT_R cdapMessage from portId "+cdapSessionDescriptor.getPortId());
 
 		try{
-			EnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor, false);
+			EnrolleeStateMachine enrollmentStateMachine = (EnrolleeStateMachine) this.getEnrollmentStateMachine(cdapSessionDescriptor, false);
 			enrollmentStateMachine.connectResponse(cdapMessage, cdapSessionDescriptor);
 		}catch(Exception ex){
 			//Error getting the enrollment state machine
@@ -360,7 +367,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		log.debug("Received M_RELEASE cdapMessage from portId "+cdapSessionDescriptor.getPortId());
 
 		try{
-			EnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor, true);
+			BaseEnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor, true);
 			enrollmentStateMachine.release(cdapMessage, cdapSessionDescriptor);
 		}catch(Exception ex){
 			//Error getting the enrollment state machine
@@ -383,7 +390,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		log.debug("Received M_RELEASE_R cdapMessage from portId "+cdapSessionDescriptor.getPortId());
 
 		try{
-			EnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor, true);
+			BaseEnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor, true);
 			enrollmentStateMachine.releaseResponse(cdapMessage, cdapSessionDescriptor);
 		}catch(Exception ex){
 			//Error getting the enrollment state machine
@@ -404,7 +411,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 */
 	public void flowDeallocated(CDAPSessionDescriptor cdapSessionDescriptor){
 		try{
-			EnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor, true);
+			BaseEnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor, true);
 			if (enrollmentStateMachine == null){
 				//Do nothing, we had already cleaned up
 				return;
@@ -469,7 +476,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		 * enrollment sequence (i.e. it is the application process that wants to 
 		 * join the DIF)
 		 */
-		public synchronized void enrollmentCompleted(DAFMember dafMember, boolean enrollee){
+		public synchronized void enrollmentCompleted(Neighbor dafMember, boolean enrollee){
 			//1 Tell the RMT it can start listening for remote IPC processes
 			if (enrollee){
 				RMT rmt = (RMT) this.getIPCProcess().getIPCProcessComponent(BaseRMT.getComponentName());
@@ -479,7 +486,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 			//Reply back to the entity that requested the enrollment
 			if (enrollee){			
 				ApplicationProcessNamingInfo candidateNamingInfo = new ApplicationProcessNamingInfo(dafMember.getApplicationProcessName(), 
-						dafMember.getApplicationProcessInstance(), DefaultEnrollmentStateMachine.DEFAULT_ENROLLMENT, null);
+						dafMember.getApplicationProcessInstance(), BaseEnrollmentStateMachine.DEFAULT_ENROLLMENT, null);
 				PendingEnrollmentRequest pendingEnrollmentRequest = ongoingInitiateEnrollmentRequests.remove(candidateNamingInfo.getProcessKey());
 				if (pendingEnrollmentRequest == null){
 					log.error("Did not find a pending enrollment request");

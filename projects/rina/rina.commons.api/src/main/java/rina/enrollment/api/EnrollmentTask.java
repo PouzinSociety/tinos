@@ -1,6 +1,5 @@
 package rina.enrollment.api;
 
-import rina.applicationprocess.api.DAFMember;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcessComponent;
@@ -62,7 +61,7 @@ public interface EnrollmentTask extends IPCProcessComponent{
 	 * enrollment sequence (i.e. it is the application process that wants to 
 	 * join the DIF)
 	 */
-	public void enrollmentCompleted(DAFMember candidate, boolean enrollee);
+	public void enrollmentCompleted(Neighbor candidate, boolean enrollee);
 	
 	/**
 	 * Called by the enrollment state machine when the enrollment sequence fails

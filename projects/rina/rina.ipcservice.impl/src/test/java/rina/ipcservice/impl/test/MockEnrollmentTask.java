@@ -1,10 +1,10 @@
 package rina.ipcservice.impl.test;
 
-import rina.applicationprocess.api.DAFMember;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.enrollment.api.AddressManager;
 import rina.enrollment.api.BaseEnrollmentTask;
+import rina.enrollment.api.Neighbor;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 public class MockEnrollmentTask extends BaseEnrollmentTask{
@@ -19,7 +19,7 @@ public class MockEnrollmentTask extends BaseEnrollmentTask{
 		
 	}
 
-	public void enrollmentCompleted(DAFMember arg0, boolean arg1) {
+	public void enrollmentCompleted(Neighbor arg0, boolean arg1) {
 		// TODO Auto-generated method stub
 		
 	}

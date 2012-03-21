@@ -1,4 +1,4 @@
-package rina.applicationprocess.api;
+package rina.enrollment.api;
 
 import rina.ribdaemon.api.RIBObjectNames;
 
@@ -7,15 +7,14 @@ import rina.ribdaemon.api.RIBObjectNames;
  * @author eduardgrasa
  *
  */
-public class DAFMember {
+public class Neighbor {
 	
-	public static final String DAF_MEMBER_SET_RIB_OBJECT_NAME = RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
-		RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + 
-		RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS;
+	public static final String NEIGHBOR_SET_RIB_OBJECT_NAME = RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
+		RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.NEIGHBORS;
 	
-	public static final String DAF_MEMBER_SET_RIB_OBJECT_CLASS = "dafmember set";
+	public static final String NEIGHBOR_SET_RIB_OBJECT_CLASS = "neighbor set";
 	
-	public static final String DAF_MEMBER_RIB_OBJECT_CLASS = "dafmember";
+	public static final String NEIGHBOR_RIB_OBJECT_CLASS = "neighbor";
 
 	/**
 	 * The application process name that is synonym refers to
@@ -28,9 +27,9 @@ public class DAFMember {
 	private String applicationProcessInstance = null;
 	
 	/**
-	 * The synonym
+	 * The address
 	 */
-	private long synonym = 0;
+	private long address = 0;
 
 	public String getApplicationProcessName() {
 		return applicationProcessName;
@@ -48,19 +47,19 @@ public class DAFMember {
 		this.applicationProcessInstance = applicationProcessInstance;
 	}
 
-	public long getSynonym() {
-		return synonym;
+	public long getAddress() {
+		return address;
 	}
 
-	public void setSynonym(long synonym) {
-		this.synonym = synonym;
+	public void setAddress(long address) {
+		this.address = address;
 	}
 	
 	@Override
 	public String toString(){
 		String result = "Application Process Name: " + this.applicationProcessName + "\n";
 		result = result + "Application Process Instance: " + this.applicationProcessInstance + "\n";
-		result = result + "Synonym: " + this.synonym;
+		result = result + "Address: " + this.address;
 		
 		return result;
 	}

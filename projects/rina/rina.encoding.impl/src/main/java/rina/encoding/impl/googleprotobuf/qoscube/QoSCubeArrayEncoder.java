@@ -14,14 +14,21 @@ public class QoSCubeArrayEncoder extends BaseEncoder{
 		if (objectClass == null || !(objectClass.equals(QoSCube[].class))){
 			throw new Exception("This is not the encoder for objects of type "+objectClass.getName());
 		}
-		
-		List<qosCube_t> gpbQoSSet = QoSCubeArrayMessage.qosCubes_t.parseFrom(encodedObject).getQosCubeList();
-		QoSCube[] result = new QoSCube[gpbQoSSet.size()];
-		for(int i=0; i<gpbQoSSet.size(); i++){
-			result[i] = QoSCubeEncoder.convertGPBToModel(gpbQoSSet.get(i));
-		} 
-		
-		
+
+		List<qosCube_t> gpbQoSSet = null;
+		QoSCube[] result = null;
+
+		try{
+			gpbQoSSet = QoSCubeArrayMessage.qosCubes_t.parseFrom(encodedObject).getQosCubeList();
+			result = new QoSCube[gpbQoSSet.size()];
+			for(int i=0; i<gpbQoSSet.size(); i++){
+				result[i] = QoSCubeEncoder.convertGPBToModel(gpbQoSSet.get(i));
+			}
+		}catch(NullPointerException ex){
+			result = new QoSCube[0];
+		}
+
+
 		return result;
 	}
 

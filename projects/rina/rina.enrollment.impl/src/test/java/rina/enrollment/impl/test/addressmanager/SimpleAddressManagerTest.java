@@ -4,7 +4,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import rina.applicationprocess.api.DAFMember;
+import rina.enrollment.api.Neighbor;
 import rina.enrollment.impl.SimpleAddressManager;
 import rina.ipcservice.api.IPCException;
 
@@ -33,10 +33,10 @@ public class SimpleAddressManagerTest {
 	
 	@Test
 	public void testWith1Member() throws IPCException{
-		DAFMember dafMember = new DAFMember();
+		Neighbor dafMember = new Neighbor();
 		dafMember.setApplicationProcessName("test");
 		dafMember.setApplicationProcessInstance("1");
-		dafMember.setSynonym(2);
+		dafMember.setAddress(2);
 		ipcProcess.addDAFMember(dafMember);
 		
 		long address = addressManager.getAvailableAddress();
@@ -47,12 +47,12 @@ public class SimpleAddressManagerTest {
 	
 	@Test
 	public void testWithNMembers() throws IPCException{
-		DAFMember dafMember = null;
+		Neighbor dafMember = null;
 		for(int i=2; i<=MEMBERS; i++){
-			dafMember = new DAFMember();
+			dafMember = new Neighbor();
 			dafMember.setApplicationProcessName("test");
 			dafMember.setApplicationProcessInstance(""+i);
-			dafMember.setSynonym(i);
+			dafMember.setAddress(i);
 			ipcProcess.addDAFMember(dafMember);
 		}
 		
@@ -65,15 +65,15 @@ public class SimpleAddressManagerTest {
 	
 	@Test
 	public void testNoAvailableAddresses(){
-		DAFMember dafMember = null;
+		Neighbor dafMember = null;
 		String errorMessage = null;
 		int errorCode = 0;
 		
 		for(int i=2; i<=65535; i++){
-			dafMember = new DAFMember();
+			dafMember = new Neighbor();
 			dafMember.setApplicationProcessName("test");
 			dafMember.setApplicationProcessInstance(""+i);
-			dafMember.setSynonym(i);
+			dafMember.setAddress(i);
 			ipcProcess.addDAFMember(dafMember);
 		}
 		

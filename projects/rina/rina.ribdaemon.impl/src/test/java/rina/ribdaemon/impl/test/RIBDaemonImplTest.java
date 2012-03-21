@@ -47,7 +47,12 @@ public class RIBDaemonImplTest {
 		Assert.assertEquals(1, ribDaemon.getRIBObjects().size());
 		
 		//Add a simple set object
-		ribObject = new SimpleSetRIBObject(ipcProcess, TEST_RIB_OBJECT_2, TEST_CLASS, TEST_CLASS);
+		ribObject = new SimpleSetRIBObject(ipcProcess, TEST_RIB_OBJECT_2, TEST_CLASS, TEST_CLASS){
+			@Override
+			public Object getObjectValue(){
+				return new Object[0];
+			}
+		};
 		ribDaemon.addRIBObject(ribObject);
 		
 		Assert.assertEquals(2, ribDaemon.getRIBObjects().size());

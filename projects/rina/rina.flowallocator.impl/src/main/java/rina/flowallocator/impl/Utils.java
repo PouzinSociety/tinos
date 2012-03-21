@@ -5,18 +5,13 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applicationprocess.api.DAFMember;
 import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPSessionManager;
+import rina.enrollment.api.Neighbor;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
-import rina.ribdaemon.api.BaseRIBDaemon;
-import rina.ribdaemon.api.RIBDaemon;
-import rina.ribdaemon.api.RIBDaemonException;
-import rina.ribdaemon.api.RIBObject;
-import rina.ribdaemon.api.RIBObjectNames;
 import rina.rmt.api.BaseRMT;
 import rina.rmt.api.RMT;
 
@@ -35,19 +30,17 @@ public class Utils {
 	 * @return
 	 */
 	public static synchronized int mapAddressToPortId(long address, IPCProcess ipcProcess) throws IPCException{
-		RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		CDAPSessionManager cdapSessionManager = (CDAPSessionManager) ipcProcess.getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
-		List<RIBObject> members = null;
-		DAFMember dafMember = null;
+		List<Neighbor> neighbors = null;
+		Neighbor dafMember = null;
 		int rmtPortId = 0;
 		
 		try{
-			members = ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS ,0).getChildren();
+			neighbors = ipcProcess.getNeighbors();
 			
-			for(int i=0; i<members.size(); i++){
-				dafMember = (DAFMember) members.get(i).getObjectValue();
-				if (dafMember.getSynonym() == address){
+			for(int i=0; i<neighbors.size(); i++){
+				dafMember = neighbors.get(i);
+				if (dafMember.getAddress() == address){
 					rmtPortId = cdapSessionManager.getPortId(dafMember.getApplicationProcessName(), dafMember.getApplicationProcessInstance());
 					break;
 				}
@@ -58,9 +51,6 @@ public class Utils {
 				log.error(message);
 				throw new IPCException(5, message);
 			}
-		}catch(RIBDaemonException ex){
-			log.error(ex);
-			throw new IPCException(5, ex.getMessage());
 		}catch(CDAPException ex){
 			log.error(ex);
 			throw new IPCException(5, ex.getMessage());
@@ -90,30 +80,23 @@ public class Utils {
 	 * @throws IPCException if no matching entry is found
 	 */
 	public static synchronized ApplicationProcessNamingInfo getRemoteIPCProcessNamingInfo(long ipcProcessAddress, IPCProcess ipcProcess) throws IPCException{
-		RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-		List<RIBObject> members = null;
-		DAFMember dafMember = null;
+		List<Neighbor> neighbors = null;
+		Neighbor neighbor = null;
 		ApplicationProcessNamingInfo result = null;
-		
-		try{
-			members = ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.MEMBERS ,0).getChildren();
-			
-			for(int i=0; i<members.size(); i++){
-				dafMember = (DAFMember) members.get(i).getObjectValue();
-				if (dafMember.getSynonym() == ipcProcessAddress){
-					result = new ApplicationProcessNamingInfo(dafMember.getApplicationProcessName(), dafMember.getApplicationProcessInstance());
-					return result;
-				}
+
+		neighbors = ipcProcess.getNeighbors();
+
+		for(int i=0; i<neighbors.size(); i++){
+			neighbor = neighbors.get(i);
+			if (neighbor.getAddress() == ipcProcessAddress){
+				result = new ApplicationProcessNamingInfo(neighbor.getApplicationProcessName(), neighbor.getApplicationProcessInstance());
+				return result;
 			}
-			
-			String message = "Could not find the application process name of the IPC process whose synonym is "+ipcProcessAddress;
-			log.error(message);
-			throw new IPCException(5, message);
-		}catch(RIBDaemonException ex){
-			log.error(ex);
-			throw new IPCException(5, ex.getMessage());
 		}
+
+		String message = "Could not find the application process name of the IPC process whose synonym is "+ipcProcessAddress;
+		log.error(message);
+		throw new IPCException(5, message);
 	}
 
 }

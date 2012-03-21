@@ -3,9 +3,9 @@ package rina.ipcprocess.api;
 import java.util.List;
 import java.util.Map;
 
-import rina.applicationprocess.api.DAFMember;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.efcp.api.DataTransferConstants;
+import rina.enrollment.api.Neighbor;
 import rina.flowallocator.api.QoSCube;
 import rina.flowallocator.api.message.Flow;
 import rina.ipcmanager.api.IPCManager;
@@ -72,7 +72,7 @@ public interface IPCProcess{
 	public String getApplicationProcessInstance();
 	public List<WhatevercastName> getWhatevercastNames();
 	public String getDIFName();
-	public List<DAFMember> getDAFMembers();
+	public List<Neighbor> getNeighbors();
 	public Long getAddress();
 	public Boolean getOperationalStatus();
 	public List<QoSCube> getQoSCubes();

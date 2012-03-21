@@ -13,7 +13,6 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applicationprocess.api.DAFMember;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
@@ -23,6 +22,7 @@ import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
 import rina.enrollment.api.BaseEnrollmentTask;
 import rina.enrollment.api.EnrollmentTask;
+import rina.enrollment.api.Neighbor;
 import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.flowallocator.api.QoSCube;
 import rina.flowallocator.api.message.Flow;
@@ -134,7 +134,7 @@ public class IPCManagerImpl implements IPCManager{
 
 			RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 			ribDaemon.create(null, WhatevercastName.DIF_NAME_WHATEVERCAST_OBJECT_NAME, 0, dan, null);
-			ribDaemon.write(null, RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME, 0, new Long(1), null);
+			ribDaemon.write(RIBObjectNames.ADDRESS_RIB_OBJECT_CLASS, RIBObjectNames.ADDRESS_RIB_OBJECT_NAME, 0, new Long(1), null);
 			
 			DataTransferConstants dataTransferConstants = new DataTransferConstants();
 			dataTransferConstants.setAddressLength(2);
@@ -237,14 +237,14 @@ public class IPCManagerImpl implements IPCManager{
 		EnrollmentTask enrollmentTask = (EnrollmentTask) ipcProcess.getIPCProcessComponent(BaseEnrollmentTask.getComponentName());
 		Encoder encoder = (Encoder) ipcProcess.getIPCProcessComponent(BaseEncoder.getComponentName());
 		
-		DAFMember dafMember = new DAFMember();
+		Neighbor dafMember = new Neighbor();
 		dafMember.setApplicationProcessName(destinationApplicationProcessName);
 		dafMember.setApplicationProcessInstance(destinationApplicationProcessInstance);
 		byte[] encodedDafMember = encoder.encode(dafMember);
 		ObjectValue objectValue = new ObjectValue();
 		objectValue.setByteval(encodedDafMember);
 		
-		CDAPMessage cdapMessage = CDAPMessage.getCreateObjectRequestMessage(null, null, "", 0, DAFMember.DAF_MEMBER_SET_RIB_OBJECT_NAME 
+		CDAPMessage cdapMessage = CDAPMessage.getCreateObjectRequestMessage(null, null, "", 0, Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME 
 				+ RIBObjectNames.SEPARATOR + destinationApplicationProcessName + "-" + destinationApplicationProcessInstance, objectValue, 0);
 		cdapMessage.setInvokeID(3);
 		CDAPSessionDescriptor cdapSessionDescriptor = new CDAPSessionDescriptor();

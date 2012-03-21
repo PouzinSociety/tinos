@@ -3,9 +3,9 @@ package rina.enrollment.impl.statemachines;
 import java.util.ArrayList;
 import java.util.List;
 
-import rina.applicationprocess.api.DAFMember;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.efcp.api.DataTransferConstants;
+import rina.enrollment.api.Neighbor;
 import rina.flowallocator.api.DirectoryForwardingTableEntry;
 import rina.flowallocator.api.QoSCube;
 
@@ -18,14 +18,14 @@ public class EnrollmentInitializationInformation {
 	
 	private Long synonym = null;
 	private List<QoSCube> qosCubes = null;
-	private List<DAFMember> dafMembers = null;
+	private List<Neighbor> neighbors = null;
 	private List<WhatevercastName> whatevercastNames = null;
 	private List<DirectoryForwardingTableEntry> directoryEntries = null;
 	private DataTransferConstants dataTransferConstants = null;
 	
 	public EnrollmentInitializationInformation(){
 		qosCubes = new ArrayList<QoSCube>();
-		dafMembers = new ArrayList<DAFMember>();
+		neighbors = new ArrayList<Neighbor>();
 		whatevercastNames = new ArrayList<WhatevercastName>();
 		directoryEntries = new ArrayList<DirectoryForwardingTableEntry>();
 	}
@@ -54,12 +54,12 @@ public class EnrollmentInitializationInformation {
 		this.qosCubes.add(qosCube);
 	}
 
-	public List<DAFMember> getDafMembers() {
-		return dafMembers;
+	public List<Neighbor> getNeighbors() {
+		return neighbors;
 	}
 	
-	public void addDAFMember(DAFMember dafMember){
-		this.dafMembers.add(dafMember);
+	public void addNeighbor(Neighbor neighbor){
+		this.neighbors.add(neighbor);
 	}
 
 	public List<WhatevercastName> getWhatevercastNames() {

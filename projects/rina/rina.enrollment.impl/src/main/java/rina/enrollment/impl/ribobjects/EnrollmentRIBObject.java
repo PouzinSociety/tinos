@@ -9,12 +9,13 @@ import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.enrollment.api.EnrollmentInformationRequest;
 import rina.enrollment.impl.EnrollmentTaskImpl;
-import rina.enrollment.impl.statemachines.EnrollmentStateMachine;
+import rina.enrollment.impl.statemachines.BaseEnrollmentStateMachine;
+import rina.enrollment.impl.statemachines.EnrolleeStateMachine;
+import rina.enrollment.impl.statemachines.EnrollerStateMachine;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
 import rina.ribdaemon.api.ObjectInstanceGenerator;
 import rina.ribdaemon.api.RIBDaemonException;
-import rina.ribdaemon.api.RIBObjectNames;
 
 /**
  * Handles the operations related to the "daf.management.enrollment" objects
@@ -35,12 +36,26 @@ public class EnrollmentRIBObject extends BaseRIBObject{
 		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 	}
 	
-	@Override
 	/**
 	 * Called when the IPC Process has received the M_START enrollment message received
 	 */
+	@Override
 	public void start(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
-		EnrollmentStateMachine enrollmentStateMachine = null;
+		EnrollerStateMachine enrollmentStateMachine = null;
+		
+		try{
+			enrollmentStateMachine = (EnrollerStateMachine) this.getEnrollmentStateMachine(cdapSessionDescriptor);
+		}catch(Exception ex){
+			log.error(ex);
+			sendErrorMessage(cdapSessionDescriptor);
+		}	
+		
+		if (enrollmentStateMachine == null){
+			log.error("Got a CDAP message that is not for me: "+cdapMessage.toString());
+			return;
+		}
+		
+		enrollmentStateMachine.start(cdapMessage, cdapSessionDescriptor);
 	}
 	
 	@Override
@@ -48,7 +63,21 @@ public class EnrollmentRIBObject extends BaseRIBObject{
 	 * Called when the IPC Process has received the M_START enrollment message received
 	 */
 	public void create(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
-		EnrollmentStateMachine enrollmentStateMachine = null;
+		EnrolleeStateMachine enrollmentStateMachine = null;
+		
+		try{
+			enrollmentStateMachine = (EnrolleeStateMachine) this.getEnrollmentStateMachine(cdapSessionDescriptor);
+		}catch(Exception ex){
+			log.error(ex);
+			sendErrorMessage(cdapSessionDescriptor);
+		}	
+		
+		if (enrollmentStateMachine == null){
+			log.error("Got a CDAP message that is not for me: "+cdapMessage.toString());
+			return;
+		}
+		
+		enrollmentStateMachine.create(cdapMessage, cdapSessionDescriptor);
 	}
 	
 	@Override
@@ -56,56 +85,36 @@ public class EnrollmentRIBObject extends BaseRIBObject{
 	 * Called when the IPC Process has received the M_START enrollment message received
 	 */
 	public void stop(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
-		EnrollmentStateMachine enrollmentStateMachine = null;
+		EnrolleeStateMachine enrollmentStateMachine = null;
+		
+		try{
+			enrollmentStateMachine = (EnrolleeStateMachine) this.getEnrollmentStateMachine(cdapSessionDescriptor);
+		}catch(Exception ex){
+			log.error(ex);
+			sendErrorMessage(cdapSessionDescriptor);
+		}
+		
+		if (enrollmentStateMachine == null){
+			log.error("Got a CDAP message that is not for me: "+cdapMessage.toString());
+			return;
+		}
+		
+		enrollmentStateMachine.stop(cdapMessage, cdapSessionDescriptor);
 	}
 	
-	@Override
-	public void read(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		EnrollmentStateMachine enrollmentStateMachine = null;
-		
-		try{
-			enrollmentStateMachine = enrollmentTask.getEnrollmentStateMachine(cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo(), 
-					cdapSessionDescriptor.getPortId(), false);
-		}catch(Exception ex){
-			log.error(ex);
-			try{
-				enrollmentTask.getRIBDaemon().sendMessage(cdapSessionManager.getReleaseConnectionRequestMessage(cdapSessionDescriptor.getPortId(), null, false), 
-						cdapSessionDescriptor.getPortId(), null);
-			}catch(Exception e){
-				log.error(e);
-			}
-		}
-		
-		if (enrollmentStateMachine == null){
-			log.error("Got a CDAP message that is not for me: "+cdapMessage.toString());
-			return;
-		}
-		
-		enrollmentStateMachine.read(cdapMessage, cdapSessionDescriptor);
+	private BaseEnrollmentStateMachine getEnrollmentStateMachine(CDAPSessionDescriptor cdapSessionDescriptor){
+		BaseEnrollmentStateMachine enrollmentStateMachine = enrollmentTask.getEnrollmentStateMachine(
+				cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo(), cdapSessionDescriptor.getPortId(), false);
+		return enrollmentStateMachine;
 	}
-
-	@Override
-	public void cancelRead(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		EnrollmentStateMachine enrollmentStateMachine = null;
-		
+	
+	private void sendErrorMessage(CDAPSessionDescriptor cdapSessionDescriptor){
 		try{
-			enrollmentStateMachine = enrollmentTask.getEnrollmentStateMachine(cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo(), 
-					cdapSessionDescriptor.getPortId(), false);
-		}catch(Exception ex){
-			log.error(ex);
-			try{
-				enrollmentTask.getRIBDaemon().sendMessage(cdapSessionManager.getReleaseConnectionRequestMessage(cdapSessionDescriptor.getPortId(), null, false), 
-						cdapSessionDescriptor.getPortId(), null);
-			}catch(Exception e){
-				log.error(e);
-			}
+			enrollmentTask.getRIBDaemon().sendMessage(cdapSessionManager.getReleaseConnectionRequestMessage(cdapSessionDescriptor.getPortId(), null, false), 
+					cdapSessionDescriptor.getPortId(), null);
+		}catch(Exception e){
+			log.error(e);
 		}
-		
-		if (enrollmentStateMachine == null){
-			log.error("Got a CDAP message that is not for me: "+cdapMessage.toString());
-			return;
-		}
-		enrollmentStateMachine.cancelread(cdapMessage, cdapSessionDescriptor);
 	}
 	
 	@Override

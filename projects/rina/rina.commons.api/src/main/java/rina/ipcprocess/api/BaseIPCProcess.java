@@ -5,9 +5,9 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import rina.applicationprocess.api.DAFMember;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.efcp.api.DataTransferConstants;
+import rina.enrollment.api.Neighbor;
 import rina.flowallocator.api.QoSCube;
 import rina.flowallocator.api.message.Flow;
 import rina.ipcmanager.api.IPCManager;
@@ -155,19 +155,19 @@ public abstract class BaseIPCProcess implements IPCProcess{
 	 * Returns the list of IPC processes that are part of the DIF this IPC Process is part of
 	 * @return
 	 */
-	public List<DAFMember> getDAFMembers(){
-		List<DAFMember> result = new ArrayList<DAFMember>();
+	public List<Neighbor> getNeighbors(){
+		List<Neighbor> result = new ArrayList<Neighbor>();
 		RIBDaemon ribDaemon = null;
 		RIBObject ribObject = null;
 		RIBObject childRibObject = null;
 		
 		try{
 			ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-			ribObject = ribDaemon.read(null, DAFMember.DAF_MEMBER_SET_RIB_OBJECT_NAME, 0);
+			ribObject = ribDaemon.read(null, Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME, 0);
 			if (ribObject != null && ribObject.getChildren() != null){
 				for(int i=0; i<ribObject.getChildren().size(); i++){
 					childRibObject = ribObject.getChildren().get(i);
-					result.add((DAFMember)childRibObject.getObjectValue());
+					result.add((Neighbor)childRibObject.getObjectValue());
 				}
 			}
 		}catch(Exception ex){
@@ -186,7 +186,7 @@ public abstract class BaseIPCProcess implements IPCProcess{
 		
 		try{
 			ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-			result = (Long) ribDaemon.read(null, RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME, 0).getObjectValue();
+			result = (Long) ribDaemon.read(null, RIBObjectNames.ADDRESS_RIB_OBJECT_NAME, 0).getObjectValue();
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}

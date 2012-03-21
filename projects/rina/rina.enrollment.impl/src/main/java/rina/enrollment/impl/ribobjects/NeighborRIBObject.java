@@ -1,21 +1,21 @@
 package rina.enrollment.impl.ribobjects;
 
-import rina.applicationprocess.api.DAFMember;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
+import rina.enrollment.api.Neighbor;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
 import rina.ribdaemon.api.ObjectInstanceGenerator;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 
-public class DIFMemberRIBObject extends BaseRIBObject{
+public class NeighborRIBObject extends BaseRIBObject{
 
-	private DAFMember member = null;
+	private Neighbor neighbor = null;
 	
-	public DIFMemberRIBObject(IPCProcess ipcProcess, String objectName, DAFMember member) {
-		super(ipcProcess, objectName, DAFMember.DAF_MEMBER_RIB_OBJECT_CLASS, ObjectInstanceGenerator.getObjectInstance());
-		this.member = member;
+	public NeighborRIBObject(IPCProcess ipcProcess, String objectName, Neighbor neighbor) {
+		super(ipcProcess, objectName, Neighbor.NEIGHBOR_RIB_OBJECT_CLASS, ObjectInstanceGenerator.getObjectInstance());
+		this.neighbor = neighbor;
 	}
 	
 	@Override
@@ -25,12 +25,12 @@ public class DIFMemberRIBObject extends BaseRIBObject{
 	
 	@Override
 	public void write(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
-		if (!(object instanceof DAFMember)){
+		if (!(object instanceof Neighbor)){
 			throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME, 
 					"Object class ("+object.getClass().getName()+") does not match object name "+objectName);
 		}
 		
-		this.member = (DAFMember) object;
+		this.neighbor = (Neighbor) object;
 	}
 	
 	@Override
@@ -44,12 +44,12 @@ public class DIFMemberRIBObject extends BaseRIBObject{
 	}
 	
 	@Override
-	public void delete(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
+	public void delete(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
 		this.getParent().removeChild(objectName);
 	}
 	
 	@Override
 	public Object getObjectValue(){
-		return member;
+		return neighbor;
 	}
 }
