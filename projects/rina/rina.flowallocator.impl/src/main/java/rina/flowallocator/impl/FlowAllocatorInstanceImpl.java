@@ -378,7 +378,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			this.flowAllocator.receivedLocalFlowResponse(remotePortId, portId, success, reason);
 			if (success){
 				try{
-					this.ribDaemon.create("flow", this.objectName, 0, this, null);
+					this.ribDaemon.create(Flow.FLOW_RIB_OBJECT_CLASS, this.objectName, this);
 				}catch(Exception ex){
 					ex.printStackTrace();
 				}
@@ -395,7 +395,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 				cdapMessage = cdapSessionManager.getCreateObjectResponseMessage(underlyingPortId, null, requestMessage.getObjClass(), 
 						0, requestMessage.getObjName(), objectValue, 0, null, requestMessage.getInvokeID());
 				this.ribDaemon.sendMessage(cdapMessage, underlyingPortId, null);
-				this.ribDaemon.create(requestMessage.getObjClass(), requestMessage.getObjName(), 0, this, null);
+				this.ribDaemon.create(requestMessage.getObjClass(), requestMessage.getObjName(), this);
 				tcpSocketReader = new TCPSocketReader(socket, this.delimiter, this.apService, this.portId);
 				this.ipcProcess.execute(tcpSocketReader);
 			}catch(Exception ex){
@@ -428,7 +428,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		if (local){
 			this.flowAllocator.receivedDeallocateLocalFlowRequest(this.remotePortId);
 			try{
-				this.ribDaemon.delete("flow", objectName, 0, null, null);
+				this.ribDaemon.delete(Flow.FLOW_RIB_OBJECT_CLASS, objectName);
 				this.flowAllocator.removeFlowAllocatorInstance(this.portId);
 			}catch(Exception ex){
 				ex.printStackTrace();
@@ -470,7 +470,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			CDAPMessage responseMessage = cdapSessionManager.getDeleteObjectResponseMessage(underlyingPortId, null, 
 					cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName(), 0, null, cdapMessage.getInvokeID());
 			this.ribDaemon.sendMessage(responseMessage, underlyingPortId, null);
-			this.ribDaemon.delete(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), null, null);
+			this.ribDaemon.delete(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst());
 		}catch(Exception ex){
 			ex.printStackTrace(); 
 		}
@@ -489,7 +489,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		
 		//2 Cleanup
 		try{
-			this.ribDaemon.delete("flow", objectName, 0, null, null);
+			this.ribDaemon.delete(Flow.FLOW_RIB_OBJECT_CLASS, objectName);
 			this.flowAllocator.removeFlowAllocatorInstance(this.portId);
 		}catch(Exception ex){
 			ex.printStackTrace();
@@ -526,7 +526,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		try{
 			this.flow = (Flow) this.encoder.decode(cdapMessage.getObjValue().getByteval(), Flow.class);
 			log.debug("Successfull create flow message response received for flow "+cdapMessage.getObjName()+".\n "+this.flow.toString());
-			this.ribDaemon.create("flow", objectName, 0, this, null);
+			this.ribDaemon.create(Flow.FLOW_RIB_OBJECT_CLASS, objectName, this);
 			this.tcpSocketReader = new TCPSocketReader(socket, this.delimiter, this.apService, this.portId);
 			this.ipcProcess.execute(tcpSocketReader);
 			this.apService.deliverAllocateResponse(portId, 0, null);
@@ -552,7 +552,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			try{
 				this.remotePortId = remotePortId;
 				this.apService.deliverAllocateResponse(portId, 0, null);
-				this.ribDaemon.create("flow", objectName, 0, this, null);
+				this.ribDaemon.create(Flow.FLOW_RIB_OBJECT_CLASS, objectName, this);
 			}catch(Exception ex){
 				ex.printStackTrace();
 			}
@@ -615,7 +615,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		
 		RIBDaemon ribDaemon = (RIBDaemon) flowAllocator.getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		try{
-			ribDaemon.delete(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), null, null);
+			ribDaemon.delete(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst());
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();
 		}

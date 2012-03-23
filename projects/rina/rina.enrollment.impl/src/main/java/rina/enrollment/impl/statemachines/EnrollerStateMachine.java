@@ -155,9 +155,8 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 			}
 
 			responseMessage =
-				cdapSessionManager.getStartObjectResponseMessage(this.portId, null, EnrollmentInformationRequest.ENROLLMENT_INFO_OBJECT_CLASS, objectValue, 0, 
-						EnrollmentInformationRequest.ENROLLMENT_INFO_OBJECT_NAME + RIBObjectNames.SEPARATOR + RIBObjectNames.ADDRESS, 
-						0, null, cdapMessage.getInvokeID());
+				cdapSessionManager.getStartObjectResponseMessage(this.portId, null, RIBObjectNames.ADDRESS_RIB_OBJECT_CLASS, objectValue, 0, 
+						RIBObjectNames.ADDRESS_RIB_OBJECT_NAME, 0, null, cdapMessage.getInvokeID());
 			sendCDAPMessage(responseMessage);
 
 
@@ -214,43 +213,38 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 	private void initializeEnrollee() throws Exception{
 		//Send whatevercast names
 		sendCreateInformation(WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_CLASS, 
-				WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME,
-				RIBObjectNames.WHATEVERCAST_NAMES);
+				WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME);
 		
 		//Send data transfer constants
 		sendCreateInformation(DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_CLASS, 
-				DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_NAME,
-				DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_CLASS);
+				DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_NAME);
 		
 		//Send QoS Cubes
 		sendCreateInformation(QoSCube.QOSCUBE_SET_RIB_OBJECT_CLASS, 
-				QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME,
-				RIBObjectNames.QOS_CUBES);
+				QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME);
 		
 		//Send DirectoryForwardingTableEntries
 		sendCreateInformation(DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_ENTRY_SET_RIB_OBJECT_CLASS, 
-				DirectoryForwardingTable.DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME,
-				RIBObjectNames.DIRECTORY_FORWARDING_TABLE_ENTRIES);
+				DirectoryForwardingTable.DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME);
 		
-		//Send DAF Members
-		RIBObject dafMemberSet = ribDaemon.read(Neighbor.NEIGHBOR_SET_RIB_OBJECT_CLASS, Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME, 0);
-		List<RIBObject> dafMembers = dafMemberSet.getChildren();
+		//Send neighbors (including myself)
+		RIBObject neighborSet = ribDaemon.read(Neighbor.NEIGHBOR_SET_RIB_OBJECT_CLASS, Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME);
+		List<RIBObject> neighbors = neighborSet.getChildren();
 		
-		Neighbor[] dafMembersArray = new Neighbor[dafMembers.size() + 1];
-		for(int i=1; i<=dafMembers.size(); i++){
-			dafMembersArray[i] = (Neighbor) dafMembers.get(i-1).getObjectValue();
+		Neighbor[] neighborsArray = new Neighbor[neighbors.size() + 1];
+		for(int i=1; i<=neighbors.size(); i++){
+			neighborsArray[i] = (Neighbor) neighbors.get(i-1).getObjectValue();
 		}
 		
-		dafMembersArray[0] = new Neighbor();
-		dafMembersArray[0].setAddress(ribDaemon.getIPCProcess().getAddress().longValue());
-		dafMembersArray[0].setApplicationProcessName(ribDaemon.getIPCProcess().getApplicationProcessName());
-		dafMembersArray[0].setApplicationProcessInstance(ribDaemon.getIPCProcess().getApplicationProcessInstance());
+		neighborsArray[0] = new Neighbor();
+		neighborsArray[0].setAddress(ribDaemon.getIPCProcess().getAddress().longValue());
+		neighborsArray[0].setApplicationProcessName(ribDaemon.getIPCProcess().getApplicationProcessName());
+		neighborsArray[0].setApplicationProcessInstance(ribDaemon.getIPCProcess().getApplicationProcessInstance());
 		
 		ObjectValue objectValue = new ObjectValue();
-		objectValue.setByteval(encoder.encode(dafMembersArray));
-		CDAPMessage cdapMessage = cdapSessionManager.getCreateObjectRequestMessage(this.portId, null, null, dafMemberSet.getObjectClass(), 
-				dafMemberSet.getObjectInstance(), EnrollmentInformationRequest.ENROLLMENT_INFO_OBJECT_NAME + RIBObjectNames.SEPARATOR 
-				+ RIBObjectNames.NEIGHBORS, objectValue, 0, false);
+		objectValue.setByteval(encoder.encode(neighborsArray));
+		CDAPMessage cdapMessage = cdapSessionManager.getCreateObjectRequestMessage(this.portId, null, null, neighborSet.getObjectClass(), 
+				0, Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME, objectValue, 0, false);
 		sendCDAPMessage(cdapMessage);
 	}
 	
@@ -261,17 +255,16 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 	 * @param suffix the suffix to send after enrollment info
 	 * @throws Exception
 	 */
-	private void sendCreateInformation(String objectClass, String objectName, String suffix) throws Exception{
+	private void sendCreateInformation(String objectClass, String objectName) throws Exception{
 		RIBObject ribObject = null;
 		CDAPMessage cdapMessage = null;
 		ObjectValue objectValue = null;
 		
-		ribObject = ribDaemon.read(objectClass, objectName, 0);
+		ribObject = ribDaemon.read(objectClass, objectName);
 		objectValue = new ObjectValue();
 		objectValue.setByteval(encoder.encode(ribObject.getObjectValue()));
-		cdapMessage = cdapSessionManager.getCreateObjectRequestMessage(this.portId, null, null, ribObject.getObjectClass(), 
-				ribObject.getObjectInstance(), EnrollmentInformationRequest.ENROLLMENT_INFO_OBJECT_NAME + RIBObjectNames.SEPARATOR 
-				+ suffix, objectValue, 0, false);
+		cdapMessage = cdapSessionManager.getCreateObjectRequestMessage(this.portId, null, null, objectClass, 
+				ribObject.getObjectInstance(), objectName, objectValue, 0, false);
 		sendCDAPMessage(cdapMessage);
 	}
 

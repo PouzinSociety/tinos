@@ -55,6 +55,17 @@ public class Neighbor {
 		this.address = address;
 	}
 	
+	public String getKey(){
+		String key = this.applicationProcessName+".";
+		if (this.applicationProcessInstance != null){
+			key = key + this.applicationProcessInstance;
+		}else{
+			key = key + "*";
+		}
+		
+		return key;
+	}
+	
 	@Override
 	public String toString(){
 		String result = "Application Process Name: " + this.applicationProcessName + "\n";

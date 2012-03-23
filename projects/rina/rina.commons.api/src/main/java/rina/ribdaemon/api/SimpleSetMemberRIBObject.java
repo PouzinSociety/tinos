@@ -12,14 +12,14 @@ import rina.ipcprocess.api.IPCProcess;
  */
 public class SimpleSetMemberRIBObject extends SimpleRIBObject{
 
-	public SimpleSetMemberRIBObject(IPCProcess ipcProcess, String objectName,
-			String objectClass, Object value) {
-		super(ipcProcess, objectName, objectClass, value);
+	public SimpleSetMemberRIBObject(IPCProcess ipcProcess, String objectClass,
+			String objectName, Object value) {
+		super(ipcProcess, objectClass, objectName, value);
 	}
 
 	@Override
-	public void delete(String objectClass, String objectName, long objectInstance, Object objectValue) throws RIBDaemonException {
-		this.getParent().removeChild(objectName);
+	public void delete(Object objectValue) throws RIBDaemonException {
+		this.getParent().removeChild(this.getObjectName());
 		this.getRIBDaemon().removeRIBObject(this);
 	}
 }

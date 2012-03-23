@@ -224,17 +224,26 @@ public class CDAPSessionImpl implements CDAPSession{
 		}
 
 		CDAPMessageValidator.validate(cdapMessage);
-		freeInvokeId(cdapMessage);
+		
+		freeOrReserveInvokeId(cdapMessage);
 		
 		return cdapMessage;
 	}
 	
-	private void freeInvokeId(CDAPMessage cdapMessage){
+	private void freeOrReserveInvokeId(CDAPMessage cdapMessage){
 		Opcode opcode = cdapMessage.getOpCode();
 		if (opcode.equals(Opcode.M_CONNECT_R) || opcode.equals(Opcode.M_RELEASE_R) || opcode.equals(Opcode.M_CREATE_R) || opcode.equals(Opcode.M_DELETE_R) 
 				|| opcode.equals(Opcode.M_START_R) || opcode.equals(Opcode.M_STOP_R) || opcode.equals(Opcode.M_WRITE_R) || opcode.equals(Opcode.M_CANCELREAD_R) || 
 				(opcode.equals(Opcode.M_READ_R) && (cdapMessage.getFlags() == null || !cdapMessage.getFlags().equals(Flags.F_RD_INCOMPLETE)))){
 			invokeIdManager.freeInvokeId(new Integer(cdapMessage.getInvokeID()));
+		}
+		
+		if (cdapMessage.getInvokeID() != 0){
+			if (opcode.equals(Opcode.M_CONNECT) || opcode.equals(Opcode.M_RELEASE) || opcode.equals(Opcode.M_CREATE) || opcode.equals(Opcode.M_DELETE) 
+					|| opcode.equals(Opcode.M_START) || opcode.equals(Opcode.M_STOP) || opcode.equals(Opcode.M_WRITE) || opcode.equals(Opcode.M_CANCELREAD) 
+					|| opcode.equals(Opcode.M_READ)){
+				invokeIdManager.reserveInvokeId(new Integer(cdapMessage.getInvokeID()));
+			}
 		}
 	}
 	

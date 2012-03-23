@@ -40,7 +40,7 @@ public class MockEnrollmentTask extends BaseEnrollmentTask{
 		return null;
 	}
 
-	public void initiateEnrollment(CDAPMessage arg0, CDAPSessionDescriptor arg1) {
+	public void initiateEnrollment(Neighbor candidate) {
 		// TODO Auto-generated method stub
 		
 	}

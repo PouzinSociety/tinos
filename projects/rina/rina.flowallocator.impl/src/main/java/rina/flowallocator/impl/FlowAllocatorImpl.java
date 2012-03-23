@@ -18,10 +18,10 @@ import rina.encoding.api.Encoder;
 import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.FlowAllocatorInstance;
-import rina.flowallocator.api.QoSCube;
 import rina.flowallocator.api.message.Flow;
 import rina.flowallocator.impl.ribobjects.DirectoryForwardingTableEntrySetRIBObject;
 import rina.flowallocator.impl.ribobjects.FlowSetRIBObject;
+import rina.flowallocator.impl.ribobjects.QoSCubeSetRIBObject;
 import rina.flowallocator.impl.tcp.TCPServer;
 import rina.flowallocator.impl.validation.AllocateRequestValidator;
 import rina.ipcprocess.api.IPCProcess;
@@ -31,7 +31,6 @@ import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
-import rina.ribdaemon.api.SimpleSetRIBObject;
 import rina.utils.types.Unsigned;
 
 /** 
@@ -137,20 +136,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		try{
 			RIBObject ribObject = new FlowSetRIBObject(this, ipcProcess);
 			ribDaemon.addRIBObject(ribObject);
-		    ribObject = new SimpleSetRIBObject(ipcProcess, 
-					QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME, 
-					QoSCube.QOSCUBE_SET_RIB_OBJECT_CLASS, 
-					QoSCube.QOSCUBE_RIB_OBJECT_CLASS){
-		    	@Override
-				public Object getObjectValue(){
-		    		QoSCube[] result = new QoSCube[this.getChildren().size()];
-		    		for(int i=0; i<result.length; i++){
-		    			result[i] = (QoSCube) this.getChildren().get(i).getObjectValue();
-		    		}
-		    		
-		    		return result;
-		    	}
-		    };
+		    ribObject = new QoSCubeSetRIBObject(ipcProcess);
 			ribDaemon.addRIBObject(ribObject);
 			ribObject = new DirectoryForwardingTableEntrySetRIBObject(ipcProcess);
 			ribDaemon.addRIBObject(ribObject);

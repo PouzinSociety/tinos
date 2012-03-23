@@ -11,6 +11,7 @@ import rina.enrollment.impl.EnrollmentTaskImpl;
 import rina.enrollment.impl.statemachines.BaseEnrollmentStateMachine;
 import rina.enrollment.impl.statemachines.EnrolleeStateMachine;
 import rina.ipcprocess.api.IPCProcess;
+import rina.ipcprocess.api.IPCProcess.OperationalStatus;
 import rina.ribdaemon.api.BaseRIBObject;
 import rina.ribdaemon.api.ObjectInstanceGenerator;
 import rina.ribdaemon.api.RIBDaemonException;
@@ -24,18 +25,14 @@ import rina.ribdaemon.api.RIBObjectNames;
 public class OperationalStatusRIBObject extends BaseRIBObject{
 	
 	private static final Log log = LogFactory.getLog(OperationalStatusRIBObject.class);
-	
-	public static final String OBJECT_CLASS = "operationStatus";
-	public static final String OBJECT_NAME = RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
-		RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR +
-		RIBObjectNames.OPERATIONAL_STATUS;
 
 	private EnrollmentTaskImpl enrollmentTask = null;
-	private Boolean started = false;
+	private OperationalStatus status = OperationalStatus.STOPPED;
 	private CDAPSessionManager cdapSessionManager = null;
 
 	public OperationalStatusRIBObject(EnrollmentTaskImpl enrollmentTaskImpl, IPCProcess ipcProcess){
-		super(ipcProcess, OBJECT_NAME, OBJECT_CLASS, ObjectInstanceGenerator.getObjectInstance());
+		super(ipcProcess, RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_CLASS, 
+				ObjectInstanceGenerator.getObjectInstance(), RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME);
 		this.enrollmentTask = enrollmentTaskImpl;
 		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 	}
@@ -57,17 +54,17 @@ public class OperationalStatusRIBObject extends BaseRIBObject{
 		}
 		
 		enrollmentStateMachine.start(cdapMessage, cdapSessionDescriptor);
-		this.started = true;
+		this.status = OperationalStatus.STARTED;
 	}
 	
 	@Override
-	public void start(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
-		this.started = true;
+	public void start(Object object) throws RIBDaemonException {
+		this.status = OperationalStatus.STARTED;
 	}
 	
 	@Override
-	public void stop(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
-		this.started = false;
+	public void stop(Object object) throws RIBDaemonException {
+		this.status = OperationalStatus.STOPPED;
 	}
 	
 	private BaseEnrollmentStateMachine getEnrollmentStateMachine(CDAPSessionDescriptor cdapSessionDescriptor){
@@ -87,7 +84,7 @@ public class OperationalStatusRIBObject extends BaseRIBObject{
 	
 	@Override
 	public Object getObjectValue(){
-		return started;
+		return status;
 	}
 
 }

@@ -330,7 +330,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 			serializedCDAPMessageToBeSend = cdapSessionManager.encodeNextMessageToBeSent(cdapMessage, portId);
 			rmt.sendCDAPMessage(portId, serializedCDAPMessageToBeSend);
 			cdapSessionManager.messageSent(cdapMessage, portId);
-			log.debug("Sent CDAP Message: "+ cdapMessage.toString());
+			log.debug("Sent CDAP Message through portId "+portId+": "+ cdapMessage.toString());
 		}catch(Exception ex){
 			ex.printStackTrace();
 			if (ex.getMessage().equals("Flow closed")){
@@ -421,12 +421,12 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 			 * object exists it is an update, therefore the message is handled to the object. If the object doesn't exist it is a CREATE, 
 			 * therefore it is handled to the parent object*/
 			try{
-				ribObject = getRIBObject(cdapMessage.getObjName(), cdapMessage.getObjClass(), cdapMessage.getObjInst());
+				ribObject = getRIBObject(cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName());
 			}catch(RIBDaemonException ex){
 				if(ex.getErrorCode() == RIBDaemonException.OBJECTNAME_NOT_PRESENT_IN_THE_RIB){
 					//The object does not exist, call the parent object
 					String parentObjectName = cdapMessage.getObjName().substring(0, cdapMessage.getObjName().lastIndexOf(RIBObjectNames.SEPARATOR));
-					ribObject = getRIBObject(parentObjectName, null, 0);
+					ribObject = getRIBObject(null, 0, parentObjectName);
 				}else{
 					throw ex;
 				}
@@ -434,27 +434,27 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 			ribObject.create(cdapMessage, cdapSessionDescriptor);
 			break;
 		case M_DELETE:
-			ribObject =  getRIBObject(cdapMessage.getObjName(), cdapMessage.getObjClass(), cdapMessage.getObjInst());
+			ribObject = getRIBObject(cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName());
 			ribObject.delete(cdapMessage, cdapSessionDescriptor);
 			break;
 		case M_READ:
-			ribObject =  getRIBObject(cdapMessage.getObjName(), cdapMessage.getObjClass(), cdapMessage.getObjInst());
+			ribObject = getRIBObject(cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName());
 			ribObject.read(cdapMessage, cdapSessionDescriptor);
 			break;
 		case M_CANCELREAD:
-			ribObject =  getRIBObject(cdapMessage.getObjName(), cdapMessage.getObjClass(), cdapMessage.getObjInst());
+			ribObject = getRIBObject(cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName());
 			ribObject.cancelRead(cdapMessage, cdapSessionDescriptor);
 			break;
 		case M_WRITE:
-			ribObject =  getRIBObject(cdapMessage.getObjName(), cdapMessage.getObjClass(), cdapMessage.getObjInst());
+			ribObject = getRIBObject(cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName());
 			ribObject.write(cdapMessage, cdapSessionDescriptor);
 			break;
 		case M_START:
-			ribObject =  getRIBObject(cdapMessage.getObjName(), cdapMessage.getObjClass(), cdapMessage.getObjInst());
+			ribObject = getRIBObject(cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName());
 			ribObject.start(cdapMessage, cdapSessionDescriptor);
 			break;
 		case M_STOP:
-			ribObject =  getRIBObject(cdapMessage.getObjName(), cdapMessage.getObjClass(), cdapMessage.getObjInst());
+			ribObject = getRIBObject(cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName());
 			ribObject.stop(cdapMessage, cdapSessionDescriptor);
 			break;
 		default:
@@ -462,8 +462,8 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		}
 	}
 	
-	private RIBObject getRIBObject(String objectName, String objectClass, long objectInstance) throws RIBDaemonException{
-		validateObjectArguments(objectClass, objectName, objectInstance);
+	private RIBObject getRIBObject(String objectClass, long objectInstance, String objectName) throws RIBDaemonException{
+		validateObjectArguments(objectClass, objectInstance, objectName);
 		return rib.getRIBObject(objectName);
 	}
 
@@ -476,22 +476,23 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	 * @param notify if not null notify some of the neighbors about the change
 	 * @throws RIBDaemonException
 	 */
-	public synchronized void create(String objectClass, String objectName, long objectInstance, 
+	@Override
+	public synchronized void create(String objectClass, long objectInstance, String objectName, 
 			Object objectValue, NotificationPolicy notificationPolicy) throws RIBDaemonException {
 		log.debug("Local operation create called on object "+objectName);
-		validateObjectArguments(objectClass, objectName, objectInstance);
+		validateObjectArguments(objectClass, objectInstance, objectName);
 
 		RIBObject ribObject = null;
 		try{
-			ribObject = getRIBObject(objectName, objectClass, objectInstance);
+			ribObject = getRIBObject(objectClass, objectInstance, objectName);
 		}catch(RIBDaemonException ex){
 			/* Creation is delegated to the parent objects if the object doesn't exist*/
 			String parentObjectName = objectName.substring(0, objectName.lastIndexOf(RIBObjectNames.SEPARATOR));
-			ribObject = getRIBObject(parentObjectName, null, 0);
+			ribObject = getRIBObject(null, 0, parentObjectName);
 		}
 
 		//Create the object
-		ribObject.create(objectClass, objectName, objectInstance, objectValue);
+		ribObject.create(objectClass, objectInstance, objectName, objectValue);
 		
 		//If we don't need to notify, we're done
 		if (notificationPolicy == null){
@@ -540,15 +541,13 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		return false;
 	}
 
-	public synchronized void delete(String objectClass, String objectName, long objectInstance, 
+	@Override
+	public synchronized void delete(String objectClass, long objectInstance, String objectName, 
 			Object objectValue, NotificationPolicy notificationPolicy) throws RIBDaemonException {
 		log.debug("Local operation delete called on object "+objectName);
-		validateObjectArguments(objectClass, objectName, objectInstance);
-		RIBObject ribObject = getRIBObject(objectName, objectClass, objectInstance);
-		ribObject.delete(objectClass, objectName, objectInstance, objectValue);
-		
-		//Create the object
-		ribObject.create(objectClass, objectName, objectInstance, objectValue);
+		validateObjectArguments(objectClass, objectInstance, objectName);
+		RIBObject ribObject = getRIBObject(objectClass, objectInstance, objectName);
+		ribObject.delete(objectValue);
 		
 		//If we don't need to notify, we're done
 		if (notificationPolicy == null){
@@ -584,24 +583,27 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		}
 	}
 
-	public synchronized RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
+	@Override
+	public synchronized RIBObject read(String objectClass, long objectInstance, String objectName) throws RIBDaemonException {
 		log.debug("Local operation read called on object "+objectName);
-		validateObjectArguments(objectClass, objectName, objectInstance);
-		return getRIBObject(objectName, objectClass, objectInstance);
+		validateObjectArguments(objectClass, objectInstance, objectName);
+		return getRIBObject(objectClass, objectInstance, objectName);
 	}
 
-	public synchronized void start(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+	@Override
+	public synchronized void start(String objectClass, long objectInstance, String objectName, Object object) throws RIBDaemonException {
 		log.debug("Local operation start called on object "+objectName);
-		validateObjectArguments(objectClass, objectName, objectInstance);
-		RIBObject ribObject = getRIBObject(objectName, objectClass, objectInstance);
-		ribObject.start(objectClass, objectName, objectInstance, object);
+		validateObjectArguments(objectClass, objectInstance, objectName);
+		RIBObject ribObject = getRIBObject(objectClass, objectInstance, objectName);
+		ribObject.start(object);
 	}
 
-	public synchronized void stop(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+	@Override
+	public synchronized void stop(String objectClass, long objectInstance, String objectName, Object object) throws RIBDaemonException {
 		log.debug("Local operation stop called on object "+objectName);
-		validateObjectArguments(objectClass, objectName, objectInstance);
-		RIBObject ribObject = getRIBObject(objectName, objectClass, objectInstance);
-		ribObject.stop(objectClass, objectName, objectInstance, object);
+		validateObjectArguments(objectClass, objectInstance, objectName);
+		RIBObject ribObject = getRIBObject(objectClass, objectInstance, objectName);
+		ribObject.stop(object);
 	}
 
 	/**
@@ -612,12 +614,13 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	 * @param objectToWrite the object to be written to the RIB
 	 * @throws RIBDaemonException if there are problems performing the "write" operation to the RIB
 	 */
-	public synchronized void write(String objectClass, String objectName, long objectInstance, 
+	@Override
+	public synchronized void write(String objectClass, long objectInstance, String objectName, 
 			Object object, NotificationPolicy notification) throws RIBDaemonException {
 		log.debug("Local operation write called on object "+objectName);
-		validateObjectArguments(objectClass, objectName, objectInstance);
-		RIBObject ribObject = getRIBObject(objectName, objectClass, objectInstance);
-		ribObject.write(objectClass, objectName, objectInstance, object);
+		validateObjectArguments(objectClass, objectInstance, objectName);
+		RIBObject ribObject = getRIBObject(objectClass, objectInstance, objectName);
+		ribObject.write(object);
 	}
 	
 	/**
@@ -627,7 +630,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	 * @param objectInstance
 	 * @throws RIBDaemonException
 	 */
-	private void validateObjectArguments(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
+	private void validateObjectArguments(String objectClass, long objectInstance, String objectName) throws RIBDaemonException{
 		if (objectName == null){
 			throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_AND_OBJECT_NAME_OR_OBJECT_INSTANCE_NOT_SPECIFIED);
 		}

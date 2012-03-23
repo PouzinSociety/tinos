@@ -14,12 +14,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.applicationprocess.api.WhatevercastName;
-import rina.cdap.api.CDAPSessionDescriptor;
-import rina.cdap.api.message.CDAPMessage;
-import rina.cdap.api.message.ObjectValue;
 import rina.efcp.api.DataTransferConstants;
-import rina.encoding.api.BaseEncoder;
-import rina.encoding.api.Encoder;
 import rina.enrollment.api.BaseEnrollmentTask;
 import rina.enrollment.api.EnrollmentTask;
 import rina.enrollment.api.Neighbor;
@@ -130,11 +125,14 @@ public class IPCManagerImpl implements IPCManager{
 		if (difName != null){
 			WhatevercastName dan = new WhatevercastName();
 			dan.setName(difName);
-			dan.setRule("Any member");
+			dan.setRule(WhatevercastName.DIF_NAME_WHATEVERCAST_RULE);
 
 			RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-			ribDaemon.create(null, WhatevercastName.DIF_NAME_WHATEVERCAST_OBJECT_NAME, 0, dan, null);
-			ribDaemon.write(RIBObjectNames.ADDRESS_RIB_OBJECT_CLASS, RIBObjectNames.ADDRESS_RIB_OBJECT_NAME, 0, new Long(1), null);
+			ribDaemon.create(WhatevercastName.WHATEVERCAST_NAME_RIB_OBJECT_CLASS, 
+					WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + 
+					WhatevercastName.DIF_NAME_WHATEVERCAST_RULE, dan);
+			ribDaemon.write(RIBObjectNames.ADDRESS_RIB_OBJECT_CLASS, 
+					RIBObjectNames.ADDRESS_RIB_OBJECT_NAME, new Long(1));
 			
 			DataTransferConstants dataTransferConstants = new DataTransferConstants();
 			dataTransferConstants.setAddressLength(2);
@@ -147,7 +145,8 @@ public class IPCManagerImpl implements IPCManager{
 			dataTransferConstants.setPortIdLength(2);
 			dataTransferConstants.setQosIdLength(1);
 			dataTransferConstants.setSequenceNumberLength(2);
-			ribDaemon.write(null, DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_NAME, 0, dataTransferConstants, null);
+			ribDaemon.write(DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_CLASS, 
+					DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_NAME, dataTransferConstants);
 			
 			QoSCube qosCube = new QoSCube();
 			qosCube.setAverageBandwidth(0);
@@ -162,7 +161,8 @@ public class IPCManagerImpl implements IPCManager{
 			qosCube.setPeakSDUBandwidthDuration(0);
 			qosCube.setQosId(1);
 			qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
-			ribDaemon.create(null, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + qosCube.getQosId(), 0, qosCube, null);
+			ribDaemon.create(QoSCube.QOSCUBE_RIB_OBJECT_CLASS, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + 
+					qosCube.getName(), qosCube);
 			
 			qosCube = new QoSCube();
 			qosCube.setAverageBandwidth(0);
@@ -177,7 +177,11 @@ public class IPCManagerImpl implements IPCManager{
 			qosCube.setPeakSDUBandwidthDuration(0);
 			qosCube.setQosId(2);
 			qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
-			ribDaemon.create(null, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + qosCube.getQosId(), 0, qosCube, null);
+			ribDaemon.create(QoSCube.QOSCUBE_RIB_OBJECT_CLASS, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME + 
+					RIBObjectNames.SEPARATOR + qosCube.getName(), qosCube);
+			
+			ribDaemon.start(RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_CLASS, 
+					RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME);
 			
 			RMT rmt = (RMT) ipcProcess.getIPCProcessComponent(BaseRMT.getComponentName());
 			rmt.startListening();
@@ -235,20 +239,12 @@ public class IPCManagerImpl implements IPCManager{
 		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(
 				new ApplicationProcessNamingInfo(sourceApplicationProcessName, sourceApplicationProcessInstance));
 		EnrollmentTask enrollmentTask = (EnrollmentTask) ipcProcess.getIPCProcessComponent(BaseEnrollmentTask.getComponentName());
-		Encoder encoder = (Encoder) ipcProcess.getIPCProcessComponent(BaseEncoder.getComponentName());
 		
-		Neighbor dafMember = new Neighbor();
-		dafMember.setApplicationProcessName(destinationApplicationProcessName);
-		dafMember.setApplicationProcessInstance(destinationApplicationProcessInstance);
-		byte[] encodedDafMember = encoder.encode(dafMember);
-		ObjectValue objectValue = new ObjectValue();
-		objectValue.setByteval(encodedDafMember);
-		
-		CDAPMessage cdapMessage = CDAPMessage.getCreateObjectRequestMessage(null, null, "", 0, Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME 
-				+ RIBObjectNames.SEPARATOR + destinationApplicationProcessName + "-" + destinationApplicationProcessInstance, objectValue, 0);
-		cdapMessage.setInvokeID(3);
-		CDAPSessionDescriptor cdapSessionDescriptor = new CDAPSessionDescriptor();
-		enrollmentTask.initiateEnrollment(cdapMessage, cdapSessionDescriptor);
+		Neighbor neighbor = new Neighbor();
+		neighbor.setApplicationProcessName(destinationApplicationProcessName);
+		neighbor.setApplicationProcessInstance(destinationApplicationProcessInstance);
+
+		enrollmentTask.initiateEnrollment(neighbor);
 	}
 	
 	public void allocateFlow(String sourceIPCProcessName, String sourceIPCProcessInstance, 

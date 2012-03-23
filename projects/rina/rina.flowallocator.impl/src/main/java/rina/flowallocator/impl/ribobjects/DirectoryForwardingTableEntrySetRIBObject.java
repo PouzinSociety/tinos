@@ -11,6 +11,7 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.DirectoryForwardingTableEntry;
 import rina.ipcprocess.api.IPCProcess;
+import rina.ipcprocess.api.IPCProcess.OperationalStatus;
 import rina.ribdaemon.api.BaseRIBObject;
 import rina.ribdaemon.api.NotificationPolicy;
 import rina.ribdaemon.api.ObjectInstanceGenerator;
@@ -23,14 +24,14 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 	private static final Log log = LogFactory.getLog(DirectoryForwardingTableEntrySetRIBObject.class);
 	
 	public DirectoryForwardingTableEntrySetRIBObject(IPCProcess ipcProcess){
-		super(ipcProcess, DirectoryForwardingTable.DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME, 
-				DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_ENTRY_SET_RIB_OBJECT_CLASS, 
-				ObjectInstanceGenerator.getObjectInstance());
+		super(ipcProcess, DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_ENTRY_SET_RIB_OBJECT_CLASS, 
+				ObjectInstanceGenerator.getObjectInstance(), 
+				DirectoryForwardingTable.DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME);
 	}
 	
 	@Override
 	/**
-	 * A routing update with new and/or updated entries has been received. See what parts of the update we didn't now, and 
+	 * A routing update with new and/or updated entries has been received -or during enrollment-. See what parts of the update we didn't now, and 
 	 * tell the RIB Daemon about them (will create/update the objects and notify my neighbors except for the one that has 
 	 * sent me the update)
 	 * @param CDAPMessage the message containing the update
@@ -59,10 +60,16 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 		}
 		
 		//Tell the RIB Daemon to create or update the objects, and notify everyone except the neighbor that 
-		//has notified me
+		//has notified me (except if we're in the enrollment phase, then we don't have to notify)
 		try{
-			NotificationPolicy notificationObject = new NotificationPolicy(new int[]{cdapSessionDescriptor.getPortId()});
-			this.getRIBDaemon().create(cdapMessage.getObjClass(), cdapMessage.getObjName(), 0, 
+			NotificationPolicy notificationObject = null;
+			
+			//Only notify if we're not in the enrollment phase
+			if (this.getIPCProcess().getOperationalStatus() == OperationalStatus.STARTED){
+				notificationObject = new NotificationPolicy(new int[]{cdapSessionDescriptor.getPortId()});
+			}
+			
+			this.getRIBDaemon().create(cdapMessage.getObjClass(), cdapMessage.getObjName(),
 					entriesToCreateOrUpdate.toArray(new DirectoryForwardingTableEntry[]{}), notificationObject);
 		}catch(RIBDaemonException ex){
 			log.error(ex.getMessage());
@@ -74,7 +81,7 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 	/**
 	 * One or more local applications have registered to this DIF or a routing update has been received
 	 */
-	public void create(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException{
+	public void create(String objectClass, long objectInstance, String objectName,  Object object) throws RIBDaemonException{
 		if (object instanceof DirectoryForwardingTableEntry[]){
 			DirectoryForwardingTableEntry[] entries = (DirectoryForwardingTableEntry[]) object;
 			for(int i=0; i<entries.length; i++){
@@ -149,7 +156,7 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 				objectValue = entriesToDelete.toArray(new DirectoryForwardingTableEntry[]{});
 			}
 			NotificationPolicy notificationObject = new NotificationPolicy(new int[]{cdapSessionDescriptor.getPortId()});
-			this.getRIBDaemon().delete(cdapMessage.getObjClass(), cdapMessage.getObjName(), 0, 
+			this.getRIBDaemon().delete(cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName(),
 					objectValue, notificationObject);
 		}catch(RIBDaemonException ex){
 			log.error(ex.getMessage());
@@ -161,7 +168,7 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 	/**
 	 * One or more local applications have unregistered from this DIF or a routing update has been received
 	 */
-	public void delete(String objectClass, String objectName, long objectInstance, Object objectValue) throws RIBDaemonException{
+	public void delete(Object objectValue) throws RIBDaemonException{
 		RIBObject ribObject = null;
 		
 		if (objectValue == null){
@@ -181,7 +188,7 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 			}
 		}else{
 			throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME, 
-					"Object class ("+objectValue.getClass().getName()+") does not match object name "+objectName);
+					"Object class ("+objectValue.getClass().getName()+") does not match object name "+this.getObjectName());
 		}
 	}
 	

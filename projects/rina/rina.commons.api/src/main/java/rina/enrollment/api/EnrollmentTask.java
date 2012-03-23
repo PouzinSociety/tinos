@@ -48,11 +48,11 @@ public interface EnrollmentTask extends IPCProcessComponent{
 	public void releaseResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor);
 	
 	/**
-	 * Called by the DIFMemberSetRIBObject when a CREATE request for a new member is received
+	 * Starts the enrollment program
 	 * @param cdapMessage
 	 * @param cdapSessionDescriptor
 	 */
-	public void initiateEnrollment(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor);
+	public void initiateEnrollment(Neighbor candidate);
 	
 	 /**
 	 * Called by the enrollment state machine when the enrollment request has been completed, either successfully or unsuccessfully

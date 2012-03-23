@@ -1,7 +1,5 @@
 package rina.flowallocator.impl.ribobjects;
 
-import java.util.Calendar;
-
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.flowallocator.api.FlowAllocatorInstance;
@@ -15,7 +13,7 @@ public class FlowRIBObject extends SimpleSetMemberRIBObject{
 	private FlowAllocatorInstance flowAllocatorInstance = null;
 	
 	public FlowRIBObject(IPCProcess ipcProcess, String objectName, FlowAllocatorInstance flowAllocatorInstance){
-		super(ipcProcess, objectName, Flow.FLOW_RIB_OBJECT_CLASS, Calendar.getInstance().getTimeInMillis());
+		super(ipcProcess, Flow.FLOW_RIB_OBJECT_CLASS, objectName, flowAllocatorInstance.getFlow());
 		this.flowAllocatorInstance = flowAllocatorInstance;
 	}
 	

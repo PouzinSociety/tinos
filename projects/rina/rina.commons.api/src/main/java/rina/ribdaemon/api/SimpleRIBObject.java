@@ -1,5 +1,7 @@
 package rina.ribdaemon.api;
 
+import rina.cdap.api.CDAPSessionDescriptor;
+import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcess;
 
 /**
@@ -12,34 +14,34 @@ import rina.ipcprocess.api.IPCProcess;
  */
 public class SimpleRIBObject extends BaseRIBObject{
 
-	private Object value = null;
+	private Object objectValue = null;
 	
-	public SimpleRIBObject(IPCProcess ipcProcess, String objectName, String objectClass, Object value) {
-		super(ipcProcess, objectName, objectClass, ObjectInstanceGenerator.getObjectInstance());
-		this.value = value;
+	public SimpleRIBObject(IPCProcess ipcProcess, String objectClass, String objectName, Object value) {
+		super(ipcProcess, objectClass, ObjectInstanceGenerator.getObjectInstance(), objectName);
+		this.objectValue = value;
 	}
 	
 	@Override
-	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
+	public RIBObject read() throws RIBDaemonException{
 		return this;
 	}
 	
 	@Override
-	public void write(String objectClass, String objectName, long objectInstance, Object value) throws RIBDaemonException {		
-		this.value = value;
+	public void write(Object value) throws RIBDaemonException {
+		this.objectValue = value;
 	}
-	
-	@Override
+
 	/**
 	 * In this case create has the semantics of update 
 	 */
-	public void create(String objectClass, String objectName, long objectInstance, Object value) throws RIBDaemonException{
-		this.value = value;
+	@Override
+	public void create(String objectClass, long objectInstance, String objectName, Object value) throws RIBDaemonException{
+		this.objectValue = value;
 	}
 
 	@Override
 	public Object getObjectValue() {
-		return value;
+		return objectValue;
 	}
 
 }

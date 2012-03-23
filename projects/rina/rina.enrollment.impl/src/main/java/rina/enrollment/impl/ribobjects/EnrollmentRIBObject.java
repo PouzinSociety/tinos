@@ -30,8 +30,8 @@ public class EnrollmentRIBObject extends BaseRIBObject{
 	private CDAPSessionManager cdapSessionManager = null;
 	
 	public EnrollmentRIBObject(EnrollmentTaskImpl enrollmentTaskImpl, IPCProcess ipcProcess){
-		super(ipcProcess, EnrollmentInformationRequest.ENROLLMENT_INFO_OBJECT_NAME, 
-				EnrollmentInformationRequest.ENROLLMENT_INFO_OBJECT_CLASS, ObjectInstanceGenerator.getObjectInstance());
+		super(ipcProcess, EnrollmentInformationRequest.ENROLLMENT_INFO_OBJECT_CLASS, 
+				ObjectInstanceGenerator.getObjectInstance(), EnrollmentInformationRequest.ENROLLMENT_INFO_OBJECT_NAME);
 		this.enrollmentTask = enrollmentTaskImpl;
 		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 	}
@@ -56,28 +56,6 @@ public class EnrollmentRIBObject extends BaseRIBObject{
 		}
 		
 		enrollmentStateMachine.start(cdapMessage, cdapSessionDescriptor);
-	}
-	
-	@Override
-	/**
-	 * Called when the IPC Process has received the M_START enrollment message received
-	 */
-	public void create(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
-		EnrolleeStateMachine enrollmentStateMachine = null;
-		
-		try{
-			enrollmentStateMachine = (EnrolleeStateMachine) this.getEnrollmentStateMachine(cdapSessionDescriptor);
-		}catch(Exception ex){
-			log.error(ex);
-			sendErrorMessage(cdapSessionDescriptor);
-		}	
-		
-		if (enrollmentStateMachine == null){
-			log.error("Got a CDAP message that is not for me: "+cdapMessage.toString());
-			return;
-		}
-		
-		enrollmentStateMachine.create(cdapMessage, cdapSessionDescriptor);
 	}
 	
 	@Override

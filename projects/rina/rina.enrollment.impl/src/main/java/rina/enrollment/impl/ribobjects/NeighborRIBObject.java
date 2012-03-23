@@ -14,20 +14,22 @@ public class NeighborRIBObject extends BaseRIBObject{
 	private Neighbor neighbor = null;
 	
 	public NeighborRIBObject(IPCProcess ipcProcess, String objectName, Neighbor neighbor) {
-		super(ipcProcess, objectName, Neighbor.NEIGHBOR_RIB_OBJECT_CLASS, ObjectInstanceGenerator.getObjectInstance());
+		super(ipcProcess, Neighbor.NEIGHBOR_RIB_OBJECT_CLASS, 
+				ObjectInstanceGenerator.getObjectInstance(), objectName);
 		this.neighbor = neighbor;
 	}
 	
 	@Override
-	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
+	public RIBObject read() throws RIBDaemonException{
 		return this;
 	}
 	
 	@Override
-	public void write(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+	public void write(Object object) throws RIBDaemonException {
 		if (!(object instanceof Neighbor)){
 			throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME, 
-					"Object class ("+object.getClass().getName()+") does not match object name "+objectName);
+					"Object class ("+object.getClass().getName()+") does not match object name "+
+					this.getObjectName());
 		}
 		
 		this.neighbor = (Neighbor) object;
@@ -44,8 +46,8 @@ public class NeighborRIBObject extends BaseRIBObject{
 	}
 	
 	@Override
-	public void delete(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
-		this.getParent().removeChild(objectName);
+	public void delete(Object object) throws RIBDaemonException {
+		this.getParent().removeChild(this.getObjectName());
 	}
 	
 	@Override

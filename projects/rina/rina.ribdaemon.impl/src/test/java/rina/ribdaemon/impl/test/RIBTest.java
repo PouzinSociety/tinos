@@ -25,19 +25,19 @@ public class RIBTest {
 	
 	@Test
 	public void testPrintRIB() throws RIBDaemonException{
-		RIBObject aux = new FakeRIBObject(null, "daf/management/naming/whatevercastnames", null, 0);
+		RIBObject aux = new FakeRIBObject(null, null, 0L, "daf/management/naming/whatevercastnames");
 		rib.addRIBObject(aux);
-		aux = new FakeRIBObject(null, "daf/management/naming/applicationprocessname", null, 0);
+		aux = new FakeRIBObject(null, null, 0L, "daf/management/naming/applicationprocessname");
 		rib.addRIBObject(aux);
-		aux = new FakeRIBObject(null, "daf/management/naming/whatevercastnames/jore1", null, 0);
+		aux = new FakeRIBObject(null, null, 0L, "daf/management/naming/whatevercastnames/jore1");
 		rib.addRIBObject(aux);
-		aux = new FakeRIBObject(null, "daf/management/enrollment/members", null, 0);
+		aux = new FakeRIBObject(null, null, 0L, "daf/management/enrollment/members");
 		rib.addRIBObject(aux);
-		aux = new FakeRIBObject(null, "dif/management/members", null, 0);
+		aux = new FakeRIBObject(null, null, 0L, "dif/management/members");
 		rib.addRIBObject(aux);
-		aux = new FakeRIBObject(null, "daf/management/enrollment/members/nore3", null, 0);
+		aux = new FakeRIBObject(null, null, 0L, "daf/management/enrollment/members/nore3");
 		rib.addRIBObject(aux);
-		aux = new FakeRIBObject(null, "daf/management/enrollment/members/nore5", null, 0);
+		aux = new FakeRIBObject(null, null, 0L, "daf/management/enrollment/members/nore5");
 		rib.addRIBObject(aux);
 		List<RIBObject> result = rib.getRIBObjects();
 		for(int i=0; i<result.size(); i++){

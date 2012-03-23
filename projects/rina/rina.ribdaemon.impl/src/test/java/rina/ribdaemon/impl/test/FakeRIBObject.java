@@ -5,9 +5,9 @@ import rina.ribdaemon.api.BaseRIBObject;
 
 public class FakeRIBObject extends BaseRIBObject{
 
-	public FakeRIBObject(IPCProcess ipcProcess, String objectName,
-			String objectClass, long objectInstance) {
-		super(ipcProcess, objectName, objectClass, objectInstance);
+	public FakeRIBObject(IPCProcess ipcProcess, String objectClass,
+			long objectInstance, String objectName) {
+		super(ipcProcess, objectClass, objectInstance, objectName);
 		// TODO Auto-generated constructor stub
 	}
 

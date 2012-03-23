@@ -16,7 +16,8 @@ public class FlowSetRIBObject extends BaseRIBObject{
 	private FlowAllocator flowAllocator = null;
 	
 	public FlowSetRIBObject(FlowAllocator flowAllocator, IPCProcess ipcProcess){
-		super(ipcProcess, Flow.FLOW_SET_RIB_OBJECT_NAME, Flow.FLOW_SET_RIB_OBJECT_CLASS, ObjectInstanceGenerator.getObjectInstance());
+		super(ipcProcess, Flow.FLOW_SET_RIB_OBJECT_CLASS, ObjectInstanceGenerator.getObjectInstance(), 
+				Flow.FLOW_SET_RIB_OBJECT_NAME);
 		this.flowAllocator = flowAllocator;
 	}
 	
@@ -29,7 +30,7 @@ public class FlowSetRIBObject extends BaseRIBObject{
 	}
 	
 	@Override
-	public void create(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException{
+	public void create(String objectClass, long objectInstance, String objectName, Object object) throws RIBDaemonException{
 		if (!(object instanceof FlowAllocatorInstance)){
 			throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME, 
 					"Object class ("+object.getClass().getName()+") does not match object name "+objectName);
@@ -41,12 +42,17 @@ public class FlowSetRIBObject extends BaseRIBObject{
 	}
 	
 	@Override
-	public Object getObjectValue(){
-		return null;
+	public RIBObject read() throws RIBDaemonException{
+		return this;
 	}
 	
 	@Override
-	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
-		return this;
+	public Object getObjectValue(){
+		Flow[] result = new Flow[this.getChildren().size()];
+		for(int i=0; i<result.length; i++){
+			result[i] = (Flow) this.getChildren().get(i).getObjectValue();
+		}
+		
+		return result;
 	}
 }

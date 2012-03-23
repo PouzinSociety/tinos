@@ -50,11 +50,6 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	private Map<String, BaseEnrollmentStateMachine> enrollmentStateMachines = null;
 	
 	/**
-	 * Stores the enrollment requests that have to be replied back
-	 */
-	private Map<String, PendingEnrollmentRequest> ongoingInitiateEnrollmentRequests = null;
-	
-	/**
 	 * The class that manages the address allocation
 	 */
 	private AddressManager addressManager = null;
@@ -65,13 +60,11 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	private long timeout = 0;
 	
 	private RIBDaemon ribDaemon = null;
-	private Encoder encoder = null;
 	private RMT rmt = null;
 	private CDAPSessionManager cdapSessionManager = null;
 
 	public EnrollmentTaskImpl(){
 		enrollmentStateMachines = new Hashtable<String, BaseEnrollmentStateMachine>();
-		ongoingInitiateEnrollmentRequests = new Hashtable<String, PendingEnrollmentRequest>();
 		try{
 			timeout = Long.parseLong(System.getProperty(BaseEnrollmentTask.ENROLLMENT_TASK_TIMEOUT_PROPERTY));
 		}catch(Exception ex){
@@ -84,8 +77,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	@Override
 	public void setIPCProcess(IPCProcess ipcProcess){
 		super.setIPCProcess(ipcProcess);
-		this.ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-		this.encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
+		this.ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());;
 		this.rmt = (RMT) getIPCProcess().getIPCProcessComponent(BaseRMT.getComponentName());
 		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 		populateRIB(ipcProcess);
@@ -96,7 +88,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 */
 	private void populateRIB(IPCProcess ipcProcess){
 		try{
-			RIBObject ribObject = new NeighborSetRIBObject(this, ipcProcess);
+			RIBObject ribObject = new NeighborSetRIBObject(ipcProcess);
 			ribDaemon.addRIBObject(ribObject);
 			ribObject = new EnrollmentRIBObject(this, ipcProcess);
 			ribDaemon.addRIBObject(ribObject);
@@ -202,47 +194,22 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	}
 	
 	/**
-	 * Called by the DIFMemberSetRIBObject when a CREATE request for a new member is received
+	 * Starts the enrollment program
 	 * @param cdapMessage
 	 * @param cdapSessionDescriptor
 	 */
-	public synchronized void initiateEnrollment(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor){
-		Neighbor candidate = null;
+	public synchronized void initiateEnrollment(Neighbor candidate){
 		ApplicationProcessNamingInfo candidateNamingInfo = null;
 		EnrolleeStateMachine enrollmentStateMachine = null;
-		PendingEnrollmentRequest pendingEnrollmentRequest = null;
-		CDAPMessage responseMessage = null;
 		int portId = 0;
 		
 		//1 Check that we're not already enrolled to the IPC Process
-		try{
-			candidate = (Neighbor) encoder.decode(cdapMessage.getObjValue().getByteval(), Neighbor.class);
-			candidateNamingInfo = new ApplicationProcessNamingInfo(candidate.getApplicationProcessName(), 
+		candidateNamingInfo = new ApplicationProcessNamingInfo(candidate.getApplicationProcessName(), 
 					candidate.getApplicationProcessInstance(), BaseEnrollmentStateMachine.DEFAULT_ENROLLMENT, null);
-		}catch(Exception ex){
-			log.error(ex);
-			try{
-				responseMessage = cdapSessionManager.getCreateObjectResponseMessage(cdapSessionDescriptor.getPortId(), 
-						null, cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName(), null, -2, 
-						ex.getMessage(), cdapMessage.getInvokeID());
-				ribDaemon.sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
-			}catch(Exception e) {
-				log.error(e);
-			}
-			return;
-		}
 		
 		if (this.isEnrolledTo(candidateNamingInfo)){
 			String message = "Already enrolled to IPC Process "+candidateNamingInfo.getProcessKey();
 			log.error(message);
-			try{
-				responseMessage = cdapSessionManager.getCreateObjectResponseMessage(cdapSessionDescriptor.getPortId(), 
-						null, cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName(), null, -2, 
-						message, cdapMessage.getInvokeID());
-				ribDaemon.sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
-			}catch(Exception ex) {
-				log.error(ex);
-			}
 			return;
 		}
 		
@@ -265,24 +232,11 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 			return;
 		}
 		
-		//4 Store the request. When the enrollment sequence has completed, either successfully or not, will reply back to the requester.
-		pendingEnrollmentRequest = new PendingEnrollmentRequest(cdapMessage, cdapSessionDescriptor, portId);
-		ongoingInitiateEnrollmentRequests.put(candidateNamingInfo.getProcessKey(), pendingEnrollmentRequest);
-		
 		//5 Tell the enrollment state machine to initiate the enrollment (will require an M_CONNECT message and a port Id)
 		try{
 			enrollmentStateMachine.initiateEnrollment(candidate, portId);
 		}catch(IPCException ex){
 			log.error(ex);
-			ongoingInitiateEnrollmentRequests.remove(candidateNamingInfo.getProcessKey());
-			try{
-				responseMessage = cdapSessionManager.getCreateObjectResponseMessage(cdapSessionDescriptor.getPortId(), 
-						null, cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName(), null, -2, 
-						ex.getMessage(), cdapMessage.getInvokeID());
-				ribDaemon.sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
-			}catch(Exception e) {
-				log.error(e);
-			}
 		}
 	}
 
@@ -447,26 +401,6 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 					log.error(ex);
 				}
 		 }
-		 
-		 //3 Reply to the entity that has triggered the enrollment if enrollee
-		 if (enrollee){
-			PendingEnrollmentRequest pendingEnrollmentRequest = ongoingInitiateEnrollmentRequests.remove(remotePeerNamingInfo.getProcessKey());
-			if (pendingEnrollmentRequest == null){
-				log.error("Did not find a pending enrollment request");
-				return;
-			}
-			
-			CDAPMessage requestMessage = pendingEnrollmentRequest.getCdapMessage();
-			CDAPMessage responseMessage = null;
-			try{
-				int secondPortId = pendingEnrollmentRequest.getCdapSessionDescriptor().getPortId();
-				responseMessage = cdapSessionManager.getCreateObjectResponseMessage(portId, null, requestMessage.getObjClass(), 
-						requestMessage.getObjInst(), requestMessage.getObjName(), null, -2, reason, requestMessage.getInvokeID());
-				ribDaemon.sendMessage(responseMessage, secondPortId, null);
-			}catch(Exception ex){
-				log.error(ex);
-			}
-		 }
 	 }
 	 
 	 /**
@@ -481,28 +415,6 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 			if (enrollee){
 				RMT rmt = (RMT) this.getIPCProcess().getIPCProcessComponent(BaseRMT.getComponentName());
 				rmt.startListening();
-			}
-			
-			//Reply back to the entity that requested the enrollment
-			if (enrollee){			
-				ApplicationProcessNamingInfo candidateNamingInfo = new ApplicationProcessNamingInfo(dafMember.getApplicationProcessName(), 
-						dafMember.getApplicationProcessInstance(), BaseEnrollmentStateMachine.DEFAULT_ENROLLMENT, null);
-				PendingEnrollmentRequest pendingEnrollmentRequest = ongoingInitiateEnrollmentRequests.remove(candidateNamingInfo.getProcessKey());
-				if (pendingEnrollmentRequest == null){
-					log.error("Did not find a pending enrollment request");
-					return;
-				}
-				
-				CDAPMessage requestMessage = pendingEnrollmentRequest.getCdapMessage();
-				CDAPMessage responseMessage = null;
-				try{
-					int portId = pendingEnrollmentRequest.getCdapSessionDescriptor().getPortId();
-					responseMessage = cdapSessionManager.getCreateObjectResponseMessage(portId, null, requestMessage.getObjClass(), 
-							requestMessage.getObjInst(), requestMessage.getObjName(), null, 0, null, requestMessage.getInvokeID());
-					ribDaemon.sendMessage(responseMessage, portId, null);
-				}catch(Exception ex){
-					log.error(ex);
-				}
 			}
 		}
 	

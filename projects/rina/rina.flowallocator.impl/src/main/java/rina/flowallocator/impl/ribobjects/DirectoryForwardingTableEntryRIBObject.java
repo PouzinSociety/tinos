@@ -1,7 +1,5 @@
 package rina.flowallocator.impl.ribobjects;
 
-import java.util.Calendar;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -22,8 +20,8 @@ public class DirectoryForwardingTableEntryRIBObject extends SimpleSetMemberRIBOb
 	
 	public DirectoryForwardingTableEntryRIBObject(IPCProcess ipcProcess, String objectName, 
 			DirectoryForwardingTableEntry directoryForwardingTableEntry){
-		super(ipcProcess, objectName, DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_ENTRY_RIB_OBJECT_CLASS, 
-				Calendar.getInstance().getTimeInMillis());
+		super(ipcProcess, DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_ENTRY_RIB_OBJECT_CLASS, 
+				objectName, directoryForwardingTableEntry);
 		this.directoryForwardingTableEntry = directoryForwardingTableEntry;
 	}
 	
@@ -49,8 +47,8 @@ public class DirectoryForwardingTableEntryRIBObject extends SimpleSetMemberRIBOb
 		if (!directoryForwardingTableEntry.equals(entry)){
 			try{
 				NotificationPolicy notificationObject = new NotificationPolicy(new int[]{cdapSessionDescriptor.getPortId()});
-				this.getRIBDaemon().create(cdapMessage.getObjClass(), cdapMessage.getObjName(), 
-						cdapMessage.getObjInst(), entry, notificationObject);
+				this.getRIBDaemon().create(cdapMessage.getObjClass(), cdapMessage.getObjInst(),
+						cdapMessage.getObjName(), entry, notificationObject);
 			}catch(RIBDaemonException ex){
 				log.error(ex.getMessage());
 				ex.printStackTrace();
@@ -62,8 +60,8 @@ public class DirectoryForwardingTableEntryRIBObject extends SimpleSetMemberRIBOb
 	public void delete(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
 		try{
 			NotificationPolicy notificationObject = new NotificationPolicy(new int[]{cdapSessionDescriptor.getPortId()});
-			this.getRIBDaemon().delete(cdapMessage.getObjClass(), cdapMessage.getObjName(), 
-					cdapMessage.getObjInst(), null, notificationObject);
+			this.getRIBDaemon().delete(cdapMessage.getObjClass(), cdapMessage.getObjInst(),  
+					cdapMessage.getObjName(), null, notificationObject);
 		}catch(RIBDaemonException ex){
 			log.error(ex.getMessage());
 			ex.printStackTrace();

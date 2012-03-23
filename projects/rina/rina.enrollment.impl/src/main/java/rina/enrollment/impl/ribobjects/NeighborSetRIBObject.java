@@ -9,73 +9,79 @@ import org.apache.commons.logging.LogFactory;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.enrollment.api.Neighbor;
-import rina.enrollment.impl.EnrollmentTaskImpl;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
 import rina.ribdaemon.api.ObjectInstanceGenerator;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
+import rina.ribdaemon.api.RIBObjectNames;
 
 /**
- * Handles all the operations for the "daf.management.enrollment.members" objectname
+ * TO describe
  * @author eduardgrasa
  *
  */
 public class NeighborSetRIBObject extends BaseRIBObject{
 	
 	private static final Log log = LogFactory.getLog(NeighborSetRIBObject.class);
-	private EnrollmentTaskImpl enrollmentTask = null;
 	
-	public NeighborSetRIBObject(EnrollmentTaskImpl enrollmentTask, IPCProcess ipcProcess){
-		super(ipcProcess, Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME, 
-				Neighbor.NEIGHBOR_SET_RIB_OBJECT_CLASS, ObjectInstanceGenerator.getObjectInstance());
-		this.enrollmentTask = enrollmentTask;
+	public NeighborSetRIBObject(IPCProcess ipcProcess){
+		super(ipcProcess, Neighbor.NEIGHBOR_SET_RIB_OBJECT_CLASS, 
+				ObjectInstanceGenerator.getObjectInstance(), Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME);
 	}
 	
 	@Override
-	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
+	public RIBObject read() throws RIBDaemonException{
 		return this;
 	}
 	
-	/**
-	 * Called by the DIF Management System, IPC Manager or other to cause this IPC process to enroll to another 
-	 * IPC process
-	 */
 	@Override
 	public void create(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
-		enrollmentTask.initiateEnrollment(cdapMessage, cdapSessionDescriptor);
-	}
-
-	/**
-	 * Called by the DIF Management System, IPC Manager or other to cause this IPC process to break the enrollment with another 
-	 * IPC process
-	 */
-	@Override
-	public void delete(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
-		//TODO, cancel enrollment with all the IPC processes?
+		try{
+			Neighbor[] neighbors = (Neighbor[])
+				this.getEncoder().decode(cdapMessage.getObjValue().getByteval(), Neighbor[].class);
+			this.getRIBDaemon().create(cdapMessage.getObjClass(), cdapMessage.getObjInst(), 
+					cdapMessage.getObjName(), neighbors, null);
+		}catch(Exception ex){
+			log.error(ex);
+			ex.printStackTrace();
+		}
 	}
 	
 	@Override
-	public void create(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException{
-		if (!(object instanceof Neighbor)){
+	public void create(String objectClass, long objectInstance, String objectName, Object objectValue) throws RIBDaemonException{
+		if (objectValue instanceof Neighbor){
+			NeighborRIBObject ribObject = new NeighborRIBObject(this.getIPCProcess(), objectName, (Neighbor) objectValue);
+			this.addChild(ribObject);
+			getRIBDaemon().addRIBObject(ribObject);
+		}else if (objectValue instanceof Neighbor[]){
+			Neighbor[] neighbors = (Neighbor[]) objectValue;
+			String candidateObjectName = null;
+			
+			for(int i=0; i<neighbors.length; i++){
+				candidateObjectName = this.getObjectName() + RIBObjectNames.SEPARATOR + neighbors[i].getKey();
+				if (!this.hasChild(candidateObjectName)){
+					NeighborRIBObject ribObject = new NeighborRIBObject(this.getIPCProcess(), candidateObjectName, neighbors[i]);
+					this.addChild(ribObject);
+					getRIBDaemon().addRIBObject(ribObject);
+				}
+			}
+			
+		}else{
 			throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME, 
-					"Object class ("+object.getClass().getName()+") does not match object name "+objectName);
+					"Object class ("+objectValue.getClass().getName()+") does not match object name "+objectName);
 		}
-		
-		NeighborRIBObject ribObject = new NeighborRIBObject(this.getIPCProcess(), objectName, (Neighbor) object);
-		this.addChild(ribObject);
-		getRIBDaemon().addRIBObject(ribObject);
 	}
 
 	@Override
-	public void delete(String objectClass, String objectName, long objectInstance, Object objectValue) throws RIBDaemonException {
+	public void delete(Object objectValue) throws RIBDaemonException {
 		String childName = null;
 		List<String> childrenNames = new ArrayList<String>();
 		
 		for(int i=0; i<this.getChildren().size(); i++){
 			childName = this.getChildren().get(i).getObjectName();
 			childrenNames.add(childName);
-			getRIBDaemon().delete(null, childName, 0, null, null);
+			getRIBDaemon().delete(null, childName, null);
 		}
 		
 		for(int i=0; i<childrenNames.size(); i++){

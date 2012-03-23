@@ -20,6 +20,11 @@ import rina.ipcservice.api.ApplicationProcessNamingInfo;
  */
 public interface IPCProcess{
 	
+	/**
+	 * The operational status of the IPC Process
+	 */
+	public enum OperationalStatus {STARTED, STOPPED};
+	
 	/* IPC Process Component management */
 	public Map<String, IPCProcessComponent> getIPCProcessComponents();
 	
@@ -74,7 +79,7 @@ public interface IPCProcess{
 	public String getDIFName();
 	public List<Neighbor> getNeighbors();
 	public Long getAddress();
-	public Boolean getOperationalStatus();
+	public OperationalStatus getOperationalStatus();
 	public List<QoSCube> getQoSCubes();
 	public List<Flow> getAllocatedFlows();
 	public DataTransferConstants getDataTransferConstants();

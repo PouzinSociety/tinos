@@ -38,7 +38,7 @@ public class SocketClosedTimerTask extends TimerTask {
 		if (!flowAllocatorInstance.isFinished()){
 			flowAllocatorInstance.destroyFlowAllocatorInstance();
 			try{
-				this.ribDaemon.delete(objectClass, objectName, 0, null, null);
+				this.ribDaemon.delete(objectClass, objectName);
 			}catch(RIBDaemonException ex){
 				ex.printStackTrace();
 			}

@@ -18,21 +18,20 @@ public class AddressRIBObject extends BaseRIBObject{
 	private Long synonym = null;
 	
 	public AddressRIBObject(IPCProcess ipcProcess, EnrollmentTaskImpl enrollmentTask){
-		super(ipcProcess, RIBObjectNames.ADDRESS_RIB_OBJECT_NAME, 
-				RIBObjectNames.ADDRESS_RIB_OBJECT_CLASS, 
-				ObjectInstanceGenerator.getObjectInstance());
+		super(ipcProcess, RIBObjectNames.ADDRESS_RIB_OBJECT_CLASS, 
+				ObjectInstanceGenerator.getObjectInstance(), RIBObjectNames.ADDRESS_RIB_OBJECT_NAME);
 	}
-
+	
 	@Override
-	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
+	public RIBObject read() throws RIBDaemonException{
 		return this;
 	}
 
 	@Override
-	public void write(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+	public void write(Object object) throws RIBDaemonException {
 		if (!(object instanceof Long)){
 			throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME, 
-					"Object class ("+object.getClass().getName()+") does not match object name "+objectName);
+					"Object class ("+object.getClass().getName()+") does not match object name "+this.getObjectName());
 		}
 		
 		this.synonym = (Long) object;

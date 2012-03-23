@@ -22,7 +22,7 @@ public class DirectoryForwardingTableImpl implements DirectoryForwardingTable{
 		DirectoryForwardingTableEntry entry = null;
 		
 		try{
-			RIBObject ribObject = ribDaemon.read(DIRECTORY_FORWARDING_TABLE_ENTRY_RIB_OBJECT_CLASS, objectName, 0);
+			RIBObject ribObject = ribDaemon.read(DIRECTORY_FORWARDING_TABLE_ENTRY_RIB_OBJECT_CLASS, objectName);
 			entry = (DirectoryForwardingTableEntry) ribObject.getObjectValue();
 			return entry.getAddress();
 		}catch(RIBDaemonException ex){

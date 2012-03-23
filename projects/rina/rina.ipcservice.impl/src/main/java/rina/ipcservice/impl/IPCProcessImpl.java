@@ -4,6 +4,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.applicationprocess.api.WhatevercastName;
+import rina.cdap.api.CDAPSessionDescriptor;
+import rina.cdap.api.message.CDAPMessage;
 import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.DirectoryForwardingTableEntry;
@@ -13,6 +15,7 @@ import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
+import rina.ipcservice.impl.ribobjects.WhatevercastNameSetRIBObject;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.NotificationPolicy;
 import rina.ribdaemon.api.RIBDaemon;
@@ -20,7 +23,6 @@ import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
 import rina.ribdaemon.api.SimpleRIBObject;
-import rina.ribdaemon.api.SimpleSetRIBObject;
 
 /**
  * Point of entry to the IPC process for the application process. It is in charge 
@@ -61,24 +63,11 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 		try{
 			ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance);
 			RIBObject ribObject = new SimpleRIBObject(this, 
-					ApplicationProcessNamingInfo.APPLICATION_PROCESS_NAMING_INFO_RIB_OBJECT_NAME, 
 					ApplicationProcessNamingInfo.APPLICATION_PROCESS_NAMING_INFO_RIB_OBJECT_CLASS, 
+					ApplicationProcessNamingInfo.APPLICATION_PROCESS_NAMING_INFO_RIB_OBJECT_NAME, 
 					apNamingInfo);
 			ribDaemon.addRIBObject(ribObject);
-			ribObject = new SimpleSetRIBObject(this, 
-					WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME, 
-					WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_CLASS, 
-					WhatevercastName.WHATEVERCAST_NAME_RIB_OBJECT_CLASS){
-				@Override
-				public Object getObjectValue(){
-					WhatevercastName[] result = new WhatevercastName[this.getChildren().size()];
-					for(int i=0; i<result.length; i++){
-						result[i] = (WhatevercastName) this.getChildren().get(i).getObjectValue();
-					}
-					
-					return result;
-				}
-			};
+			ribObject = new WhatevercastNameSetRIBObject(this); 
 			ribDaemon.addRIBObject(ribObject);
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();
@@ -149,7 +138,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 			NotificationPolicy notificationPolicy = new NotificationPolicy(new int[0]);
 			ribDaemon.delete(DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_ENTRY_RIB_OBJECT_CLASS, 
 					DirectoryForwardingTable.DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR 
-					+ apNamingInfo.getProcessKey(), 0, null, notificationPolicy);
+					+ apNamingInfo.getProcessKey(), notificationPolicy);
 		}catch(RIBDaemonException ex){
 			log.error(ex);
 		}
@@ -169,7 +158,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 			NotificationPolicy notificationPolicy = new NotificationPolicy(new int[0]);
 			ribDaemon.create(DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_ENTRY_RIB_OBJECT_CLASS, 
 					DirectoryForwardingTable.DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR 
-					+ apNamingInfo.getProcessKey(), 0, entry, notificationPolicy);
+					+ apNamingInfo.getProcessKey(), entry, notificationPolicy);
 		}catch(RIBDaemonException ex){
 			log.error(ex);
 		}
