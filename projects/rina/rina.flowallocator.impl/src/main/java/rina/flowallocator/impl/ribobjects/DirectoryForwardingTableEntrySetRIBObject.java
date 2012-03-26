@@ -202,7 +202,7 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 		
 		for(int i=0; i<this.getChildren().size(); i++){
 			currentEntry = (DirectoryForwardingTableEntry) this.getChildren().get(i).getObjectValue();
-			if (currentEntry.getApNamingInfo().getProcessKey().equals(candidateKey)){
+			if (currentEntry.getApNamingInfo().getEncodedString().equals(candidateKey)){
 				return currentEntry;
 			}
 		}
@@ -222,7 +222,7 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 		for(int i=0; i<this.getChildren().size(); i++){
 			currentObject = this.getChildren().get(i);
 			currentEntry = (DirectoryForwardingTableEntry) currentObject.getObjectValue();
-			if (currentEntry.getApNamingInfo().getProcessKey().equals(candidateKey)){
+			if (currentEntry.getApNamingInfo().getEncodedString().equals(candidateKey)){
 				return currentObject;
 			}
 		}

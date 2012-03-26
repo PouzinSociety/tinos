@@ -10,7 +10,7 @@ import rina.ipcmanager.impl.IPCManagerImpl;
 public class AllocateFlowCommand extends ConsoleCommand{
 
 	public static final String ID = "allocateflow";
-	private static final String USAGE = "sourceipcprocessname sourceipcprocessInstance destinationapplicationprocessname destinationapplicationprocessInstance";
+	private static final String USAGE = "allocateflow sourceipcprocessname destinationapplicationprocessname";
 	
 	/**
 	 * Required parameter
@@ -20,17 +20,7 @@ public class AllocateFlowCommand extends ConsoleCommand{
 	/**
 	 * Required parameter
 	 */
-	private String sourceIPCProcessInstance = null;
-	
-	/**
-	 * Required parameter
-	 */
 	private String destinationApplicationProcessName = null;
-	
-	/**
-	 * Required parameter
-	 */
-	private String destinationApplicationProcessInstance = null;
 	
 	public AllocateFlowCommand(IPCManagerImpl ipcManagerImpl){
 		super(ID, ipcManagerImpl);
@@ -38,18 +28,15 @@ public class AllocateFlowCommand extends ConsoleCommand{
 	
 	@Override
 	public String execute(String[] splittedCommand) {
-		if (splittedCommand.length != 5){
+		if (splittedCommand.length != 3){
 			return "Wrong number of parameters. Usage: "+USAGE;
 		}
 		
 		sourceIPCProcessName = splittedCommand[1];
-		sourceIPCProcessInstance = splittedCommand[2];
-		destinationApplicationProcessName = splittedCommand[3];
-		destinationApplicationProcessInstance = splittedCommand[4];
+		destinationApplicationProcessName = splittedCommand[2];
 		
 		try{
-			this.getIPCManagerImpl().allocateFlow(sourceIPCProcessName, sourceIPCProcessInstance, 
-					destinationApplicationProcessName, destinationApplicationProcessInstance);
+			this.getIPCManagerImpl().allocateFlow(sourceIPCProcessName, destinationApplicationProcessName);
 			return "Allocate Flow process started successfully";
 		}catch(Exception ex){
 			return "Problems starting the allocate flow process " +ex.getMessage();

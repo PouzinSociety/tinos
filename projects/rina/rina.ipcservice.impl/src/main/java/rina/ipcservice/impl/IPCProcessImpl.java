@@ -138,7 +138,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 			NotificationPolicy notificationPolicy = new NotificationPolicy(new int[0]);
 			ribDaemon.delete(DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_ENTRY_RIB_OBJECT_CLASS, 
 					DirectoryForwardingTable.DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR 
-					+ apNamingInfo.getProcessKey(), notificationPolicy);
+					+ apNamingInfo.getEncodedString(), notificationPolicy);
 		}catch(RIBDaemonException ex){
 			log.error(ex);
 		}
@@ -158,7 +158,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 			NotificationPolicy notificationPolicy = new NotificationPolicy(new int[0]);
 			ribDaemon.create(DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_ENTRY_RIB_OBJECT_CLASS, 
 					DirectoryForwardingTable.DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR 
-					+ apNamingInfo.getProcessKey(), entry, notificationPolicy);
+					+ apNamingInfo.getEncodedString(), entry, notificationPolicy);
 		}catch(RIBDaemonException ex){
 			log.error(ex);
 		}

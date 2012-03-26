@@ -167,8 +167,10 @@ public class EnrolleeStateMachine extends BaseEnrollmentStateMachine{
 		//Update address
 		if (cdapMessage.getObjValue() != null){
 			try{
+				long address = ((EnrollmentInformationRequest) encoder.decode(
+						cdapMessage.getObjValue().getByteval(), EnrollmentInformationRequest.class)).getAddress();
 				ribDaemon.write(RIBObjectNames.ADDRESS_RIB_OBJECT_CLASS, RIBObjectNames.ADDRESS_RIB_OBJECT_NAME, 
-						new Long(cdapMessage.getObjValue().getInt64val()), null);
+						new Long(address), null);
 			}catch(Exception ex){
 				ex.printStackTrace();
 				this.abortEnrollment(this.remoteNamingInfo, portId, UNEXPECTED_ERROR + ex.getMessage(), true, true);

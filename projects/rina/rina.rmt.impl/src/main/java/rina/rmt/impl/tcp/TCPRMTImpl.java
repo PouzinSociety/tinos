@@ -16,7 +16,6 @@ import org.apache.commons.logging.LogFactory;
 import rina.delimiting.api.BaseDelimiter;
 import rina.delimiting.api.Delimiter;
 import rina.ipcprocess.api.IPCProcess;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 import rina.ribdaemon.api.BaseRIBDaemon;
@@ -74,12 +73,12 @@ public class TCPRMTImpl extends BaseRMT{
 					continue;
 				}
 				tokens = strLine.split(" ");
-				if (tokens.length != 4){
+				if (tokens.length != 3){
 					log.error("Ignoring line "+strLine+" because it hasn't got enough arguments");
 					continue;
 				}
-				apToHostnameMappings.put(tokens[0]+tokens[1], tokens[2]+"#"+tokens[3]);
-				log.debug("IPC process " + tokens[0] + " " + tokens[1] + " reachable at "+ tokens[2] +" port " + tokens[3]);
+				apToHostnameMappings.put(tokens[0], tokens[1]+"#"+tokens[2]);
+				log.debug("IPC process " + tokens[0] + " reachable at "+ tokens[1] +" port " + tokens[2]);
 			}
 			in.close();
 		}catch (Exception e){
@@ -105,9 +104,9 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @param ipcProcessInstance
 	 * @return
 	 */
-	public String getIPAddressFromApplicationNamingInformation(String ipcProcessName, String ipcProcessInstance){
+	public String getIPAddressFromApplicationNamingInformation(String ipcProcessName){
 		readConfigurationFile();
-		String result = apToHostnameMappings.get(ipcProcessName + ipcProcessInstance);
+		String result = apToHostnameMappings.get(ipcProcessName);
 		if (result != null){
 			return result.split("#")[0];
 		}else{
@@ -154,9 +153,9 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @return int the portId allocated to the flow
 	 * @throws Exception if there was an issue allocating the flow
 	 */
-	public int allocateFlow(ApplicationProcessNamingInfo apNamingInfo, QualityOfServiceSpecification qosparams) throws Exception{
+	public int allocateFlow(String ipcProcessName, QualityOfServiceSpecification qosparams) throws Exception{
 		readConfigurationFile();
-		String[] contactInformation = apToHostnameMappings.get(apNamingInfo.getApplicationProcessName() + apNamingInfo.getApplicationProcessInstance()).split("#");
+		String[] contactInformation = apToHostnameMappings.get(ipcProcessName).split("#");
 		Socket socket = new Socket(contactInformation[0], Integer.parseInt(contactInformation[1]));
 		newConnectionAccepted(socket);
 		return socket.getPort();

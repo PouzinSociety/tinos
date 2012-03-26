@@ -6,7 +6,6 @@ import rina.cdap.api.CDAPSessionManagerFactory;
 import rina.delimiting.api.DelimiterFactory;
 import rina.encoding.api.EncoderFactory;
 import rina.ipcmanager.api.IPCManager;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 /**
  * Creates, stores and destroys instances of IPC processes
@@ -18,16 +17,16 @@ public interface IPCProcessFactory {
 	/**
 	 * Creates a new IPC process
 	 * TODO add more stuff probably
-	 * @param namingInfo the name of this new IPC process
+	 * @param applicationProcessName the application process name of this IPC process, must be unique
 	 */
-	public IPCProcess createIPCProcess(ApplicationProcessNamingInfo namingInfo) throws Exception;
+	public IPCProcess createIPCProcess(String applicationProcessName) throws Exception;
 	
 	/**
 	 * Destroys an existing IPC process
 	 * TODO add more stuff probably
-	 * @param namingInfo the name of this IPC process
+	 * @param applicationProcessName the application process name of this IPC process, must be unique
 	 */
-	public void destroyIPCProcess(ApplicationProcessNamingInfo namingInfo) throws Exception;
+	public void destroyIPCProcess(String applicationProcessName) throws Exception;
 	
 	/**
 	 * Destroys an existing IPC process
@@ -39,9 +38,9 @@ public interface IPCProcessFactory {
 	/**
 	 * Get an existing IPC process
 	 * TODO add more stuff probably
-	 * @param namingInfo the name of this new IPC process
+	 * @param applicationProcessName the application process name of this IPC process, must be unique
 	 */
-	public IPCProcess getIPCProcess(ApplicationProcessNamingInfo namingInfo);
+	public IPCProcess getIPCProcess(String applicationProcessName);
 	
 	/**
 	 * Return the IPC process that is a member of the DIF called "difname"

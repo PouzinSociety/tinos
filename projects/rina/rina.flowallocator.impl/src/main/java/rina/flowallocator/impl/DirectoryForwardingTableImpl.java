@@ -18,7 +18,7 @@ public class DirectoryForwardingTableImpl implements DirectoryForwardingTable{
 	
 	public long getAddress(ApplicationProcessNamingInfo applicationProcessNamingInfo) {
 		String objectName = DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME + 
-				RIBObjectNames.SEPARATOR + applicationProcessNamingInfo.getProcessKey();
+				RIBObjectNames.SEPARATOR + applicationProcessNamingInfo.getEncodedString();
 		DirectoryForwardingTableEntry entry = null;
 		
 		try{

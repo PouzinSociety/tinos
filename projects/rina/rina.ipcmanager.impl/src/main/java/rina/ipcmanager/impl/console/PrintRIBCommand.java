@@ -12,17 +12,12 @@ import rina.ipcmanager.impl.IPCManagerImpl;
 public class PrintRIBCommand extends ConsoleCommand{
 
 	public static final String ID = "printrib";
-	private static final String USAGE = "printrib applicationprocessname applicationprocessInstace";
+	private static final String USAGE = "printrib applicationprocessname";
 	
 	/**
 	 * Required parameter
 	 */
 	private String applicationProcessName = null;
-	
-	/**
-	 * Optional parameter, can be 
-	 */
-	private String applicationProcessInstance = null;
 	
 	public PrintRIBCommand(IPCManagerImpl ipcManagerImpl){
 		super(ID, ipcManagerImpl);
@@ -30,16 +25,15 @@ public class PrintRIBCommand extends ConsoleCommand{
 	
 	@Override
 	public String execute(String[] splittedCommand) {
-		if (splittedCommand.length != 3){
+		if (splittedCommand.length != 2){
 			return "Wrong number of parameters. Usage: "+USAGE;
 		}
 		
 		applicationProcessName = splittedCommand[1];
-		applicationProcessInstance = splittedCommand[2];
 		
 		try{
-			List<String> rib = this.getIPCManagerImpl().getPrintedRIB(applicationProcessName, applicationProcessInstance);
-			String result = "RIB of IPC process " + applicationProcessName + "-" + applicationProcessInstance + ": \n";
+			List<String> rib = this.getIPCManagerImpl().getPrintedRIB(applicationProcessName);
+			String result = "RIB of IPC process " + applicationProcessName + ": \n";
 			for(int i=0; i<rib.size(); i++){
 				result = result + rib.get(i);
 			}

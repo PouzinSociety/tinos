@@ -6,7 +6,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import rina.ipcprocess.api.IPCProcess;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.impl.IPCProcessFactoryImpl;
 
 public class IPCProcessFactoryImplTest {
@@ -29,29 +28,29 @@ public class IPCProcessFactoryImplTest {
 	
 	@Test
 	public void testFactory() throws Exception{
-		IPCProcess ipcProcess = factory.createIPCProcess(new ApplicationProcessNamingInfo("test", "1"));
+		IPCProcess ipcProcess = factory.createIPCProcess("test1");
 		Assert.assertNotNull(ipcProcess);
 		
-		ipcProcess = factory.getIPCProcess(new ApplicationProcessNamingInfo("test", "2"));
+		ipcProcess = factory.getIPCProcess("test2");
 		Assert.assertNull(ipcProcess);
 		
-		ipcProcess = factory.getIPCProcess(new ApplicationProcessNamingInfo("test", "1"));
+		ipcProcess = factory.getIPCProcess("test1");
 		Assert.assertNotNull(ipcProcess);
 		
-		factory.destroyIPCProcess(new ApplicationProcessNamingInfo("test", "1"));
-		ipcProcess = factory.getIPCProcess(new ApplicationProcessNamingInfo("test", "1"));
+		factory.destroyIPCProcess("test1");
+		ipcProcess = factory.getIPCProcess("test1");
 		Assert.assertNull(ipcProcess);
 		
-		ipcProcess = factory.createIPCProcess(new ApplicationProcessNamingInfo("test", "1"));
+		ipcProcess = factory.createIPCProcess("test1");
 		Assert.assertNotNull(ipcProcess);
 		
-		ipcProcess = factory.createIPCProcess(new ApplicationProcessNamingInfo("test", "2"));
+		ipcProcess = factory.createIPCProcess("test2");
 		Assert.assertNotNull(ipcProcess);
 		
 		Assert.assertEquals(2, factory.listIPCProcesses().size());
-		factory.destroyIPCProcess(new ApplicationProcessNamingInfo("test", "2"));
+		factory.destroyIPCProcess("test2");
 		Assert.assertEquals(1, factory.listIPCProcesses().size());
-		ipcProcess = factory.getIPCProcess(new ApplicationProcessNamingInfo("test", "2"));
+		ipcProcess = factory.getIPCProcess("tes2");
 		Assert.assertNull(ipcProcess);
 		
 		Assert.assertNotNull(factory.getCDAPSessionManagerFactory());

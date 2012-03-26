@@ -1,8 +1,5 @@
 package rina.ipcmanager.impl.console;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import rina.ipcmanager.impl.IPCManagerImpl;
 
 /**
@@ -12,10 +9,8 @@ import rina.ipcmanager.impl.IPCManagerImpl;
  */
 public class CreateIPCProcessCommand extends ConsoleCommand{
 	
-	private static final Log log = LogFactory.getLog(CreateIPCProcessCommand.class);
-
 	public static final String ID = "createipcprocess";
-	private static final String USAGE = "createipcprocess applicationprocessname applicationprocessInstace [difname]";
+	private static final String USAGE = "createipcprocess applicationprocessname [difname]";
 	
 	/**
 	 * Required parameter
@@ -27,29 +22,23 @@ public class CreateIPCProcessCommand extends ConsoleCommand{
 	 */
 	private String applicationProcessName = null;
 	
-	/**
-	 * Optional parameter, can be 
-	 */
-	private String applicationProcessInstance = null;
-	
 	public CreateIPCProcessCommand(IPCManagerImpl ipcManagerImpl){
 		super(ID, ipcManagerImpl);
 	}
 	
 	@Override
 	public String execute(String[] splittedCommand) {
-		if (splittedCommand.length > 4 || splittedCommand.length<3){
+		if (splittedCommand.length > 3 || splittedCommand.length<2){
 			return "Wrong number of parameters. Usage: "+USAGE;
 		}
 		
 		applicationProcessName = splittedCommand[1];
-		applicationProcessInstance = splittedCommand[2];
-		if (splittedCommand.length == 4){
-			difName = splittedCommand[3];
+		if (splittedCommand.length == 3){
+			difName = splittedCommand[2];
 		}
 		
 		try{
-			this.getIPCManagerImpl().createIPCProcess(applicationProcessName, applicationProcessInstance, difName);
+			this.getIPCManagerImpl().createIPCProcess(applicationProcessName, difName);
 			return "IPC Process created successfully";
 		}catch(Exception ex){
 			ex.printStackTrace();

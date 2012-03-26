@@ -1,7 +1,6 @@
 package rina.rmt.api;
 
 import rina.ipcprocess.api.IPCProcessComponent;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 
 /**
@@ -34,12 +33,12 @@ public interface RMT extends IPCProcessComponent{
 	/**
 	 * Cause the RMT to allocate a new flow through an N-1 DIF or the underlying
 	 * physical media
-	 * @param apNamingInfo the destination application process naming information 
+	 * @param apNamingInfo the destination application process process name 
 	 * @param qosparams the quality of service requested by the flow
 	 * @return int the portId allocated to the flow
 	 * @throws Exception if there was an issue allocating the flow
 	 */
-	public int allocateFlow(ApplicationProcessNamingInfo apNamingInfo, QualityOfServiceSpecification qosparams) throws Exception;
+	public int allocateFlow(String ipcProcessName, QualityOfServiceSpecification qosparams) throws Exception;
 	
 	/**
 	 * Cause the RMT to deallocate a flow through an N-1 DIF or the underlying physical media
@@ -51,10 +50,9 @@ public interface RMT extends IPCProcessComponent{
 	/**
 	 * Returns the IP address of the IPC process identified by the tuple ipcProcessName, ipcProcessInstance
 	 * @param ipcProcessName
-	 * @param ipcProcessInstance
 	 * @return
 	 */
-	public String getIPAddressFromApplicationNamingInformation(String ipcProcessName, String ipcProcessInstance);
+	public String getIPAddressFromApplicationNamingInformation(String ipcProcessName);
 	
 	/**
 	 * Start listening for connections from remote IPC Processes

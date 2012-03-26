@@ -77,8 +77,8 @@ public class StaticInterDIFDirectory implements InterDIFDirectory{
 					value.add(tokens2[i]);
 				}
 				
-				apToDIFMappings.put(apNamingInfo.getProcessKey(), value);
-				log.debug("Application " + apNamingInfo.getProcessKey() + " reachable from DIF(s) "+ printStringList(value));
+				apToDIFMappings.put(apNamingInfo.getEncodedString(), value);
+				log.debug("Application " + apNamingInfo.getEncodedString() + " reachable from DIF(s) "+ printStringList(value));
 			}
 			in.close();
 		}catch (Exception e){
@@ -87,18 +87,18 @@ public class StaticInterDIFDirectory implements InterDIFDirectory{
 	}
 	
 	public synchronized List<String> mapApplicationProcessNamingInfoToDIFName(ApplicationProcessNamingInfo apNamingInfo){
-		log.debug("Looking for the DIFs through which application "+apNamingInfo.getProcessKey()+" is available");
-		List<String> result = apToDIFMappings.get(apNamingInfo.getProcessKey());
+		log.debug("Looking for the DIFs through which application "+apNamingInfo.getEncodedString()+" is available");
+		List<String> result = apToDIFMappings.get(apNamingInfo.getEncodedString());
 		if (result == null){
-			log.debug("Could not find any DIF through which "+apNamingInfo.getProcessKey()+ " is reachable.");
+			log.debug("Could not find any DIF through which "+apNamingInfo.getEncodedString()+ " is reachable.");
 		}else{
-			log.debug(apNamingInfo.getProcessKey()+ " is reachable through DIF(s) " + printStringList(result));
+			log.debug(apNamingInfo.getEncodedString()+ " is reachable through DIF(s) " + printStringList(result));
 		}
 		return result;
 	}
 
 	public void addMapping(ApplicationProcessNamingInfo applicationName, String difName) {
-		String key = applicationName.getProcessKey();
+		String key = applicationName.getEncodedString();
 		List<String> value = apToDIFMappings.get(key);
 		if (value == null){
 			value = new ArrayList<String>();
@@ -109,7 +109,7 @@ public class StaticInterDIFDirectory implements InterDIFDirectory{
 	}
 
 	public void removeMapping(ApplicationProcessNamingInfo applicationName, String difName) {
-		String key = applicationName.getProcessKey();
+		String key = applicationName.getEncodedString();
 		List<String> value = apToDIFMappings.get(key);
 		if (value == null){
 			return;
@@ -122,7 +122,7 @@ public class StaticInterDIFDirectory implements InterDIFDirectory{
 	}
 
 	public void addMapping(ApplicationProcessNamingInfo applicationName, List<String> difNames) {
-		String key = applicationName.getProcessKey();
+		String key = applicationName.getEncodedString();
 		List<String> value = apToDIFMappings.get(key);
 		if (value == null){
 			value = new ArrayList<String>();
@@ -135,12 +135,12 @@ public class StaticInterDIFDirectory implements InterDIFDirectory{
 	}
 
 	public void removeAllMappings(ApplicationProcessNamingInfo applicationName) {
-		String key = applicationName.getProcessKey();
+		String key = applicationName.getEncodedString();
 		apToDIFMappings.remove(key);
 	}
 
 	public void removeMapping(ApplicationProcessNamingInfo applicationName, List<String> difNames) {
-		String key = applicationName.getProcessKey();
+		String key = applicationName.getEncodedString();
 		List<String> value = apToDIFMappings.get(key);
 		if (value == null){
 			return;

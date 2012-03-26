@@ -137,9 +137,9 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 */
 	public BaseEnrollmentStateMachine getEnrollmentStateMachine(ApplicationProcessNamingInfo apNamingInfo, int portId, boolean remove){
 		if (remove){
-			return enrollmentStateMachines.remove(apNamingInfo.getProcessKey()+"-"+portId);
+			return enrollmentStateMachines.remove(apNamingInfo.getEncodedString()+"-"+portId);
 		}else{
-			return enrollmentStateMachines.get(apNamingInfo.getProcessKey()+"-"+portId);
+			return enrollmentStateMachines.get(apNamingInfo.getEncodedString()+"-"+portId);
 		}
 	}
 	
@@ -153,7 +153,8 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		Iterator<Entry<String, BaseEnrollmentStateMachine>> iterator  = enrollmentStateMachines.entrySet().iterator();
 		
 		while(iterator.hasNext()){
-			if (iterator.next().getValue().getRemotePeerNamingInfo().getProcessKey().equals(apNamingInfo.getProcessKey())){
+			if (iterator.next().getValue().getRemotePeerNamingInfo().getEncodedString().equals(
+					apNamingInfo.getEncodedString())){
 				return true;
 			}
 		}
@@ -185,8 +186,10 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 						apNamingInfo, this, timeout);
 			}
 			
-			enrollmentStateMachines.put(apNamingInfo.getProcessKey()+"-"+portId, enrollmentStateMachine);
-			log.debug("Created a new Enrollment state machine for remote IPC process: " + apNamingInfo.getProcessKey());
+			enrollmentStateMachines.put(apNamingInfo.getEncodedString()+"-"+portId, 
+					enrollmentStateMachine);
+			log.debug("Created a new Enrollment state machine for remote IPC process: " + 
+					apNamingInfo.getEncodedString());
 			return enrollmentStateMachine;
 		}
 		
@@ -208,7 +211,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 					candidate.getApplicationProcessInstance(), BaseEnrollmentStateMachine.DEFAULT_ENROLLMENT, null);
 		
 		if (this.isEnrolledTo(candidateNamingInfo)){
-			String message = "Already enrolled to IPC Process "+candidateNamingInfo.getProcessKey();
+			String message = "Already enrolled to IPC Process "+candidateNamingInfo.getEncodedString();
 			log.error(message);
 			return;
 		}
@@ -216,7 +219,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		
 		//2 Tell the RMT to allocate a new flow to the IPC process  (will return a port Id)
 		try{
-			portId = rmt.allocateFlow(candidateNamingInfo, null);
+			portId = rmt.allocateFlow(candidateNamingInfo.getApplicationProcessName(), null);
 		}catch(Exception ex){
 			log.error(ex);
 			//This should never happen, log the error to fix it.
@@ -388,7 +391,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 public void enrollmentFailed(ApplicationProcessNamingInfo remotePeerNamingInfo, int portId, 
 			 String reason, boolean enrollee, boolean sendReleaseMessage){
 		 log.error("An error happened during enrollment of remote IPC Process "+ 
-					remotePeerNamingInfo.getProcessKey()+ " because of " +reason+". Aborting the operation");
+					remotePeerNamingInfo.getEncodedString()+ " because of " +reason+". Aborting the operation");
 		 //1 Remove enrollment state machine from the store
 		 this.getEnrollmentStateMachine(remotePeerNamingInfo, portId, true);
 		 

@@ -69,7 +69,7 @@ public class Utils {
 	public static synchronized String getRemoteIPCProcessIPAddress(long ipcProcessAddress, IPCProcess ipcProcess) throws IPCException{
 		ApplicationProcessNamingInfo namingInfo = Utils.getRemoteIPCProcessNamingInfo(ipcProcessAddress, ipcProcess);
 		RMT rmt = (RMT) ipcProcess.getIPCProcessComponent(BaseRMT.getComponentName());
-		return rmt.getIPAddressFromApplicationNamingInformation(namingInfo.getApplicationProcessName(), namingInfo.getApplicationProcessInstance());
+		return rmt.getIPAddressFromApplicationNamingInformation(namingInfo.getApplicationProcessName());
 	}
 	
 	/**

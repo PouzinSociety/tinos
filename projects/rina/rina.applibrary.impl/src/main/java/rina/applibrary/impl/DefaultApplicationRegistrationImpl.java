@@ -292,7 +292,7 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 	}
 	
 	public void registrationSocketClosed(){
-		log.info("Registration socket closed, application "+this.registeredApp.getProcessKey()+" is no longer registered");
+		log.info("Registration socket closed, application "+this.registeredApp.getEncodedString()+" is no longer registered");
 		if (this.state == State.REGISTERED){
 			flowRequestsServer.setEnd(true);
 			this.state = State.UNREGISTERED;

@@ -77,7 +77,8 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 		try{
 			outgoingCDAPMessage = cdapSessionManager.getOpenConnectionResponseMessage(portId, cdapMessage.getAuthMech(), cdapMessage.getAuthValue(), cdapMessage.getSrcAEInst(), 
 					BaseEnrollmentStateMachine.DEFAULT_ENROLLMENT, cdapMessage.getSrcApInst(), cdapMessage.getSrcApName(), 0, null, cdapMessage.getDestAEInst(), 
-					BaseEnrollmentStateMachine.DEFAULT_ENROLLMENT, cdapMessage.getDestApInst(), cdapMessage.getDestApName(), cdapMessage.getInvokeID());
+					BaseEnrollmentStateMachine.DEFAULT_ENROLLMENT, this.ribDaemon.getIPCProcess().getApplicationProcessInstance(), 
+					this.ribDaemon.getIPCProcess().getApplicationProcessName(), cdapMessage.getInvokeID());
 
 			sendCDAPMessage(outgoingCDAPMessage);
 
@@ -151,12 +152,13 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 			//Send M_START_R
 			if (requiresInitialization){
 				objectValue = new ObjectValue();
-				objectValue.setInt64val(getValidAddress());
+				eiRequest.setAddress(getValidAddress());
+				objectValue.setByteval(encoder.encode(eiRequest));
 			}
 
 			responseMessage =
-				cdapSessionManager.getStartObjectResponseMessage(this.portId, null, RIBObjectNames.ADDRESS_RIB_OBJECT_CLASS, objectValue, 0, 
-						RIBObjectNames.ADDRESS_RIB_OBJECT_NAME, 0, null, cdapMessage.getInvokeID());
+				cdapSessionManager.getStartObjectResponseMessage(this.portId, null, cdapMessage.getObjClass(), objectValue, 0, 
+						cdapMessage.getObjName(), 0, null, cdapMessage.getInvokeID());
 			sendCDAPMessage(responseMessage);
 
 

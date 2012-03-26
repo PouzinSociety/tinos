@@ -23,16 +23,16 @@ public class RIBDaemonFactoryImpl implements RIBDaemonFactory{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		ribDaemonRespository.put(ipcProcessNamingInfo.getProcessKey(), ribDaemon);
+		ribDaemonRespository.put(ipcProcessNamingInfo.getEncodedString(), ribDaemon);
 		return ribDaemon;
 	}
 
 	public void destroyRIBDaemon(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
-		ribDaemonRespository.remove(ipcProcessNamingInfo.getProcessKey());
+		ribDaemonRespository.remove(ipcProcessNamingInfo.getEncodedString());
 	}
 
 	public RIBDaemon getRIBDaemon(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
-		return ribDaemonRespository.get(ipcProcessNamingInfo.getProcessKey());
+		return ribDaemonRespository.get(ipcProcessNamingInfo.getEncodedString());
 	}
 
 }

@@ -115,7 +115,7 @@ public class FakeRMT implements RMT{
 		
 	}
 
-	public int allocateFlow(ApplicationProcessNamingInfo arg0,
+	public int allocateFlow(String arg0,
 			QualityOfServiceSpecification arg1) throws Exception {
 		// TODO Auto-generated method stub
 		return 0;
@@ -135,8 +135,7 @@ public class FakeRMT implements RMT{
 		
 	}
 
-	public String getIPAddressFromApplicationNamingInformation(String arg0,
-			String arg1) {
+	public String getIPAddressFromApplicationNamingInformation(String arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}

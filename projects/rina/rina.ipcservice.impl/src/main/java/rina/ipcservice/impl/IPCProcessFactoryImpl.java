@@ -21,6 +21,7 @@ import rina.ribdaemon.api.RIBDaemonFactory;
 import rina.rmt.api.RMTFactory;
 
 public class IPCProcessFactoryImpl implements IPCProcessFactory{
+	
 	/**
 	 * All the existing IPC processes in this system
 	 */
@@ -119,23 +120,33 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		return this.delimiterFactory;
 	}
 
-	public IPCProcess createIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) throws Exception{
-		if (ipcProcesses.get(ipcProcessNamingInfo.getProcessKey()) != null){
-			throw new Exception("An IPC Process with this naming information already exists in this system");
+	/**
+	 * 
+	 * @param ipcProcessName the application process name of this IPC process, must be unique
+	 * @return
+	 * @throws Exception
+	 */
+	public IPCProcess createIPCProcess(String ipcProcessName) throws Exception{
+		if (ipcProcesses.get(ipcProcessName) != null){
+			throw new Exception("An IPC Process with this name already exists in this system");
 		}
+		
+		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo();
+		apNamingInfo.setApplicationProcessName(ipcProcessName);
+		apNamingInfo.setApplicationProcessInstance(""+this.getIPCProcessInstanceId());
 		
 		RIBDaemon ribDaemon = null;
 		IPCProcess ipcProcess = null;
 		
 		if (this.ribDaemonFactory != null){
-			ribDaemon = this.ribDaemonFactory.createRIBDaemon(ipcProcessNamingInfo);
+			ribDaemon = this.ribDaemonFactory.createRIBDaemon(apNamingInfo);
 		}else{
 			throw new Exception("RIB Daemon Factory is null");
 		}
 
 		if (this.ipcManager != null){
-			ipcProcess = new IPCProcessImpl(ipcProcessNamingInfo.getApplicationProcessName(), 
-					ipcProcessNamingInfo.getApplicationProcessInstance(), ribDaemon);
+			ipcProcess = new IPCProcessImpl(apNamingInfo.getApplicationProcessName(), 
+					apNamingInfo.getApplicationProcessInstance(), ribDaemon);
 			ipcProcess.setIPCManager(this.ipcManager);
 		}else{
 			throw new Exception("IPC Manager is null");
@@ -162,58 +173,63 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		ipcProcess.addIPCProcessComponent(ribDaemon);
 		
 		if (this.rmtFactory != null){
-			ipcProcess.addIPCProcessComponent(this.rmtFactory.createRMT(ipcProcessNamingInfo));
+			ipcProcess.addIPCProcessComponent(this.rmtFactory.createRMT(apNamingInfo));
 		}else{
 			throw new Exception("RMT Factory is null");
 		}
 		
 		if (this.enrollmentTaskFactory != null){
-			ipcProcess.addIPCProcessComponent(this.enrollmentTaskFactory.createEnrollmentTask(ipcProcessNamingInfo));
+			ipcProcess.addIPCProcessComponent(this.enrollmentTaskFactory.createEnrollmentTask(apNamingInfo));
 		}else{
 			throw new Exception("Enrollment Task Factory is null");
 		}
 		
 		if (this.dataTransferAEFactory != null){
-			ipcProcess.addIPCProcessComponent(dataTransferAEFactory.createDataTransferAE(ipcProcessNamingInfo));
+			ipcProcess.addIPCProcessComponent(dataTransferAEFactory.createDataTransferAE(apNamingInfo));
 		}else{
 			throw new Exception("Data Transfer AE Factory is null");
 		}
 		
 		if (this.flowAllocatorFactory != null){
-			ipcProcess.addIPCProcessComponent(this.flowAllocatorFactory.createFlowAllocator(ipcProcessNamingInfo));
+			ipcProcess.addIPCProcessComponent(this.flowAllocatorFactory.createFlowAllocator(apNamingInfo));
 		}else{
 			throw new Exception("Flow Allocator Factory is null");
 		}
 		
-		ipcProcesses.put(ipcProcessNamingInfo.getProcessKey(), ipcProcess);
+		ipcProcesses.put(ipcProcessName, ipcProcess);
 		return ipcProcess;
 	}
+	
+	private int getIPCProcessInstanceId(){
+		return new Double(100*Math.random()).intValue();
+	}
 
-	public void destroyIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) throws Exception{
-		if (ipcProcesses.get(ipcProcessNamingInfo.getProcessKey()) == null){
+	public void destroyIPCProcess(String ipcProcessName) throws Exception{
+		if (ipcProcesses.get(ipcProcessName) == null){
 			throw new Exception("An IPC Process with this naming information does not exist in this system");
 		}
 		
-		IPCProcess ipcProcess = ipcProcesses.remove(ipcProcessNamingInfo.getProcessKey());
+		IPCProcess ipcProcess = ipcProcesses.remove(ipcProcessName);
+		ApplicationProcessNamingInfo apNamingInfo = ipcProcess.getApplicationProcessNamingInfo();
 		
-		ribDaemonFactory.destroyRIBDaemon(ipcProcessNamingInfo);
-		rmtFactory.destroyRMT(ipcProcessNamingInfo);
-		enrollmentTaskFactory.destroyEnrollmentTask(ipcProcessNamingInfo);
-		dataTransferAEFactory.destroyDataTransferAE(ipcProcessNamingInfo);
-		flowAllocatorFactory.destroyFlowAllocator(ipcProcessNamingInfo);
+		ribDaemonFactory.destroyRIBDaemon(apNamingInfo);
+		rmtFactory.destroyRMT(apNamingInfo);
+		enrollmentTaskFactory.destroyEnrollmentTask(apNamingInfo);
+		dataTransferAEFactory.destroyDataTransferAE(apNamingInfo);
+		flowAllocatorFactory.destroyFlowAllocator(apNamingInfo);
 		ipcProcess.destroy();
 	}
 
 	public void destroyIPCProcess(IPCProcess ipcProcess){
 		try{
-			this.destroyIPCProcess(ipcProcess.getApplicationProcessNamingInfo());
+			this.destroyIPCProcess(ipcProcess.getApplicationProcessName());
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
 	}
 
-	public IPCProcess getIPCProcess(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
-		return ipcProcesses.get(ipcProcessNamingInfo.getProcessKey());
+	public IPCProcess getIPCProcess(String ipcProcessName) {
+		return ipcProcesses.get(ipcProcessName);
 	}
 	
 	/**

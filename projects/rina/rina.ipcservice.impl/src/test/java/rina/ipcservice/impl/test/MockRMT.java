@@ -1,12 +1,11 @@
 package rina.ipcservice.impl.test;
 
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 import rina.rmt.api.BaseRMT;
 
 public class MockRMT extends BaseRMT{
 
-	public int allocateFlow(ApplicationProcessNamingInfo arg0,
+	public int allocateFlow(String arg0,
 			QualityOfServiceSpecification arg1) throws Exception {
 		// TODO Auto-generated method stub
 		return 0;
@@ -17,8 +16,7 @@ public class MockRMT extends BaseRMT{
 		
 	}
 
-	public String getIPAddressFromApplicationNamingInformation(String arg0,
-			String arg1) {
+	public String getIPAddressFromApplicationNamingInformation(String arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}

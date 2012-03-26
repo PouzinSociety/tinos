@@ -118,9 +118,8 @@ public class IPCManagerImpl implements IPCManager{
 		apService.setIPCProcessFactory(ipcProcessFactory);
 	}
 
-	public void createIPCProcess(String applicationProcessName, String applicationProcessInstance, String difName) throws Exception{
-		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance);
-		IPCProcess ipcProcess = ipcProcessFactory.createIPCProcess(apNamingInfo);
+	public void createIPCProcess(String applicationProcessName, String difName) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.createIPCProcess(applicationProcessName);
 		ipcProcess.setIPCManager(this);
 		if (difName != null){
 			WhatevercastName dan = new WhatevercastName();
@@ -188,9 +187,8 @@ public class IPCManagerImpl implements IPCManager{
 		}
 	}
 	
-	public void destroyIPCProcesses(String applicationProcessName, String applicationProcessInstance) throws Exception{
-		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance);
-		ipcProcessFactory.destroyIPCProcess(apNamingInfo);
+	public void destroyIPCProcesses(String applicationProcessName) throws Exception{
+		ipcProcessFactory.destroyIPCProcess(applicationProcessName);
 	}
 	
 	public List<String> listIPCProcessesInformation(){
@@ -214,8 +212,8 @@ public class IPCManagerImpl implements IPCManager{
 		return ipcProcessesInformation;
 	}
 
-	public List<String> getPrintedRIB(String applicationProcessName, String applicationProcessInstance) throws Exception{
-		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance));
+	public List<String> getPrintedRIB(String applicationProcessName) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(applicationProcessName);
 		RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		List<RIBObject> ribObjects = ribDaemon.getRIBObjects();
 		List<String> result = new ArrayList<String>();
@@ -234,33 +232,27 @@ public class IPCManagerImpl implements IPCManager{
 		return result;
 	}
 	
-	public void enroll(String sourceApplicationProcessName, String sourceApplicationProcessInstance, 
-			String destinationApplicationProcessName, String destinationApplicationProcessInstance) throws Exception{
-		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(
-				new ApplicationProcessNamingInfo(sourceApplicationProcessName, sourceApplicationProcessInstance));
+	public void enroll(String sourceApplicationProcessName, String destinationApplicationProcessName) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(sourceApplicationProcessName);
 		EnrollmentTask enrollmentTask = (EnrollmentTask) ipcProcess.getIPCProcessComponent(BaseEnrollmentTask.getComponentName());
 		
 		Neighbor neighbor = new Neighbor();
 		neighbor.setApplicationProcessName(destinationApplicationProcessName);
-		neighbor.setApplicationProcessInstance(destinationApplicationProcessInstance);
 
 		enrollmentTask.initiateEnrollment(neighbor);
 	}
 	
-	public void allocateFlow(String sourceIPCProcessName, String sourceIPCProcessInstance, 
-			String destinationApplicationProcessName, String destinationApplicationProcessInstance) throws Exception{
-		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(
-				new ApplicationProcessNamingInfo(sourceIPCProcessName, sourceIPCProcessInstance));
+	public void allocateFlow(String sourceIPCProcessName, String destinationApplicationProcessName) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(sourceIPCProcessName);
 		IPCService ipcService = (IPCService) ipcProcess;
 		FlowService flowService = new FlowService();
-		flowService.setDestinationAPNamingInfo(new ApplicationProcessNamingInfo(destinationApplicationProcessName, destinationApplicationProcessInstance));
+		flowService.setDestinationAPNamingInfo(new ApplicationProcessNamingInfo(destinationApplicationProcessName));
 		flowService.setSourceAPNamingInfo(new ApplicationProcessNamingInfo("console", "1"));
 		ipcService.submitAllocateRequest(flowService);
 	}
 	
-	public void deallocateFlow(String sourceIPCProcessName, String sourceIPCProcessInstance, int portId) throws Exception{
-		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(
-				new ApplicationProcessNamingInfo(sourceIPCProcessName, sourceIPCProcessInstance));
+	public void deallocateFlow(String sourceIPCProcessName, int portId) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(sourceIPCProcessName);
 		IPCService ipcService = (IPCService) ipcProcess;
 		ipcService.submitDeallocate(portId);
 	}
