@@ -12,8 +12,6 @@ import rina.enrollment.api.Neighbor;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
-import rina.rmt.api.BaseRMT;
-import rina.rmt.api.RMT;
 
 /**
  * Different usefull functions
@@ -47,7 +45,7 @@ public class Utils {
 			}
 			
 			if (rmtPortId == 0){
-				String message = "Could not find the application process name of the IPC process whose synonym is "+address;
+				String message = "Could not find the application process name of the IPC process whose address is "+address;
 				log.error(message);
 				throw new IPCException(5, message);
 			}
@@ -57,19 +55,6 @@ public class Utils {
 		}
 		
 		return rmtPortId;
-	}
-	
-	/**
-	 * Returns the IP Address of a remote IPC Process, given its address (only valid for the RINA on top of TCP/IP prototype).
-	 * @param ipcProcessAddress
-	 * @param ipcProcess
-	 * @return the ip address of the remote IPC process
-	 * @throws IPCException if no matching entry is found
-	 */
-	public static synchronized String getRemoteIPCProcessIPAddress(long ipcProcessAddress, IPCProcess ipcProcess) throws IPCException{
-		ApplicationProcessNamingInfo namingInfo = Utils.getRemoteIPCProcessNamingInfo(ipcProcessAddress, ipcProcess);
-		RMT rmt = (RMT) ipcProcess.getIPCProcessComponent(BaseRMT.getComponentName());
-		return rmt.getIPAddressFromApplicationNamingInformation(namingInfo.getApplicationProcessName());
 	}
 	
 	/**

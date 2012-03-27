@@ -7,7 +7,7 @@ import java.net.Socket;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.rmt.api.BaseRMT;
+import rina.configuration.RINAConfiguration;
 
 /**
  * TCP server that listens for incoming connections.
@@ -45,12 +45,7 @@ public class RMTServer implements Runnable{
 
 	public RMTServer(TCPRMTImpl tcpRmtImpl){
 		this.tcpRmtImpl = tcpRmtImpl;
-		try{
-			this.port = Integer.parseInt(System.getProperty(BaseRMT.RMT_PORT_PROPERTY));
-		}catch(Exception ex){
-			this.port = BaseRMT.DEFAULT_PORT;
-			log.info("Property "+BaseRMT.RMT_PORT_PROPERTY+" not found or invalid, using default port ("+BaseRMT.DEFAULT_PORT+")");
-		}
+		this.port = RINAConfiguration.getInstance().getRMTPortNumber(tcpRmtImpl.getIPCProcess().getApplicationProcessName());
 	}
 	
 	public void setEnd(boolean end){

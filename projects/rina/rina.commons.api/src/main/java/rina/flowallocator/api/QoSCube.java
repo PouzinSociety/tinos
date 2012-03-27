@@ -232,4 +232,40 @@ public class QoSCube {
 		result = result + "Jitter: " + this.getJitter() +  "\n";
 		return result;
 	}
+	
+	public static QoSCube getDefaultUnreliableQoSCube(){
+		QoSCube qosCube = new QoSCube();
+		qosCube.setAverageBandwidth(0);
+		qosCube.setAverageSDUBandwidth(0);
+		qosCube.setDelay(0);
+		qosCube.setJitter(0);
+		qosCube.setMaxAllowableGapSdu(-1);
+		qosCube.setName("unreliable");
+		qosCube.setOrder(false);
+		qosCube.setPartialDelivery(true);
+		qosCube.setPeakBandwidthDuration(0);
+		qosCube.setPeakSDUBandwidthDuration(0);
+		qosCube.setQosId(1);
+		qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
+		
+		return qosCube;
+	}
+	
+	public static QoSCube getDefaultReliableQoSCube(){
+		QoSCube qosCube = new QoSCube();
+		qosCube.setAverageBandwidth(0);
+		qosCube.setAverageSDUBandwidth(0);
+		qosCube.setDelay(0);
+		qosCube.setJitter(0);
+		qosCube.setMaxAllowableGapSdu(0);
+		qosCube.setName("reliable");
+		qosCube.setOrder(true);
+		qosCube.setPartialDelivery(false);
+		qosCube.setPeakBandwidthDuration(0);
+		qosCube.setPeakSDUBandwidthDuration(0);
+		qosCube.setQosId(2);
+		qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
+		
+		return qosCube;
+	}
 }

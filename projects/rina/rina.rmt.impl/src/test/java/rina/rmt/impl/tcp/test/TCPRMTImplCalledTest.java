@@ -10,7 +10,6 @@ import org.junit.Test;
 
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBDaemon;
-import rina.rmt.api.BaseRMT;
 import rina.rmt.impl.tcp.TCPRMTImpl;
 
 /**
@@ -29,7 +28,6 @@ public class TCPRMTImplCalledTest {
 	
 	@Before
 	public void setup(){
-		System.setProperty(BaseRMT.RMT_PORT_PROPERTY, ""+40001);
 		this.rmt = new TCPRMTImpl();
 		IPCProcess fakeIPCProcess = new FakeIPCProcess();
 		fakeIPCProcess.addIPCProcessComponent(rmt);

@@ -9,9 +9,6 @@ import rina.ipcprocess.api.BaseIPCProcessComponent;
  */
 public abstract class BaseCDAPSessionManager extends BaseIPCProcessComponent implements CDAPSessionManager{
 	
-	public static final String CDAP_TIMEOUT_PROPERTY = "rina.cdap.timeout";
-	public static final long DEFAULT_TIMEOUT = 5000;
-	
 	public static final String getComponentName(){
 		return CDAPSessionManager.class.getName();
 	}

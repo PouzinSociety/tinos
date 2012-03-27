@@ -93,7 +93,6 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	public FlowAllocatorImpl(){
 		allocateRequestValidator = new AllocateRequestValidator();
 		flowAllocatorInstances = new HashMap<Integer, FlowAllocatorInstance>();
-		tcpServer = new TCPServer(this);
 		pendingSockets = new Hashtable<Integer, Socket>();
 	}
 	
@@ -105,6 +104,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 		this.directoryForwardingTable = new DirectoryForwardingTableImpl(this.ribDaemon);
 		populateRIB(ipcProcess);
+		tcpServer = new TCPServer(this);
 		ipcProcess.execute(tcpServer);
 	}
 	

@@ -4,6 +4,9 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.springsource.org/schema/dm-server/plan 
                             http://www.springsource.org/schema/dm-server/plan/springsource-dm-server-plan.xsd">
+	<artifact type="bundle" name="jackson-core" version="2.0.0"/>
+	<artifact type="bundle" name="jackson-annotations" version="2.0.0"/>
+	<artifact type="bundle" name="jackson-databind" version="2.0.0"/>
 	<artifact type="bundle" name="com.google.protobuf" version="2.3.0"/>
 	<artifact type="bundle" name="rina.commons.api" version="[1, 2)"/>
 	<artifact type="bundle" name="rina.cdap.impl" version="[1, 2)"/>

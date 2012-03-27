@@ -1,12 +1,7 @@
 package rina.ipcmanager.impl;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -14,6 +9,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.applicationprocess.api.WhatevercastName;
+import rina.configuration.DIFConfiguration;
+import rina.configuration.KnownIPCProcessConfiguration;
+import rina.configuration.RINAConfiguration;
 import rina.efcp.api.DataTransferConstants;
 import rina.enrollment.api.BaseEnrollmentTask;
 import rina.enrollment.api.EnrollmentTask;
@@ -46,9 +44,8 @@ import rina.rmt.api.RMT;
  *
  */
 public class IPCManagerImpl implements IPCManager{
-	private static final Log log = LogFactory.getLog(IPCManagerImpl.class);
 	
-	public static final String CONFIG_FILE_LOCATION = "config/rina/config.rina"; 
+	private static final Log log = LogFactory.getLog(IPCManagerImpl.class);
 	
 	private IPCManagerConsole console = null;
 	
@@ -65,32 +62,11 @@ public class IPCManagerImpl implements IPCManager{
 	private APServiceImpl apService = null;
 	
 	public IPCManagerImpl(){
-		readConfigurationFile();
 		executorService = Executors.newCachedThreadPool();
 		console = new IPCManagerConsole(this);
 		apService = new APServiceImpl(this);
 		executorService.execute(console);
 		log.debug("IPC Manager started");
-	}
-	
-	/**
-	 * Read the configuration parameters from the properties file
-	 */
-	private void readConfigurationFile(){
-		Properties properties = new Properties();
-		 
-    	try {
-    		properties.load(new FileInputStream(CONFIG_FILE_LOCATION));
-    		Iterator<Entry<Object, Object>> iterator = properties.entrySet().iterator();
-    		Entry<Object, Object> currentEntry = null;
-    		while (iterator.hasNext()){
-    			currentEntry = iterator.next();
-    			System.setProperty((String) currentEntry.getKey(), (String) currentEntry.getValue());
-    			log.debug("Added the property: "+currentEntry.getKey()+"="+currentEntry.getValue());
-    		}
-    	} catch (IOException ex) {
-    		log.debug("Could not find the main configuration file. Using default values!");
-        }
 	}
 	
 	/**
@@ -122,6 +98,17 @@ public class IPCManagerImpl implements IPCManager{
 		IPCProcess ipcProcess = ipcProcessFactory.createIPCProcess(applicationProcessName);
 		ipcProcess.setIPCManager(this);
 		if (difName != null){
+			DIFConfiguration difConfiguration = RINAConfiguration.getInstance().getDIFConfiguration(difName);
+			if (difConfiguration == null){
+				throw new Exception("Unrecognized DIF name: "+difName);
+			}
+			
+			KnownIPCProcessConfiguration ipcProcessConfiguration = 
+				RINAConfiguration.getInstance().getIPCProcessConfiguration(applicationProcessName);
+			if (ipcProcessConfiguration == null){
+				throw new Exception("Unrecoginzed IPC Process Name: "+applicationProcessName);
+			}
+			
 			WhatevercastName dan = new WhatevercastName();
 			dan.setName(difName);
 			dan.setRule(WhatevercastName.DIF_NAME_WHATEVERCAST_RULE);
@@ -129,59 +116,24 @@ public class IPCManagerImpl implements IPCManager{
 			RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 			ribDaemon.create(WhatevercastName.WHATEVERCAST_NAME_RIB_OBJECT_CLASS, 
 					WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + 
-					WhatevercastName.DIF_NAME_WHATEVERCAST_RULE, dan);
+					WhatevercastName.DIF_NAME_WHATEVERCAST_RULE, 
+					dan);
+			
 			ribDaemon.write(RIBObjectNames.ADDRESS_RIB_OBJECT_CLASS, 
-					RIBObjectNames.ADDRESS_RIB_OBJECT_NAME, new Long(1));
+					RIBObjectNames.ADDRESS_RIB_OBJECT_NAME, 
+					ipcProcessConfiguration.getAddress());
 			
-			DataTransferConstants dataTransferConstants = new DataTransferConstants();
-			dataTransferConstants.setAddressLength(2);
-			dataTransferConstants.setCepIdLength(2);
-			dataTransferConstants.setDIFConcatenation(true);
-			dataTransferConstants.setDIFFragmentation(false);
-			dataTransferConstants.setDIFIntegrity(false);
-			dataTransferConstants.setLengthLength(2);
-			dataTransferConstants.setMaxPDUSize(1950);
-			dataTransferConstants.setPortIdLength(2);
-			dataTransferConstants.setQosIdLength(1);
-			dataTransferConstants.setSequenceNumberLength(2);
 			ribDaemon.write(DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_CLASS, 
-					DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_NAME, dataTransferConstants);
+					DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_NAME, 
+					difConfiguration.getDataTransferConstants());
 			
-			QoSCube qosCube = new QoSCube();
-			qosCube.setAverageBandwidth(0);
-			qosCube.setAverageSDUBandwidth(0);
-			qosCube.setDelay(0);
-			qosCube.setJitter(0);
-			qosCube.setMaxAllowableGapSdu(-1);
-			qosCube.setName("unreliable");
-			qosCube.setOrder(false);
-			qosCube.setPartialDelivery(true);
-			qosCube.setPeakBandwidthDuration(0);
-			qosCube.setPeakSDUBandwidthDuration(0);
-			qosCube.setQosId(1);
-			qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
-			ribDaemon.create(QoSCube.QOSCUBE_RIB_OBJECT_CLASS, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + 
-					qosCube.getName(), qosCube);
-			
-			qosCube = new QoSCube();
-			qosCube.setAverageBandwidth(0);
-			qosCube.setAverageSDUBandwidth(0);
-			qosCube.setDelay(0);
-			qosCube.setJitter(0);
-			qosCube.setMaxAllowableGapSdu(0);
-			qosCube.setName("reliable");
-			qosCube.setOrder(true);
-			qosCube.setPartialDelivery(false);
-			qosCube.setPeakBandwidthDuration(0);
-			qosCube.setPeakSDUBandwidthDuration(0);
-			qosCube.setQosId(2);
-			qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
-			ribDaemon.create(QoSCube.QOSCUBE_RIB_OBJECT_CLASS, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME + 
-					RIBObjectNames.SEPARATOR + qosCube.getName(), qosCube);
+			ribDaemon.create(QoSCube.QOSCUBE_SET_RIB_OBJECT_CLASS,
+					QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME, 
+					(QoSCube[]) difConfiguration.getQosCubes().toArray(new QoSCube[difConfiguration.getQosCubes().size()]));
 			
 			ribDaemon.start(RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_CLASS, 
 					RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME);
-			
+
 			RMT rmt = (RMT) ipcProcess.getIPCProcessComponent(BaseRMT.getComponentName());
 			rmt.startListening();
 		}

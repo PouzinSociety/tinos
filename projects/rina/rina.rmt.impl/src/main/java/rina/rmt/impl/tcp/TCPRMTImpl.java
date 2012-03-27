@@ -1,10 +1,6 @@
 package rina.rmt.impl.tcp;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -13,6 +9,8 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.configuration.KnownIPCProcessConfiguration;
+import rina.configuration.RINAConfiguration;
 import rina.delimiting.api.BaseDelimiter;
 import rina.delimiting.api.Delimiter;
 import rina.ipcprocess.api.IPCProcess;
@@ -30,13 +28,6 @@ import rina.rmt.api.BaseRMT;
 public class TCPRMTImpl extends BaseRMT{
 	private static final Log log = LogFactory.getLog(TCPRMTImpl.class);
 	
-	private static final String CONFIG_FILE_NAME = "config/rina/aptohostmappings.rina";
-	
-	/**
-	 * Map applicationprocess name + instance to hostname (or IP address) and socket number
-	 */
-	private Map<String, String> apToHostnameMappings = null;
-	
 	/**
 	 * Contains the open TCP flows to other IPC processes, indexed by portId
 	 */
@@ -49,41 +40,12 @@ public class TCPRMTImpl extends BaseRMT{
 	
 	public TCPRMTImpl(){
 		this.flowTable = new Hashtable<Integer, Socket>();
-		this.rmtServer = new RMTServer(this);
-		this.apToHostnameMappings = new Hashtable<String, String>();
-		readConfigurationFile();
 	}
 	
 	@Override
 	public void setIPCProcess(IPCProcess ipcProcess){
 		super.setIPCProcess(ipcProcess);
-	}
-	
-	private void readConfigurationFile(){
-		try{
-			apToHostnameMappings.clear();
-			FileInputStream fstream = new FileInputStream(CONFIG_FILE_NAME);
-			DataInputStream in = new DataInputStream(fstream);
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			String strLine = null;
-			String[] tokens = null;
-			log.debug("Reading configuration file to learn IPC processes AP naming to host mappings");
-			while ((strLine = br.readLine()) != null)   {
-				if (strLine.startsWith("#")){
-					continue;
-				}
-				tokens = strLine.split(" ");
-				if (tokens.length != 3){
-					log.error("Ignoring line "+strLine+" because it hasn't got enough arguments");
-					continue;
-				}
-				apToHostnameMappings.put(tokens[0], tokens[1]+"#"+tokens[2]);
-				log.debug("IPC process " + tokens[0] + " reachable at "+ tokens[1] +" port " + tokens[2]);
-			}
-			in.close();
-		}catch (Exception e){
-			log.error("Error initializing application process name to host mappings: " + e.getMessage());
-		}
+		this.rmtServer = new RMTServer(this);
 	}
 	
 	/**
@@ -105,10 +67,9 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @return
 	 */
 	public String getIPAddressFromApplicationNamingInformation(String ipcProcessName){
-		readConfigurationFile();
-		String result = apToHostnameMappings.get(ipcProcessName);
-		if (result != null){
-			return result.split("#")[0];
+		KnownIPCProcessConfiguration ipcConf = RINAConfiguration.getInstance().getIPCProcessConfiguration(ipcProcessName);
+		if (ipcConf != null){
+			return ipcConf.getHostName();
 		}else{
 			return null;
 		}
@@ -154,9 +115,12 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @throws Exception if there was an issue allocating the flow
 	 */
 	public int allocateFlow(String ipcProcessName, QualityOfServiceSpecification qosparams) throws Exception{
-		readConfigurationFile();
-		String[] contactInformation = apToHostnameMappings.get(ipcProcessName).split("#");
-		Socket socket = new Socket(contactInformation[0], Integer.parseInt(contactInformation[1]));
+		KnownIPCProcessConfiguration ipcConf = RINAConfiguration.getInstance().getIPCProcessConfiguration(ipcProcessName);
+		if(ipcConf == null){
+			throw new Exception("Unrecognized IPC Process: "+ipcProcessName);
+		}
+		
+		Socket socket = new Socket(ipcConf.getHostName(), ipcConf.getRmtPortNumber());
 		newConnectionAccepted(socket);
 		return socket.getPort();
 	}

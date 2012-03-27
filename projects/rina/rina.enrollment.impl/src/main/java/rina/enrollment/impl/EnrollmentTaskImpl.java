@@ -12,6 +12,7 @@ import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
+import rina.configuration.RINAConfiguration;
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
 import rina.enrollment.api.AddressManager;
@@ -65,13 +66,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 
 	public EnrollmentTaskImpl(){
 		enrollmentStateMachines = new Hashtable<String, BaseEnrollmentStateMachine>();
-		try{
-			timeout = Long.parseLong(System.getProperty(BaseEnrollmentTask.ENROLLMENT_TASK_TIMEOUT_PROPERTY));
-		}catch(Exception ex){
-			log.info("Property "+BaseEnrollmentTask.ENROLLMENT_TASK_TIMEOUT_PROPERTY+" not found or invalid, " +
-					"using default timeout ("+BaseEnrollmentTask.DEFAULT_TIMEOUT+" ms)");
-			timeout = BaseEnrollmentTask.DEFAULT_TIMEOUT;
-		}
+		timeout = RINAConfiguration.getInstance().getLocalConfiguration().getEnrollmentTimeoutInMs();
 	}
 	
 	@Override

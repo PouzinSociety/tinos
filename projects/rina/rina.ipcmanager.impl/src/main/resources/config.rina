@@ -1,16 +1,105 @@
-#Configuration file of the RINA Prototype
-#IPC Manager
-#The port where the IPC Manager is listening for incoming local TCP connections from administrators
-rina.ipcmanager.consoleport=32766
-#CDAP
-#The maximum time the CDAP state machine of a session will wait for connect or release responses (in ms)
-rina.cdap.timeout=5000
-#RMT
-#The port where the RMT is listening for incoming TCP connections from remote RMTs
-rina.rmt.port=32769
-#Enrollment Task
-#The maximum time to wait between steps of the enrollment sequence (in ms)
-rina.enrollment.timeout=5000
-#Flow Allocator
-#The port where the Flow Allocator is listening for incoming TCP connections from remote Flow Allocators
-rina.flowallocator.port=32770
+{
+  "localConfiguration" : {
+    "consolePort" : 32766,
+    "flowAllocatorPort" : 32770,
+    "rmtPort" : 32769,
+    "cdapTimeoutInMs" : 10000,
+    "enrollmentTimeoutInMs" : 10000
+  },
+  "difConfigurations" : [ {
+    "difName" : "RINA-Demo.DIF",
+    "dataTransferConstants" : {
+      "qosIdLength" : 1,
+      "portIdLength" : 2,
+      "cepIdLength" : 2,
+      "sequenceNumberLength" : 2,
+      "addressLength" : 2,
+      "lengthLength" : 2,
+      "maxPDUSize" : 1950,
+      "maxPDULifetime" : 10000,
+      "difintegrity" : false,
+      "difconcatenation" : true,
+      "diffragmentation" : false
+    },
+    "qosCubes" : [ {
+      "qosId" : 2,
+      "name" : "reliable",
+      "averageBandwidth" : 0,
+      "averageSDUBandwidth" : 0,
+      "peakBandwidthDuration" : 0,
+      "peakSDUBandwidthDuration" : 0,
+      "undetectedBitErrorRate" : 1.0E-9,
+      "partialDelivery" : false,
+      "order" : true,
+      "maxAllowableGapSdu" : 0,
+      "delay" : 0,
+      "jitter" : 0
+    }, {
+      "qosId" : 1,
+      "name" : "unreliable",
+      "averageBandwidth" : 0,
+      "averageSDUBandwidth" : 0,
+      "peakBandwidthDuration" : 0,
+      "peakSDUBandwidthDuration" : 0,
+      "undetectedBitErrorRate" : 1.0E-9,
+      "partialDelivery" : true,
+      "order" : false,
+      "maxAllowableGapSdu" : -1,
+      "delay" : 0,
+      "jitter" : 0
+    } ]
+  } ],
+  "knownIPCProcessConfigurations" : [ {
+    "apName" : "Snowman.TRIA-Harv",
+    "address" : 16,
+    "hostName" : "trianetworksystems.dyndns.org",
+    "rmtPortNumber" : 32790,
+    "flowAllocatorPortNumber" : 32791
+  }, {
+    "apName" : "OpenWrt1.TRIA-CU",
+    "address" : 96,
+    "hostName" : "shore.dyndns-ip.com",
+    "rmtPortNumber" : 32769,
+    "flowAllocatorPortNumber" : 32770
+  }, {
+    "apName" : "Barcelona.i2CAT",
+    "address" : 64,
+    "hostName" : "84.88.41.36",
+    "rmtPortNumber" : 32769,
+    "flowAllocatorPortNumber" : 32770
+  }, {
+    "apName" : "Castefa.i2CAT",
+    "address" : 65,
+    "hostName" : "84.88.40.23",
+    "rmtPortNumber" : 32769,
+    "flowAllocatorPortNumber" : 32770
+  }, {
+    "apName" : "TSSG",
+    "address" : 80,
+    "hostName" : "rina.tssg.org",
+    "rmtPortNumber" : 32769,
+    "flowAllocatorPortNumber" : 32770
+  } ],
+  "addressPrefixes" : [ {
+    "addressPrefix" : 0,
+    "organization" : "N.Bourbaki"
+  }, {
+    "addressPrefix" : 16,
+    "organization" : "TRIA-Harv"
+  }, {
+    "addressPrefix" : 32,
+    "organization" : "TRIA-Bos"
+  }, {
+    "addressPrefix" : 48,
+    "organization" : "BU"
+  }, {
+    "addressPrefix" : 64,
+    "organization" : "i2CAT"
+  }, {
+    "addressPrefix" : 80,
+    "organization" : "TSSG"
+  }, {
+    "addressPrefix" : 96,
+    "organization" : "TRIA-CU"
+  } ]
+}

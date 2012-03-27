@@ -14,12 +14,13 @@ import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
+import rina.configuration.KnownIPCProcessConfiguration;
+import rina.configuration.RINAConfiguration;
 import rina.delimiting.api.BaseDelimiter;
 import rina.delimiting.api.Delimiter;
 import rina.efcp.api.DataTransferAEInstance;
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
-import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.Connection;
 import rina.flowallocator.api.FlowAllocator;
 import rina.flowallocator.api.FlowAllocatorInstance;
@@ -267,24 +268,22 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 * @return
 	 */
 	private Socket connectToRemoteFlowAllocator(long address) throws IPCException{
-		String ipAddress = null;
+		String hostName = null;
 		Socket socket = null;
-		int port = 0;
-		
-		
-		try{
-			port = Integer.parseInt(System.getProperty(BaseFlowAllocator.FLOW_ALLOCATOR_PORT_PROPERTY));
-		}catch(Exception ex){
-			port = BaseFlowAllocator.DEFAULT_PORT;
-		}
+		int port = RINAConfiguration.getInstance().getFlowAllocatorPortNumber(address);
 		
 		try{
-			ipAddress = Utils.getRemoteIPCProcessIPAddress(address, flowAllocator.getIPCProcess());
-			socket = new Socket(ipAddress, port);
+			KnownIPCProcessConfiguration ipcConf = RINAConfiguration.getInstance().getIPCProcessConfiguration(address);
+			if (ipcConf == null){
+				throw new IPCException(IPCException.UNKNOWN_IPC_PROCESS_CODE, 
+						IPCException.UNKNOWN_IPC_PROCESS + address);
+			}
+			hostName = ipcConf.getHostName();
+			socket = new Socket(hostName, port);
 			Unsigned unsigned = new Unsigned(2);
 			unsigned.setValue(new Integer(socket.getLocalPort()).longValue());
 			socket.getOutputStream().write(unsigned.getBytes());
-			log.debug("Started a socket to the Flow Allocator at "+ipAddress+":"+port+". The local socket number is "+socket.getLocalPort());
+			log.debug("Started a socket to the Flow Allocator at "+hostName+":"+port+". The local socket number is "+socket.getLocalPort());
 			return socket;
 		}catch(Exception ex){
 			throw new IPCException(5, "Problems connecting to remote Flow Allocator. "+ex.getMessage());
