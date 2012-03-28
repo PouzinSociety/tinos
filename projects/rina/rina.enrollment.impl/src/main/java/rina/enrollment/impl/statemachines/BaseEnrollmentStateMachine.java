@@ -216,20 +216,8 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 			return;
 		}
 
-		if (this.getState().equals(State.ENROLLED)){
-			try{
-				//TODO see what we have to do here
-				/*
-				ribDaemon.delete(null, DAFMember.DAF_MEMBER_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + 
-						remotePeer.getApplicationProcessName()+remotePeer.getApplicationProcessInstance(), 0, null);
-						*/
-			}catch(Exception ex){
-				log.error(ex);
-			}
-		}
-
 		this.setState(State.NULL);
-		this.remotePeer = new Neighbor();
+		
 		//Cancel any timers
 		if (timer != null){
 			timer.cancel();
@@ -272,19 +260,7 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 			return;
 		}
 
-		//Delete the DAF member entry in the RIB
-		if (this.getState().equals(State.ENROLLED)){
-			//TODO see what we need to do here
-			/*try{
-				ribDaemon.delete(null, DAFMember.DAF_MEMBER_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + 
-						remotePeer.getApplicationProcessName()+remotePeer.getApplicationProcessInstance(), 0);
-			}catch(RIBDaemonException ex){
-				log.error(ex);
-			}*/
-
-			this.setState(State.NULL);
-			this.remotePeer = new Neighbor();
-		}
+		this.setState(State.NULL);
 		
 		//Cancel any timers
 		if (timer != null){

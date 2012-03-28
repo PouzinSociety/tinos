@@ -82,7 +82,8 @@ public class EnrollmentRIBObject extends BaseRIBObject{
 	
 	private BaseEnrollmentStateMachine getEnrollmentStateMachine(CDAPSessionDescriptor cdapSessionDescriptor){
 		BaseEnrollmentStateMachine enrollmentStateMachine = enrollmentTask.getEnrollmentStateMachine(
-				cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo(), cdapSessionDescriptor.getPortId(), false);
+				cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo().getApplicationProcessName(), 
+				cdapSessionDescriptor.getPortId(), false);
 		return enrollmentStateMachine;
 	}
 	

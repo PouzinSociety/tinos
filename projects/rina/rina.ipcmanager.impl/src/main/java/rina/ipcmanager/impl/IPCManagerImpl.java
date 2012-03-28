@@ -63,6 +63,7 @@ public class IPCManagerImpl implements IPCManager{
 	
 	public IPCManagerImpl(){
 		executorService = Executors.newCachedThreadPool();
+		RINAConfiguration.initialize(executorService);
 		console = new IPCManagerConsole(this);
 		apService = new APServiceImpl(this);
 		executorService.execute(console);

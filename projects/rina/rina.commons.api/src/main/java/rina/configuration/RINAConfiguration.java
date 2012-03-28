@@ -1,8 +1,10 @@
 package rina.configuration;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class RINAConfiguration {
 	
 	public static final String CONFIG_FILE_LOCATION = "config/rina/config.rina"; 
+	public static final long CONFIG_FILE_POLL_PERIOD_IN_MS = 5000;
 	
 	private static final Log log = LogFactory.getLog(RINAConfiguration.class);
 	
@@ -48,9 +51,51 @@ public class RINAConfiguration {
 	private static RINAConfiguration instance = null;
 	
 	/**
+	 * The runnable that periodically (5 seconds) checks 
+	 * if the configuration file contents have changed. If they 
+	 * have, the new configuration is loaded into memory
+	 */
+	private static Runnable configFileChangeRunnable = null;
+	
+	/**
 	 * Prevent instantiation
 	 */
 	protected RINAConfiguration(){
+	}
+	
+	/**
+	 * Starts the Config File Changed thread (looks for changes 
+	 * in the config file every 5 seconds, if there is a 
+	 * change it detects it and loads the new contents)
+	 */
+	public static void initialize(ExecutorService executorService){
+		if (configFileChangeRunnable == null){
+			configFileChangeRunnable = new Runnable(){
+				private long currentLastModified = 0;
+
+				public void run(){
+					File file = new File(CONFIG_FILE_LOCATION);
+
+					while(true){
+						if (file.lastModified() > currentLastModified) {
+							log.debug("Configuration file changed, loading the new content");
+							currentLastModified = file.lastModified();
+							synchronized(instance){
+								instance = readConfigurationFile();
+							}
+						}
+						try {
+							Thread.sleep(CONFIG_FILE_POLL_PERIOD_IN_MS);
+						}catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+
+			};
+
+			executorService.execute(configFileChangeRunnable);
+		}
 	}
 	
 	public static RINAConfiguration getInstance(){
@@ -230,5 +275,25 @@ public class RINAConfiguration {
 		}else{
 			return this.getLocalConfiguration().getFlowAllocatorPort();
 		}
+	}
+	
+	/**
+	 * Get the address prefix that corresponds to the application process name of the 
+	 * IPC Process. Return -1 if there is no matching.
+	 * @param ipcProcessName
+	 * @return the address prefix
+	 */
+	public long getAddressPrefixConfiguration(String apName){
+		if (this.getAddressPrefixes() == null){
+			return -1;
+		}
+		
+		for(int i=0; i<this.getAddressPrefixes().size(); i++){
+			if (apName.indexOf(this.getAddressPrefixes().get(i).getOrganization()) != -1){
+				return this.getAddressPrefixes().get(i).getAddressPrefix();
+			}
+		}
+		
+		return -1;
 	}
 }

@@ -11,6 +11,9 @@ import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
+import rina.configuration.AddressPrefixConfiguration;
+import rina.configuration.KnownIPCProcessConfiguration;
+import rina.configuration.RINAConfiguration;
 import rina.efcp.api.DataTransferConstants;
 import rina.encoding.api.Encoder;
 import rina.enrollment.api.EnrollmentInformationRequest;
@@ -143,16 +146,23 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 				}
 			}
 		}catch(Exception ex){
-			//TODO what to do?
 			ex.printStackTrace();
+			this.sendNegativeStartResponseAndAbortEnrollment(-1, ex.getMessage(), cdapMessage);
+			return;
 		}
 
 		
 		try{
 			//Send M_START_R
 			if (requiresInitialization){
+				long address = getValidAddress();
+				if (address == -1){
+					this.sendNegativeStartResponseAndAbortEnrollment(-1, "Could not assign a valid address", cdapMessage);
+					return;
+				}
+				
 				objectValue = new ObjectValue();
-				eiRequest.setAddress(getValidAddress());
+				eiRequest.setAddress(address);
 				objectValue.setByteval(encoder.encode(eiRequest));
 			}
 
@@ -160,7 +170,7 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 				cdapSessionManager.getStartObjectResponseMessage(this.portId, null, cdapMessage.getObjClass(), objectValue, 0, 
 						cdapMessage.getObjName(), 0, null, cdapMessage.getInvokeID());
 			sendCDAPMessage(responseMessage);
-
+			this.remotePeer.setAddress(eiRequest.getAddress());
 
 			//If initialization is required send the M_CREATEs
 			if (requiresInitialization){
@@ -185,13 +195,71 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 	}
 	
 	/**
+	 * Send a negative response to the M_START enrollment message
+	 * @param result the error code
+	 * @param resultReason the reason of the bad result
+	 * @param requestMessage the received M_START enrollment message
+	 */
+	private void sendNegativeStartResponseAndAbortEnrollment(int result, String resultReason, CDAPMessage requestMessage){
+		try{
+			CDAPMessage responseMessage =
+				cdapSessionManager.getStartObjectResponseMessage(this.portId, null, requestMessage.getObjClass(), null, 0, 
+						requestMessage.getObjName(), result, resultReason, requestMessage.getInvokeID());
+			sendCDAPMessage(responseMessage);
+			this.abortEnrollment(this.remoteNamingInfo, portId, resultReason, false, true);
+		}catch(Exception ex){
+			ex.printStackTrace();
+			log.error(ex);
+		}
+	}
+	
+	/**
 	 * Decides if a given address is valid or not
 	 * @param address
 	 * @return
 	 */
 	private boolean isValidAddress(long address) {
-		if (address == 0){
+		//Check if the address is negative
+		if (address <= 0){
 			return false;
+		}
+		
+		//Check if we know the remote IPC Process
+		RINAConfiguration rinaConf = RINAConfiguration.getInstance();
+		KnownIPCProcessConfiguration ipcConf = rinaConf.getIPCProcessConfiguration(
+				this.remotePeer.getApplicationProcessName());
+		if (ipcConf != null){
+			if (ipcConf.getAddress() == address){
+				return true;
+			}else{
+				return false;
+			}
+		}
+		
+		//Check if we know the prefix assigned to the organization
+		long prefix = rinaConf.getAddressPrefixConfiguration(this.remotePeer.getApplicationProcessName());
+		if (prefix == -1){
+			//We don't know the organization of the IPC Process
+			return false;
+		}
+		
+		//Check if the address is within the range of the prefix
+		if (address < prefix || address >= prefix + AddressPrefixConfiguration.MAX_ADDRESSES_PER_PREFIX){
+			return false;
+		}
+		
+		//Check if the address is in use
+		List<Neighbor> neighbors = this.ribDaemon.getIPCProcess().getNeighbors();
+		for(int i=0; i<neighbors.size(); i++){
+			if(neighbors.get(i).getAddress() == address){
+				if (neighbors.get(i).getApplicationProcessName().equals(this.remotePeer.getApplicationProcessName())){
+					//We knew about this IPC Process
+					return true;
+				}else{
+					//The address is in use by another IPC Process
+					return false;
+				}
+			}
 		}
 		
 		return true;
@@ -203,8 +271,42 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 	 * @return
 	 */
 	private long getValidAddress(){
-		//TODO implement this
-		return 2;
+		RINAConfiguration rinaConf = RINAConfiguration.getInstance();
+		
+		//See if we know the configuration of the remote IPC Process
+		KnownIPCProcessConfiguration ipcConf = rinaConf.getIPCProcessConfiguration(
+				this.remotePeer.getApplicationProcessName());
+		if (ipcConf != null){
+			return ipcConf.getAddress();
+		}
+		
+		//See if we know the prefix of the remote IPC Process
+		long prefix = rinaConf.getAddressPrefixConfiguration(this.remotePeer.getApplicationProcessName());
+		if (prefix == -1){
+			//We don't know the prefix, return an invalid address indicating 
+			//that the IPC Process cannot join the DIF
+			return prefix;
+		}else{
+			//Get an address that is not in use
+			List<Neighbor> neighbors = this.ribDaemon.getIPCProcess().getNeighbors();
+			long candidateAddress = prefix;
+			while(candidateAddress < prefix + AddressPrefixConfiguration.MAX_ADDRESSES_PER_PREFIX){
+				for(int i=0; i<neighbors.size(); i++){
+					if (neighbors.get(i).getAddress() == candidateAddress){
+						//The candidate address is in use
+						candidateAddress++;
+						break;
+					}
+				}
+				
+				//The candidate address is not in use
+				return candidateAddress;
+			}
+		}
+		
+		//We could not find a valid address, return an invalid one indicating that
+		//the IPC Process cannot join the DIF
+		return -1;
 	}
 	
 	/**
@@ -312,10 +414,9 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 						RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_CLASS, null, 0, 
 						RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME, 0, false);
 				sendCDAPMessage(startMessage);
-				//TODO, do this?
-				/*ribDaemon.create(null, DAFMember.DAF_MEMBER_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + 
-						remotePeer.getApplicationProcessName()+remotePeer.getApplicationProcessInstance(), 
-						0, remotePeer);*/
+				ribDaemon.create(Neighbor.NEIGHBOR_RIB_OBJECT_CLASS, 
+						Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + remotePeer.getKey(), 
+						remotePeer);
 			}catch(Exception ex){
 				log.error(ex);
 			}

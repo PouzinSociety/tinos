@@ -1,5 +1,7 @@
 package rina.enrollment.api;
 
+import java.util.List;
+
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcessComponent;
@@ -81,9 +83,16 @@ public interface EnrollmentTask extends IPCProcessComponent{
 	public void flowDeallocated(CDAPSessionDescriptor cdapSessionDescriptor);
 	
 	/**
-	 * Returns the address manager, the object that manages the allocation and usage 
-	 * of addresses within a DIF
+	 * Finds out if the ICP process is already enrolled to the IPC process identified by 
+	 * the provided apNamingInfo
+	 * @param apNamingInfo
 	 * @return
 	 */
-	public AddressManager getAddressManager();
+	public boolean isEnrolledTo(String applicationProcessName);
+	
+	/**
+	 * Return the list of IPC Process names we're currently enrolled to
+	 * @return
+	 */
+	public List<String> getEnrolledIPCProcessNames();
 }
