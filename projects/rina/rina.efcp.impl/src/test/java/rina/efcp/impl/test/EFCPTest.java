@@ -14,7 +14,7 @@ import rina.efcp.impl.DataTransferAEInstanceImpl;
 import rina.efcp.impl.PDU;
 import rina.flowallocator.api.Connection;
 import rina.flowallocator.api.ConnectionId;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.utils.types.Unsigned;
 
 public class EFCPTest {

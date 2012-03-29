@@ -1,7 +1,7 @@
 package rina.applibrary.impl;
 
 import rina.applibrary.api.FlowAcceptor;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 /**
  * Accepts all the flows that are for this application process

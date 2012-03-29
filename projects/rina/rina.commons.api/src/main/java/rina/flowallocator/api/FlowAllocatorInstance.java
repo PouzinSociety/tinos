@@ -3,7 +3,6 @@ package rina.flowallocator.api;
 import java.net.Socket;
 
 import rina.cdap.api.message.CDAPMessage;
-import rina.flowallocator.api.message.Flow;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 

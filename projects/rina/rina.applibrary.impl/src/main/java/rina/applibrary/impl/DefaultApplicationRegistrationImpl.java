@@ -22,7 +22,7 @@ import rina.cdap.api.message.ObjectValue;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.delimiting.api.Delimiter;
 import rina.encoding.api.Encoder;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.ApplicationRegistration;
 import rina.ipcservice.api.IPCException;
 

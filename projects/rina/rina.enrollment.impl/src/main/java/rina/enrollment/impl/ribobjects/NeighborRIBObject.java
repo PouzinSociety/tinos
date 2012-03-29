@@ -1,7 +1,5 @@
 package rina.enrollment.impl.ribobjects;
 
-import rina.cdap.api.CDAPSessionDescriptor;
-import rina.cdap.api.message.CDAPMessage;
 import rina.enrollment.api.Neighbor;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
@@ -25,6 +23,11 @@ public class NeighborRIBObject extends BaseRIBObject{
 	}
 	
 	@Override
+	public void create(String objectClass, long objectInstance, String objectName, Object objectValue) throws RIBDaemonException{
+		write(objectValue);
+	}
+	
+	@Override
 	public void write(Object object) throws RIBDaemonException {
 		if (!(object instanceof Neighbor)){
 			throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME, 
@@ -33,16 +36,6 @@ public class NeighborRIBObject extends BaseRIBObject{
 		}
 		
 		this.neighbor = (Neighbor) object;
-	}
-	
-	@Override
-	public void delete(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor){
-		//1 Check that we're enrolled to the IPC Process
-		//2 Tell the enrollment task to get the enrollment state machine
-		//3 Tell the enrollment task to initiate the de-enrollment sequence (basically issue an M_RELEASE)
-		//4 Tell the RMT to deallocate the flow
-		//5 call the local delete operation, to update the RIB
-		//5 Send a response to the caller upon successful completion or an error occurrence
 	}
 	
 	@Override

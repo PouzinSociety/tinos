@@ -14,7 +14,7 @@ import rina.enrollment.api.EnrollmentInformationRequest;
 import rina.enrollment.api.EnrollmentTask;
 import rina.enrollment.api.Neighbor;
 import rina.flowallocator.api.QoSCube;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
@@ -70,7 +70,7 @@ public class EnrolleeStateMachine extends BaseEnrollmentStateMachine{
 				this.state = State.WAIT_CONNECT_RESPONSE;
 			}catch(Exception ex){
 				ex.printStackTrace();
-				log.error(ex);
+				this.abortEnrollment(remoteNamingInfo, portId, ex.getMessage(), true, false);
 			}
 			break;
 		default:
@@ -103,6 +103,9 @@ public class EnrolleeStateMachine extends BaseEnrollmentStateMachine{
 			enrollmentTask.enrollmentFailed(remoteNamingInfo, portId, cdapMessage.getResultReason(), true, true);
 			return;
 		}
+		
+		remotePeer.setApplicationProcessInstance(cdapMessage.getSrcApInst());
+		remoteNamingInfo.setApplicationProcessInstance(cdapMessage.getSrcApInst());
 
 		//Send M_START with EnrollmentInformation object
 		try{

@@ -2,7 +2,7 @@ package rina.utils.apps.connectiongenerator.cliclient;
 
 import rina.applibrary.api.Flow;
 import rina.applibrary.api.SDUListener;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 
 public class SingleFlowGenerator implements Runnable, SDUListener{

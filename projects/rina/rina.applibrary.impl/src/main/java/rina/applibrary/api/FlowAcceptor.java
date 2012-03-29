@@ -1,6 +1,6 @@
 package rina.applibrary.api;
 
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 /**
  * Classes implementing this interface are called every time an external application 

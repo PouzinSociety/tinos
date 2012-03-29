@@ -22,7 +22,7 @@ import rina.enrollment.api.EnrollmentInformationRequest;
 import rina.enrollment.api.Neighbor;
 import rina.flowallocator.api.DirectoryForwardingTableEntry;
 import rina.flowallocator.api.QoSCube;
-import rina.flowallocator.api.message.Flow;
+import rina.flowallocator.api.Flow;
 import rina.ipcservice.api.ApplicationRegistration;
 import rina.ipcservice.api.FlowService;
 

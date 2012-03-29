@@ -2,7 +2,7 @@ package rina.ipcservice.impl.test;
 
 import rina.flowallocator.api.FlowAllocator;
 import rina.flowallocator.api.FlowAllocatorFactory;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 public class MockFlowAllocatorFactory implements FlowAllocatorFactory{
 	

@@ -15,7 +15,7 @@ import rina.flowallocator.api.FlowAllocatorFactory;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonFactory;
 import rina.rmt.api.RMTFactory;

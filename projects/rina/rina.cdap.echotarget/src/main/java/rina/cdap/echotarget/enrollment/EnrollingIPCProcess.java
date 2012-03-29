@@ -15,7 +15,7 @@ import rina.encoding.impl.googleprotobuf.whatevercast.WhatevercastNameEncoder;
 import rina.enrollment.api.Neighbor;
 import rina.enrollment.impl.EnrollmentTaskImpl;
 import rina.flowallocator.api.QoSCube;
-import rina.flowallocator.api.message.Flow;
+import rina.flowallocator.api.Flow;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.impl.IPCProcessImpl;
 import rina.ribdaemon.api.RIBDaemon;

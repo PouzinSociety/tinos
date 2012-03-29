@@ -27,7 +27,7 @@ import rina.enrollment.impl.statemachines.BaseEnrollmentStateMachine;
 import rina.enrollment.impl.statemachines.EnrolleeStateMachine;
 import rina.enrollment.impl.statemachines.EnrollerStateMachine;
 import rina.ipcprocess.api.IPCProcess;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;

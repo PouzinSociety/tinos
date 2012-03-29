@@ -2,7 +2,6 @@ package rina.efcp.impl.test;
 
 import rina.efcp.api.DataTransferConstants;
 import rina.ipcprocess.api.IPCProcess;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 import rina.rmt.api.RMT;
 

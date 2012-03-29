@@ -160,6 +160,16 @@ public abstract class BaseRIBObject implements RIBObject{
 	   return false;
    }
 
+   public RIBObject getChild(String objectName){
+	   for(int i=0; i<children.size(); i++){
+		   if (children.get(i).getObjectName().equals(objectName)){
+			   return children.get(i);
+		   }
+	   }
+
+	   return null;
+   }
+
 	public Encoder getEncoder(){
 		if (this.encoder == null){
 			this.encoder = (Encoder) ipcProcess.getIPCProcessComponent(BaseEncoder.getComponentName());

@@ -73,7 +73,7 @@ public class RMTServer implements Runnable{
 			while (!end){
 				Socket socket = serverSocket.accept();
 				log.info("Got a new request from "+socket.getInetAddress().getHostAddress());
-				tcpRmtImpl.newConnectionAccepted(socket);
+				tcpRmtImpl.newConnectionAccepted(socket, socket.getPort());
 			}
 		}catch(IOException e){
 			log.error(e.getMessage());

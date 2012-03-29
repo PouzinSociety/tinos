@@ -1,12 +1,11 @@
-package rina.flowallocator.api.message;
+package rina.flowallocator.api;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import rina.flowallocator.api.ConnectionId;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 import rina.ribdaemon.api.RIBObjectNames;
 

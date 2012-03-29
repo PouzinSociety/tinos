@@ -2,7 +2,7 @@ package rina.flowallocator.impl;
 
 import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.DirectoryForwardingTableEntry;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;

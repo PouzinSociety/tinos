@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import rina.encoding.impl.googleprotobuf.applicationregistration.ApplicationRegistrationEncoder;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.ApplicationRegistration;
 
 /**

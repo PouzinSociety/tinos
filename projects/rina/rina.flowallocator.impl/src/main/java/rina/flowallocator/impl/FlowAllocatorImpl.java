@@ -18,7 +18,7 @@ import rina.encoding.api.Encoder;
 import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.FlowAllocatorInstance;
-import rina.flowallocator.api.message.Flow;
+import rina.flowallocator.api.Flow;
 import rina.flowallocator.impl.ribobjects.DirectoryForwardingTableEntrySetRIBObject;
 import rina.flowallocator.impl.ribobjects.FlowSetRIBObject;
 import rina.flowallocator.impl.ribobjects.QoSCubeSetRIBObject;

@@ -2,7 +2,7 @@ package rina.applibrary.api;
 
 import java.util.List;
 
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 
 /**

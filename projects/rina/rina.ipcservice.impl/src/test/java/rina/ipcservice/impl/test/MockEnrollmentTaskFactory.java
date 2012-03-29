@@ -2,7 +2,7 @@ package rina.ipcservice.impl.test;
 
 import rina.enrollment.api.EnrollmentTask;
 import rina.enrollment.api.EnrollmentTaskFactory;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 public class MockEnrollmentTaskFactory implements EnrollmentTaskFactory {
 	

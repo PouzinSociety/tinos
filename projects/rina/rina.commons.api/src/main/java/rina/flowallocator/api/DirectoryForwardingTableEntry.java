@@ -1,6 +1,6 @@
 package rina.flowallocator.api;
 
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 /**
  * An entry of the directory forwarding table
@@ -85,5 +85,14 @@ public class DirectoryForwardingTableEntry {
 		}
 		
 		return true;
+	}
+	
+	@Override
+	public String toString(){
+		String result = this.apNamingInfo.toString();
+		result = result + "IPC Process address: " + this.getAddress() + "\n";
+		result = result + "Timestamp: " + this.getTimestamp() + "\n";
+		
+		return result;
 	}
 }

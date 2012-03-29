@@ -1,4 +1,4 @@
-package rina.ipcservice.api;
+package rina.applicationprocess.api;
 
 import rina.ribdaemon.api.RIBObjectNames;
 
@@ -154,10 +154,16 @@ public class ApplicationProcessNamingInfo {
 	@Override
 	public String toString(){
 		String result = "Application Process Name: " + this.applicationProcessName + "\n";
-		result = result + "Application Process Instance: " + this.getApplicationProcessInstance() + "\n";
-		result = result + "Application Entity name: " + this.getApplicationEntityName() + " ";
-		result = result + "Application Entity instance: " + this.getApplicationEntityInstance() + "\n";
-		
+		if (this.applicationProcessInstance != null){
+			result = result + "Application Process Instance: " + this.getApplicationProcessInstance() + "\n";
+		}
+		if (this.applicationEntityName != null){
+			result = result + "Application Entity name: " + this.getApplicationEntityName() + "\n";
+		}
+		if (this.applicationEntityInstance != null){
+			result = result + "Application Entity instance: " + this.getApplicationEntityInstance() + "\n";
+		}
+
 		return result;
 	}
 	

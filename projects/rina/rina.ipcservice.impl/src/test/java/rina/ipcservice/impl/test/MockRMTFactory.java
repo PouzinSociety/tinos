@@ -1,6 +1,6 @@
 package rina.ipcservice.impl.test;
 
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.rmt.api.RMT;
 import rina.rmt.api.RMTFactory;
 

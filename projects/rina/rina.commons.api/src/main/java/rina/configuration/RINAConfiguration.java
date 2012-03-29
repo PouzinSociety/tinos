@@ -1,16 +1,6 @@
 package rina.configuration;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The global configuration of the RINA software
@@ -18,11 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  */
 public class RINAConfiguration {
-	
-	public static final String CONFIG_FILE_LOCATION = "config/rina/config.rina"; 
-	public static final long CONFIG_FILE_POLL_PERIOD_IN_MS = 5000;
-	
-	private static final Log log = LogFactory.getLog(RINAConfiguration.class);
 	
 	/**
 	 * The local software configuration (ports, timeouts, ...)
@@ -50,82 +35,12 @@ public class RINAConfiguration {
 	 */
 	private static RINAConfiguration instance = null;
 	
-	/**
-	 * The runnable that periodically (5 seconds) checks 
-	 * if the configuration file contents have changed. If they 
-	 * have, the new configuration is loaded into memory
-	 */
-	private static Runnable configFileChangeRunnable = null;
-	
-	/**
-	 * Prevent instantiation
-	 */
-	protected RINAConfiguration(){
-	}
-	
-	/**
-	 * Starts the Config File Changed thread (looks for changes 
-	 * in the config file every 5 seconds, if there is a 
-	 * change it detects it and loads the new contents)
-	 */
-	public static void initialize(ExecutorService executorService){
-		if (configFileChangeRunnable == null){
-			configFileChangeRunnable = new Runnable(){
-				private long currentLastModified = 0;
-
-				public void run(){
-					File file = new File(CONFIG_FILE_LOCATION);
-
-					while(true){
-						if (file.lastModified() > currentLastModified) {
-							log.debug("Configuration file changed, loading the new content");
-							currentLastModified = file.lastModified();
-							synchronized(instance){
-								instance = readConfigurationFile();
-							}
-						}
-						try {
-							Thread.sleep(CONFIG_FILE_POLL_PERIOD_IN_MS);
-						}catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-
-			};
-
-			executorService.execute(configFileChangeRunnable);
-		}
+	public static void setConfiguration(RINAConfiguration rinaConfiguration){
+		instance = rinaConfiguration;
 	}
 	
 	public static RINAConfiguration getInstance(){
-		if (instance == null){
-			instance = readConfigurationFile();
-		}
-		
 		return instance;
-	}
-	
-	/**
-	 * Read the configuration parameters from the properties file
-	 */
-	private static RINAConfiguration readConfigurationFile(){
-    	try {
-    		ObjectMapper objectMapper = new ObjectMapper();
-    		RINAConfiguration rinaConfiguration = (RINAConfiguration) 
-    			objectMapper.readValue(new FileInputStream(CONFIG_FILE_LOCATION), RINAConfiguration.class);
-    		log.info("Read configuration file");
-    		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    		objectMapper.writer(new DefaultPrettyPrinter()).writeValue(outputStream, rinaConfiguration);
-    		log.info(outputStream.toString());
-    		return rinaConfiguration;
-    	} catch (Exception ex) {
-    		log.error(ex);
-    		ex.printStackTrace();
-    		log.debug("Could not find the main configuration file. Stoping the system!");
-    		System.exit(-1);
-    		return null;
-        }
 	}
 	
 	public LocalConfiguration getLocalConfiguration() {

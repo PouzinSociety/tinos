@@ -3,7 +3,7 @@ package rina.applibrary.api;
 import java.net.Socket;
 
 import rina.cdap.api.message.CDAPMessage;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 

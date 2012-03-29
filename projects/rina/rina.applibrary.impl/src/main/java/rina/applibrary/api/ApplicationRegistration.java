@@ -5,7 +5,7 @@ import java.util.List;
 import rina.applibrary.api.ApplicationRegistrationImpl.State;
 import rina.applibrary.impl.DefaultApplicationRegistrationImpl;
 import rina.applibrary.impl.DefaultFlowAcceptor;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 
 /**

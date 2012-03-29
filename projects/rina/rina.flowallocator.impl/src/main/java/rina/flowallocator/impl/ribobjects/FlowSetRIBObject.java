@@ -4,7 +4,7 @@ import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.flowallocator.api.FlowAllocator;
 import rina.flowallocator.api.FlowAllocatorInstance;
-import rina.flowallocator.api.message.Flow;
+import rina.flowallocator.api.Flow;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
 import rina.ribdaemon.api.ObjectInstanceGenerator;

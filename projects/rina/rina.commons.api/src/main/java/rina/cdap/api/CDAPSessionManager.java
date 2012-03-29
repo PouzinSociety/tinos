@@ -92,10 +92,9 @@ public interface CDAPSessionManager extends IPCProcessComponent{
 	 * Return the portId of the (N-1) Flow that supports the CDAP Session
 	 * with the IPC process identified by destinationApplicationProcessName and destinationApplicationProcessInstance
 	 * @param destinationApplicationProcessName
-	 * @param destinationApplicationProcessInstance
 	 * @throws CDAPException
 	 */
-	public int getPortId(String destinationApplicationProcessName, String destinationApplicationProcessInstance) throws CDAPException;
+	public int getPortId(String destinationApplicationProcessName) throws CDAPException;
 	
 	/**
 	 * Create a M_CONNECT CDAP Message

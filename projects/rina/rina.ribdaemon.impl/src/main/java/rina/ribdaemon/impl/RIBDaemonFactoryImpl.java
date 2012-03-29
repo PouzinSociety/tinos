@@ -3,7 +3,7 @@ package rina.ribdaemon.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonFactory;
 

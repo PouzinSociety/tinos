@@ -10,7 +10,7 @@ import rina.encoding.impl.googleprotobuf.apnaminginfo.ApplicationProcessNamingIn
 import rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification;
 import rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosParameter_t;
 import rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 
 import com.google.protobuf.ByteString;

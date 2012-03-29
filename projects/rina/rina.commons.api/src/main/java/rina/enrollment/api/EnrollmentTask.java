@@ -2,10 +2,10 @@ package rina.enrollment.api;
 
 import java.util.List;
 
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcessComponent;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBObjectNames;
 
 /**

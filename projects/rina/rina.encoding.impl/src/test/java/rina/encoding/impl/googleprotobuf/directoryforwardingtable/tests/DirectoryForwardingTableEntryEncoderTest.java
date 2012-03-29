@@ -7,7 +7,7 @@ import org.junit.Test;
 import rina.encoding.impl.googleprotobuf.directoryforwardingtable.DirectoryForwardingTableEntryArrayEncoder;
 import rina.encoding.impl.googleprotobuf.directoryforwardingtable.DirectoryForwardingTableEntryEncoder;
 import rina.flowallocator.api.DirectoryForwardingTableEntry;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 /**
  * Test if the serialization/deserialization mechanisms for the WhatevercastName object work

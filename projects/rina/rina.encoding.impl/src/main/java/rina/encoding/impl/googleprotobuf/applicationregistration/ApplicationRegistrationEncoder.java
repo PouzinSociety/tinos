@@ -5,7 +5,7 @@ import java.util.List;
 
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.impl.googleprotobuf.GPBUtils;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.ApplicationRegistration;
 
 public class ApplicationRegistrationEncoder extends BaseEncoder{

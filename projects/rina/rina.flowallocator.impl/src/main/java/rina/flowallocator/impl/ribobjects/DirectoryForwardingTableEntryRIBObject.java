@@ -69,6 +69,12 @@ public class DirectoryForwardingTableEntryRIBObject extends SimpleSetMemberRIBOb
 	}
 	
 	@Override
+	public void delete(Object object) throws RIBDaemonException {
+		this.getParent().removeChild(this.getObjectName());
+		this.getRIBDaemon().removeRIBObject(this);
+	}
+	
+	@Override
 	public Object getObjectValue() {
 		return directoryForwardingTableEntry;
 	}

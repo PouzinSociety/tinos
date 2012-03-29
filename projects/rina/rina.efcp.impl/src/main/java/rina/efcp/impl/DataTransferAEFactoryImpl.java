@@ -5,7 +5,7 @@ import java.util.Map;
 
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.DataTransferAEFactory;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 public class DataTransferAEFactoryImpl implements DataTransferAEFactory{
 

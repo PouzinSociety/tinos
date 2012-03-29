@@ -22,9 +22,12 @@ public class TCPSocketReader extends BaseSocketReader{
 	private TCPRMTImpl rmt = null;
 	
 	private RIBDaemon ribdaemon = null;
+	
+	private int portId = 0;
 
-	public TCPSocketReader(Socket socket, RIBDaemon ribdaemon, Delimiter delimiter, TCPRMTImpl rmt){
+	public TCPSocketReader(Socket socket, int portId, RIBDaemon ribdaemon, Delimiter delimiter, TCPRMTImpl rmt){
 		super(socket, delimiter);
+		this.portId = portId;
 		this.ribdaemon = ribdaemon;
 		this.rmt = rmt;
 	}
@@ -35,7 +38,7 @@ public class TCPSocketReader extends BaseSocketReader{
 	 */
 	public void processPDU(byte[] pdu){
 		log.debug("Passing the PDU to the RIB Daemon");
-		ribdaemon.cdapMessageDelivered(pdu, getSocket().getPort());
+		ribdaemon.cdapMessageDelivered(pdu, portId);
 	}
 	
 	/**
@@ -43,7 +46,7 @@ public class TCPSocketReader extends BaseSocketReader{
 	 */
 	public void socketDisconnected(){
 		log.debug("Notifying the RMT and the RIB Daemon");
-		this.rmt.connectionEnded(getSocket().getPort());
-		this.ribdaemon.flowDeallocated(getSocket().getPort());
+		this.rmt.connectionEnded(portId);
+		this.ribdaemon.flowDeallocated(portId);
 	}
 }

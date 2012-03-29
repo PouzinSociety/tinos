@@ -1,8 +1,8 @@
 package rina.cdap.api;
 
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.cdap.api.message.AuthValue;
 import rina.cdap.api.message.CDAPMessage.AuthTypes;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 /**
  * Describes a CDAPSession, by identifying the source and destination application processes.

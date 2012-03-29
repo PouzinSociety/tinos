@@ -19,9 +19,10 @@ import rina.encoding.api.Encoder;
 import rina.idd.api.InterDIFDirectory;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcmanager.impl.apservice.FlowServiceState.Status;
+import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
 import rina.ipcservice.api.APService;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.ApplicationRegistration;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
@@ -114,27 +115,19 @@ public class APServiceImpl implements APService{
 			return;
 		}
 		
-		//TODO currently choosing the first DIF suggested by the IDD
-		List<String> difNames = interDIFDirectory.mapApplicationProcessNamingInfoToDIFName(flowService.getDestinationAPNamingInfo());
-		String difName = null;
-		if (difNames != null){
-			difName = difNames.get(0);
-		}else{
-			CDAPMessage errorMessage = cdapMessage.getReplyMessage();
-			errorMessage.setResult(1);
-			errorMessage.setResultReason("Could not find a DIF for application process "+flowService.getDestinationAPNamingInfo());
-			sendErrorMessageAndCloseSocket(errorMessage, socket);
-			return;
-		}
+		//TODO should ask the IDD, but we don't have one yet, and there can be a single DIF per system only
 		
 		//Look for the local IPC Process that is a member of difName
-		IPCService ipcService = (IPCService) ipcProcessFactory.getIPCProcessBelongingToDIF(difName);
-		if (ipcService == null){
+		List<IPCProcess> ipcProcesses = ipcProcessFactory.listIPCProcesses();
+		IPCService ipcService = null;
+		if (ipcProcesses == null || ipcProcesses.size() == 0){
 			CDAPMessage errorMessage = cdapMessage.getReplyMessage();
 			errorMessage.setResult(1);
-			errorMessage.setResultReason("Could not find an IPC Process belonging to DIF " + difName + " in this system");
+			errorMessage.setResultReason("Could not find an IPC Process in this system");
 			sendErrorMessageAndCloseSocket(errorMessage, socket);
 			return;
+		}else{
+			ipcService = (IPCService) ipcProcesses.get(0);
 		}
 		
 		//Once we have the IPCService, invoke allocate request
@@ -243,8 +236,7 @@ public class APServiceImpl implements APService{
 					ipcService.unregister(apNamingInfo);
 				}
 			}
-			
-			interDIFDirectory.removeMapping(apNamingInfo, difNames);			
+					
 			applicationRegistrations.remove(apNamingInfo.getEncodedString());
 			log.info("Application "+apNamingInfo.getEncodedString()+" implicitly canceled the registration with DIF(s) "+printStringList(difNames));
 		}
@@ -285,8 +277,6 @@ public class APServiceImpl implements APService{
 				ipcService.register(applicationRegistration.getApNamingInfo());
 			}
 		}
-		
-		interDIFDirectory.addMapping(applicationRegistration.getApNamingInfo(), difNames);
 
 		//Reply to the application
 		try{
@@ -333,8 +323,6 @@ public class APServiceImpl implements APService{
 				ipcService.unregister(apNamingInfo);
 			}
 		}
-		
-		interDIFDirectory.removeMapping(apNamingInfo, difNames);
 		
 		//Reply to the application
 		try{

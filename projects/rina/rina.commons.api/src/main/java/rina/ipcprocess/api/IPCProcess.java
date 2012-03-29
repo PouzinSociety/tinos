@@ -6,11 +6,11 @@ import java.util.Map;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.efcp.api.DataTransferConstants;
 import rina.enrollment.api.Neighbor;
+import rina.flowallocator.api.Flow;
 import rina.flowallocator.api.QoSCube;
-import rina.flowallocator.api.message.Flow;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcservice.api.APService;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 /**
  * Represents an IPC Process. Holds together the different components of the IPC 

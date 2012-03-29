@@ -2,7 +2,7 @@ package rina.encoding.impl.googleprotobuf.flowservice;
 
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.impl.googleprotobuf.GPBUtils;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 

@@ -51,25 +51,42 @@ public class NeighborSetRIBObject extends BaseRIBObject{
 	@Override
 	public void create(String objectClass, long objectInstance, String objectName, Object objectValue) throws RIBDaemonException{
 		if (objectValue instanceof Neighbor){
-			NeighborRIBObject ribObject = new NeighborRIBObject(this.getIPCProcess(), objectName, (Neighbor) objectValue);
-			this.addChild(ribObject);
-			getRIBDaemon().addRIBObject(ribObject);
+			this.createOrUpdateNeighbor(objectName, (Neighbor) objectValue);
 		}else if (objectValue instanceof Neighbor[]){
 			Neighbor[] neighbors = (Neighbor[]) objectValue;
 			String candidateObjectName = null;
 			
 			for(int i=0; i<neighbors.length; i++){
-				candidateObjectName = this.getObjectName() + RIBObjectNames.SEPARATOR + neighbors[i].getKey();
-				if (!this.hasChild(candidateObjectName)){
-					NeighborRIBObject ribObject = new NeighborRIBObject(this.getIPCProcess(), candidateObjectName, neighbors[i]);
-					this.addChild(ribObject);
-					getRIBDaemon().addRIBObject(ribObject);
-				}
+				candidateObjectName = this.getObjectName() + RIBObjectNames.SEPARATOR + neighbors[i].getApplicationProcessName();
+				this.createOrUpdateNeighbor(candidateObjectName, neighbors[i]);
 			}
-			
 		}else{
 			throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME, 
 					"Object class ("+objectValue.getClass().getName()+") does not match object name "+objectName);
+		}
+	}
+	
+	/**
+	 * Create or update a child Neighbor RIB Object
+	 * @param objectName
+	 * @param objectValue
+	 */
+	private void createOrUpdateNeighbor(String objectName, Neighbor neighbor) throws RIBDaemonException{
+		//Avoid creating myself as a neighbor
+		if (neighbor.getApplicationProcessName().equals(this.getRIBDaemon().getIPCProcess().getApplicationProcessName())){
+			return;
+		}
+		
+		RIBObject child = this.getChild(objectName);
+		if (child == null){
+			//Create the new RIBOBject
+			child = new NeighborRIBObject(this.getIPCProcess(), objectName, neighbor);
+			this.addChild(child);
+			child.setParent(this);
+			getRIBDaemon().addRIBObject(child);
+		}else{
+			//Update the existing RIBObject
+			child.write(neighbor);
 		}
 	}
 

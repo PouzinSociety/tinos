@@ -89,7 +89,7 @@ public class MockCDAPSessionManager extends BaseCDAPSessionManager{
 		return null;
 	}
 
-	public int getPortId(String arg0, String arg1) throws CDAPException {
+	public int getPortId(String arg0) throws CDAPException {
 		// TODO Auto-generated method stub
 		return 0;
 	}

@@ -1,7 +1,5 @@
 package rina.ribdaemon.api;
 
-import rina.cdap.api.CDAPSessionDescriptor;
-import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcess;
 
 /**

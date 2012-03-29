@@ -18,7 +18,7 @@ import rina.applibrary.api.SDUListener;
 import rina.applibrary.impl.DefaultApplicationRegistrationImpl;
 import rina.applibrary.impl.DefaultFlowAcceptor;
 import rina.applibrary.impl.DefaultFlowImpl;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 
 public class RINASocketImpl extends SocketImpl implements SDUListener{

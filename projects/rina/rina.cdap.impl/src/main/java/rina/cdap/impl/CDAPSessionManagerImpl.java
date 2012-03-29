@@ -24,6 +24,8 @@ import rina.configuration.RINAConfiguration;
 
 public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	
+	public static final long DEFAULT_TIMEOUT_IN_MS = 10000;
+	
 	private static final Log log = LogFactory.getLog(CDAPSessionManagerImpl.class);
 	
 	private WireMessageProviderFactory wireMessageProviderFactory = null;
@@ -42,7 +44,11 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	
 	public CDAPSessionManagerImpl(){
 		cdapSessions = new HashMap<Integer, CDAPSession>();
-		timeout = RINAConfiguration.getInstance().getLocalConfiguration().getCdapTimeoutInMs();
+		try{
+			timeout = RINAConfiguration.getInstance().getLocalConfiguration().getCdapTimeoutInMs();
+		}catch(Exception ex){
+			timeout = DEFAULT_TIMEOUT_IN_MS;
+		}
 	}
 
 	public synchronized CDAPSession createCDAPSession(int portId) {
@@ -213,28 +219,21 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	
 	/**
 	 * Return the portId of the (N-1) Flow that supports the CDAP Session
-	 * with the IPC process identified by destinationApplicationProcessName and destinationApplicationProcessInstance
+	 * with the IPC process identified by destinationApplicationProcessName
 	 * @param destinationApplicationProcessName
-	 * @param destinationApplicationProcessInstance
 	 * @throws CDAPException
 	 */
-	public synchronized int getPortId(String destinationApplicationProcessName, String destinationApplicationProcessInstance) throws CDAPException{
+	public synchronized int getPortId(String destinationApplicationProcessName) throws CDAPException{
 		Iterator<Integer> iterator = this.cdapSessions.keySet().iterator();
 		CDAPSession currentSession = null;
 		while(iterator.hasNext()){
 			currentSession = this.cdapSessions.get(iterator.next());
 			if (currentSession.getSessionDescriptor().getDestApName().equals(destinationApplicationProcessName)){
-				if (destinationApplicationProcessInstance != null){
-					if (destinationApplicationProcessInstance.equals(currentSession.getSessionDescriptor().getDestApInst())){
-						return currentSession.getPortId();
-					}
-				}else{
 					return currentSession.getPortId();
-				}
 			}
 		}
 		
-		throw new CDAPException("Don't have a running CDAP sesion to "+ destinationApplicationProcessName + " " + destinationApplicationProcessInstance);
+		throw new CDAPException("Don't have a running CDAP sesion to "+ destinationApplicationProcessName);
 	}
 	
 	/**

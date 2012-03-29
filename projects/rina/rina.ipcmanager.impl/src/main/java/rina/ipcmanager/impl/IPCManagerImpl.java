@@ -1,5 +1,8 @@
 package rina.ipcmanager.impl;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -7,6 +10,9 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import rina.applicationprocess.api.WhatevercastName;
 import rina.configuration.DIFConfiguration;
@@ -18,7 +24,7 @@ import rina.enrollment.api.EnrollmentTask;
 import rina.enrollment.api.Neighbor;
 import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.flowallocator.api.QoSCube;
-import rina.flowallocator.api.message.Flow;
+import rina.flowallocator.api.Flow;
 import rina.idd.api.InterDIFDirectoryFactory;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcmanager.impl.apservice.APServiceImpl;
@@ -26,7 +32,7 @@ import rina.ipcmanager.impl.console.IPCManagerConsole;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
 import rina.ipcservice.api.APService;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCService;
 import rina.ribdaemon.api.BaseRIBDaemon;
@@ -47,6 +53,9 @@ public class IPCManagerImpl implements IPCManager{
 	
 	private static final Log log = LogFactory.getLog(IPCManagerImpl.class);
 	
+	public static final String CONFIG_FILE_LOCATION = "config/rina/config.rina"; 
+	public static final long CONFIG_FILE_POLL_PERIOD_IN_MS = 5000;
+	
 	private IPCManagerConsole console = null;
 	
 	/**
@@ -63,11 +72,62 @@ public class IPCManagerImpl implements IPCManager{
 	
 	public IPCManagerImpl(){
 		executorService = Executors.newCachedThreadPool();
-		RINAConfiguration.initialize(executorService);
+		initializeConfiguration();
 		console = new IPCManagerConsole(this);
 		apService = new APServiceImpl(this);
 		executorService.execute(console);
 		log.debug("IPC Manager started");
+	}
+	
+	private void initializeConfiguration(){
+		//Read config file
+		RINAConfiguration rinaConfiguration = readConfigurationFile();
+		RINAConfiguration.setConfiguration(rinaConfiguration);
+		
+		//Start thread that will look for config file changes
+		Runnable configFileChangeRunnable = new Runnable(){
+			private long currentLastModified = 0;
+			private RINAConfiguration rinaConfiguration = null;
+
+			public void run(){
+				File file = new File(CONFIG_FILE_LOCATION);
+
+				while(true){
+					if (file.lastModified() > currentLastModified) {
+						log.debug("Configuration file changed, loading the new content");
+						currentLastModified = file.lastModified();
+						rinaConfiguration = readConfigurationFile();
+						RINAConfiguration.setConfiguration(rinaConfiguration);
+					}
+					try {
+						Thread.sleep(CONFIG_FILE_POLL_PERIOD_IN_MS);
+					}catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+
+		};
+
+		executorService.execute(configFileChangeRunnable);
+	}
+	
+	private RINAConfiguration readConfigurationFile(){
+		try {
+    		ObjectMapper objectMapper = new ObjectMapper();
+    		RINAConfiguration rinaConfiguration = (RINAConfiguration) 
+    			objectMapper.readValue(new FileInputStream(CONFIG_FILE_LOCATION), RINAConfiguration.class);
+    		log.info("Read configuration file");
+    		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    		objectMapper.writer(new DefaultPrettyPrinter()).writeValue(outputStream, rinaConfiguration);
+    		log.info(outputStream.toString());
+    		return rinaConfiguration;
+    	} catch (Exception ex) {
+    		log.error(ex);
+    		ex.printStackTrace();
+    		log.debug("Could not find the main configuration file.");
+    		return null;
+        }
 	}
 	
 	/**

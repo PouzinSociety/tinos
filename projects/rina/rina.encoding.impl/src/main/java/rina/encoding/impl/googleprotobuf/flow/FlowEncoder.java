@@ -5,8 +5,8 @@ import java.util.List;
 
 import rina.encoding.api.BaseEncoder;
 import rina.flowallocator.api.ConnectionId;
-import rina.flowallocator.api.message.Flow;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.flowallocator.api.Flow;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 import rina.encoding.impl.googleprotobuf.GPBUtils;
 import rina.encoding.impl.googleprotobuf.apnaminginfo.ApplicationProcessNamingInfoMessage;

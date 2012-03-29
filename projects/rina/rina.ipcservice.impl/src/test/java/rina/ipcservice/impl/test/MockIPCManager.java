@@ -1,7 +1,7 @@
 package rina.ipcservice.impl.test;
 
 import rina.flowallocator.api.FlowAllocatorInstance;
-import rina.flowallocator.api.message.Flow;
+import rina.flowallocator.api.Flow;
 import rina.idd.api.InterDIFDirectoryFactory;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcservice.api.APService;

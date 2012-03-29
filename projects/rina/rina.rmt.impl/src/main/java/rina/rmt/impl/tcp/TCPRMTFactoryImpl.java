@@ -3,7 +3,7 @@ package rina.rmt.impl.tcp;
 import java.util.HashMap;
 import java.util.Map;
 
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.rmt.api.RMT;
 import rina.rmt.api.RMTFactory;
 

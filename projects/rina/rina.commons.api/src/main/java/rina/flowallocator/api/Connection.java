@@ -4,8 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 
-import rina.flowallocator.api.message.Flow;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 
 /**

@@ -5,7 +5,7 @@ import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.impl.RIBDaemonFactoryImpl;
 

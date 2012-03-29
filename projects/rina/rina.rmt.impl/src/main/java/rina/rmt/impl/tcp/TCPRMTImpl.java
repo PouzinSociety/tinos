@@ -121,8 +121,9 @@ public class TCPRMTImpl extends BaseRMT{
 		}
 		
 		Socket socket = new Socket(ipcConf.getHostName(), ipcConf.getRmtPortNumber());
-		newConnectionAccepted(socket);
-		return socket.getPort();
+		int portId = socket.getLocalPort();
+		newConnectionAccepted(socket, portId);
+		return portId;
 	}
 	
 	/**
@@ -173,11 +174,11 @@ public class TCPRMTImpl extends BaseRMT{
 	 * socket
 	 * @param socket
 	 */
-	public void newConnectionAccepted(Socket socket){
-		flowTable.put(new Integer(socket.getPort()), socket);
+	public void newConnectionAccepted(Socket socket, int portId){
+		flowTable.put(new Integer(portId), socket);
 		Delimiter delimiter = (Delimiter) getIPCProcess().getIPCProcessComponent(BaseDelimiter.getComponentName());
 		RIBDaemon ribdaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-		TCPSocketReader tcpSocketReader = new TCPSocketReader(socket, ribdaemon, delimiter, this);
+		TCPSocketReader tcpSocketReader = new TCPSocketReader(socket, portId, ribdaemon, delimiter, this);
 		this.getIPCProcess().execute(tcpSocketReader);
 	}
 	

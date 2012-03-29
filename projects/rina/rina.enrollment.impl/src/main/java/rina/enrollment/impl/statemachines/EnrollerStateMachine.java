@@ -21,7 +21,7 @@ import rina.enrollment.api.EnrollmentTask;
 import rina.enrollment.api.Neighbor;
 import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.QoSCube;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
@@ -415,7 +415,7 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 						RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME, 0, false);
 				sendCDAPMessage(startMessage);
 				ribDaemon.create(Neighbor.NEIGHBOR_RIB_OBJECT_CLASS, 
-						Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + remotePeer.getKey(), 
+						Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + remotePeer.getApplicationProcessName(), 
 						remotePeer);
 			}catch(Exception ex){
 				log.error(ex);

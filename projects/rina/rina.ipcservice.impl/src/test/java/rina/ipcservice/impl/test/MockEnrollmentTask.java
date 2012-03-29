@@ -1,11 +1,12 @@
 package rina.ipcservice.impl.test;
 
+import java.util.List;
+
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
-import rina.enrollment.api.AddressManager;
 import rina.enrollment.api.BaseEnrollmentTask;
 import rina.enrollment.api.Neighbor;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 public class MockEnrollmentTask extends BaseEnrollmentTask{
 
@@ -35,11 +36,6 @@ public class MockEnrollmentTask extends BaseEnrollmentTask{
 		
 	}
 
-	public AddressManager getAddressManager() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	/**
 	 * Starts the enrollment program
 	 * @param cdapMessage
@@ -58,6 +54,16 @@ public class MockEnrollmentTask extends BaseEnrollmentTask{
 	public void releaseResponse(CDAPMessage arg0, CDAPSessionDescriptor arg1) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public List<String> getEnrolledIPCProcessNames() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public boolean isEnrolledTo(String arg0) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

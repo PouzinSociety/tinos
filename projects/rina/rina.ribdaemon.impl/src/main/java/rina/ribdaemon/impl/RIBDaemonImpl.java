@@ -373,7 +373,8 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	public void addRIBObject(RIBObject ribObject) throws RIBDaemonException{
 		rib.addRIBObject(ribObject);
 		log.info("RIBObject with objectname "+ribObject.getObjectName()+", objectClass "+ribObject.getObjectClass()+", " +
-				"objectInstance "+ribObject.getObjectInstance()+" added to the RIB");
+				"objectInstance "+ribObject.getObjectInstance()+" and object value " + ribObject.getObjectValue() +
+				" added to the RIB");
 	}
 	
 	/**
@@ -585,7 +586,6 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 
 	@Override
 	public synchronized RIBObject read(String objectClass, long objectInstance, String objectName) throws RIBDaemonException {
-		log.debug("Local operation read called on object "+objectName);
 		validateObjectArguments(objectClass, objectInstance, objectName);
 		return getRIBObject(objectClass, objectInstance, objectName);
 	}

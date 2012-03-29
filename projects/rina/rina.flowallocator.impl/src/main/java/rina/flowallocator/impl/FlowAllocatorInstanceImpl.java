@@ -24,7 +24,7 @@ import rina.encoding.api.Encoder;
 import rina.flowallocator.api.Connection;
 import rina.flowallocator.api.FlowAllocator;
 import rina.flowallocator.api.FlowAllocatorInstance;
-import rina.flowallocator.api.message.Flow;
+import rina.flowallocator.api.Flow;
 import rina.flowallocator.impl.policies.NewFlowRequestPolicy;
 import rina.flowallocator.impl.policies.NewFlowRequestPolicyImpl;
 import rina.flowallocator.impl.tcp.TCPSocketReader;
@@ -243,16 +243,17 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		flow.setSourcePortId(portId);
 		flow.setTcpRendezvousId(socket.getLocalPort());
 		
-		//4 Map the address to the port id through which I can reach the destination application process name
-		int rmtPortId = Utils.mapAddressToPortId(destinationAddress, flowAllocator.getIPCProcess());
+		//4 get the portId of the CDAP session to the destination application process name
+		int cdapSessionId = Utils.mapAddressToPortId(destinationAddress, flowAllocator.getIPCProcess());
 		
 		//5 Encode the flow object and send it to the destination IPC process
 		try{
 			objectValue = new ObjectValue();
 			objectValue.setByteval(this.encoder.encode(flow));
-			cdapMessage = cdapSessionManager.getCreateObjectRequestMessage(rmtPortId, null, null, "flow", 0, objectName, objectValue, 0, true);
-			this.ribDaemon.sendMessage(cdapMessage, rmtPortId, this);
-			this.underlyingPortId = rmtPortId;
+			cdapMessage = cdapSessionManager.getCreateObjectRequestMessage(cdapSessionId, null, null, 
+					Flow.FLOW_RIB_OBJECT_CLASS, 0, objectName, objectValue, 0, true);
+			this.ribDaemon.sendMessage(cdapMessage, cdapSessionId, this);
+			this.underlyingPortId = cdapSessionId;
 			this.requestMessage = cdapMessage;
 		}catch(Exception ex){
 			log.error(ex);

@@ -44,11 +44,17 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 		
 		//Decode the object
 		try{
-			directoryForwardingTableEntries = (DirectoryForwardingTableEntry[]) 
-				this.getEncoder().decode(cdapMessage.getObjValue().getByteval(), DirectoryForwardingTableEntry[].class);
+			if (cdapMessage.getObjName().equals(DirectoryForwardingTable.DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME)){
+				directoryForwardingTableEntries = (DirectoryForwardingTableEntry[]) 
+					this.getEncoder().decode(cdapMessage.getObjValue().getByteval(), DirectoryForwardingTableEntry[].class);
+			}else{
+				directoryForwardingTableEntries = new DirectoryForwardingTableEntry[]{ (DirectoryForwardingTableEntry)
+					this.getEncoder().decode(cdapMessage.getObjValue().getByteval(), DirectoryForwardingTableEntry.class)};
+			}
 		}catch(Exception ex){
 			throw new RIBDaemonException(RIBDaemonException.PROBLEMS_DECODING_OBJECT, ex.getMessage());
 		}
+		
 		
 		//Find out what objects have to be updated or created
 		for(int i=0; i<directoryForwardingTableEntries.length; i++){
@@ -57,6 +63,11 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 			if (currentEntry == null || !currentEntry.equals(directoryForwardingTableEntries[i])){
 				entriesToCreateOrUpdate.add(directoryForwardingTableEntries[i]);
 			}
+		}
+		
+		if (entriesToCreateOrUpdate.size() == 0){
+			log.debug("No directory forwarding table entries to create or update");
+			return;
 		}
 		
 		//Tell the RIB Daemon to create or update the objects, and notify everyone except the neighbor that 
@@ -69,8 +80,10 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 				notificationObject = new NotificationPolicy(new int[]{cdapSessionDescriptor.getPortId()});
 			}
 			
-			this.getRIBDaemon().create(cdapMessage.getObjClass(), cdapMessage.getObjName(),
-					entriesToCreateOrUpdate.toArray(new DirectoryForwardingTableEntry[]{}), notificationObject);
+			this.getRIBDaemon().create(DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_ENTRY_SET_RIB_OBJECT_CLASS, 
+					DirectoryForwardingTable.DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME,
+					entriesToCreateOrUpdate.toArray(new DirectoryForwardingTableEntry[]{}), 
+					notificationObject);
 		}catch(RIBDaemonException ex){
 			log.error(ex.getMessage());
 			ex.printStackTrace();
@@ -87,6 +100,8 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 			for(int i=0; i<entries.length; i++){
 				createOrUpdateChildObject(entries[i]);
 			}
+		}else if (object instanceof DirectoryForwardingTableEntry){
+			createOrUpdateChildObject((DirectoryForwardingTableEntry) object);
 		}else{
 			throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME, 
 					"Object class ("+object.getClass().getName()+") does not match object name "+objectName);
@@ -106,6 +121,7 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 
 			//Add it as a child
 			this.getChildren().add(ribObject);
+			ribObject.setParent(this);
 
 			//Add it to the RIB
 			try{
@@ -131,8 +147,13 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 		if (cdapMessage.getObjValue().getByteval() != null){
 			//Decode the object
 			try{
-				directoryForwardingTableEntries = (DirectoryForwardingTableEntry[]) 
-				this.getEncoder().decode(cdapMessage.getObjValue().getByteval(), DirectoryForwardingTableEntry[].class);
+				if (cdapMessage.getObjName().equals(DirectoryForwardingTable.DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME)){
+					directoryForwardingTableEntries = (DirectoryForwardingTableEntry[]) 
+						this.getEncoder().decode(cdapMessage.getObjValue().getByteval(), DirectoryForwardingTableEntry[].class);
+				}else{
+					directoryForwardingTableEntries = new DirectoryForwardingTableEntry[]{ (DirectoryForwardingTableEntry)
+						this.getEncoder().decode(cdapMessage.getObjValue().getByteval(), DirectoryForwardingTableEntry.class)};
+				}
 			}catch(Exception ex){
 				throw new RIBDaemonException(RIBDaemonException.PROBLEMS_DECODING_OBJECT, ex.getMessage());
 			}
@@ -148,6 +169,11 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 			}
 		}
 		
+		if(entriesToDelete == null || entriesToDelete.size() == 0){
+			log.debug("No directory forwarding table entries to delete");
+			return;
+		}
+		
 		//Tell the RIB Daemon to delete the objects, and notify everyone except the neighbor that 
 		//has notified me
 		try{
@@ -156,7 +182,7 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 				objectValue = entriesToDelete.toArray(new DirectoryForwardingTableEntry[]{});
 			}
 			NotificationPolicy notificationObject = new NotificationPolicy(new int[]{cdapSessionDescriptor.getPortId()});
-			this.getRIBDaemon().delete(cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName(),
+			this.getRIBDaemon().delete(this.getObjectClass(), this.getObjectInstance(), this.getObjectName(),
 					objectValue, notificationObject);
 		}catch(RIBDaemonException ex){
 			log.error(ex.getMessage());
@@ -185,6 +211,13 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 					getChildren().remove(ribObject);
 					getRIBDaemon().removeRIBObject(ribObject);
 				}
+			}
+		}else if (objectValue instanceof DirectoryForwardingTableEntry){
+			DirectoryForwardingTableEntry entry = (DirectoryForwardingTableEntry) objectValue;
+			ribObject = this.getObject(entry.getKey());
+			if (ribObject != null){
+				getChildren().remove(ribObject);
+				getRIBDaemon().removeRIBObject(ribObject);
 			}
 		}else{
 			throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME, 

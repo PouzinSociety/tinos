@@ -14,7 +14,7 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.encoding.api.Encoder;
 import rina.enrollment.api.EnrollmentTask;
 import rina.enrollment.api.Neighbor;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBDaemon;
 
 /**

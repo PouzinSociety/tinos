@@ -9,9 +9,9 @@ import org.junit.Test;
 
 import rina.encoding.impl.googleprotobuf.flow.FlowEncoder;
 import rina.flowallocator.api.ConnectionId;
-import rina.flowallocator.api.message.Flow;
+import rina.flowallocator.api.Flow;
 import rina.ipcprocess.api.IPCProcess;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 
 /**

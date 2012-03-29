@@ -1,6 +1,6 @@
 package rina.flowallocator.api;
 
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBObjectNames;
 
 /**

@@ -3,15 +3,12 @@ package rina.ipcservice.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applicationprocess.api.WhatevercastName;
-import rina.cdap.api.CDAPSessionDescriptor;
-import rina.cdap.api.message.CDAPMessage;
 import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.DirectoryForwardingTableEntry;
 import rina.flowallocator.api.FlowAllocator;
 import rina.ipcprocess.api.BaseIPCProcess;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
@@ -137,8 +134,8 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 		try{
 			NotificationPolicy notificationPolicy = new NotificationPolicy(new int[0]);
 			ribDaemon.delete(DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_ENTRY_RIB_OBJECT_CLASS, 
-					DirectoryForwardingTable.DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR 
-					+ apNamingInfo.getEncodedString(), notificationPolicy);
+					DirectoryForwardingTable.DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + 
+					apNamingInfo.getEncodedString(), null, notificationPolicy);
 		}catch(RIBDaemonException ex){
 			log.error(ex);
 		}

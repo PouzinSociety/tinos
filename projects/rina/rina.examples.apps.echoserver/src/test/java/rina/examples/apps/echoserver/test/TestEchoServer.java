@@ -20,7 +20,7 @@ import rina.cdap.api.message.ObjectValue;
 import rina.delimiting.api.Delimiter;
 import rina.encoding.api.Encoder;
 import rina.examples.apps.echoserver.EchoServer;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.ApplicationRegistration;
 import rina.ipcservice.api.FlowService;
 

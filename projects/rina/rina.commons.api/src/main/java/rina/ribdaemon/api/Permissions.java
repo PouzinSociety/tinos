@@ -2,7 +2,7 @@ package rina.ribdaemon.api;
 
 import java.util.List;
 
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 /**
  * Permissions of a certain application on 

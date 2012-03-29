@@ -5,7 +5,7 @@ import java.util.Map;
 
 import rina.flowallocator.api.FlowAllocator;
 import rina.flowallocator.api.FlowAllocatorFactory;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 public class FlowAllocatorFactoryImpl implements FlowAllocatorFactory{
 

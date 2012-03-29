@@ -2,7 +2,7 @@ package rina.idd.api;
 
 import java.util.List;
 
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 /**
  * Maps application process names to the DIF from where they are available

@@ -21,7 +21,7 @@ import rina.ipcmanager.impl.IPCManagerImpl;
 import rina.ipcmanager.impl.apservice.APServiceTCPServer;
 import rina.ipcmanager.impl.console.IPCManagerConsole;
 import rina.ipcprocess.api.IPCProcessFactory;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.ApplicationRegistration;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCService;

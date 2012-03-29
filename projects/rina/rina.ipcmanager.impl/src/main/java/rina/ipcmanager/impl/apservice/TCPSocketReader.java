@@ -11,7 +11,7 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.delimiting.api.BaseSocketReader;
 import rina.delimiting.api.Delimiter;
 import rina.encoding.api.Encoder;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.ApplicationRegistration;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;

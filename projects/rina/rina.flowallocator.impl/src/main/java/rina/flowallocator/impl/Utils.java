@@ -10,7 +10,7 @@ import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPSessionManager;
 import rina.enrollment.api.Neighbor;
 import rina.ipcprocess.api.IPCProcess;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 
 /**
@@ -30,21 +30,21 @@ public class Utils {
 	public static synchronized int mapAddressToPortId(long address, IPCProcess ipcProcess) throws IPCException{
 		CDAPSessionManager cdapSessionManager = (CDAPSessionManager) ipcProcess.getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 		List<Neighbor> neighbors = null;
-		Neighbor dafMember = null;
-		int rmtPortId = 0;
+		Neighbor neighbor = null;
+		int portId = 0;
 		
 		try{
 			neighbors = ipcProcess.getNeighbors();
 			
 			for(int i=0; i<neighbors.size(); i++){
-				dafMember = neighbors.get(i);
-				if (dafMember.getAddress() == address){
-					rmtPortId = cdapSessionManager.getPortId(dafMember.getApplicationProcessName(), dafMember.getApplicationProcessInstance());
+				neighbor = neighbors.get(i);
+				if (neighbor.getAddress() == address){
+					portId = cdapSessionManager.getPortId(neighbor.getApplicationProcessName());
 					break;
 				}
 			}
 			
-			if (rmtPortId == 0){
+			if (portId == 0){
 				String message = "Could not find the application process name of the IPC process whose address is "+address;
 				log.error(message);
 				throw new IPCException(5, message);
@@ -54,7 +54,7 @@ public class Utils {
 			throw new IPCException(5, ex.getMessage());
 		}
 		
-		return rmtPortId;
+		return portId;
 	}
 	
 	/**

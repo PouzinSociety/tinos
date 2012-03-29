@@ -2,7 +2,7 @@ package rina.ipcservice.impl.test;
 
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.DataTransferAEFactory;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 public class MockDataTransferAEFactory implements DataTransferAEFactory{
 
