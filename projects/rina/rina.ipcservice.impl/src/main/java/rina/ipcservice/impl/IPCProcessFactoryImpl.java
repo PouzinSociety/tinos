@@ -121,19 +121,18 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	}
 
 	/**
-	 * 
-	 * @param ipcProcessName the application process name of this IPC process, must be unique
-	 * @return
-	 * @throws Exception
+	 * Creates a new IPC process
+	 * @param apName the application process name of this IPC process
+	 * @param apInstance the application process instance of this IPC process
 	 */
-	public IPCProcess createIPCProcess(String ipcProcessName) throws Exception{
-		if (ipcProcesses.get(ipcProcessName) != null){
-			throw new Exception("An IPC Process with this name already exists in this system");
+	public IPCProcess createIPCProcess(String apName, String apInstance) throws Exception{
+		if (ipcProcesses.get(apName+"-"+apInstance) != null){
+			throw new Exception("An IPC Process with this name/instance pair already exists in this system");
 		}
 		
 		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo();
-		apNamingInfo.setApplicationProcessName(ipcProcessName);
-		apNamingInfo.setApplicationProcessInstance(""+this.getIPCProcessInstanceId());
+		apNamingInfo.setApplicationProcessName(apName);
+		apNamingInfo.setApplicationProcessInstance(apInstance);
 		
 		RIBDaemon ribDaemon = null;
 		IPCProcess ipcProcess = null;
@@ -196,20 +195,21 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 			throw new Exception("Flow Allocator Factory is null");
 		}
 		
-		ipcProcesses.put(ipcProcessName, ipcProcess);
+		ipcProcesses.put(apName+"-"+apInstance, ipcProcess);
 		return ipcProcess;
 	}
-	
-	private int getIPCProcessInstanceId(){
-		return new Double(100*Math.random()).intValue();
-	}
 
-	public void destroyIPCProcess(String ipcProcessName) throws Exception{
-		if (ipcProcesses.get(ipcProcessName) == null){
+	/**
+	 * Destroys an existing IPC process
+	 * @param applicationProcessName the application process name of this IPC process
+	 * @param applicationProcessInstance the application process instance of this IPC process
+	 */
+	public void destroyIPCProcess(String apName, String apInstance) throws Exception{
+		if (ipcProcesses.get(apName+"-"+apInstance) == null){
 			throw new Exception("An IPC Process with this naming information does not exist in this system");
 		}
 		
-		IPCProcess ipcProcess = ipcProcesses.remove(ipcProcessName);
+		IPCProcess ipcProcess = ipcProcesses.remove(apName+"-"+apInstance);
 		ApplicationProcessNamingInfo apNamingInfo = ipcProcess.getApplicationProcessNamingInfo();
 		
 		ribDaemonFactory.destroyRIBDaemon(apNamingInfo);
@@ -222,14 +222,20 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 
 	public void destroyIPCProcess(IPCProcess ipcProcess){
 		try{
-			this.destroyIPCProcess(ipcProcess.getApplicationProcessName());
+			this.destroyIPCProcess(ipcProcess.getApplicationProcessName(), 
+					ipcProcess.getApplicationProcessInstance());
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
 	}
 
-	public IPCProcess getIPCProcess(String ipcProcessName) {
-		return ipcProcesses.get(ipcProcessName);
+	/**
+	 * Get an existing IPC process
+	 * @param applicationProcessName the application process name of this IPC process
+	 * @param applicationProcessInstance the application process instance of this IPC process
+	 */
+	public IPCProcess getIPCProcess(String apName, String apInstance){
+		return ipcProcesses.get(apName+"-"+apInstance);
 	}
 	
 	/**

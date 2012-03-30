@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import rina.applicationprocess.api.WhatevercastName;
 import rina.configuration.DIFConfiguration;
+import rina.configuration.IPCProcessToCreate;
 import rina.configuration.KnownIPCProcessConfiguration;
 import rina.configuration.RINAConfiguration;
 import rina.efcp.api.DataTransferConstants;
@@ -153,10 +154,33 @@ public class IPCManagerImpl implements IPCManager{
 		this.ipcProcessFactory = ipcProcessFactory;
 		ipcProcessFactory.setIPCManager(this);
 		apService.setIPCProcessFactory(ipcProcessFactory);
+		createInitialProcesses();
+	}
+	
+	/**
+	 * Create the initial IPC Processes as specified in the configuration file (if any)
+	 */
+	private void createInitialProcesses(){
+		RINAConfiguration rinaConfiguration = RINAConfiguration.getInstance();
+		if (rinaConfiguration.getIpcProcessesToCreate() == null){
+			return;
+		}
+		
+		IPCProcessToCreate currentProcess = null;
+		for(int i=0; i<rinaConfiguration.getIpcProcessesToCreate().size(); i++){
+			currentProcess = rinaConfiguration.getIpcProcessesToCreate().get(i);
+			try{
+				this.createIPCProcess(currentProcess.getApplicationProcessName(), 
+						currentProcess.getApplicationProcessInstance(), 
+						currentProcess.getDifName(), currentProcess.getNeighbors());
+			}catch(Exception ex){
+				log.error(ex);
+			}
+		}
 	}
 
-	public void createIPCProcess(String applicationProcessName, String difName) throws Exception{
-		IPCProcess ipcProcess = ipcProcessFactory.createIPCProcess(applicationProcessName);
+	public void createIPCProcess(String apName, String apInstance, String difName, List<Neighbor> neighbors) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.createIPCProcess(apName, apInstance);
 		ipcProcess.setIPCManager(this);
 		if (difName != null){
 			DIFConfiguration difConfiguration = RINAConfiguration.getInstance().getDIFConfiguration(difName);
@@ -165,9 +189,9 @@ public class IPCManagerImpl implements IPCManager{
 			}
 			
 			KnownIPCProcessConfiguration ipcProcessConfiguration = 
-				RINAConfiguration.getInstance().getIPCProcessConfiguration(applicationProcessName);
+				RINAConfiguration.getInstance().getIPCProcessConfiguration(apName);
 			if (ipcProcessConfiguration == null){
-				throw new Exception("Unrecoginzed IPC Process Name: "+applicationProcessName);
+				throw new Exception("Unrecoginzed IPC Process Name: "+apName);
 			}
 			
 			WhatevercastName dan = new WhatevercastName();
@@ -192,6 +216,12 @@ public class IPCManagerImpl implements IPCManager{
 					QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME, 
 					(QoSCube[]) difConfiguration.getQosCubes().toArray(new QoSCube[difConfiguration.getQosCubes().size()]));
 			
+			if (neighbors != null){
+				ribDaemon.create(Neighbor.NEIGHBOR_SET_RIB_OBJECT_CLASS, 
+						Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME, 
+						(Neighbor[]) neighbors.toArray(new Neighbor[neighbors.size()]));
+			}
+			
 			ribDaemon.start(RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_CLASS, 
 					RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME);
 
@@ -200,8 +230,8 @@ public class IPCManagerImpl implements IPCManager{
 		}
 	}
 	
-	public void destroyIPCProcesses(String applicationProcessName) throws Exception{
-		ipcProcessFactory.destroyIPCProcess(applicationProcessName);
+	public void destroyIPCProcesses(String apName, String apInstance) throws Exception{
+		ipcProcessFactory.destroyIPCProcess(apName, apInstance);
 	}
 	
 	public List<String> listIPCProcessesInformation(){
@@ -225,8 +255,8 @@ public class IPCManagerImpl implements IPCManager{
 		return ipcProcessesInformation;
 	}
 
-	public List<String> getPrintedRIB(String applicationProcessName) throws Exception{
-		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(applicationProcessName);
+	public List<String> getPrintedRIB(String apName, String apInstance) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(apName, apInstance);
 		RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		List<RIBObject> ribObjects = ribDaemon.getRIBObjects();
 		List<String> result = new ArrayList<String>();
@@ -245,27 +275,28 @@ public class IPCManagerImpl implements IPCManager{
 		return result;
 	}
 	
-	public void enroll(String sourceApplicationProcessName, String destinationApplicationProcessName) throws Exception{
-		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(sourceApplicationProcessName);
+	public void enroll(String sourceAPName, String sourceAPInstance, String destAPName, String destAPInstance) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(sourceAPName, sourceAPInstance);
 		EnrollmentTask enrollmentTask = (EnrollmentTask) ipcProcess.getIPCProcessComponent(BaseEnrollmentTask.getComponentName());
 		
 		Neighbor neighbor = new Neighbor();
-		neighbor.setApplicationProcessName(destinationApplicationProcessName);
+		neighbor.setApplicationProcessName(destAPName);
+		neighbor.setApplicationProcessInstance(destAPInstance);
 
 		enrollmentTask.initiateEnrollment(neighbor);
 	}
 	
-	public void allocateFlow(String sourceIPCProcessName, String destinationApplicationProcessName) throws Exception{
-		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(sourceIPCProcessName);
+	public void allocateFlow(String sourceAPName, String sourceAPInstance, String destAPName, String destAPInstance) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(sourceAPName, sourceAPInstance);
 		IPCService ipcService = (IPCService) ipcProcess;
 		FlowService flowService = new FlowService();
-		flowService.setDestinationAPNamingInfo(new ApplicationProcessNamingInfo(destinationApplicationProcessName));
+		flowService.setDestinationAPNamingInfo(new ApplicationProcessNamingInfo(destAPName, destAPInstance));
 		flowService.setSourceAPNamingInfo(new ApplicationProcessNamingInfo("console", "1"));
 		ipcService.submitAllocateRequest(flowService);
 	}
 	
-	public void deallocateFlow(String sourceIPCProcessName, int portId) throws Exception{
-		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(sourceIPCProcessName);
+	public void deallocateFlow(String sourceAPName, String sourceAPInstance, int portId) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(sourceAPName, sourceAPInstance);
 		IPCService ipcService = (IPCService) ipcProcess;
 		ipcService.submitDeallocate(portId);
 	}

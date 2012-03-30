@@ -28,29 +28,29 @@ public class IPCProcessFactoryImplTest {
 	
 	@Test
 	public void testFactory() throws Exception{
-		IPCProcess ipcProcess = factory.createIPCProcess("test1");
+		IPCProcess ipcProcess = factory.createIPCProcess("test1", "1");
 		Assert.assertNotNull(ipcProcess);
 		
-		ipcProcess = factory.getIPCProcess("test2");
+		ipcProcess = factory.getIPCProcess("test2", "1");
 		Assert.assertNull(ipcProcess);
 		
-		ipcProcess = factory.getIPCProcess("test1");
+		ipcProcess = factory.getIPCProcess("test1", "1");
 		Assert.assertNotNull(ipcProcess);
 		
-		factory.destroyIPCProcess("test1");
-		ipcProcess = factory.getIPCProcess("test1");
+		factory.destroyIPCProcess("test1", "1");
+		ipcProcess = factory.getIPCProcess("test1", "1");
 		Assert.assertNull(ipcProcess);
 		
-		ipcProcess = factory.createIPCProcess("test1");
+		ipcProcess = factory.createIPCProcess("test1", "1");
 		Assert.assertNotNull(ipcProcess);
 		
-		ipcProcess = factory.createIPCProcess("test2");
+		ipcProcess = factory.createIPCProcess("test2", "1");
 		Assert.assertNotNull(ipcProcess);
 		
 		Assert.assertEquals(2, factory.listIPCProcesses().size());
-		factory.destroyIPCProcess("test2");
+		factory.destroyIPCProcess("test2", "1");
 		Assert.assertEquals(1, factory.listIPCProcesses().size());
-		ipcProcess = factory.getIPCProcess("tes2");
+		ipcProcess = factory.getIPCProcess("test2", "1");
 		Assert.assertNull(ipcProcess);
 		
 		Assert.assertNotNull(factory.getCDAPSessionManagerFactory());

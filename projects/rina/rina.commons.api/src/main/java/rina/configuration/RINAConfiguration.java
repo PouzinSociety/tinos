@@ -15,6 +15,11 @@ public class RINAConfiguration {
 	private LocalConfiguration localConfiguration = null;
 	
 	/**
+	 * The list of IPC Process to create when the software starts
+	 */
+	private List<IPCProcessToCreate> ipcProcessesToCreate = null;
+	
+	/**
 	 * The configurations of zero or more DIFs
 	 */
 	private List<DIFConfiguration> difConfigurations = null;
@@ -45,6 +50,15 @@ public class RINAConfiguration {
 	
 	public LocalConfiguration getLocalConfiguration() {
 		return localConfiguration;
+	}
+
+	public List<IPCProcessToCreate> getIpcProcessesToCreate() {
+		return ipcProcessesToCreate;
+	}
+
+	public void setIpcProcessesToCreate(
+			List<IPCProcessToCreate> ipcProcessesToCreate) {
+		this.ipcProcessesToCreate = ipcProcessesToCreate;
 	}
 
 	public void setLocalConfiguration(LocalConfiguration localConfiguration) {

@@ -137,7 +137,7 @@ public class IPCManagerAppInteractionTest {
 			flowService.setDestinationAPNamingInfo(new ApplicationProcessNamingInfo("A", "1"));
 			flowService.setSourceAPNamingInfo(new ApplicationProcessNamingInfo("B", "1"));
 			flowService.setPortId(24);
-			MockIPCProcess ipcService = (MockIPCProcess) mockIPCProcessFactory.createIPCProcess(null);
+			MockIPCProcess ipcService = (MockIPCProcess) mockIPCProcessFactory.createIPCProcess(null, null);
 			ipcService.setFlowService(flowService);
 			String result = ipcManager.getAPService().deliverAllocateRequest(flowService, (IPCService) ipcService);
 			Assert.assertNull(result);

@@ -10,7 +10,7 @@ import rina.ipcmanager.impl.IPCManagerImpl;
 public class EnrollCommand extends ConsoleCommand{
 
 	public static final String ID = "enroll";
-	private static final String USAGE = "enroll sourceapplicationprocessname destinationapplicationprocessname";
+	private static final String USAGE = "enroll sourceapplicationprocessname sourceapplicationprocessinstance destinationapplicationprocessname destinationapplicationprocessinstance";
 	
 	/**
 	 * Required parameter
@@ -20,7 +20,17 @@ public class EnrollCommand extends ConsoleCommand{
 	/**
 	 * Required parameter
 	 */
+	private String sourceApplicationProcessInstance = null;
+	
+	/**
+	 * Required parameter
+	 */
 	private String destinationApplicationProcessName = null;
+	
+	/**
+	 * Required parameter
+	 */
+	private String destinationApplicationProcessInstance = null;
 	
 	public EnrollCommand(IPCManagerImpl ipcManagerImpl){
 		super(ID, ipcManagerImpl);
@@ -28,15 +38,18 @@ public class EnrollCommand extends ConsoleCommand{
 	
 	@Override
 	public String execute(String[] splittedCommand) {
-		if (splittedCommand.length != 3){
+		if (splittedCommand.length != 5){
 			return "Wrong number of parameters. Usage: "+USAGE;
 		}
 		
 		sourceApplicationProcessName = splittedCommand[1];
-		destinationApplicationProcessName = splittedCommand[2];
+		sourceApplicationProcessInstance = splittedCommand[2];
+		destinationApplicationProcessName = splittedCommand[3];
+		destinationApplicationProcessInstance = splittedCommand[4];
 		
 		try{
-			this.getIPCManagerImpl().enroll(sourceApplicationProcessName, destinationApplicationProcessName);
+			this.getIPCManagerImpl().enroll(sourceApplicationProcessName, sourceApplicationProcessInstance, 
+					destinationApplicationProcessName, destinationApplicationProcessInstance);
 			return "Enrollment process started successfully";
 		}catch(Exception ex){
 			return "Problems starting the enrollment process " +ex.getMessage();

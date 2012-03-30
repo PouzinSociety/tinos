@@ -1,7 +1,0 @@
-# This file is used to populate the Directory forwarding table of the IPC process
-# The format is "<applicationprocessname> <applicationprocessinstance> address <IPC_process_address>"; except for the default entry, which is "default <IPC_process_address>". See an example in the following line
-mozilla-firefox address 2
-mail 1 address 2
-email 1 address 2
-Skype 1 address 1
-default 2

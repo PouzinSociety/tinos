@@ -10,12 +10,17 @@ import rina.ipcmanager.impl.IPCManagerImpl;
 public class DeallocateFlowCommand extends ConsoleCommand{
 
 	public static final String ID = "deallocateflow";
-	private static final String USAGE = "deallocateflow sourceipcprocessname portId";
+	private static final String USAGE = "deallocateflow apName apInstance portId";
 	
 	/**
 	 * Required parameter
 	 */
 	private String sourceIPCProcessName = null;
+	
+	/**
+	 * Required parameter
+	 */
+	private String sourceIPCProcessInstance = null;
 	
 	/**
 	 * Required parameter
@@ -28,15 +33,16 @@ public class DeallocateFlowCommand extends ConsoleCommand{
 	
 	@Override
 	public String execute(String[] splittedCommand) {
-		if (splittedCommand.length != 3){
+		if (splittedCommand.length != 4){
 			return "Wrong number of parameters. Usage: "+USAGE;
 		}
 		
 		sourceIPCProcessName = splittedCommand[1];
-		portId = Integer.parseInt(splittedCommand[2]);
+		sourceIPCProcessInstance = splittedCommand[2];
+		portId = Integer.parseInt(splittedCommand[3]);
 		
 		try{
-			this.getIPCManagerImpl().deallocateFlow(sourceIPCProcessName, portId);
+			this.getIPCManagerImpl().deallocateFlow(sourceIPCProcessName, sourceIPCProcessInstance, portId);
 			return "Deallocate Flow process started successfully";
 		}catch(Exception ex){
 			return "Problems starting the deallocate flow process " +ex.getMessage();

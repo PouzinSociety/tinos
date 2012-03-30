@@ -10,12 +10,17 @@ import rina.ipcmanager.impl.IPCManagerImpl;
 public class DestroyIPCProcessCommand extends ConsoleCommand{
 
 	public static final String ID = "destroyipcprocess";
-	private static final String USAGE = "destroyipcprocess applicationprocessname";
+	private static final String USAGE = "destroyipcprocess applicationprocessname applicationProcessInstance";
 	
 	/**
 	 * Required parameter
 	 */
 	private String applicationProcessName = null;
+	
+	/**
+	 * Required parameter
+	 */
+	private String applicationProcessInstance = null;
 	
 	
 	public DestroyIPCProcessCommand(IPCManagerImpl ipcManagerImpl){
@@ -24,14 +29,15 @@ public class DestroyIPCProcessCommand extends ConsoleCommand{
 	
 	@Override
 	public String execute(String[] splittedCommand) {
-		if (splittedCommand.length != 2){
+		if (splittedCommand.length != 3){
 			return "Wrong number of parameters. Usage: "+USAGE;
 		}
 		
 		applicationProcessName = splittedCommand[1];
+		applicationProcessInstance = splittedCommand[2];
 		
 		try{
-			this.getIPCManagerImpl().destroyIPCProcesses(applicationProcessName);
+			this.getIPCManagerImpl().destroyIPCProcesses(applicationProcessName, applicationProcessInstance);
 			return "IPC Process destroyed successfully";
 		}catch(Exception ex){
 			return "Problems destroying IPC Process. " +ex.getMessage();

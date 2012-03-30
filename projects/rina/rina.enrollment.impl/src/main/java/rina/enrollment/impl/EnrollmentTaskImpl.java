@@ -269,8 +269,15 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	public void connect(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) {
 		log.debug("Received M_CONNECT cdapMessage from portId "+cdapSessionDescriptor.getPortId());
 		cdapSessionDescriptor.setDestAEName(cdapSessionDescriptor.getSrcAEName());
+		
+		//1 Find out if the sender is really connecting to us
+		if(!cdapMessage.getDestApName().equals(this.getIPCProcess().getApplicationProcessName())){
+			//Ignore
+			log.warn("Received an M_CONNECT message whose destination was not this IPC Process, ignoring it. "+cdapMessage.toString());
+			return;
+		}
 
-		//1 Find out if we are already enrolled to the remote IPC process
+		//2 Find out if we are already enrolled to the remote IPC process
 		if (this.isEnrolledTo(cdapSessionDescriptor.getDestinationApplicationProcessNamingInfo().getApplicationProcessName())){
 			try{
 				String message = "Received an enrollment request for an IPC process I'm already enrolled to";
@@ -288,7 +295,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 			return;
 		}
 		
-		//2 Initiate the enrollment
+		//3 Initiate the enrollment
 		try{
 
 			EnrollerStateMachine enrollmentStateMachine = (EnrollerStateMachine) this.createEnrollmentStateMachine(

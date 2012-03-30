@@ -27,12 +27,12 @@ public class MockIPCProcessFactory implements IPCProcessFactory{
 		ipcProcess.setAPService(apService);
 	}
 
-	public IPCProcess createIPCProcess(String arg0)
+	public IPCProcess createIPCProcess(String arg0, String arg1)
 			throws Exception {
 		return ipcProcess;
 	}
 
-	public void destroyIPCProcess(String arg0)
+	public void destroyIPCProcess(String arg0, String arg1)
 			throws Exception {
 		ipcProcess = null;
 	}
@@ -66,7 +66,7 @@ public class MockIPCProcessFactory implements IPCProcessFactory{
 		return encoderFactory;
 	}
 
-	public IPCProcess getIPCProcess(String arg0) {
+	public IPCProcess getIPCProcess(String arg0, String arg1) {
 		return ipcProcess;
 	}
 	
