@@ -19,7 +19,6 @@ import rina.encoding.api.Encoder;
 import rina.idd.api.InterDIFDirectoryFactory;
 import rina.ipcmanager.impl.IPCManagerImpl;
 import rina.ipcmanager.impl.apservice.APServiceTCPServer;
-import rina.ipcmanager.impl.console.IPCManagerConsole;
 import rina.ipcprocess.api.IPCProcessFactory;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.ApplicationRegistration;
@@ -38,7 +37,6 @@ public class IPCManagerAppInteractionTest {
 	
 	@Before
 	public void setup(){
-		System.setProperty(IPCManagerConsole.CONSOLE_PORT_PROPERTY, ""+32766);
 		ipcManager = new IPCManagerImpl();
 		mockIPCProcessFactory = new MockIPCProcessFactory(ipcManager.getAPService());
 		ipcManager.setIPCProcessFactory(mockIPCProcessFactory);

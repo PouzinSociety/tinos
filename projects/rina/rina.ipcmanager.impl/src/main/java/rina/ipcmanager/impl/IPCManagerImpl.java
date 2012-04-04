@@ -295,6 +295,12 @@ public class IPCManagerImpl implements IPCManager{
 		ipcService.submitAllocateRequest(flowService);
 	}
 	
+	public void writeDataToFlow(String sourceAPName, String sourceAPInstance, int portId, String data) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(sourceAPName, sourceAPInstance);
+		IPCService ipcService = (IPCService) ipcProcess;
+		ipcService.submitTransfer(portId, data.getBytes());
+	}
+	
 	public void deallocateFlow(String sourceAPName, String sourceAPInstance, int portId) throws Exception{
 		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(sourceAPName, sourceAPInstance);
 		IPCService ipcService = (IPCService) ipcProcess;

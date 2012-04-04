@@ -174,9 +174,11 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 
 			//If initialization is required send the M_CREATEs
 			if (requiresInitialization){
-				initializeEnrollee();
+				sendDIFStaticInformation();
 			}
 
+			sendDIFDynamicInformation();
+			
 			//Send the M_STOP request
 			objectValue = new ObjectValue();
 			objectValue.setBooleanval(true);
@@ -314,7 +316,7 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 	 * the IPC process that is enrolling to me
 	 * @throws Exception
 	 */
-	private void initializeEnrollee() throws Exception{
+	private void sendDIFStaticInformation() throws Exception{
 		//Send whatevercast names
 		sendCreateInformation(WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_CLASS, 
 				WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME);
@@ -326,7 +328,13 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 		//Send QoS Cubes
 		sendCreateInformation(QoSCube.QOSCUBE_SET_RIB_OBJECT_CLASS, 
 				QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME);
-		
+	}
+	
+	/**
+	 * Send all the DIF dynamic information
+	 * @throws Exception
+	 */
+	private void sendDIFDynamicInformation() throws Exception{
 		//Send DirectoryForwardingTableEntries
 		sendCreateInformation(DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_ENTRY_SET_RIB_OBJECT_CLASS, 
 				DirectoryForwardingTable.DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME);

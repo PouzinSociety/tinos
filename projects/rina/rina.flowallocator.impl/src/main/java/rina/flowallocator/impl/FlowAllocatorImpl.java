@@ -86,14 +86,14 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * Stores the list of pending Sockets for which a 
 	 * M_CREATE message for a Flow object still has not arrived
 	 */
-	private Map<Integer, Socket> pendingSockets = null;
+	private Map<Long, Socket> pendingSockets = null;
 	
 	private CDAPSessionManager cdapSessionManager = null;
 	
 	public FlowAllocatorImpl(){
 		allocateRequestValidator = new AllocateRequestValidator();
 		flowAllocatorInstances = new HashMap<Integer, FlowAllocatorInstance>();
-		pendingSockets = new Hashtable<Integer, Socket>();
+		pendingSockets = new Hashtable<Long, Socket>();
 	}
 	
 	@Override
@@ -146,7 +146,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		}
 	}
 	
-	public Map<Integer, Socket> getPendingSockets(){
+	public Map<Long, Socket> getPendingSockets(){
 		return this.pendingSockets;
 	}
 	
@@ -158,19 +158,19 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @param socket
 	 */
 	public void newConnectionAccepted(Socket socket){
-		byte[] buffer = new byte[2];
-		int tcpRendezvousId = -1;
+		byte[] buffer = new byte[4];
+		long tcpRendezvousId = -1;
 		try{
 			int dataRead = socket.getInputStream().read(buffer);
 			if (dataRead <1){
 				//TODO fix this
 				throw new Exception();
 			}
-			Unsigned unsigned = new Unsigned(2);
+			Unsigned unsigned = new Unsigned(4);
 			unsigned.setValue(buffer);
-			tcpRendezvousId = new Long(unsigned.getValue()).intValue();
+			tcpRendezvousId = unsigned.getValue();
 			synchronized(pendingSockets){
-				pendingSockets.put(new Integer(tcpRendezvousId), socket);
+				pendingSockets.put(new Long(tcpRendezvousId), socket);
 				notifyFlowAllocatorInstanceIfExists(tcpRendezvousId, socket);
 			}
 			log.debug("The TCP Rendez-vous Id is: "+tcpRendezvousId);
@@ -191,13 +191,16 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @param portId
 	 * @param socket
 	 */
-	private void notifyFlowAllocatorInstanceIfExists(int portId, Socket socket){
+	private void notifyFlowAllocatorInstanceIfExists(long rendezVousId, Socket socket){
 		Iterator<Integer> iterator = flowAllocatorInstances.keySet().iterator();
 		FlowAllocatorInstance flowAllocatorInstance = null;
+		long candidateRendezvousId = 0;
 		
 		while(iterator.hasNext()){
 			flowAllocatorInstance = flowAllocatorInstances.get(iterator.next());
-			if (flowAllocatorInstance.getFlow().getTcpRendezvousId() == portId){
+			candidateRendezvousId = (flowAllocatorInstance.getFlow().getSourceAddress() << 16) +
+				flowAllocatorInstance.getFlow().getSourcePortId();
+			if (candidateRendezvousId == rendezVousId){
 				flowAllocatorInstance.setSocket(socket);
 			}
 		}
@@ -269,14 +272,15 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			flowAllocatorInstance.createFlowRequestMessageReceived(flow, cdapMessage, underlyingPortId);
 			flowAllocatorInstances.put(new Integer(new Integer(portId)), flowAllocatorInstance);
 			//Check if the socket was already established
-			log.debug("Looking for the socket associated to TCP rendez-vous Id "+flow.getTcpRendezvousId());
-			Socket socket = pendingSockets.remove(new Integer((int)flow.getTcpRendezvousId()));
+			long tcpRendezvousId = (flow.getSourceAddress() << 16) + flow.getSourcePortId();
+			log.debug("Looking for the socket associated to TCP rendez-vous Id "+tcpRendezvousId);
+			Socket socket = pendingSockets.remove(new Long(tcpRendezvousId));
 			if (socket != null){
 				flowAllocatorInstance.setSocket(socket);
 			}
 
 			//TODO, if socket is null, add a timer to avoid waiting forever. Upon expiration, send a negative M_CREATE response
-			log.debug("Could not find a socket associated to TCP rendez-vous Id "+flow.getTcpRendezvousId()+ ". Waiting for it.");
+			log.debug("Could not find a socket associated to TCP rendez-vous Id "+tcpRendezvousId+ ". Waiting for it.");
 			return;
 		}
 		

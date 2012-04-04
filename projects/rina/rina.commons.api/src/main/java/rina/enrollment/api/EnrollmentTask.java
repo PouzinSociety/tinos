@@ -19,7 +19,7 @@ public interface EnrollmentTask extends IPCProcessComponent{
 	public static final String ENROLLMENT_RIB_OBJECT_NAME = RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
 		RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.ENROLLMENT;
 
-	public static final String ENROLLMENT_RIB_OBJECT_CLASS = "enrollment";	
+	public static final String ENROLLMENT_RIB_OBJECT_CLASS = "enrollment information";	
 	
 	/**
 	 * A remote IPC process Connect request has been received

@@ -221,6 +221,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		
 		//1 Check directory to see to what IPC process the CDAP M_CREATE request has to be delivered
 		long destinationAddress = flowAllocator.getDirectoryForwardingTable().getAddress(flowService.getDestinationAPNamingInfo());
+		log.debug("The directory forwarding table returned address "+destinationAddress);
 		flow.setDestinationAddress(destinationAddress);
 		if (destinationAddress == 0){
 			throw new IPCException(IPCException.COULD_NOT_FIND_ENTRY_IN_DIRECTORY_FORWARDING_TABLE_CODE, 
@@ -241,7 +242,6 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		//3 Start the flow allocation sequence by opening a socket to the remote flow allocator
 		this.socket = connectToRemoteFlowAllocator(destinationAddress);
 		flow.setSourcePortId(portId);
-		flow.setTcpRendezvousId(socket.getLocalPort());
 		
 		//4 get the portId of the CDAP session to the destination application process name
 		int cdapSessionId = Utils.mapAddressToPortId(destinationAddress, flowAllocator.getIPCProcess());
@@ -264,25 +264,28 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	
 	/**
 	 * Establishes a TCP flow to a remote flow allocator and sends the portid as data over the flow
-	 * @param applicationProcessName
-	 * @param applicationProcessInstance
+	 * @param destinationAddress
 	 * @return
 	 */
-	private Socket connectToRemoteFlowAllocator(long address) throws IPCException{
+	private Socket connectToRemoteFlowAllocator(long destinationAddress) throws IPCException{
+		log.debug("Trying to connect to IPC Process "+destinationAddress);
 		String hostName = null;
 		Socket socket = null;
-		int port = RINAConfiguration.getInstance().getFlowAllocatorPortNumber(address);
+		int port = RINAConfiguration.getInstance().getFlowAllocatorPortNumber(destinationAddress);
+		log.debug("Remote Flow Allocator is listening at port "+port);
 		
 		try{
-			KnownIPCProcessConfiguration ipcConf = RINAConfiguration.getInstance().getIPCProcessConfiguration(address);
+			KnownIPCProcessConfiguration ipcConf = RINAConfiguration.getInstance().getIPCProcessConfiguration(destinationAddress);
 			if (ipcConf == null){
 				throw new IPCException(IPCException.UNKNOWN_IPC_PROCESS_CODE, 
-						IPCException.UNKNOWN_IPC_PROCESS + address);
+						IPCException.UNKNOWN_IPC_PROCESS + destinationAddress);
 			}
 			hostName = ipcConf.getHostName();
+			log.debug("Remote IPC Process contact hostname/IP addresss: "+hostName);
 			socket = new Socket(hostName, port);
-			Unsigned unsigned = new Unsigned(2);
-			unsigned.setValue(new Integer(socket.getLocalPort()).longValue());
+			log.debug("Socket connected!");
+			Unsigned unsigned = new Unsigned(4);
+			unsigned.setValue((this.ribDaemon.getIPCProcess().getAddress().longValue() << 16) + portId);
 			socket.getOutputStream().write(unsigned.getBytes());
 			log.debug("Started a socket to the Flow Allocator at "+hostName+":"+port+". The local socket number is "+socket.getLocalPort());
 			return socket;
@@ -524,7 +527,10 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		}
 
 		try{
-			this.flow = (Flow) this.encoder.decode(cdapMessage.getObjValue().getByteval(), Flow.class);
+			if (cdapMessage.getObjValue() != null){
+				//TODO temporal to accept Peter's code. Should signal an error and close the flow allocator socket.
+				this.flow = (Flow) this.encoder.decode(cdapMessage.getObjValue().getByteval(), Flow.class);
+			}
 			log.debug("Successfull create flow message response received for flow "+cdapMessage.getObjName()+".\n "+this.flow.toString());
 			this.ribDaemon.create(Flow.FLOW_RIB_OBJECT_CLASS, objectName, this);
 			this.tcpSocketReader = new TCPSocketReader(socket, this.delimiter, this.apService, this.portId);

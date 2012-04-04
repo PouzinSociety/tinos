@@ -34,6 +34,15 @@ public interface FlowImpl {
 	public void write(byte[] sdu) throws IPCException;
 	
 	/**
+	 * Write length bytes from the buffer, starting from 
+	 * the position 0 of the byte array.
+	 * @param buffer the data
+	 * @param length the number of bytes to write
+	 * @throws IPCException
+	 */
+	public void write(byte[] buffer, int length) throws IPCException;
+	
+	/**
 	 * Causes the flow to be terminated. All the resources associated to it will be deallocated 
 	 * @throws IPCException
 	 */

@@ -14,6 +14,7 @@ import java.util.Scanner;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.configuration.RINAConfiguration;
 import rina.ipcmanager.impl.IPCManagerImpl;
 
 /**
@@ -26,7 +27,6 @@ public class IPCManagerConsole implements Runnable{
 
 	private static final Log log = LogFactory.getLog(IPCManagerConsole.class);
 	
-	public static final String CONSOLE_PORT_PROPERTY = "rina.ipcmanager.consoleport";
 	private static final String PROMPT = "ipcmanager> ";
 	private static int DEFAULT_PORT = 32766;
 	
@@ -43,6 +43,7 @@ public class IPCManagerConsole implements Runnable{
 		commands.put(DeallocateFlowCommand.ID, new DeallocateFlowCommand(ipcManagerImpl));
 		commands.put(CreateIPCProcessCommand.ID, new CreateIPCProcessCommand(ipcManagerImpl));
 		commands.put(AllocateFlowCommand.ID, new AllocateFlowCommand(ipcManagerImpl));
+		commands.put(WriteDataToFlowCommand.ID, new WriteDataToFlowCommand(ipcManagerImpl));
 	}
 	
 	public void stop(){
@@ -62,9 +63,8 @@ public class IPCManagerConsole implements Runnable{
 		int port = 0;
 		
 		try{
-			port = Integer.parseInt(System.getProperty(CONSOLE_PORT_PROPERTY));
+			port = RINAConfiguration.getInstance().getLocalConfiguration().getConsolePort();
 		}catch(Exception ex){
-			log.info("Property "+CONSOLE_PORT_PROPERTY+" not found or invalid, using default port ("+DEFAULT_PORT+")");
 			port = DEFAULT_PORT;
 		}
 		

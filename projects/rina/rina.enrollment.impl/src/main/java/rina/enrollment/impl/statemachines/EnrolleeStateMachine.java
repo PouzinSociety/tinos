@@ -117,8 +117,8 @@ public class EnrolleeStateMachine extends BaseEnrollmentStateMachine{
 			ObjectValue objectValue = new ObjectValue();
 			objectValue.setByteval(encoder.encode(eiRequest));
 			CDAPMessage startMessage = cdapSessionManager.getStartObjectRequestMessage(portId, null, null, 
-					EnrollmentTask.ENROLLMENT_RIB_OBJECT_CLASS, objectValue, 0, 
-					EnrollmentTask.ENROLLMENT_RIB_OBJECT_NAME, 0, true);
+					EnrollmentInformationRequest.ENROLLMENT_INFO_OBJECT_CLASS, objectValue, 0, 
+					EnrollmentInformationRequest.ENROLLMENT_INFO_OBJECT_NAME, 0, true);
 			sendCDAPMessage(startMessage);
 
 			//Set timer

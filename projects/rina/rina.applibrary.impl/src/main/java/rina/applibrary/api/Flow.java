@@ -115,6 +115,17 @@ public class Flow {
 	}
 	
 	/**
+	 * Write length bytes from the buffer, starting from 
+	 * the position 0 of the byte array.
+	 * @param buffer the data
+	 * @param length the number of bytes to write
+	 * @throws IPCException
+	 */
+	public void write(byte[] buffer, int length) throws IPCException{
+		flowImplementation.write(buffer, length);
+	}
+	
+	/**
 	 * Sends an array of SDUs through the flow
 	 * @param sdu
 	 */

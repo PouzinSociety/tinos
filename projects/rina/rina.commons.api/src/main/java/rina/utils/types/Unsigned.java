@@ -36,16 +36,16 @@ public class Unsigned {
 		
 		switch (numberOfBytes){
 		case 1: 
-			maxValue = 0xff;
+			maxValue = 0x7f;
 			break;
 		case 2:
-			maxValue = 0xffff;
+			maxValue = 0x7fff;
 			break;
 		case 3:
-			maxValue = 0xffffff;
+			maxValue = 0x7fffff;
 			break;
 		case 4:
-			maxValue = 0xffffffff;
+			maxValue = 0x7fffffff;
 			break;
 		}
 	}
@@ -71,6 +71,7 @@ public class Unsigned {
 	 * @throws UnsignedException
 	 */
 	public void setValue(long value) throws UnsignedException{
+		System.out.println(maxValue);
 		if (value > this.maxValue || value < 0x00){
 			throw new UnsignedException(ErrorCodes.ValueOutOfBounds);
 		}

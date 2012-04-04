@@ -216,6 +216,22 @@ public class DefaultFlowImpl implements FlowImpl{
 			encoder = RINAFactory.getEncoderInstance();
 		}
 	}
+	
+	/**
+	 * Write length bytes from the buffer, starting from 
+	 * the position 0 of the byte array.
+	 * @param buffer the data
+	 * @param length the number of bytes to write
+	 * @throws IPCException
+	 */
+	public void write(byte[] buffer, int length) throws IPCException{
+		byte[] sdu = new byte[length];
+		for(int i=0; i<sdu.length; i++){
+			sdu[i] = buffer[i];
+		}
+		
+		this.write(sdu);
+	}
 
 	/**
 	 * Sends an SDU to the flow

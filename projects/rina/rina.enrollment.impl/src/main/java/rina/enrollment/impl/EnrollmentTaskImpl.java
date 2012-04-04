@@ -136,6 +136,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	public BaseEnrollmentStateMachine getEnrollmentStateMachine(String apName, int portId, boolean remove){
 		if (remove){
 			synchronized(enrollmentStateMachines){
+				log.debug("Removing enrollment state machine associated to "+apName+" "+portId);
 				return enrollmentStateMachines.remove(apName+"-"+portId);
 			}
 		}else{
