@@ -31,6 +31,19 @@ public class LocalConfiguration {
 	 * The maximum time to wait between steps of the enrollment sequence (in ms)
 	 */
 	private int enrollmentTimeoutInMs = 10000;
+	
+	/**
+	 * The period of execution of the watchdog. The watchdog send an M_READ message over 
+	 * all the active CDAP connections to make sure they are still alive.
+	 */
+	private int watchdogPeriodInMs = 60000;
+	
+	/**
+	 * The period of execution of the neighbors enroller. This task looks for known 
+	 * neighbors in the RIB. If we're not enrolled to them, he is going to try to 
+	 * initiate the enrollment.
+	 */
+	private int neighborsEnrollerPeriodInMs = 10000;
 
 	public int getConsolePort() {
 		return consolePort;
@@ -70,5 +83,21 @@ public class LocalConfiguration {
 
 	public void setEnrollmentTimeoutInMs(int enrollmentTimeoutInMs) {
 		this.enrollmentTimeoutInMs = enrollmentTimeoutInMs;
+	}
+
+	public int getWatchdogPeriodInMs() {
+		return watchdogPeriodInMs;
+	}
+
+	public void setWatchdogPeriodInMs(int watchdogPeriodInMs) {
+		this.watchdogPeriodInMs = watchdogPeriodInMs;
+	}
+
+	public int getNeighborsEnrollerPeriodInMs() {
+		return neighborsEnrollerPeriodInMs;
+	}
+
+	public void setNeighborsEnrollerPeriodInMs(int neighborsEnrollerPeriodInMs) {
+		this.neighborsEnrollerPeriodInMs = neighborsEnrollerPeriodInMs;
 	}
 }

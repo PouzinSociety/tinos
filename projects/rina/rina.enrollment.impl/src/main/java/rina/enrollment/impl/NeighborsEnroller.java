@@ -2,6 +2,7 @@ package rina.enrollment.impl;
 
 import java.util.List;
 
+import rina.configuration.RINAConfiguration;
 import rina.enrollment.api.EnrollmentTask;
 import rina.enrollment.api.Neighbor;
 
@@ -40,7 +41,7 @@ public class NeighborsEnroller implements Runnable{
 			}
 			
 			try{
-				Thread.sleep(10000);
+				Thread.sleep(RINAConfiguration.getInstance().getLocalConfiguration().getNeighborsEnrollerPeriodInMs());
 			}catch(Exception ex){
 				ex.printStackTrace();
 			}
