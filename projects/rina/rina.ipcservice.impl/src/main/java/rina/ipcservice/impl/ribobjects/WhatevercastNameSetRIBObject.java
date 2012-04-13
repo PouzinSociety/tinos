@@ -45,7 +45,7 @@ public class WhatevercastNameSetRIBObject extends BaseRIBObject{
 	}
 	
 	@Override
-	public void create(String objectClass, long objectInstance, String objectName, Object object) throws RIBDaemonException{
+	public synchronized void create(String objectClass, long objectInstance, String objectName, Object object) throws RIBDaemonException{
 		if (object instanceof WhatevercastName){
 			SimpleSetMemberRIBObject ribObject = new SimpleSetMemberRIBObject(this.getIPCProcess(), 
 					WhatevercastName.WHATEVERCAST_NAME_RIB_OBJECT_CLASS, objectName, (WhatevercastName) object);
@@ -72,7 +72,7 @@ public class WhatevercastNameSetRIBObject extends BaseRIBObject{
 	}
 
 	@Override
-	public void delete(Object objectValue) throws RIBDaemonException {
+	public synchronized void delete(Object objectValue) throws RIBDaemonException {
 		String childName = null;
 		List<String> childrenNames = new ArrayList<String>();
 		
@@ -88,7 +88,7 @@ public class WhatevercastNameSetRIBObject extends BaseRIBObject{
 	}
 	
 	@Override
-	public Object getObjectValue(){
+	public synchronized Object getObjectValue(){
 		WhatevercastName[] result = new WhatevercastName[this.getChildren().size()];
 		for(int i=0; i<result.length; i++){
 			result[i] = (WhatevercastName) this.getChildren().get(i).getObjectValue();

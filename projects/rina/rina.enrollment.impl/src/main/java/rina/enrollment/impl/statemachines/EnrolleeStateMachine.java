@@ -49,7 +49,7 @@ public class EnrolleeStateMachine extends BaseEnrollmentStateMachine{
 	 * @param cdapMessage
 	 * @param portId
 	 */
-	public void initiateEnrollment(Neighbor candidate, int portId) throws IPCException{
+	public synchronized void initiateEnrollment(Neighbor candidate, int portId) throws IPCException{
 		remoteNamingInfo = new ApplicationProcessNamingInfo(candidate.getApplicationProcessName(), candidate.getApplicationProcessInstance());
 		remotePeer = candidate;
 		switch(state){
@@ -84,7 +84,7 @@ public class EnrolleeStateMachine extends BaseEnrollmentStateMachine{
 	 * @param cdapMessage
 	 * @param cdapSessionDescriptor
 	 */
-	public void connectResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor){
+	public synchronized void connectResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor){
 		switch(state){
 		case WAIT_CONNECT_RESPONSE:
 			handleConnectResponse(cdapMessage);
@@ -143,13 +143,15 @@ public class EnrolleeStateMachine extends BaseEnrollmentStateMachine{
 			return;
 		}
 		
-		switch(state){
-		case WAIT_START_ENROLLMENT_RESPONSE:
-			handleStartEnrollmentResponse(cdapMessage);
-			break;
-		default:
-			this.abortEnrollment(this.remoteNamingInfo, portId, START_RESPONSE_IN_BAD_STATE, true, true);
-			break;
+		synchronized(this){
+			switch(state){
+			case WAIT_START_ENROLLMENT_RESPONSE:
+				handleStartEnrollmentResponse(cdapMessage);
+				break;
+			default:
+				this.abortEnrollment(this.remoteNamingInfo, portId, START_RESPONSE_IN_BAD_STATE, true, true);
+				break;
+			}
 		}
 	}
 	
@@ -198,13 +200,15 @@ public class EnrolleeStateMachine extends BaseEnrollmentStateMachine{
 			return;
 		}
 		
-		switch(state){
-		case WAIT_STOP_ENROLLMENT_RESPONSE:
-			handleStopEnrollment(cdapMessage);
-			break;
-		default:
-			this.abortEnrollment(this.remoteNamingInfo, portId, STOP_IN_BAD_STATE, true, true);
-			break;
+		synchronized(this){
+			switch(state){
+			case WAIT_STOP_ENROLLMENT_RESPONSE:
+				handleStopEnrollment(cdapMessage);
+				break;
+			default:
+				this.abortEnrollment(this.remoteNamingInfo, portId, STOP_IN_BAD_STATE, true, true);
+				break;
+			}
 		}
 	}
 	
@@ -336,13 +340,15 @@ public class EnrolleeStateMachine extends BaseEnrollmentStateMachine{
 			return;
 		}
 		
-		switch(state){
-		case WAIT_READ_RESPONSE:
-			handleReadResponse(cdapMessage);
-			break;
-		default:
-			this.abortEnrollment(this.remoteNamingInfo, portId, READ_RESPONSE_IN_BAD_STATE, true, true);
-			break;
+		synchronized(this){
+			switch(state){
+			case WAIT_READ_RESPONSE:
+				handleReadResponse(cdapMessage);
+				break;
+			default:
+				this.abortEnrollment(this.remoteNamingInfo, portId, READ_RESPONSE_IN_BAD_STATE, true, true);
+				break;
+			}
 		}
 	}
 	
@@ -416,17 +422,19 @@ public class EnrolleeStateMachine extends BaseEnrollmentStateMachine{
 		if (!isValidPortId(cdapSessionDescriptor)){
 			return;
 		}
-		
-		switch(state){
-		case WAIT_START:
-			handleStartOperation(cdapMessage);
-			break;
-		case ENROLLED:
-			//Do nothing, just ignore
-			break;
-		default:
-			this.abortEnrollment(this.remoteNamingInfo, portId, START_IN_BAD_STATE, true, true);
-			break;
+
+		synchronized(this){
+			switch(state){
+			case WAIT_START:
+				handleStartOperation(cdapMessage);
+				break;
+			case ENROLLED:
+				//Do nothing, just ignore
+				break;
+			default:
+				this.abortEnrollment(this.remoteNamingInfo, portId, START_IN_BAD_STATE, true, true);
+				break;
+			}
 		}
 	}
 	

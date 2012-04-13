@@ -79,7 +79,7 @@ public class TCPRMTImpl extends BaseRMT{
 	 * Close all the sockets and stop
 	 */
 	@Override
-	public void stop(){
+	public synchronized void stop(){
 		Iterator<Integer> iterator = flowTable.keySet().iterator();
 		Socket socket = null;
 		
@@ -101,7 +101,7 @@ public class TCPRMTImpl extends BaseRMT{
 	 * which queue, the PDU should be placed on
 	 * @param pdu
 	 */
-	public synchronized void sendEFCPPDU(byte[] pdu) {
+	public void sendEFCPPDU(byte[] pdu) {
 		//It will never be called by this implementation since DTP is not implemented yet and 
 		//each flow allocation triggers a new TCP connection
 	}
@@ -132,7 +132,12 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @throws Exception if the flow is not allocated or there are problems deallocating the flow
 	 */
 	public void deallocateFlow(int portId) throws Exception{
-		Socket socket = flowTable.get(new Integer(portId));
+		Socket socket = null;
+		
+		synchronized(this){
+			socket = flowTable.get(new Integer(portId));
+		}
+		
 		if (socket == null){
 			throw new Exception("Unexisting flow");
 		}
@@ -150,8 +155,13 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @param cdapMessage
 	 * @throws IPCException
 	 */
-	public synchronized void sendCDAPMessage(int portId, byte[] cdapMessage) throws Exception{
-		Socket socket = flowTable.get(new Integer(portId));
+	public void sendCDAPMessage(int portId, byte[] cdapMessage) throws Exception{
+		Socket socket = null;
+		
+		synchronized(this){
+			socket = flowTable.get(new Integer(portId));
+		}
+		
 		if (socket == null){
 			throw new Exception("Flow closed");
 		}
@@ -175,7 +185,10 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @param socket
 	 */
 	public void newConnectionAccepted(Socket socket, int portId){
-		flowTable.put(new Integer(portId), socket);
+		synchronized(this){
+			flowTable.put(new Integer(portId), socket);
+		}
+		
 		Delimiter delimiter = (Delimiter) getIPCProcess().getIPCProcessComponent(BaseDelimiter.getComponentName());
 		RIBDaemon ribdaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		TCPSocketReader tcpSocketReader = new TCPSocketReader(socket, portId, ribdaemon, delimiter, this);
@@ -186,8 +199,10 @@ public class TCPRMTImpl extends BaseRMT{
 	 * Called when the socket identified by portId is no longer connected
 	 * @param portId
 	 */
-	public synchronized void connectionEnded(int portId){
-		flowTable.remove(new Integer(portId));
+	public void connectionEnded(int portId){
+		synchronized(this){
+			flowTable.remove(new Integer(portId));
+		}
 	}
 	
 	private String printBytes(byte[] message){

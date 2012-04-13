@@ -75,7 +75,7 @@ public class DirectoryForwardingTableEntryRIBObject extends SimpleSetMemberRIBOb
 	}
 	
 	@Override
-	public Object getObjectValue() {
+	public synchronized Object getObjectValue() {
 		return directoryForwardingTableEntry;
 	}
 }

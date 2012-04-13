@@ -45,7 +45,7 @@ private static final Log log = LogFactory.getLog(QoSCubeSetRIBObject.class);
 	}
 	
 	@Override
-	public void create(String objectClass, long objectInstance, String objectName, Object object) throws RIBDaemonException{
+	public synchronized void create(String objectClass, long objectInstance, String objectName, Object object) throws RIBDaemonException{
 		if (object instanceof QoSCube){
 			SimpleSetMemberRIBObject ribObject = new SimpleSetMemberRIBObject(this.getIPCProcess(), 
 					QoSCube.QOSCUBE_RIB_OBJECT_CLASS, objectName, (QoSCube) object);
@@ -72,7 +72,7 @@ private static final Log log = LogFactory.getLog(QoSCubeSetRIBObject.class);
 	}
 
 	@Override
-	public void delete(Object objectValue) throws RIBDaemonException {
+	public synchronized void delete(Object objectValue) throws RIBDaemonException {
 		String childName = null;
 		List<String> childrenNames = new ArrayList<String>();
 		
@@ -88,7 +88,7 @@ private static final Log log = LogFactory.getLog(QoSCubeSetRIBObject.class);
 	}
 	
 	@Override
-	public Object getObjectValue(){
+	public synchronized Object getObjectValue(){
 		QoSCube[] result = new QoSCube[this.getChildren().size()];
 		for(int i=0; i<result.length; i++){
 			result[i] = (QoSCube) this.getChildren().get(i).getObjectValue();

@@ -112,7 +112,7 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 	 * Creates a new child object representing the entry, or updates its value
 	 * @param entry
 	 */
-	private void createOrUpdateChildObject(DirectoryForwardingTableEntry entry){
+	private synchronized void createOrUpdateChildObject(DirectoryForwardingTableEntry entry){
 		DirectoryForwardingTableEntry existingEntry = this.getEntry(entry.getKey());
 		if (existingEntry == null){
 			//Create the new object
@@ -194,7 +194,7 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 	/**
 	 * One or more local applications have unregistered from this DIF or a routing update has been received
 	 */
-	public void delete(Object objectValue) throws RIBDaemonException{
+	public synchronized void delete(Object objectValue) throws RIBDaemonException{
 		RIBObject ribObject = null;
 		
 		if (objectValue == null){
@@ -265,7 +265,7 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 	
 	
 	@Override
-	public Object getObjectValue() {
+	public synchronized Object getObjectValue() {
 		DirectoryForwardingTableEntry[] entries = new DirectoryForwardingTableEntry[this.getChildren().size()];
 		for(int i=0; i<entries.length; i++){
 			entries[i] = (DirectoryForwardingTableEntry) getChildren().get(i).getObjectValue();

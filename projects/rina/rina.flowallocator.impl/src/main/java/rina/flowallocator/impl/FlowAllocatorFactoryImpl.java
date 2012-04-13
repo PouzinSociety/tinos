@@ -23,18 +23,29 @@ public class FlowAllocatorFactoryImpl implements FlowAllocatorFactory{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		flowAllocatorRespository.put(ipcProcessNamingInfo.getEncodedString(), flowAllocator);
+		synchronized(flowAllocatorRespository){
+			flowAllocatorRespository.put(ipcProcessNamingInfo.getEncodedString(), flowAllocator);
+		}
 		return flowAllocator;
 	}
 
 	public void destroyFlowAllocator(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
-		FlowAllocator flowAllocator = (FlowAllocatorImpl) flowAllocatorRespository.remove(ipcProcessNamingInfo.
+		FlowAllocator flowAllocator = null;
+		
+		synchronized(flowAllocatorRespository){
+			flowAllocator = (FlowAllocatorImpl) flowAllocatorRespository.remove(ipcProcessNamingInfo.
 				getEncodedString());
-		flowAllocator.stop();
+		}
+		
+		if (flowAllocator != null){
+			flowAllocator.stop();
+		}
 	}
 
 	public FlowAllocator getFlowAllocator(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
-		return flowAllocatorRespository.get(ipcProcessNamingInfo.getEncodedString());
+		synchronized(flowAllocatorRespository){
+			return flowAllocatorRespository.get(ipcProcessNamingInfo.getEncodedString());
+		}
 	}
 
 }

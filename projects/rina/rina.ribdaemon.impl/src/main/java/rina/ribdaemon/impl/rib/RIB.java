@@ -30,7 +30,12 @@ public class RIB{
      * @return
      */
     public RIBObject getRIBObject(String objectName) throws RIBDaemonException{
-    	RIBObject ribObject = rib.get(objectName);
+    	RIBObject ribObject = null;
+    	
+    	synchronized(this){
+    		ribObject = rib.get(objectName);
+    	}
+    	
     	if (ribObject == null){
     		throw new RIBDaemonException(RIBDaemonException.OBJECTNAME_NOT_PRESENT_IN_THE_RIB, "Could not find an object named "+objectName+" in the RIB");
     	}
@@ -38,7 +43,7 @@ public class RIB{
     	return ribObject;
     }
     
-    public void addRIBObject(RIBObject ribObject) throws RIBDaemonException{
+    public synchronized void addRIBObject(RIBObject ribObject) throws RIBDaemonException{
     	if (rib.get(ribObject.getObjectName()) != null){
     		throw new RIBDaemonException(RIBDaemonException.OBJECT_ALREADY_EXISTS, 
     				"There is already an object with objectname "+ribObject.getObjectName()+" in the RIB.");
@@ -47,17 +52,21 @@ public class RIB{
     	rib.put(ribObject.getObjectName(), ribObject);
     }
     
-    public RIBObject removeRIBObject(String objectName){
+    public synchronized RIBObject removeRIBObject(String objectName){
     	return rib.remove(objectName);
     }
     
     public List<RIBObject> getRIBObjects(){
-    	List<RIBObject> result = new ArrayList<RIBObject>();
-    	Iterator<String> iterator = rib.keySet().iterator();
+    	List<RIBObject> result = null;
+    	Iterator<String> iterator = null;
     	
-    	while (iterator.hasNext()){
-    		String objectName = iterator.next();
-    		result.add(rib.get(objectName));
+    	synchronized(this){
+    		result = new ArrayList<RIBObject>();
+    		iterator = rib.keySet().iterator();
+    		while (iterator.hasNext()){
+    			String objectName = iterator.next();
+    			result.add(rib.get(objectName));
+    		}
     	}
     	
     	Collections.sort(result, new RIBObjectComparator());

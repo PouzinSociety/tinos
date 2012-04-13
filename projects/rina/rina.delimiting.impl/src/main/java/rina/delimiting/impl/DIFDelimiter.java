@@ -18,7 +18,7 @@ public class DIFDelimiter extends BaseDelimiter {
 	 * @param rawSdus
 	 * @return
 	 */
-	public synchronized byte[] getDelimitedSdus(List<byte[]> rawSdus) {
+	public byte[] getDelimitedSdus(List<byte[]> rawSdus) {
 		List<byte[]> delimitedSdus = new ArrayList<byte[]>();
 		byte[] delimitedSdu = null;
 		int length =0;
@@ -48,7 +48,7 @@ public class DIFDelimiter extends BaseDelimiter {
 	 * @param rawSdus
 	 * @return
 	 */
-	public synchronized byte[] getDelimitedSdu(byte[] rawSdu){
+	public byte[] getDelimitedSdu(byte[] rawSdu){
 		byte[] encodedSduLength = writeRawVarint32(rawSdu.length);
 		byte[] delimitedSdu = new byte[encodedSduLength.length + rawSdu.length];
 		for(int i=0; i<encodedSduLength.length; i++){
@@ -95,7 +95,7 @@ public class DIFDelimiter extends BaseDelimiter {
 	 * @param delimitedSdus
 	 * @return
 	 */
-	public synchronized List<byte[]> getRawSdus(byte[] delimitedSdusArray) {
+	public List<byte[]> getRawSdus(byte[] delimitedSdusArray) {
 		int index = 0;
 		List<byte[]> rawSdus = new ArrayList<byte[]>();
 		byte[] currentSdu = null;

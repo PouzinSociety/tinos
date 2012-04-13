@@ -34,27 +34,27 @@ public class ApplicationRegistrationState {
 		setFlowServices(new ArrayList<FlowServiceState>());
 	}
 
-	private void setFlowServices(List<FlowServiceState> flowServices) {
+	private synchronized void setFlowServices(List<FlowServiceState> flowServices) {
 		this.flowServices = flowServices;
 	}
 
-	public List<FlowServiceState> getFlowServices() {
+	public synchronized List<FlowServiceState> getFlowServices() {
 		return flowServices;
 	}
 
-	private void setApplicationRegistration(ApplicationRegistration applicationRegistration) {
+	private synchronized void setApplicationRegistration(ApplicationRegistration applicationRegistration) {
 		this.applicationRegistration = applicationRegistration;
 	}
 
-	public ApplicationRegistration getApplicationRegistration() {
+	public synchronized ApplicationRegistration getApplicationRegistration() {
 		return applicationRegistration;
 	}
 
-	public void setSocket(Socket socket) {
+	public synchronized void setSocket(Socket socket) {
 		this.socket = socket;
 	}
 
-	public Socket getSocket() {
+	public synchronized Socket getSocket() {
 		return socket;
 	}
 }

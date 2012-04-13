@@ -322,11 +322,14 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 * we can continue with the Flow Allocation sequence.
 	 * @param socket
 	 */
-	public synchronized void setSocket(Socket socket){
-		if (this.socket != null){
-			return;
+	public void setSocket(Socket socket){
+		synchronized(this){
+			if (this.socket != null){
+				return;
+			}
+			
+			this.socket = socket;
 		}
-		this.socket = socket;
 		
 		//1 TODO Check if the source application process has access to the destination application process. If not send negative M_CREATE_R 
 		//back to the sender IPC process, and housekeeping.

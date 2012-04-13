@@ -10,7 +10,7 @@ import rina.flowallocator.api.QoSCube;
 
 public class QoSCubeArrayEncoder extends BaseEncoder{
 
-	public Object decode(byte[] encodedObject, Class<?> objectClass) throws Exception{
+	public synchronized Object decode(byte[] encodedObject, Class<?> objectClass) throws Exception{
 		if (objectClass == null || !(objectClass.equals(QoSCube[].class))){
 			throw new Exception("This is not the encoder for objects of type "+objectClass.getName());
 		}
@@ -32,7 +32,7 @@ public class QoSCubeArrayEncoder extends BaseEncoder{
 		return result;
 	}
 
-	public byte[] encode(Object object) throws Exception {
+	public synchronized byte[] encode(Object object) throws Exception {
 		if (object == null || !(object instanceof QoSCube[])){
 			throw new Exception("This is not the encoder for objects of type " + QoSCube[].class.toString());
 		}

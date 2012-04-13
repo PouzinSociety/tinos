@@ -25,7 +25,7 @@ public class SimpleRIBObject extends BaseRIBObject{
 	}
 	
 	@Override
-	public void write(Object value) throws RIBDaemonException {
+	public synchronized void write(Object value) throws RIBDaemonException {
 		this.objectValue = value;
 	}
 
@@ -33,12 +33,12 @@ public class SimpleRIBObject extends BaseRIBObject{
 	 * In this case create has the semantics of update 
 	 */
 	@Override
-	public void create(String objectClass, long objectInstance, String objectName, Object value) throws RIBDaemonException{
+	public synchronized void create(String objectClass, long objectInstance, String objectName, Object value) throws RIBDaemonException{
 		this.objectValue = value;
 	}
 
 	@Override
-	public Object getObjectValue() {
+	public synchronized Object getObjectValue() {
 		return objectValue;
 	}
 

@@ -43,7 +43,7 @@ public class ConnectionStateMachine {
 		this.timeout = timeout;
 	}
 	
-	public boolean isConnected(){
+	public synchronized boolean isConnected(){
 		return connectionState == ConnectionState.CONNECTED;
 	}
 	
@@ -51,7 +51,7 @@ public class ConnectionStateMachine {
 	 * Checks if a the CDAP connection can be opened (i.e. an M_CONNECT message can be sent)
 	 * @throws CDAPException
 	 */
-	public void checkConnect() throws CDAPException{
+	public synchronized void checkConnect() throws CDAPException{
 		if (!connectionState.equals(ConnectionState.NULL)){
 			throw new CDAPException("Cannot open a new connection because " +
 					"this CDAP session is currently in "+connectionState.toString()+" state");
@@ -70,7 +70,7 @@ public class ConnectionStateMachine {
 	 * The AE has sent an M_CONNECT message
 	 * @throws CDAPException
 	 */
-	private void connect() throws CDAPException {
+	private synchronized void connect() throws CDAPException {
 		checkConnect();
 		connectionState = ConnectionState.AWAITCON;
 		openTimer = new Timer();
@@ -88,7 +88,7 @@ public class ConnectionStateMachine {
 	 * An M_CONNECT message has been received, update the state
 	 * @param message
 	 */
-	private void connectReceived(CDAPMessage message) throws CDAPException{
+	private synchronized void connectReceived(CDAPMessage message) throws CDAPException{
 		if (!connectionState.equals(ConnectionState.NULL)){
 			throw new CDAPException("Cannot open a new connection because " +
 					"this CDAP session is currently in "+connectionState.toString()+" state");
@@ -100,14 +100,14 @@ public class ConnectionStateMachine {
 	 * Checks if the CDAP M_CONNECT_R message can be sent
 	 * @throws CDAPException
 	 */
-	public void checkConnectResponse() throws CDAPException{
+	public synchronized void checkConnectResponse() throws CDAPException{
 		if (!connectionState.equals(ConnectionState.AWAITCON)){
 			throw new CDAPException("Cannot send a connection response because " +
 					"this CDAP session is currently in "+connectionState.toString()+" state");
 		}
 	}
 	
-	public void connectResponseSentOrReceived(CDAPMessage cdapMessage, boolean sent) throws CDAPException{
+	public synchronized void connectResponseSentOrReceived(CDAPMessage cdapMessage, boolean sent) throws CDAPException{
 		if (sent){
 			connectResponse();
 		}else{
@@ -144,7 +144,7 @@ public class ConnectionStateMachine {
 	 * Checks if the CDAP M_RELEASE message can be sent
 	 * @throws CDAPException
 	 */
-	public void checkRelease() throws CDAPException{
+	public synchronized void checkRelease() throws CDAPException{
 		if (!connectionState.equals(ConnectionState.CONNECTED)){
 			throw new CDAPException("Cannot close a connection because " +
 					"this CDAP session is " +
@@ -152,7 +152,7 @@ public class ConnectionStateMachine {
 		}
 	}
 	
-	public void releaseSentOrReceived(CDAPMessage cdapMessage, boolean sent) throws CDAPException{
+	public synchronized void releaseSentOrReceived(CDAPMessage cdapMessage, boolean sent) throws CDAPException{
 		if (sent){
 			release(cdapMessage);
 		}else{
@@ -204,14 +204,14 @@ public class ConnectionStateMachine {
 	 * Checks if the CDAP M_RELEASE_R message can be sent
 	 * @throws CDAPException
 	 */
-	public void checkReleaseResponse() throws CDAPException{
+	public synchronized void checkReleaseResponse() throws CDAPException{
 		if (!connectionState.equals(ConnectionState.AWAITCLOSE)){
 			throw new CDAPException("Cannot send a release connection response message because " +
 					"this CDAP session is currently in "+connectionState.toString()+" state");
 		}
 	}
 	
-	public void releaseResponseSentOrReceived(CDAPMessage cdapMessage, boolean sent) throws CDAPException{
+	public synchronized void releaseResponseSentOrReceived(CDAPMessage cdapMessage, boolean sent) throws CDAPException{
 		if (sent){
 			releaseResponse();
 		}else{

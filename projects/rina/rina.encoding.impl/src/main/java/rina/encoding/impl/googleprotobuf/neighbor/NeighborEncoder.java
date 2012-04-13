@@ -6,7 +6,7 @@ import rina.enrollment.api.Neighbor;
 
 public class NeighborEncoder extends BaseEncoder{
 
-	public Object decode(byte[] encodedObject, Class<?> objectClass) throws Exception {
+	public synchronized Object decode(byte[] encodedObject, Class<?> objectClass) throws Exception {
 		if (objectClass == null || !(objectClass.equals(Neighbor.class))){
 			throw new Exception("This is not the encoder for objects of type "+objectClass.getName());
 		}
@@ -24,7 +24,7 @@ public class NeighborEncoder extends BaseEncoder{
 		return neighbor;
 	}
 
-	public byte[] encode(Object object) throws Exception {
+	public synchronized byte[] encode(Object object) throws Exception {
 		if (object == null || !(object instanceof Neighbor)){
 			throw new Exception("This is not the encoder for objects of type " + Neighbor.class.toString());
 		}

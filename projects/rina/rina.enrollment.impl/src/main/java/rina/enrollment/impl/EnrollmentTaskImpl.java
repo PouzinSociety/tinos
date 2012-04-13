@@ -133,12 +133,10 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 * @param remove
 	 * @return
 	 */
-	public BaseEnrollmentStateMachine getEnrollmentStateMachine(String apName, int portId, boolean remove){
+	public synchronized BaseEnrollmentStateMachine getEnrollmentStateMachine(String apName, int portId, boolean remove){
 		if (remove){
-			synchronized(enrollmentStateMachines){
-				log.debug("Removing enrollment state machine associated to "+apName+" "+portId);
-				return enrollmentStateMachines.remove(apName+"-"+portId);
-			}
+			log.debug("Removing enrollment state machine associated to "+apName+" "+portId);
+			return enrollmentStateMachines.remove(apName+"-"+portId);
 		}else{
 			return enrollmentStateMachines.get(apName+"-"+portId);
 		}
@@ -150,8 +148,8 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 * @param apNamingInfo
 	 * @return
 	 */
-	public boolean isEnrolledTo(String applicationProcessName){
-		Iterator<Entry<String, BaseEnrollmentStateMachine>> iterator  = enrollmentStateMachines.entrySet().iterator();
+	public synchronized boolean isEnrolledTo(String applicationProcessName){
+		Iterator<Entry<String, BaseEnrollmentStateMachine>> iterator = enrollmentStateMachines.entrySet().iterator();
 		
 		while(iterator.hasNext()){
 			if (iterator.next().getValue().getRemotePeerNamingInfo().getApplicationProcessName().equals(
@@ -159,7 +157,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 	
@@ -168,13 +166,17 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 * @return
 	 */
 	public List<String> getEnrolledIPCProcessNames(){
+		Iterator<Entry<String, BaseEnrollmentStateMachine>> iterator = null;
 		List<String> result = new ArrayList<String>();
-		Iterator<Entry<String, BaseEnrollmentStateMachine>> iterator  = enrollmentStateMachines.entrySet().iterator();
-		
+
+		synchronized(this){
+			iterator = enrollmentStateMachines.entrySet().iterator();
+		}
+
 		while(iterator.hasNext()){
 			result.add(iterator.next().getValue().getRemotePeerNamingInfo().getApplicationProcessName());
 		}
-		
+
 		return result;
 	}
 	
@@ -191,27 +193,27 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		RIBDaemon ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		Encoder encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
 		BaseEnrollmentStateMachine enrollmentStateMachine = null;
-		
+
 		if (apNamingInfo.getApplicationEntityName() == null || 
 				apNamingInfo.getApplicationEntityName().equals(BaseEnrollmentStateMachine.DEFAULT_ENROLLMENT)){
 			if (enrollee){
 				enrollmentStateMachine = new EnrolleeStateMachine(ribDaemon, cdapSessionManager, encoder, 
-					apNamingInfo, this, timeout);
+						apNamingInfo, this, timeout);
 			}else{
 				enrollmentStateMachine = new EnrollerStateMachine(ribDaemon, cdapSessionManager, encoder, 
 						apNamingInfo, this, timeout);
 			}
-			
-			synchronized(enrollmentStateMachines){
+
+			synchronized(this){
 				enrollmentStateMachines.put(apNamingInfo.getApplicationProcessName()+"-"+portId, 
 						enrollmentStateMachine);
 			}
-			
+
 			log.debug("Created a new Enrollment state machine for remote IPC process: " + 
 					apNamingInfo.getEncodedString());
 			return enrollmentStateMachine;
 		}
-		
+
 		throw new Exception("Unknown application entity for enrollment: "+apNamingInfo.getApplicationEntityName());
 	}
 	
@@ -220,7 +222,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 * @param cdapMessage
 	 * @param cdapSessionDescriptor
 	 */
-	public synchronized void initiateEnrollment(Neighbor candidate){
+	public void initiateEnrollment(Neighbor candidate){
 		ApplicationProcessNamingInfo candidateNamingInfo = null;
 		EnrolleeStateMachine enrollmentStateMachine = null;
 		int portId = 0;
@@ -433,19 +435,19 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 }
 	 
 	 /**
-		 * Called by the enrollment state machine when the enrollment request has been completed, either successfully or unsuccessfully
-		 * @param candidate the IPC process we were trying to enroll to
-		 * @param enrollee true if this IPC process is the one that initiated the 
-		 * enrollment sequence (i.e. it is the application process that wants to 
-		 * join the DIF)
-		 */
-		public synchronized void enrollmentCompleted(Neighbor dafMember, boolean enrollee){
-			//1 Tell the RMT it can start listening for remote IPC processes
-			if (enrollee){
-				RMT rmt = (RMT) this.getIPCProcess().getIPCProcessComponent(BaseRMT.getComponentName());
-				rmt.startListening();
-			}
-		}
+	  * Called by the enrollment state machine when the enrollment request has been completed, either successfully or unsuccessfully
+	  * @param candidate the IPC process we were trying to enroll to
+	  * @param enrollee true if this IPC process is the one that initiated the 
+	  * enrollment sequence (i.e. it is the application process that wants to 
+	  * join the DIF)
+	  */
+	 public void enrollmentCompleted(Neighbor dafMember, boolean enrollee){
+		 //1 Tell the RMT it can start listening for remote IPC processes
+		 if (enrollee){
+			 RMT rmt = (RMT) this.getIPCProcess().getIPCProcessComponent(BaseRMT.getComponentName());
+			 rmt.startListening();
+		 }
+	 }
 	
 	/**
 	 * Sends the CDAP Message and calls the RMT to deallocate the flow identified by portId

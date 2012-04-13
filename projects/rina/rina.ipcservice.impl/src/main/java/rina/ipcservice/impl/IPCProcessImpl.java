@@ -78,7 +78,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * @param applicationProcess
 	 * @throws IPCException
 	 */
-	public synchronized int submitAllocateRequest(FlowService flowService) throws IPCException{
+	public int submitAllocateRequest(FlowService flowService) throws IPCException{
 		log.debug("Allocate request received, forwarding it to the Flow Allocator");
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(BaseFlowAllocator.getComponentName());
 		return flowAllocator.submitAllocateRequest(flowService);
@@ -89,7 +89,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * @param portId
 	 * @param success
 	 */
-	public synchronized void submitAllocateResponse(int portId, boolean success, String reason) throws IPCException{
+	public void submitAllocateResponse(int portId, boolean success, String reason) throws IPCException{
 		log.debug("Allocate request received, forwarding it to the Flow Allocator");
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
 		flowAllocator.submitAllocateResponse(portId, success, reason);
@@ -99,13 +99,13 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * Forward the deallocate call to the Flow Allocator
 	 * @param portId 
 	 */
-	public synchronized void submitDeallocate(int portId) throws IPCException{
+	public void submitDeallocate(int portId) throws IPCException{
 		log.debug("Deallocate request received, forwarding it to the Flow Allocator");
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
 		flowAllocator.submitDeallocate(portId);
 	}
 
-	public synchronized void submitStatus(int arg0) {
+	public void submitStatus(int arg0) {
 		// TODO Auto-generated method stub
 	}
 
@@ -115,7 +115,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * @param sdu
 	 * @throws IPCException
 	 */
-	public synchronized void submitTransfer(int portId, byte[] sdu) throws IPCException{
+	public void submitTransfer(int portId, byte[] sdu) throws IPCException{
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
 		flowAllocator.submitTransfer(portId, sdu);
 		
@@ -129,7 +129,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	/**
 	 * An application says it is no longer available through this DIF
 	 */
-	public synchronized void unregister(ApplicationProcessNamingInfo apNamingInfo) {
+	public void unregister(ApplicationProcessNamingInfo apNamingInfo) {
 		RIBDaemon ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		try{
 			NotificationPolicy notificationPolicy = new NotificationPolicy(new int[0]);
@@ -144,7 +144,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	/**
 	 * An application process says it is available through this DIF
 	 */
-	public synchronized void register(ApplicationProcessNamingInfo apNamingInfo) {
+	public void register(ApplicationProcessNamingInfo apNamingInfo) {
 		RIBDaemon ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		try{
 			DirectoryForwardingTableEntry entry = new DirectoryForwardingTableEntry();

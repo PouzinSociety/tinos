@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,8 +43,9 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 */
 	private long timeout = 0;
 	
-	public CDAPSessionManagerImpl(){
-		cdapSessions = new HashMap<Integer, CDAPSession>();
+	public CDAPSessionManagerImpl(WireMessageProviderFactory wireMessageProviderFactory){
+		this.cdapSessions = new HashMap<Integer, CDAPSession>();
+		this.wireMessageProviderFactory = wireMessageProviderFactory;
 		try{
 			timeout = RINAConfiguration.getInstance().getLocalConfiguration().getCdapTimeoutInMs();
 		}catch(Exception ex){
@@ -51,23 +53,24 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 		}
 	}
 
-	public synchronized CDAPSession createCDAPSession(int portId) {
+	public CDAPSession createCDAPSession(int portId) {
 		CDAPSessionImpl cdapSession = new CDAPSessionImpl(this, new CDAPSessionInvokeIdManagerImpl(), timeout);
 		cdapSession.setWireMessageProvider(wireMessageProviderFactory.createWireMessageProvider());
 		CDAPSessionDescriptor descriptor = new CDAPSessionDescriptor();
 		descriptor.setPortId(portId);
 		cdapSession.setSessionDescriptor(descriptor);
-		cdapSessions.put(new Integer(descriptor.getPortId()), cdapSession);
+		synchronized(this){
+			cdapSessions.put(new Integer(descriptor.getPortId()), cdapSession);
+		}
+
 		return cdapSession;
 	}
 	
-	public void setWireMessageProviderFactory(WireMessageProviderFactory wireMessageProviderFactory){
-		this.wireMessageProviderFactory = wireMessageProviderFactory;
-	}
-	
 	private WireMessageProvider getWireMessageProvider(){
-		if (this.wireMessageProvider == null){
-			this.wireMessageProvider = this.wireMessageProviderFactory.createWireMessageProvider();
+		synchronized(this){
+			if (this.wireMessageProvider == null){
+				this.wireMessageProvider = this.wireMessageProviderFactory.createWireMessageProvider();
+			}
 		}
 		
 		return this.wireMessageProvider;
@@ -78,10 +81,16 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 */
 	public int[] getAllCDAPSessionIds(){
-		Iterator<Integer> iterator = cdapSessions.keySet().iterator();
-		int[] result = new int[cdapSessions.keySet().size()];
+		Set<Integer> keySet = null;
+		
+		synchronized(this){
+			keySet = cdapSessions.keySet();
+		}
+		
+		int[] result = new int[keySet.size()];
 		
 		int i=0;
+		Iterator<Integer> iterator = keySet.iterator();
 		while(iterator.hasNext()){
 			result[i] = iterator.next();
 			i++;
@@ -91,7 +100,12 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	}
 
 	public List<CDAPSession> getAllCDAPSessions() {
-		Iterator<Entry<Integer, CDAPSession>> iterator =  cdapSessions.entrySet().iterator();
+		Iterator<Entry<Integer, CDAPSession>> iterator = null;
+		
+		synchronized(this){
+			iterator =  cdapSessions.entrySet().iterator();
+		}
+		
 		List<CDAPSession> result = new ArrayList<CDAPSession>();
 		while(iterator.hasNext()){
 			result.add(iterator.next().getValue());
@@ -100,7 +114,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 		return result;
 	}
 
-	public CDAPSession getCDAPSession(int portId) {
+	public synchronized CDAPSession getCDAPSession(int portId) {
 		return cdapSessions.get(new Integer(portId));
 	}
 	
@@ -115,7 +129,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized byte[] encodeCDAPMessage(CDAPMessage cdapMessage) throws CDAPException{
+	public byte[] encodeCDAPMessage(CDAPMessage cdapMessage) throws CDAPException{
 		return getWireMessageProvider().serializeMessage(cdapMessage);
 	}
 	
@@ -129,7 +143,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized CDAPMessage decodeCDAPMessage(byte[] cdapMessage) throws CDAPException{
+	public CDAPMessage decodeCDAPMessage(byte[] cdapMessage) throws CDAPException{
 		return getWireMessageProvider().deserializeMessage(cdapMessage);
 	}
 	
@@ -152,6 +166,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 */
 	public byte[] encodeNextMessageToBeSent(CDAPMessage cdapMessage, int portId) throws CDAPException {
 		CDAPSession cdapSession = this.getCDAPSession(portId);
+
 		if (cdapSession == null && cdapMessage.getOpCode() == Opcode.M_CONNECT){
 			cdapSession = this.createCDAPSession(portId);
 		}else if (cdapSession == null && cdapMessage.getOpCode() != Opcode.M_CONNECT){
@@ -169,7 +184,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return Decoded CDAP Message
 	 * @throws CDAPException if the message is not consistent with the appropriate CDAP state machine
 	 */
-	public synchronized CDAPMessage messageReceived(byte[] encodedCDAPMessage, int portId) throws CDAPException {
+	public CDAPMessage messageReceived(byte[] encodedCDAPMessage, int portId) throws CDAPException {
 		CDAPMessage cdapMessage = this.decodeCDAPMessage(encodedCDAPMessage);
 		CDAPSession cdapSession = this.getCDAPSession(portId);
 		
@@ -180,7 +195,6 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 			if (cdapSession == null){
 				cdapSession = this.createCDAPSession(portId);
 				cdapSession.messageReceived(cdapMessage);
-				this.cdapSessions.put(new Integer(portId), cdapSession);
 				log.debug("Created a new CDAP session for port "+portId);
 			}else{
 				throw new CDAPException("M_CONNECT received on an already open CDAP Session, over flow " + portId);
@@ -223,11 +237,16 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @param destinationApplicationProcessName
 	 * @throws CDAPException
 	 */
-	public synchronized int getPortId(String destinationApplicationProcessName) throws CDAPException{
-		Iterator<Integer> iterator = this.cdapSessions.keySet().iterator();
+	public int getPortId(String destinationApplicationProcessName) throws CDAPException{
+		Iterator<Entry<Integer, CDAPSession>> iterator = null;
+		
+		synchronized(this){
+			iterator = this.cdapSessions.entrySet().iterator();
+		}
+		
 		CDAPSession currentSession = null;
 		while(iterator.hasNext()){
-			currentSession = this.cdapSessions.get(iterator.next());
+			currentSession = iterator.next().getValue();
 			if (currentSession.getSessionDescriptor().getDestApName().equals(destinationApplicationProcessName)){
 					return currentSession.getPortId();
 			}
@@ -253,7 +272,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized CDAPMessage getOpenConnectionRequestMessage(int portId, AuthTypes authMech, AuthValue authValue, String destAEInst, String destAEName, String destApInst,
+	public CDAPMessage getOpenConnectionRequestMessage(int portId, AuthTypes authMech, AuthValue authValue, String destAEInst, String destAEName, String destApInst,
 			String destApName, String srcAEInst, String srcAEName, String srcApInst, String srcApName) throws CDAPException{
 		CDAPSession cdapSession = this.getCDAPSession(portId);
 		if (cdapSession == null){
@@ -282,7 +301,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized CDAPMessage getOpenConnectionResponseMessage(int portId, AuthTypes authMech, AuthValue authValue, String destAEInst, String destAEName, String destApInst,
+	public CDAPMessage getOpenConnectionResponseMessage(int portId, AuthTypes authMech, AuthValue authValue, String destAEInst, String destAEName, String destApInst,
 			String destApName, int result, String resultReason, String srcAEInst, String srcAEName, String srcApInst, String srcApName, 
 			int invokeId) throws CDAPException{
 		return CDAPMessage.getOpenConnectionResponseMessage(authMech, authValue, destAEInst, destAEName, destApInst, destApName, result, 
@@ -297,7 +316,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized CDAPMessage getReleaseConnectionRequestMessage(int portId, Flags flags, boolean invokeID) throws CDAPException{
+	public CDAPMessage getReleaseConnectionRequestMessage(int portId, Flags flags, boolean invokeID) throws CDAPException{
 		CDAPMessage cdapMessage = CDAPMessage.getReleaseConnectionRequestMessage(flags);
 		assignInvokeId(cdapMessage, invokeID, portId);
 		
@@ -314,7 +333,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized CDAPMessage getReleaseConnectionResponseMessage(int portId, Flags flags, int result, String resultReason, 
+	public CDAPMessage getReleaseConnectionResponseMessage(int portId, Flags flags, int result, String resultReason, 
 			int invokeId) throws CDAPException{
 		return CDAPMessage.getReleaseConnectionResponseMessage(flags, result, resultReason, invokeId);
 	}
@@ -333,7 +352,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized CDAPMessage getCreateObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, long objInst, String objName, ObjectValue objValue, 
+	public CDAPMessage getCreateObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, long objInst, String objName, ObjectValue objValue, 
 			int scope, boolean invokeId) throws CDAPException{
 		CDAPMessage cdapMessage = CDAPMessage.getCreateObjectRequestMessage(filter, flags, objClass, objInst, objName, objValue, scope);
 		assignInvokeId(cdapMessage, invokeId, portId);
@@ -354,7 +373,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized CDAPMessage getCreateObjectResponseMessage(int portId, Flags flags, String objClass, long objInst, String objName, ObjectValue objValue, int result,
+	public CDAPMessage getCreateObjectResponseMessage(int portId, Flags flags, String objClass, long objInst, String objName, ObjectValue objValue, int result,
 			String resultReason, int invokeId) throws CDAPException{
 		return CDAPMessage.getCreateObjectResponseMessage(flags, objClass, objInst, objName, objValue, result, resultReason, invokeId);
 	}
@@ -373,7 +392,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized CDAPMessage getDeleteObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, long objInst, String objName, 
+	public CDAPMessage getDeleteObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, long objInst, String objName, 
 			ObjectValue objectValue, int scope, boolean invokeId) throws CDAPException{
 		CDAPMessage cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(filter, flags, objClass, objInst, objName, objectValue, scope);
 		assignInvokeId(cdapMessage, invokeId, portId);
@@ -394,7 +413,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized CDAPMessage getDeleteObjectResponseMessage(int portId, Flags flags, String objClass, long objInst, String objName, int result, String resultReason, 
+	public CDAPMessage getDeleteObjectResponseMessage(int portId, Flags flags, String objClass, long objInst, String objName, int result, String resultReason, 
 			int invokeId) throws CDAPException{
 		return CDAPMessage.getDeleteObjectResponseMessage(flags, objClass, objInst, objName, result, resultReason, invokeId);
 	}
@@ -413,7 +432,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized CDAPMessage getStartObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, ObjectValue objValue, long objInst, String objName, 
+	public CDAPMessage getStartObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, ObjectValue objValue, long objInst, String objName, 
 			int scope, boolean invokeId) throws CDAPException{
 		CDAPMessage cdapMessage = CDAPMessage.getStartObjectRequestMessage(filter, flags, objClass, objValue, objInst, objName, scope);
 		assignInvokeId(cdapMessage, invokeId, portId);
@@ -431,7 +450,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized CDAPMessage getStartObjectResponseMessage(int portId, Flags flags, int result, String resultReason, int invokeId) throws CDAPException{
+	public CDAPMessage getStartObjectResponseMessage(int portId, Flags flags, int result, String resultReason, int invokeId) throws CDAPException{
 		return CDAPMessage.getStartObjectResponseMessage(flags, result, resultReason, invokeId);
 	}
 	
@@ -464,7 +483,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized CDAPMessage getStopObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, ObjectValue objValue, long objInst, 
+	public CDAPMessage getStopObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, ObjectValue objValue, long objInst, 
 			String objName, int scope, boolean invokeId) throws CDAPException{
 		CDAPMessage cdapMessage = CDAPMessage.getStopObjectRequestMessage(filter, flags, objClass, objValue, objInst, objName, scope);
 		assignInvokeId(cdapMessage, invokeId, portId);
@@ -482,7 +501,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized CDAPMessage getStopObjectResponseMessage(int portId, Flags flags, int result, String resultReason, int invokeId) throws CDAPException{
+	public CDAPMessage getStopObjectResponseMessage(int portId, Flags flags, int result, String resultReason, int invokeId) throws CDAPException{
 		return CDAPMessage.getStopObjectResponseMessage(flags, result, resultReason, invokeId);
 	}
 	
@@ -499,7 +518,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized CDAPMessage getReadObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, long objInst, String objName, int scope, 
+	public CDAPMessage getReadObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, long objInst, String objName, int scope, 
 			boolean invokeId) throws CDAPException{
 		CDAPMessage cdapMessage = CDAPMessage.getReadObjectRequestMessage(filter, flags, objClass, objInst, objName, scope);
 		assignInvokeId(cdapMessage, invokeId, portId);
@@ -521,7 +540,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized CDAPMessage getReadObjectResponseMessage(int portId, Flags flags, String objClass, long objInst, String objName, ObjectValue objValue, 
+	public CDAPMessage getReadObjectResponseMessage(int portId, Flags flags, String objClass, long objInst, String objName, ObjectValue objValue, 
 			int result, String resultReason, int invokeId) throws CDAPException{
 		return CDAPMessage.getReadObjectResponseMessage(flags, objClass, objInst, objName, objValue, result, resultReason, invokeId);
 	}
@@ -540,7 +559,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized CDAPMessage getWriteObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, long objInst, ObjectValue objValue, 
+	public CDAPMessage getWriteObjectRequestMessage(int portId, byte[] filter, Flags flags, String objClass, long objInst, ObjectValue objValue, 
 			String objName, int scope, boolean invokeId) throws CDAPException{
 		CDAPMessage cdapMessage = CDAPMessage.getWriteObjectRequestMessage(filter, flags, objClass, objInst, objValue, objName, scope);
 		assignInvokeId(cdapMessage, invokeId, portId);
@@ -558,7 +577,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized CDAPMessage getWriteObjectResponseMessage(int portId, Flags flags, int result, String resultReason, int invokeId) throws CDAPException{
+	public CDAPMessage getWriteObjectResponseMessage(int portId, Flags flags, int result, String resultReason, int invokeId) throws CDAPException{
 		return CDAPMessage.getWriteObjectResponseMessage(flags, result, invokeId, resultReason);
 	}
 	
@@ -570,7 +589,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized CDAPMessage getCancelReadRequestMessage(int portId, Flags flags, int invokeID) throws CDAPException{
+	public CDAPMessage getCancelReadRequestMessage(int portId, Flags flags, int invokeID) throws CDAPException{
 		return CDAPMessage.getCancelReadRequestMessage(flags, invokeID);
 	}
 	
@@ -584,7 +603,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * @return
 	 * @throws CDAPException
 	 */
-	public synchronized CDAPMessage getCancelReadResponseMessage(int portId, Flags flags, int invokeID, int result, String resultReason) throws CDAPException{
+	public CDAPMessage getCancelReadResponseMessage(int portId, Flags flags, int invokeID, int result, String resultReason) throws CDAPException{
 		return CDAPMessage.getCancelReadResponseMessage(flags, invokeID, result, resultReason);
 	}
 	

@@ -21,7 +21,7 @@ import rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSp
  */
 public class FlowEncoder extends BaseEncoder{
 
-	public Object decode(byte[] serializedObject, Class<?> objectClass) throws Exception {
+	public synchronized Object decode(byte[] serializedObject, Class<?> objectClass) throws Exception {
 		if (objectClass == null || !(objectClass.equals(Flow.class))){
 			throw new Exception("This is not the serializer for objects of type "+objectClass.getName());
 		}
@@ -85,7 +85,7 @@ public class FlowEncoder extends BaseEncoder{
 	}
 	 
 	
-	public byte[] encode(Object object) throws Exception {
+	public synchronized byte[] encode(Object object) throws Exception {
 		if (object == null || !(object instanceof Flow)){
 			throw new Exception("This is not the serializer for objects of type "+Flow.class.toString());
 		}

@@ -8,7 +8,7 @@ import rina.ipcservice.api.QualityOfServiceSpecification;
 
 public class FlowServiceEncoder extends BaseEncoder{
 
-	public Object decode(byte[] serializedObject, Class<?> objectClass) throws Exception {
+	public synchronized Object decode(byte[] serializedObject, Class<?> objectClass) throws Exception {
 		if (objectClass == null || !(objectClass.equals(FlowService.class))){
 			throw new Exception("This is not the serializer for objects of type "+objectClass.getName());
 		}
@@ -28,7 +28,7 @@ public class FlowServiceEncoder extends BaseEncoder{
 		return result;
 	}
 
-	public byte[] encode(Object object) throws Exception {
+	public synchronized byte[] encode(Object object) throws Exception {
 		if (object == null || !(object instanceof FlowService)){
 			throw new Exception("This is not the serializer for objects of type "+FlowService.class.toString());
 		}

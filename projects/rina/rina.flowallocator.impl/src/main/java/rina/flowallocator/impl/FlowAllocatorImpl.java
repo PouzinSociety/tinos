@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Timer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -90,10 +92,13 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	
 	private CDAPSessionManager cdapSessionManager = null;
 	
+	private Timer pendingSocketsTimer = null;
+	
 	public FlowAllocatorImpl(){
 		allocateRequestValidator = new AllocateRequestValidator();
 		flowAllocatorInstances = new HashMap<Integer, FlowAllocatorInstance>();
 		pendingSockets = new Hashtable<Long, Socket>();
+		pendingSocketsTimer = new Timer();
 	}
 	
 	@Override
@@ -146,7 +151,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		}
 	}
 	
-	public Map<Long, Socket> getPendingSockets(){
+	public synchronized Map<Long, Socket> getPendingSockets(){
 		return this.pendingSockets;
 	}
 	
@@ -169,10 +174,11 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			Unsigned unsigned = new Unsigned(4);
 			unsigned.setValue(buffer);
 			tcpRendezvousId = unsigned.getValue();
-			synchronized(pendingSockets){
+			synchronized(this){
 				pendingSockets.put(new Long(tcpRendezvousId), socket);
-				notifyFlowAllocatorInstanceIfExists(tcpRendezvousId, socket);
 			}
+			
+			notifyFlowAllocatorInstanceIfExists(tcpRendezvousId, socket);
 			log.debug("The TCP Rendez-vous Id is: "+tcpRendezvousId);
 		}catch(Exception ex){
 			log.error("Accepted incoming TCP connection, but could not read the TCP Rendez-vous Id, closing the socket.");
@@ -192,12 +198,17 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @param socket
 	 */
 	private void notifyFlowAllocatorInstanceIfExists(long rendezVousId, Socket socket){
-		Iterator<Integer> iterator = flowAllocatorInstances.keySet().iterator();
+		Iterator<Entry<Integer, FlowAllocatorInstance>> iterator = null;
+		
+		synchronized(this){
+			iterator = flowAllocatorInstances.entrySet().iterator();
+		}
+		
 		FlowAllocatorInstance flowAllocatorInstance = null;
 		long candidateRendezvousId = 0;
 		
 		while(iterator.hasNext()){
-			flowAllocatorInstance = flowAllocatorInstances.get(iterator.next());
+			flowAllocatorInstance = iterator.next().getValue();
 			candidateRendezvousId = (flowAllocatorInstance.getFlow().getSourceAddress() << 16) +
 				flowAllocatorInstance.getFlow().getSourcePortId();
 			if (candidateRendezvousId == rendezVousId){
@@ -213,7 +224,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * Generates a portid for the flow allocation
 	 * @return a valid portId
 	 */
-	private int generatePortId(){
+	private synchronized int generatePortId(){
 		if (portIdCounter == Integer.MAX_VALUE){
 			portIdCounter = MIN_PORT_ID_VALUE;
 		}else{
@@ -232,7 +243,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @param candidate
 	 * @return
 	 */
-	private boolean portIdAlreadyInUse(int candidate){
+	private synchronized boolean portIdAlreadyInUse(int candidate){
 		return flowAllocatorInstances.get(new Integer(candidate)) != null;
 	}
 	
@@ -270,17 +281,25 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			log.debug("The destination application process is reachable through me. Assigning the local portId "+portId+" to the flow allocation.");
 			FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), this, cdapSessionManager, portId);
 			flowAllocatorInstance.createFlowRequestMessageReceived(flow, cdapMessage, underlyingPortId);
-			flowAllocatorInstances.put(new Integer(new Integer(portId)), flowAllocatorInstance);
+			synchronized(this){
+				flowAllocatorInstances.put(new Integer(new Integer(portId)), flowAllocatorInstance);
+			}
+			
 			//Check if the socket was already established
 			long tcpRendezvousId = (flow.getSourceAddress() << 16) + flow.getSourcePortId();
 			log.debug("Looking for the socket associated to TCP rendez-vous Id "+tcpRendezvousId);
-			Socket socket = pendingSockets.remove(new Long(tcpRendezvousId));
+			Socket socket = null;
+			synchronized(this){
+				socket = pendingSockets.remove(new Long(tcpRendezvousId));
+			}
+			
 			if (socket != null){
 				flowAllocatorInstance.setSocket(socket);
+			}else{
+				//TODO, if socket is null, add a timer to avoid waiting forever. Upon expiration, send a negative M_CREATE response
+				log.debug("Could not find a socket associated to TCP rendez-vous Id "+tcpRendezvousId+ ". Waiting for it.");
 			}
-
-			//TODO, if socket is null, add a timer to avoid waiting forever. Upon expiration, send a negative M_CREATE response
-			log.debug("Could not find a socket associated to TCP rendez-vous Id "+tcpRendezvousId+ ". Waiting for it.");
+			
 			return;
 		}
 		
@@ -312,7 +331,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @param objectName
 	 * @throws IPCException
 	 */
-	public synchronized void receivedLocalFlowRequest(FlowService flowService, String objectName) throws IPCException{
+	public void receivedLocalFlowRequest(FlowService flowService, String objectName) throws IPCException{
 		int portId = generatePortId();
 		FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), this, portId);
 		FlowService clonedFlowService = new FlowService();
@@ -321,7 +340,9 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		clonedFlowService.setQoSSpecification(flowService.getQoSSpecification());
 		clonedFlowService.setPortId(flowService.getPortId());
 		flowAllocatorInstance.receivedLocalFlowRequest(clonedFlowService, objectName);
-		flowAllocatorInstances.put(new Integer(new Integer(portId)), flowAllocatorInstance);
+		synchronized(this){
+			flowAllocatorInstances.put(new Integer(new Integer(portId)), flowAllocatorInstance);
+		}
 	}
 	
 	/**
@@ -336,7 +357,9 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		FlowAllocatorInstance flowAllocatorInstance = getFlowAllocatorInstance(portId);
 		flowAllocatorInstance.receivedLocalFlowResponse(remotePortId, result, resultReason);
 		if (!result){
-			flowAllocatorInstances.remove(new Integer(portId));
+			synchronized(this){
+				flowAllocatorInstances.remove(new Integer(portId));
+			}
 		}
 	}
 	
@@ -353,7 +376,9 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		flowService.setPortId(portId);
 		FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), this, cdapSessionManager, portId);
 		flowAllocatorInstance.submitAllocateRequest(flowService);
-		flowAllocatorInstances.put(new Integer(portId), flowAllocatorInstance);
+		synchronized(this){
+			flowAllocatorInstances.put(new Integer(portId), flowAllocatorInstance);
+		}
 		return portId;
 	}
 
@@ -369,7 +394,9 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		FlowAllocatorInstance flowAllocatorInstance = getFlowAllocatorInstance(portId);
 		flowAllocatorInstance.submitAllocateResponse(success, reason);
 		if (!success){
-			flowAllocatorInstances.remove(portId);
+			synchronized(this){
+				flowAllocatorInstances.remove(portId);
+			}
 		}
 	}
 
@@ -413,7 +440,12 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @throws IPCException
 	 */
 	private FlowAllocatorInstance getFlowAllocatorInstance(int portId) throws IPCException{
-		FlowAllocatorInstance flowAllocatorInstance = flowAllocatorInstances.get(new Integer(portId));
+		FlowAllocatorInstance flowAllocatorInstance = null;
+		
+		synchronized(this){
+			flowAllocatorInstance = flowAllocatorInstances.get(new Integer(portId));
+		}
+		
 		if (flowAllocatorInstance == null){
 			throw new IPCException(IPCException.NO_FLOW_ALLOCATOR_INSTANCE_FOR_THIS_PORTID_CODE , 
 					IPCException.NO_FLOW_ALLOCATOR_INSTANCE_FOR_THIS_PORTID);

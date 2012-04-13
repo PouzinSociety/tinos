@@ -34,11 +34,13 @@ public class AddressRIBObject extends BaseRIBObject{
 					"Object class ("+object.getClass().getName()+") does not match object name "+this.getObjectName());
 		}
 		
-		this.synonym = (Long) object;
+		synchronized(this){
+			this.synonym = (Long) object;
+		}
 	}
 	
 	@Override
-	public Object getObjectValue(){
+	public synchronized Object getObjectValue(){
 		return synonym;
 	}
 

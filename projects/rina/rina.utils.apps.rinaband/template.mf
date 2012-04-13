@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RINA Connection Generator Client
+Bundle-SymbolicName: rina.utils.apps.rinaband
+Bundle-Version: ${version}
+Bundle-Vendor: Pouzin Society
+Export-Template: rina.utils.apps.rinaband.*;version="${version}"
+Import-Template:
+ org.apache.commons.logging;version="${org.apache.commons.logging}",
+ rina.cdap.api.*;version="[1, 2)",
+ rina.ipcservice.api;version="[1, 2)",
+ rina.delimiting.api;version="[1, 2)",
+ rina.encoding.api;version="[1, 2)",
+ rina.cdap.impl.*;version="[1, 2)",
+ rina.delimiting.impl;version="[1, 2)",
+ rina.encoding.impl.googleprotobuf;version="[1, 2)",
+ com.google.protobuf;version="[2, 3)"
+Import-Bundle: com.springsource.org.apache.commons.logging;version="[${org.apache.commons.logging},${org.apache.commons.logging}]"

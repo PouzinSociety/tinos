@@ -12,7 +12,7 @@ import rina.encoding.impl.googleprotobuf.whatevercast.WhatevercastNameMessage.wh
 
 public class WhatevercastNameEncoder extends BaseEncoder{
 	
-	public Object decode(byte[] serializedObject, Class<?> objectClass) throws Exception {
+	public synchronized Object decode(byte[] serializedObject, Class<?> objectClass) throws Exception {
 		if (objectClass == null || !(objectClass.equals(WhatevercastName.class))){
 			throw new Exception("This is not the encoder for objects of type "+objectClass.getName());
 		}
@@ -37,7 +37,7 @@ public class WhatevercastNameEncoder extends BaseEncoder{
 		return whatevercastName;
 	}
 	
-	public byte[] encode(Object object) throws Exception {
+	public synchronized byte[] encode(Object object) throws Exception {
 		if (object == null || !(object instanceof WhatevercastName)){
 			throw new Exception("This is not the encoder for objects of type " + WhatevercastName.class.toString());
 		}

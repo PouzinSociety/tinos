@@ -9,7 +9,7 @@ import rina.flowallocator.api.DirectoryForwardingTableEntry;
 
 public class DirectoryForwardingTableEntryArrayEncoder extends BaseEncoder{
 
-	public Object decode(byte[] encodedObject, Class<?> objectClass) throws Exception{
+	public synchronized Object decode(byte[] encodedObject, Class<?> objectClass) throws Exception{
 		if (objectClass == null || !(objectClass.equals(DirectoryForwardingTableEntry[].class))){
 			throw new Exception("This is not the encoder for objects of type "+objectClass.getName());
 		}
@@ -31,7 +31,7 @@ public class DirectoryForwardingTableEntryArrayEncoder extends BaseEncoder{
 		return result;
 	}
 
-	public byte[] encode(Object object) throws Exception {
+	public synchronized byte[] encode(Object object) throws Exception {
 		if (object == null || !(object instanceof DirectoryForwardingTableEntry[])){
 			throw new Exception("This is not the encoder for objects of type " + DirectoryForwardingTableEntry[].class.toString());
 		}

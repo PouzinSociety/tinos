@@ -71,7 +71,7 @@ public class NeighborSetRIBObject extends BaseRIBObject{
 	 * @param objectName
 	 * @param objectValue
 	 */
-	private void createOrUpdateNeighbor(String objectName, Neighbor neighbor) throws RIBDaemonException{
+	private synchronized void createOrUpdateNeighbor(String objectName, Neighbor neighbor) throws RIBDaemonException{
 		//Avoid creating myself as a neighbor
 		if (neighbor.getApplicationProcessName().equals(this.getRIBDaemon().getIPCProcess().getApplicationProcessName())){
 			return;
@@ -91,7 +91,7 @@ public class NeighborSetRIBObject extends BaseRIBObject{
 	}
 
 	@Override
-	public void delete(Object objectValue) throws RIBDaemonException {
+	public synchronized void delete(Object objectValue) throws RIBDaemonException {
 		String childName = null;
 		List<String> childrenNames = new ArrayList<String>();
 		
@@ -107,7 +107,7 @@ public class NeighborSetRIBObject extends BaseRIBObject{
 	}
 	
 	@Override
-	public Object getObjectValue(){
+	public synchronized Object getObjectValue(){
 		Neighbor[] dafMembers = new Neighbor[this.getChildren().size()];
 		for(int i=0; i<dafMembers.length; i++){
 			dafMembers[i] = (Neighbor) this.getChildren().get(i).getObjectValue();

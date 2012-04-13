@@ -79,7 +79,7 @@ public class FlowGenerator {
 			sleepTime = getTimeToNextFlowRequest();
 			try{
 				Thread.sleep(sleepTime);
-				if (end){
+				if (isEnd()){
 					break;
 				}else{
 					generateFlow();
@@ -101,8 +101,12 @@ public class FlowGenerator {
 		}
 	}
 	
-	public void end(){
+	public synchronized void end(){
 		end = true;
+	}
+	
+	public synchronized boolean isEnd(){
+		return end;
 	}
 	
 	public void generateFlow(){
@@ -197,6 +201,10 @@ public class FlowGenerator {
 	}
 	
 	private long mean(List<Long> values){
+		if (values.size() == 0){
+			return 0;
+		}
+		
 		long total = 0;
 		for(int i=0; i<values.size(); i++){
 			total = total + values.get(i).longValue();

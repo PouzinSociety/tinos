@@ -53,17 +53,18 @@ public class OperationalStatusRIBObject extends BaseRIBObject{
 			return;
 		}
 		
-		enrollmentStateMachine.start(cdapMessage, cdapSessionDescriptor);
+		synchronized(this){
+			this.status = OperationalStatus.STARTED;
+		}
+	}
+	
+	@Override
+	public synchronized void start(Object object) throws RIBDaemonException {
 		this.status = OperationalStatus.STARTED;
 	}
 	
 	@Override
-	public void start(Object object) throws RIBDaemonException {
-		this.status = OperationalStatus.STARTED;
-	}
-	
-	@Override
-	public void stop(Object object) throws RIBDaemonException {
+	public synchronized void stop(Object object) throws RIBDaemonException {
 		this.status = OperationalStatus.STOPPED;
 	}
 	
@@ -84,7 +85,7 @@ public class OperationalStatusRIBObject extends BaseRIBObject{
 	}
 	
 	@Override
-	public Object getObjectValue(){
+	public synchronized Object getObjectValue(){
 		return status;
 	}
 

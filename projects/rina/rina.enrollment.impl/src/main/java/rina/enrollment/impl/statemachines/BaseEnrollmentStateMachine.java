@@ -142,7 +142,7 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 	 * @param cdapMessage
 	 * @param portId
 	 */
-	protected synchronized void sendCDAPMessage(CDAPMessage cdapMessage){
+	protected void sendCDAPMessage(CDAPMessage cdapMessage){
 		try{
 			ribDaemon.sendMessage(cdapMessage, portId, this);
 		}catch(Exception ex){
@@ -184,9 +184,12 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 	}
 	
 	protected void enrollmentCompleted(boolean enrollee){
-		timer.cancel();
+		synchronized(this){
+			timer.cancel();
+			this.setState(State.ENROLLED);
+		}
+		
 		enrollmentTask.enrollmentCompleted(remotePeer, enrollee);
-		this.setState(State.ENROLLED);
 		log.info("Remote IPC Process enrolled!");
 	}
 	
@@ -200,8 +203,11 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 	 */
 	protected void abortEnrollment(ApplicationProcessNamingInfo remotePeerNamingInfo, int portId, 
 			 String reason, boolean enrollee, boolean sendReleaseMessage){
-		timer.cancel();
-		setState(State.NULL);
+		synchronized(this){
+			timer.cancel();
+			setState(State.NULL);
+		}
+		
 		enrollmentTask.enrollmentFailed(remotePeerNamingInfo, portId, reason, enrollee, sendReleaseMessage);
 	}
 	
@@ -216,11 +222,13 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 			return;
 		}
 
-		this.setState(State.NULL);
-		
-		//Cancel any timers
-		if (timer != null){
-			timer.cancel();
+		synchronized(this){
+			this.setState(State.NULL);
+
+			//Cancel any timers
+			if (timer != null){
+				timer.cancel();
+			}
 		}
 
 		if (cdapMessage.getInvokeID() != 0){
@@ -242,8 +250,10 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 			return;
 		}
 
-		if (!this.getState().equals(State.NULL)){
-			this.setState(State.NULL);
+		synchronized(this){
+			if (!this.getState().equals(State.NULL)){
+				this.setState(State.NULL);
+			}
 		}
 	}
 	
@@ -260,11 +270,13 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 			return;
 		}
 
-		this.setState(State.NULL);
-		
-		//Cancel any timers
-		if (timer != null){
-			timer.cancel();
+		synchronized(this){
+			this.setState(State.NULL);
+
+			//Cancel any timers
+			if (timer != null){
+				timer.cancel();
+			}
 		}
 	}
 }

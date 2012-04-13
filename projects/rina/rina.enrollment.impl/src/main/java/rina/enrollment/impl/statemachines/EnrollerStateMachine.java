@@ -48,13 +48,15 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 	 * @param portId
 	 */
 	public void connect(CDAPMessage cdapMessage, int portId) {
-		switch(this.state){
-		case NULL:
-			handleNullState(cdapMessage, portId);
-			break;
-		default:
-			this.abortEnrollment(this.remoteNamingInfo, portId, CONNECT_IN_NOT_NULL, false, true);
-			break;
+		synchronized(this){
+			switch(this.state){
+			case NULL:
+				handleNullState(cdapMessage, portId);
+				break;
+			default:
+				this.abortEnrollment(this.remoteNamingInfo, portId, CONNECT_IN_NOT_NULL, false, true);
+				break;
+			}
 		}
 	}
 	
@@ -107,13 +109,15 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 			return;
 		}
 		
-		switch(state){
-		case WAIT_START_ENROLLMENT:
-			handleStartEnrollment(cdapMessage);
-			break;
-		default:
-			this.abortEnrollment(this.remoteNamingInfo, portId, START_IN_BAD_STATE, false, true);
-			break;
+		synchronized(this){
+			switch(state){
+			case WAIT_START_ENROLLMENT:
+				handleStartEnrollment(cdapMessage);
+				break;
+			default:
+				this.abortEnrollment(this.remoteNamingInfo, portId, START_IN_BAD_STATE, false, true);
+				break;
+			}
 		}
 	}
 	
@@ -392,13 +396,15 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 			return;
 		}
 		
-		switch(state){
-		case WAIT_STOP_ENROLLMENT_RESPONSE:
-			handleStopEnrollmentResponse(cdapMessage);
-			break;
-		default:
-			this.abortEnrollment(this.remoteNamingInfo, portId, STOP_RESPONSE_IN_BAD_STATE, false, true);
-			break;
+		synchronized(this){
+			switch(state){
+			case WAIT_STOP_ENROLLMENT_RESPONSE:
+				handleStopEnrollmentResponse(cdapMessage);
+				break;
+			default:
+				this.abortEnrollment(this.remoteNamingInfo, portId, STOP_RESPONSE_IN_BAD_STATE, false, true);
+				break;
+			}
 		}
 	}
 	

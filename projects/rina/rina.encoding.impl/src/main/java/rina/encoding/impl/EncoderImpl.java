@@ -43,7 +43,7 @@ public class EncoderImpl extends BaseEncoder{
 		return getEncoder(objectClass).decode(serializedObject, objectClass);
 	}
 
-	public synchronized byte[] encode(Object object) throws Exception {
+	public byte[] encode(Object object) throws Exception {
 		return getEncoder(object.getClass()).encode(object);
 	}
 	

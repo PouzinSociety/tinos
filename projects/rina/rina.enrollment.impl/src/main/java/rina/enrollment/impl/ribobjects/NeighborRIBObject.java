@@ -35,16 +35,18 @@ public class NeighborRIBObject extends BaseRIBObject{
 					this.getObjectName());
 		}
 		
-		this.neighbor = (Neighbor) object;
+		synchronized(this){
+			this.neighbor = (Neighbor) object;
+		}
 	}
 	
 	@Override
-	public void delete(Object object) throws RIBDaemonException {
+	public synchronized void delete(Object object) throws RIBDaemonException {
 		this.getParent().removeChild(this.getObjectName());
 	}
 	
 	@Override
-	public Object getObjectValue(){
+	public synchronized Object getObjectValue(){
 		return neighbor;
 	}
 }
