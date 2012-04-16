@@ -94,7 +94,7 @@ public class Main {
 		int numberOfFlows = DEFAULT_NUMBER_OF_FLOWS;
 		int sduSizeInBytes = DEFAULT_SDU_SIZE_IN_BYTES;
 		int sduCount = DEFAULT_SDU_COUNT;
-		String role = DEFAULT_ROLE;
+		boolean server = false;
 		String sender = DEFAULT_SENDER;
 		String apName = DEFAULT_AP_NAME;
 		String apInstance = DEFAULT_AP_INSTANCE;
@@ -105,9 +105,11 @@ public class Main {
 		int i=0;
 		while(i<args.length){
 			if (args[i].equals(ARGUMENT_SEPARATOR + ROLE)){
-				role = args[i+1];
-				if (!role.equals(CLIENT) && 
-						!role.equals(SERVER)){
+				if (args[i].equals(CLIENT)){
+					server = false;
+				}else if (args[i].equals(SERVER)){
+					server = true;
+				}else{
 					showErrorAndExit(ROLE);
 				}
 			}else if (args[i].equals(ARGUMENT_SEPARATOR + APNAME)){
@@ -170,6 +172,22 @@ public class Main {
 			
 			i = i+2;
 		}
+		
+		TestInformation testInformation = new TestInformation();
+		testInformation.setQos(qos);
+		testInformation.setPattern(pattern);
+		testInformation.setNumberOfFlows(numberOfFlows);
+		testInformation.setNumberOfSDUs(sduCount);
+		testInformation.setSduSize(sduSizeInBytes);
+		if(sender.equals(CLIENT) || sender.equals(BOTH)){
+			testInformation.setClientSendsSDUs(true);
+		}
+		if (sender.equals(SERVER) || sender.equals(BOTH)){
+			testInformation.setServerSendsSDUs(true);
+		}
+		
+		RINABand rinaBand = new RINABand(testInformation, server, apName, apInstance);
+		rinaBand.execute();
 	}
 	
 	public static void showErrorAndExit(String parameterName){
