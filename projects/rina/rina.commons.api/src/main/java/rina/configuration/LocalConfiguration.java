@@ -33,6 +33,12 @@ public class LocalConfiguration {
 	private int enrollmentTimeoutInMs = 10000;
 	
 	/**
+	 * The maximum time to wait to complete the flow allocation request 
+	 * once the process has been initiated (in ms)
+	 */
+	private int flowAllocatorTimeoutInMs = 15000;
+	
+	/**
 	 * The period of execution of the watchdog. The watchdog send an M_READ message over 
 	 * all the active CDAP connections to make sure they are still alive.
 	 */
@@ -83,6 +89,14 @@ public class LocalConfiguration {
 
 	public void setEnrollmentTimeoutInMs(int enrollmentTimeoutInMs) {
 		this.enrollmentTimeoutInMs = enrollmentTimeoutInMs;
+	}
+
+	public int getFlowAllocatorTimeoutInMs() {
+		return flowAllocatorTimeoutInMs;
+	}
+
+	public void setFlowAllocatorTimeoutInMs(int flowAllocatorTimeoutInMs) {
+		this.flowAllocatorTimeoutInMs = flowAllocatorTimeoutInMs;
 	}
 
 	public int getWatchdogPeriodInMs() {

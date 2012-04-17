@@ -1,7 +1,5 @@
 package rina.utils.apps.rinaband.server;
 
-import java.util.Random;
-
 import rina.applibrary.api.Flow;
 import rina.utils.apps.rinaband.TestInformation;
 
@@ -33,26 +31,32 @@ public class SDUSender implements Runnable {
 	}
 
 	public void run() {
-		byte[] sdu = new byte[testInformation.getSduSize()];
-		Random random = new Random();
 		
 		int numberOfSdus = testInformation.getNumberOfSDUs();
 		for(generatedSDUs=0; generatedSDUs<numberOfSdus; generatedSDUs++){
-			random.nextBytes(sdu);
 			try{
-				flow.write(sdu);
+				flow.write(getNextSDU());
 			}catch(Exception ex){
 				System.out.println("SDU Sender of flow "+flow.getPortId()+": Error writing SDU. Canceling operation");
 				ex.printStackTrace();
-			}finally{
 				try{
 					if (flow.isAllocated()){
 						flow.deallocate();
 					}
-				}catch(Exception ex){
+				}catch(Exception e){
 				}
+				break;
 			}
 		}
+	}
+	
+	private byte[] getNextSDU(){
+		byte[] result = new byte[this.testInformation.getSduSize()];
+		for(int i=0; i<result.length; i++){
+			result[i] = 0x01;
+		}
+		
+		return result;
 	}
 
 }

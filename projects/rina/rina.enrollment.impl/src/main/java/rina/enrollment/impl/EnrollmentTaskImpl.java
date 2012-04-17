@@ -24,6 +24,7 @@ import rina.enrollment.impl.ribobjects.NeighborSetRIBObject;
 import rina.enrollment.impl.ribobjects.EnrollmentRIBObject;
 import rina.enrollment.impl.ribobjects.OperationalStatusRIBObject;
 import rina.enrollment.impl.statemachines.BaseEnrollmentStateMachine;
+import rina.enrollment.impl.statemachines.BaseEnrollmentStateMachine.State;
 import rina.enrollment.impl.statemachines.EnrolleeStateMachine;
 import rina.enrollment.impl.statemachines.EnrollerStateMachine;
 import rina.ipcprocess.api.IPCProcess;
@@ -150,11 +151,14 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 */
 	public synchronized boolean isEnrolledTo(String applicationProcessName){
 		Iterator<Entry<String, BaseEnrollmentStateMachine>> iterator = enrollmentStateMachines.entrySet().iterator();
+		Entry<String, BaseEnrollmentStateMachine> currentEntry = null;
 		
 		while(iterator.hasNext()){
-			if (iterator.next().getValue().getRemotePeerNamingInfo().getApplicationProcessName().equals(
-					applicationProcessName)){
-				return true;
+			currentEntry = iterator.next();
+			if (currentEntry.getValue().getRemotePeerNamingInfo().getApplicationProcessName().equals(applicationProcessName)){
+				if (currentEntry.getValue().getState() == State.ENROLLED){
+					return true;
+				}
 			}
 		}
 

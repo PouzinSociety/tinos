@@ -131,6 +131,8 @@ public class TestController implements SDUListener, FlowListener{
 			
 			//3 Reply and update state
 			CDAPMessage replyMessage = cdapMessage.getReplyMessage();
+			objectValue.setByteval(RINABandTestMessageEncoder.encode(this.testInformation));
+			replyMessage.setObjValue(objectValue);
 			sendCDAPMessage(replyMessage);
 			this.state = State.WAIT_START;
 			printMessage("Waiting to START a new test with the following parameters.");

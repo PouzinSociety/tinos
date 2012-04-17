@@ -105,9 +105,9 @@ public class Main {
 		int i=0;
 		while(i<args.length){
 			if (args[i].equals(ARGUMENT_SEPARATOR + ROLE)){
-				if (args[i].equals(CLIENT)){
+				if (args[i+1].equals(CLIENT)){
 					server = false;
-				}else if (args[i].equals(SERVER)){
+				}else if (args[i+1].equals(SERVER)){
 					server = true;
 				}else{
 					showErrorAndExit(ROLE);

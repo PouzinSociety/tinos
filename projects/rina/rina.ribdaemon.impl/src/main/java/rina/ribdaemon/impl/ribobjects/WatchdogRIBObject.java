@@ -30,6 +30,8 @@ public class WatchdogRIBObject extends BaseRIBObject implements CDAPMessageHandl
 	
 	private CDAPMessage responseMessage = null;
 	
+	private WatchdogTimerTask timerTask = null;
+	
 	/**
 	 * Schedule the watchdogtimer_task to run every PERIOD_IN_MS milliseconds
 	 * @param ipcProcess
@@ -38,7 +40,7 @@ public class WatchdogRIBObject extends BaseRIBObject implements CDAPMessageHandl
 		super(ipcProcess, WATCHDOG_OBJECT_CLASS, ObjectInstanceGenerator.getObjectInstance(), WATCHDOG_OBJECT_NAME);
 		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 		this.timer = new Timer();
-		WatchdogTimerTask timerTask = new WatchdogTimerTask(this.cdapSessionManager, this);
+		timerTask = new WatchdogTimerTask(this.cdapSessionManager, this);
 		long periodInMs = RINAConfiguration.getInstance().getLocalConfiguration().getWatchdogPeriodInMs();
 		timer.schedule(timerTask, new Double(periodInMs*Math.random()).longValue(), periodInMs);
 	}
@@ -59,6 +61,7 @@ public class WatchdogRIBObject extends BaseRIBObject implements CDAPMessageHandl
 			responseMessage = cdapSessionManager.getReadObjectResponseMessage(cdapSessionDescriptor.getPortId(), null, 
 					cdapMessage.getObjClass(), 0L, cdapMessage.getObjName(), null, 0, null, cdapMessage.getInvokeID());
 			this.getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
+			this.timerTask.checkedFlow(cdapSessionDescriptor.getPortId());
 		}catch(Exception ex){
 			log.error(ex);
 		}

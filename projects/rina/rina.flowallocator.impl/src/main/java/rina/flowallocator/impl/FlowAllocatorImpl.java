@@ -15,6 +15,7 @@ import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
+import rina.configuration.RINAConfiguration;
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
 import rina.flowallocator.api.BaseFlowAllocator;
@@ -25,6 +26,7 @@ import rina.flowallocator.impl.ribobjects.DirectoryForwardingTableEntrySetRIBObj
 import rina.flowallocator.impl.ribobjects.FlowSetRIBObject;
 import rina.flowallocator.impl.ribobjects.QoSCubeSetRIBObject;
 import rina.flowallocator.impl.tcp.TCPServer;
+import rina.flowallocator.impl.timertasks.ExpiredFlowAllocationAttemptTimerTask;
 import rina.flowallocator.impl.validation.AllocateRequestValidator;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.FlowService;
@@ -92,13 +94,13 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	
 	private CDAPSessionManager cdapSessionManager = null;
 	
-	private Timer pendingSocketsTimer = null;
+	private Timer timer = null;
 	
 	public FlowAllocatorImpl(){
 		allocateRequestValidator = new AllocateRequestValidator();
 		flowAllocatorInstances = new HashMap<Integer, FlowAllocatorInstance>();
 		pendingSockets = new Hashtable<Long, Socket>();
-		pendingSocketsTimer = new Timer();
+		timer = new Timer();
 	}
 	
 	@Override
@@ -155,6 +157,10 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		return this.pendingSockets;
 	}
 	
+	public synchronized Map<Integer, FlowAllocatorInstance> getFlowAllocatorInstances(){
+		return this.flowAllocatorInstances;
+	}
+	
 	/**
 	 * The Flow Allocator TCP server notifies that a new TCP 
 	 * data flow has been accepted. This operation has to read the remote 
@@ -178,7 +184,12 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 				pendingSockets.put(new Long(tcpRendezvousId), socket);
 			}
 			
-			notifyFlowAllocatorInstanceIfExists(tcpRendezvousId, socket);
+			boolean exists = notifyFlowAllocatorInstanceIfExists(tcpRendezvousId, socket);
+			if (!exists){
+				ExpiredFlowAllocationAttemptTimerTask timerTask = 
+					new ExpiredFlowAllocationAttemptTimerTask(this, 0, tcpRendezvousId, true);
+				timer.schedule(timerTask, RINAConfiguration.getInstance().getLocalConfiguration().getFlowAllocatorTimeoutInMs());
+			}
 			log.debug("The TCP Rendez-vous Id is: "+tcpRendezvousId);
 		}catch(Exception ex){
 			log.error("Accepted incoming TCP connection, but could not read the TCP Rendez-vous Id, closing the socket.");
@@ -197,7 +208,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @param portId
 	 * @param socket
 	 */
-	private void notifyFlowAllocatorInstanceIfExists(long rendezVousId, Socket socket){
+	private boolean notifyFlowAllocatorInstanceIfExists(long rendezVousId, Socket socket){
 		Iterator<Entry<Integer, FlowAllocatorInstance>> iterator = null;
 		
 		synchronized(this){
@@ -213,11 +224,11 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 				flowAllocatorInstance.getFlow().getSourcePortId();
 			if (candidateRendezvousId == rendezVousId){
 				flowAllocatorInstance.setSocket(socket);
+				return true;
 			}
 		}
 		
-		//TODO, if it is not there, add a timer to avoid having the socket being 
-		//stored and open forever
+		return false;
 	}
 	
 	/**
@@ -257,6 +268,8 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	public void createFlowRequestMessageReceived(CDAPMessage cdapMessage, int underlyingPortId){
 		Flow flow = null;
 		long myAddress = 0;
+		int portId = 0;
+		long tcpRendezvousId = 0;
 		
 		try{
 			flow = (Flow) encoder.decode(cdapMessage.getObjValue().getByteval(), Flow.class);
@@ -277,7 +290,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		if (address == myAddress){
 			//There is an entry and the address is this IPC Process, create a FAI, extract the Flow object from the CDAP message and
 			//call the FAI
-			int portId = generatePortId();
+			portId = generatePortId();
 			log.debug("The destination application process is reachable through me. Assigning the local portId "+portId+" to the flow allocation.");
 			FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), this, cdapSessionManager, portId);
 			flowAllocatorInstance.createFlowRequestMessageReceived(flow, cdapMessage, underlyingPortId);
@@ -286,7 +299,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			}
 			
 			//Check if the socket was already established
-			long tcpRendezvousId = (flow.getSourceAddress() << 16) + flow.getSourcePortId();
+			tcpRendezvousId = (flow.getSourceAddress() << 16) + flow.getSourcePortId();
 			log.debug("Looking for the socket associated to TCP rendez-vous Id "+tcpRendezvousId);
 			Socket socket = null;
 			synchronized(this){
@@ -296,7 +309,8 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			if (socket != null){
 				flowAllocatorInstance.setSocket(socket);
 			}else{
-				//TODO, if socket is null, add a timer to avoid waiting forever. Upon expiration, send a negative M_CREATE response
+				ExpiredFlowAllocationAttemptTimerTask timerTask = new ExpiredFlowAllocationAttemptTimerTask(this, portId, tcpRendezvousId, false);
+				timer.schedule(timerTask, RINAConfiguration.getInstance().getLocalConfiguration().getFlowAllocatorTimeoutInMs());
 				log.debug("Could not find a socket associated to TCP rendez-vous Id "+tcpRendezvousId+ ". Waiting for it.");
 			}
 			

@@ -44,7 +44,7 @@ public abstract class BaseSocketReader implements Runnable{
 		byte nextByte = 0;
 		int value = 0;
 		
-		log.info("Reading socket from remote interface: "+socket.getInetAddress().getHostAddress() + "\n" 
+		log.debug("Reading socket from remote interface: "+socket.getInetAddress().getHostAddress() + "\n" 
 				+ "Local port_id: "+socket.getLocalPort() + "\n" 
 				+ "Remote port_id: "+socket.getPort());
 		
@@ -69,7 +69,6 @@ public abstract class BaseSocketReader implements Runnable{
 					}else{
 						lastSduLengthCandidate = new byte[0];
 						if (length > 0){
-							log.debug("Found a delimited CDAP message, of length " + length);
 							lookingForSduLength = false;
 						}
 					}
@@ -81,7 +80,7 @@ public abstract class BaseSocketReader implements Runnable{
 						pdu[index] = nextByte;
 						index ++;
 						if (index == length){
-							log.debug("Received PDU through socket "+socket.getPort()+": "+printBytes(pdu));
+							log.debug("Received PDU of length "+length+" through socket "+socket.getPort()+": "+printBytes(pdu));
 							processPDU(pdu);
 							index = 0;
 							length = 0;
@@ -91,7 +90,6 @@ public abstract class BaseSocketReader implements Runnable{
 					}
 				}
 			}catch(IOException ex){
-				ex.printStackTrace();
 				end = true;
 			}
 		}
@@ -99,7 +97,6 @@ public abstract class BaseSocketReader implements Runnable{
 		try{
 			socket.close();
 		}catch(IOException ex){
-			ex.printStackTrace();
 		}
 		
 		log.info("The remote endpoint of socket "+socket.getPort()+" has disconnected");

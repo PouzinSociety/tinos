@@ -33,7 +33,7 @@ public class DefaultFlowImpl implements FlowImpl{
 	
 	private static final Log log = LogFactory.getLog(DefaultFlowImpl.class);
 	
-	private static final int MAX_WAITTIME_IN_SECONDS = 3;
+	private static final int MAX_WAITTIME_IN_SECONDS = 15;
 	
 	/**
 	 * The name of the source application of this flow (i.e. the application that requested
