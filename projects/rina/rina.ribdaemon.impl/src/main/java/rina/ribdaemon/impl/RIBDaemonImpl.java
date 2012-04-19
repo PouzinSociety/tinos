@@ -1,10 +1,10 @@
 package rina.ribdaemon.impl;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -55,9 +55,14 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	/** CDAP Message handlers that have sent a CDAP message and are waiting for a reply **/
 	private Map<String, CDAPMessageHandler> messageHandlersWaitingForReply = null;
 	
+	/** Lock to control that when sending a message requiring a reply the 
+	 * CDAP Session manager has been updated before receiving the response message **/
+	private Object atomicSendLock = null;
+	
 	public RIBDaemonImpl(){
 		rib = new RIB();
-		messageHandlersWaitingForReply = new Hashtable<String, CDAPMessageHandler>();
+		messageHandlersWaitingForReply = new ConcurrentHashMap<String, CDAPMessageHandler>();
+		atomicSendLock = new Object();
 	}
 	
 	@Override
@@ -89,13 +94,16 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	public void cdapMessageDelivered(byte[] encodedCDAPMessage, int portId){
 		CDAPMessage cdapMessage = null;
 		CDAPSessionDescriptor cdapSessionDescriptor = null;
-		
+
 		log.debug("Got an encoded CDAP message from portId "+portId);
-		
+
 		//1 Decode the message and obtain the CDAP session descriptor
 		try{
-			cdapMessage = cdapSessionManager.messageReceived(encodedCDAPMessage, portId);
-			cdapSessionDescriptor = cdapSessionManager.getCDAPSession(portId).getSessionDescriptor();
+			//If another thread was sending a message, let him finish
+			synchronized(atomicSendLock){
+				cdapMessage = cdapSessionManager.messageReceived(encodedCDAPMessage, portId);
+				cdapSessionDescriptor = cdapSessionManager.getCDAPSession(portId).getSessionDescriptor();
+			}
 		}catch(CDAPException ex){
 			log.error("Error decoding CDAP message: " + ex.getMessage());
 			ex.printStackTrace();
@@ -104,9 +112,9 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 			}
 			return;
 		}
-		
+
 		Opcode opcode = cdapMessage.getOpCode();
-		
+
 		//2 Find the destination of the message and call it
 		try{
 			CDAPMessageHandler cdapMessageHandler = null;
@@ -138,14 +146,12 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 			}
 			//All the response messages must be handled by the entities that are waiting for the reply
 			else{
-				synchronized(this){
-					if (cdapMessage.getFlags() != null && cdapMessage.getFlags().equals(Flags.F_RD_INCOMPLETE)){
-						cdapMessageHandler = messageHandlersWaitingForReply.get(cdapSessionDescriptor.getPortId()+"-"+cdapMessage.getInvokeID());
-					}else{
-						cdapMessageHandler = messageHandlersWaitingForReply.remove(cdapSessionDescriptor.getPortId()+"-"+cdapMessage.getInvokeID());
-					}
+				if (cdapMessage.getFlags() != null && cdapMessage.getFlags().equals(Flags.F_RD_INCOMPLETE)){
+					cdapMessageHandler = messageHandlersWaitingForReply.get(cdapSessionDescriptor.getPortId()+"-"+cdapMessage.getInvokeID());
+				}else{
+					cdapMessageHandler = messageHandlersWaitingForReply.remove(cdapSessionDescriptor.getPortId()+"-"+cdapMessage.getInvokeID());
 				}
-				
+
 				if (cdapMessageHandler == null){
 					log.error("Nobody was waiting for this response message "+cdapMessage.toString());
 				}else{
@@ -341,31 +347,31 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 			throw new RIBDaemonException(RIBDaemonException.RESPONSE_REQUIRED_BUT_MESSAGE_HANDLER_IS_NULL);
 		}
 		
-		try{
-			serializedCDAPMessageToBeSend = cdapSessionManager.encodeNextMessageToBeSent(cdapMessage, portId);
-			rmt.sendCDAPMessage(portId, serializedCDAPMessageToBeSend);
-			cdapSessionManager.messageSent(cdapMessage, portId);
-			log.debug("Sent CDAP Message through portId "+portId+": "+ cdapMessage.toString());
-		}catch(Exception ex){
-			ex.printStackTrace();
-			if (ex.getMessage().equals("Flow closed")){
-				cdapSessionManager.removeCDAPSession(portId);
+		synchronized(atomicSendLock){
+			try{
+				serializedCDAPMessageToBeSend = cdapSessionManager.encodeNextMessageToBeSent(cdapMessage, portId);
+				rmt.sendCDAPMessage(portId, serializedCDAPMessageToBeSend);
+				cdapSessionManager.messageSent(cdapMessage, portId);
+				log.debug("Sent CDAP Message through portId "+portId+": "+ cdapMessage.toString());
+			}catch(Exception ex){
+				ex.printStackTrace();
+				if (ex.getMessage().equals("Flow closed")){
+					cdapSessionManager.removeCDAPSession(portId);
+				}
+				throw new RIBDaemonException(RIBDaemonException.PROBLEMS_SENDING_CDAP_MESSAGE, ex);
 			}
-			throw new RIBDaemonException(RIBDaemonException.PROBLEMS_SENDING_CDAP_MESSAGE, ex);
-		}
-		
-		if (cdapMessage.getInvokeID() != 0 && !cdapMessage.getOpCode().equals(Opcode.M_CONNECT) 
-				&& !cdapMessage.getOpCode().equals(Opcode.M_RELEASE)
-				&& !cdapMessage.getOpCode().equals(Opcode.M_CANCELREAD_R)
-				&& !cdapMessage.getOpCode().equals(Opcode.M_CONNECT_R)
-				&& !cdapMessage.getOpCode().equals(Opcode.M_CREATE_R) 
-				&& !cdapMessage.getOpCode().equals(Opcode.M_READ_R)
-				&& !cdapMessage.getOpCode().equals(Opcode.M_DELETE_R)
-				&& !cdapMessage.getOpCode().equals(Opcode.M_RELEASE_R)
-				&& !cdapMessage.getOpCode().equals(Opcode.M_START_R)
-				&& !cdapMessage.getOpCode().equals(Opcode.M_STOP_R)
-				&& !cdapMessage.getOpCode().equals(Opcode.M_WRITE_R)){
-			synchronized(this){
+
+			if (cdapMessage.getInvokeID() != 0 && !cdapMessage.getOpCode().equals(Opcode.M_CONNECT) 
+					&& !cdapMessage.getOpCode().equals(Opcode.M_RELEASE)
+					&& !cdapMessage.getOpCode().equals(Opcode.M_CANCELREAD_R)
+					&& !cdapMessage.getOpCode().equals(Opcode.M_CONNECT_R)
+					&& !cdapMessage.getOpCode().equals(Opcode.M_CREATE_R) 
+					&& !cdapMessage.getOpCode().equals(Opcode.M_READ_R)
+					&& !cdapMessage.getOpCode().equals(Opcode.M_DELETE_R)
+					&& !cdapMessage.getOpCode().equals(Opcode.M_RELEASE_R)
+					&& !cdapMessage.getOpCode().equals(Opcode.M_START_R)
+					&& !cdapMessage.getOpCode().equals(Opcode.M_STOP_R)
+					&& !cdapMessage.getOpCode().equals(Opcode.M_WRITE_R)){
 				messageHandlersWaitingForReply.put(portId+"-"+cdapMessage.getInvokeID(), cdapMessageHandler);
 			}
 		}

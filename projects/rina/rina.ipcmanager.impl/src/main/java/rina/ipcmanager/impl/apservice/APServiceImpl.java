@@ -2,9 +2,9 @@ package rina.ipcmanager.impl.apservice;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -67,8 +67,8 @@ public class APServiceImpl implements APService{
 		this.ipcManager = ipcManager;
 		tcpServer = new APServiceTCPServer(this);
 		ipcManager.execute(tcpServer);
-		flowServices = new Hashtable<Integer, FlowServiceState>();
-		applicationRegistrations = new Hashtable<String, ApplicationRegistrationState>();
+		flowServices = new ConcurrentHashMap<Integer, FlowServiceState>();
+		applicationRegistrations = new ConcurrentHashMap<String, ApplicationRegistrationState>();
 	}
 	
 	public void stop(){
@@ -165,39 +165,39 @@ public class APServiceImpl implements APService{
 		FlowServiceState flowServiceState  = flowServices.get(new Integer(portId));
 		
 		if (flowServiceState == null){
-			CDAPMessage errorMessage = cdapMessage.getReplyMessage();
-			errorMessage.setResult(1);
-			errorMessage.setResultReason("Received a deallocate request for portid " + portId + ", but there is no allocated flow identified by this portId");
-			sendErrorMessageAndCloseSocket(errorMessage, socket);
-			return;
-		}
-		
-		if (!flowServiceState.getStatus().equals(Status.ALLOCATED)){
-			//TODO, what to do?
-		}
-		
-		try{
-			flowServiceState.getIpcService().submitDeallocate(portId);
+			log.warn("Received a deallocate request for portid " + portId + ", but there is no allocated flow identified by this portId");
+		}else{
 			
-			flowServices.remove(new Integer(portId));
-			arState = applicationRegistrations.get(
-					flowServiceState.getFlowService().getDestinationAPNamingInfo().getEncodedString());
+			if (!flowServiceState.getStatus().equals(Status.ALLOCATED)){
+				//TODO, what to do?
+			}
 
-			if (arState == null){
-				//TODO what to do?
-			}else{
-				arState.getFlowServices().remove(flowServiceState);
+			try{
+				flowServiceState.getIpcService().submitDeallocate(portId);
+
+				flowServices.remove(new Integer(portId));
+				arState = applicationRegistrations.get(
+						flowServiceState.getFlowService().getDestinationAPNamingInfo().getEncodedString());
+
+				if (arState == null){
+					//TODO what to do?
+				}else{
+					arState.getFlowServices().remove(flowServiceState);
+				}
+
+			}catch(Exception ex){
+				ex.printStackTrace();
+				//TODO, what to do?
 			}
-			
-			CDAPMessage confirmationMessage = cdapMessage.getReplyMessage();
-			sendMessage(confirmationMessage, socket);
-			if (flowServiceState.getSocket().isConnected()){
-				flowServiceState.getSocket().close();
-			}
-		}catch(Exception ex){
-			ex.printStackTrace();
-			//TODO, what to do?
 		}
+		
+		if (!socket.isClosed()){
+			try{
+				socket.close();
+			}catch(Exception ex){
+			}
+		}
+		return;
 	}
 	
 	/**
@@ -522,7 +522,7 @@ public class APServiceImpl implements APService{
 	 * @param port_id
 	 * @param sdu
 	 */
-	public synchronized void deliverTransfer(int portId, byte[] sdu){
+	public void deliverTransfer(int portId, byte[] sdu){
 		FlowServiceState flowServiceState = flowServices.get(new Integer(portId));
 		
 		if (flowServiceState == null){

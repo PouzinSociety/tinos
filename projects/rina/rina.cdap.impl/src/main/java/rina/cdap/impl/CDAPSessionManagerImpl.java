@@ -1,12 +1,12 @@
 package rina.cdap.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,7 +31,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	
 	private WireMessageProviderFactory wireMessageProviderFactory = null;
 	
-	private Map<Integer, CDAPSession> cdapSessions = null;
+	private ConcurrentMap<Integer, CDAPSession> cdapSessions = null;
 	
 	/**
 	 * Used by the serialize and unserialize operations
@@ -44,7 +44,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	private long timeout = 0;
 	
 	public CDAPSessionManagerImpl(WireMessageProviderFactory wireMessageProviderFactory){
-		this.cdapSessions = new HashMap<Integer, CDAPSession>();
+		this.cdapSessions = new ConcurrentHashMap<Integer, CDAPSession>();
 		this.wireMessageProviderFactory = wireMessageProviderFactory;
 		try{
 			timeout = RINAConfiguration.getInstance().getLocalConfiguration().getCdapTimeoutInMs();
@@ -54,16 +54,18 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	}
 
 	public CDAPSession createCDAPSession(int portId) {
-		CDAPSessionImpl cdapSession = new CDAPSessionImpl(this, new CDAPSessionInvokeIdManagerImpl(), timeout);
+		CDAPSessionImpl cdapSession = new CDAPSessionImpl(this, timeout);
 		cdapSession.setWireMessageProvider(wireMessageProviderFactory.createWireMessageProvider());
 		CDAPSessionDescriptor descriptor = new CDAPSessionDescriptor();
 		descriptor.setPortId(portId);
 		cdapSession.setSessionDescriptor(descriptor);
-		synchronized(this){
-			cdapSessions.put(new Integer(descriptor.getPortId()), cdapSession);
+		CDAPSession existingCDAPSession = 
+			cdapSessions.putIfAbsent(new Integer(descriptor.getPortId()), cdapSession);
+		if (existingCDAPSession == null){
+			return cdapSession;
+		}else{
+			return existingCDAPSession;
 		}
-
-		return cdapSession;
 	}
 	
 	private WireMessageProvider getWireMessageProvider(){
@@ -114,7 +116,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 		return result;
 	}
 
-	public synchronized CDAPSession getCDAPSession(int portId) {
+	public CDAPSession getCDAPSession(int portId) {
 		return cdapSessions.get(new Integer(portId));
 	}
 	
@@ -151,7 +153,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 * Called by the CDAPSession state machine when the cdap session is terminated
 	 * @param portId
 	 */
-	public synchronized void removeCDAPSession(int portId){
+	public void removeCDAPSession(int portId){
 		cdapSessions.remove(new Integer(portId));
 	}
 
@@ -239,10 +241,7 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 	 */
 	public int getPortId(String destinationApplicationProcessName) throws CDAPException{
 		Iterator<Entry<Integer, CDAPSession>> iterator = null;
-		
-		synchronized(this){
-			iterator = this.cdapSessions.entrySet().iterator();
-		}
+		iterator = this.cdapSessions.entrySet().iterator();
 		
 		CDAPSession currentSession = null;
 		while(iterator.hasNext()){

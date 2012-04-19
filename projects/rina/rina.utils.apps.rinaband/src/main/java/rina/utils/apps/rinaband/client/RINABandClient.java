@@ -239,6 +239,9 @@ public class RINABandClient implements SDUListener{
 			
 			//4 Deallocate the control flow
 			this.controlFlow.deallocate();
+			
+			//5 Exit
+			System.exit(0);
 		}catch(Exception ex){
 			ex.printStackTrace();
 			abortTest("Problems cleaning up the test resources");

@@ -2,9 +2,9 @@ package rina.rmt.impl.tcp;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,8 +38,14 @@ public class TCPRMTImpl extends BaseRMT{
 	 */
 	private RMTServer rmtServer = null;
 	
+	/**
+	 * The lock to get before writing data to the socket
+	 */
+	private Object socketWriteLock = null;
+	
 	public TCPRMTImpl(){
-		this.flowTable = new Hashtable<Integer, Socket>();
+		this.flowTable = new ConcurrentHashMap<Integer, Socket>();
+		this.socketWriteLock = new Object();
 	}
 	
 	@Override
@@ -79,15 +85,15 @@ public class TCPRMTImpl extends BaseRMT{
 	 * Close all the sockets and stop
 	 */
 	@Override
-	public synchronized void stop(){
+	public void stop(){
 		Iterator<Integer> iterator = flowTable.keySet().iterator();
 		Socket socket = null;
 		
 		while(iterator.hasNext()){
-			socket = flowTable.get(iterator.next());
 			try{
+				socket = getSocket(iterator.next().intValue());
 				socket.close();
-			}catch(IOException ex){
+			}catch(Exception ex){
 				log.error(ex.getMessage());
 			}
 		}
@@ -132,16 +138,7 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @throws Exception if the flow is not allocated or there are problems deallocating the flow
 	 */
 	public void deallocateFlow(int portId) throws Exception{
-		Socket socket = null;
-		
-		synchronized(this){
-			socket = flowTable.get(new Integer(portId));
-		}
-		
-		if (socket == null){
-			throw new Exception("Unexisting flow");
-		}
-		
+		Socket socket = getSocket(portId);
 		socket.close();
 	}
 
@@ -156,9 +153,25 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @throws IPCException
 	 */
 	public void sendCDAPMessage(int portId, byte[] cdapMessage) throws Exception{
-		Socket socket = null;
+		Socket socket = getSocket(portId);
+		Delimiter delimiter = (Delimiter) getIPCProcess().getIPCProcessComponent(BaseDelimiter.getComponentName());
+		byte[] delimitedSdu = delimiter.getDelimitedSdu(cdapMessage);
 		
-		synchronized(this){
+		try{
+			synchronized(socketWriteLock){
+				socket.getOutputStream().write(delimitedSdu);
+			}
+			log.debug("Sent PDU through flow "+portId+": "+printBytes(delimitedSdu));
+		}catch(IOException ex){
+			log.error("Problems sending a PDU through flow "+portId+": "+ex.getMessage());
+			this.connectionEnded(portId);
+			throw new Exception("Flow closed", ex);
+		}
+	}
+	
+	private Socket getSocket(int portId) throws Exception{
+		Socket socket = null;
+		synchronized(flowTable){
 			socket = flowTable.get(new Integer(portId));
 		}
 		
@@ -166,16 +179,7 @@ public class TCPRMTImpl extends BaseRMT{
 			throw new Exception("Flow closed");
 		}
 		
-		Delimiter delimiter = (Delimiter) getIPCProcess().getIPCProcessComponent(BaseDelimiter.getComponentName());
-		byte[] delimitedSdu = delimiter.getDelimitedSdu(cdapMessage);
-		try{
-			socket.getOutputStream().write(delimitedSdu);
-			log.debug("Sent PDU through flow "+portId+": "+printBytes(delimitedSdu));
-		}catch(IOException ex){
-			log.error("Problems sending a PDU through flow "+portId+": "+ex.getMessage());
-			this.connectionEnded(portId);
-			throw new Exception("Flow closed", ex);
-		}
+		return socket;
 	}
 	
 	/**
@@ -185,10 +189,9 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @param socket
 	 */
 	public void newConnectionAccepted(Socket socket, int portId){
-		synchronized(this){
-			flowTable.put(new Integer(portId), socket);
+		synchronized(flowTable){
+			flowTable.put(new Integer(portId), socket);	
 		}
-		
 		Delimiter delimiter = (Delimiter) getIPCProcess().getIPCProcessComponent(BaseDelimiter.getComponentName());
 		RIBDaemon ribdaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		TCPSocketReader tcpSocketReader = new TCPSocketReader(socket, portId, ribdaemon, delimiter, this);
@@ -200,7 +203,7 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @param portId
 	 */
 	public void connectionEnded(int portId){
-		synchronized(this){
+		synchronized(flowTable){
 			flowTable.remove(new Integer(portId));
 		}
 	}

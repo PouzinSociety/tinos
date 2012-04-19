@@ -172,7 +172,18 @@ public class TestController implements SDUListener, FlowListener{
 			return;
 		}
 		
-		this.abort();
+		//1 State is completed
+		this.state = State.COMPLETED;
+		
+		//2 Cancel the registration of the data AE
+		try{
+			if (dataRegistration.isRegistered()){
+				dataRegistration.unregister();
+			}
+		}catch(Exception ex){
+			printMessage("Problems unregistering data AE");
+			ex.printStackTrace();
+		}
 	}
 
 	/**
@@ -191,45 +202,18 @@ public class TestController implements SDUListener, FlowListener{
 		
 		TestWorker testWorker = new TestWorker(this.testInformation, flow);
 		flow.setSDUListener(testWorker);
-		allocatedFlows.put(new Integer(flow.getPortId()), testWorker);
+		this.allocatedFlows.put(new Integer(flow.getPortId()), testWorker);
+		printMessage("Data flow with portId "+flow.getPortId()+ " allocated");
 	}
 
 	/**
 	 * Called when an existing data flow has been deallocated
 	 */
 	public synchronized void flowDeallocated(Flow flow) {
-		// TODO Auto-generated method stub
-	}
-	
-	/**
-	 * Immediately stop the test and free all 
-	 * the resources associated to it.
-	 */
-	public synchronized void abort(){
-		if (this.state != State.EXECUTING){
-			return;
+		if (this.state == State.COMPLETED){
+			this.allocatedFlows.remove(new Integer(flow.getPortId()));
+			printMessage("Data flow with portId "+flow.getPortId()+ " deallocated");
 		}
-		
-		//1 if the flows are not deallocated, deallocate them
-		TestWorker currentWorker = null;
-		Iterator<Entry<Integer, TestWorker>> iterator = allocatedFlows.entrySet().iterator();
-		while(iterator.hasNext()){
-			currentWorker = iterator.next().getValue();
-			currentWorker.abort();
-		}
-		
-		//2 Cancel the registration of the data AE
-		try{
-			if (dataRegistration.isRegistered()){
-				dataRegistration.unregister();
-			}
-		}catch(Exception ex){
-			printMessage("Problems unregistering data AE");
-			ex.printStackTrace();
-		}
-		
-		//3 Update the state
-		this.state = State.COMPLETED;
 	}
 	
 	private void printMessage(String message){

@@ -277,18 +277,7 @@ public class DefaultFlowImpl implements FlowImpl{
 			byte[] encodedMessage = cdapSessionManager.encodeCDAPMessage(cdapMessage);
 			socket.getOutputStream().write(delimiter.getDelimitedSdu(encodedMessage));
 			
-			//2 Wait (up to MAX milliseconds) for the response
-			cdapMessage = flowQueue.poll(MAX_WAITTIME_IN_SECONDS, TimeUnit.SECONDS);
-			if (cdapMessage == null){
-				throw new IPCException("Didn't receive the reply from the local RINA software before "+MAX_WAITTIME_IN_SECONDS+" seconds.");
-			}
-			
-			//3 If response is not successful throw exception
-			if (cdapMessage.getResult() != 0){
-				throw new IPCException(cdapMessage.getResultReason());
-			}
-			
-			//4 Response was successful, update the state, close the socket and return
+			//2 Close the socket and return
 			try{
 				if (socket != null && !socket.isClosed()){
 					socket.close();

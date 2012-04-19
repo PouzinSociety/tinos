@@ -1,15 +1,15 @@
 package rina.cdap.impl;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import rina.cdap.api.CDAPException;
-import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.CDAPMessageValidator;
 import rina.cdap.api.CDAPSession;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionInvokeIdManager;
 import rina.cdap.api.CDAPSessionManager;
+import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Flags;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 
@@ -31,9 +31,9 @@ public class CDAPSessionImpl implements CDAPSession{
 	 * This map contains the invokeIds of the messages that
 	 * have requested a response, except for the M_CANCELREADs
 	 */
-	private Map<Integer, CDAPOperationState> pendingMessages = null;
+	private ConcurrentMap<Integer, CDAPOperationState> pendingMessages = null;
 	
-	private Map<Integer, CDAPOperationState> cancelReadPendingMessages = null;
+	private ConcurrentMap<Integer, CDAPOperationState> cancelReadPendingMessages = null;
 	
 	private WireMessageProvider wireMessageProvider = null;
 	
@@ -43,11 +43,11 @@ public class CDAPSessionImpl implements CDAPSession{
 	
 	private CDAPSessionInvokeIdManager invokeIdManager = null;
 	
-	public CDAPSessionImpl(CDAPSessionManager cdapSessionManager, CDAPSessionInvokeIdManager invokeIdManager, long timeout){
+	public CDAPSessionImpl(CDAPSessionManager cdapSessionManager, long timeout){
 		this.cdapSessionManager = cdapSessionManager;
-		this.invokeIdManager = invokeIdManager;
-		pendingMessages = new HashMap<Integer, CDAPOperationState>();
-		this.cancelReadPendingMessages = new HashMap<Integer, CDAPOperationState>();
+		this.invokeIdManager = new CDAPSessionInvokeIdManagerImpl();
+		pendingMessages = new ConcurrentHashMap<Integer, CDAPOperationState>();
+		this.cancelReadPendingMessages = new ConcurrentHashMap<Integer, CDAPOperationState>();
 		this.connectionStateMachine = new ConnectionStateMachine(this, timeout);
 	}
 	
@@ -60,11 +60,8 @@ public class CDAPSessionImpl implements CDAPSession{
 	}
 	
 	protected void stopConnection(){
-		synchronized(this){
-			pendingMessages.clear();
-			cancelReadPendingMessages.clear();
-		}
-		
+		pendingMessages.clear();
+		cancelReadPendingMessages.clear();
 		cdapSessionManager.removeCDAPSession(this.getPortId());
 	}
 	
@@ -257,7 +254,7 @@ public class CDAPSessionImpl implements CDAPSession{
 		}
 	}
 	
-	private synchronized void checkInvokeIdNotExists(CDAPMessage cdapMessage) throws CDAPException{
+	private void checkInvokeIdNotExists(CDAPMessage cdapMessage) throws CDAPException{
 		if (pendingMessages.containsKey(new Integer(cdapMessage.getInvokeID()))){
 			throw new CDAPException("The invokeid "+cdapMessage.getInvokeID()+" is already in use");
 		}
@@ -267,9 +264,7 @@ public class CDAPSessionImpl implements CDAPSession{
 		boolean validationFailed = false;
 		CDAPOperationState state = null;
 		
-		synchronized(this){
-			state = pendingMessages.get(new Integer(cdapMessage.getInvokeID()));
-		}
+		state = pendingMessages.get(new Integer(cdapMessage.getInvokeID()));
 		
 		if (state == null){
 			throw new CDAPException("Cannot set an M_CANCELREAD message because there is no READ transaction "
@@ -294,30 +289,24 @@ public class CDAPSessionImpl implements CDAPSession{
 		checkIsConnected();
 		checkInvokeIdNotExists(cdapMessage);
 		if (cdapMessage.getInvokeID() != 0){
-			synchronized(this){
-				pendingMessages.put(
-						new Integer(cdapMessage.getInvokeID()), 
-						new CDAPOperationState(opcode, sent));
-			}
+			pendingMessages.put(
+					new Integer(cdapMessage.getInvokeID()), 
+					new CDAPOperationState(opcode, sent));
 		}
 	}
 	
 	private void cancelReadMessageSentOrReceived(CDAPMessage cdapMessage, boolean sender) throws CDAPException{
 		checkCanSendOrReceiveCancelReadRequest(cdapMessage, sender);
-		synchronized(this){
-			cancelReadPendingMessages.put(
+		cancelReadPendingMessages.put(
 				new Integer(cdapMessage.getInvokeID()), 
 				new CDAPOperationState(Opcode.M_CANCELREAD, sender));
-		}
 	}
 	
 	private void checkCanSendOrReceiveResponse(CDAPMessage cdapMessage, Opcode opcode, boolean send) throws CDAPException{
 		boolean validationFailed = false;
 		CDAPOperationState state = null;
 		
-		synchronized(this){
-			state = pendingMessages.get(new Integer(cdapMessage.getInvokeID()));
-		}
+		state = pendingMessages.get(new Integer(cdapMessage.getInvokeID()));
 		
 		if (state == null){
 			throw new CDAPException("Cannot send a response for the "+opcode+
@@ -346,9 +335,7 @@ public class CDAPSessionImpl implements CDAPSession{
 		boolean validationFailed = false;
 		CDAPOperationState state = null;
 		
-		synchronized(this){
-			state = cancelReadPendingMessages.get(new Integer(cdapMessage.getInvokeID()));
-		}
+		state = cancelReadPendingMessages.get(new Integer(cdapMessage.getInvokeID()));
 		
 		if (state == null){
 			throw new CDAPException("Cannot send a response for the "+Opcode.M_CANCELREAD+
@@ -384,17 +371,13 @@ public class CDAPSessionImpl implements CDAPSession{
 			}
 		}
 		if (operationComplete){
-			synchronized(this){
-				pendingMessages.remove(new Integer(cdapMessage.getInvokeID()));
-			}
+			pendingMessages.remove(new Integer(cdapMessage.getInvokeID()));
 		}
 		
 		//check for M_READ_R and M_CANCELREAD race condition
 		if (!sent){
 			if (opcode.equals(Opcode.M_READ)){
-				synchronized(this){
-					cancelReadPendingMessages.remove(cdapMessage.getInvokeID());
-				}
+				cancelReadPendingMessages.remove(cdapMessage.getInvokeID());
 			}
 		}
 	}
@@ -402,10 +385,8 @@ public class CDAPSessionImpl implements CDAPSession{
 	private void cancelReadResponseMessageSentOrReceived(CDAPMessage cdapMessage, boolean sent) throws CDAPException{
 		checkIsConnected();
 		checkCanSendOrReceiveCancelReadResponse(cdapMessage, sent);
-		synchronized(this){
-			cancelReadPendingMessages.remove(new Integer(cdapMessage.getInvokeID()));
-			pendingMessages.remove(new Integer(cdapMessage.getInvokeID()));
-		}
+		cancelReadPendingMessages.remove(new Integer(cdapMessage.getInvokeID()));
+		pendingMessages.remove(new Integer(cdapMessage.getInvokeID()));
 	}
 	
 	private byte[] serializeMessage(CDAPMessage cdapMessage) throws CDAPException{
@@ -428,7 +409,7 @@ public class CDAPSessionImpl implements CDAPSession{
 		return sessionDescriptor.getPortId();
 	}
 	
-	private synchronized void populateSessionDescriptor(CDAPMessage cdapMessage, boolean send){
+	private void populateSessionDescriptor(CDAPMessage cdapMessage, boolean send){
 		sessionDescriptor.setAbsSyntax(cdapMessage.getAbsSyntax());
 		sessionDescriptor.setAuthMech(cdapMessage.getAuthMech());
 		sessionDescriptor.setAuthValue(cdapMessage.getAuthValue());
@@ -454,7 +435,7 @@ public class CDAPSessionImpl implements CDAPSession{
 		sessionDescriptor.setVersion(cdapMessage.getVersion());
 	}
 	
-	private synchronized void emptySessionDescriptor(){
+	private void emptySessionDescriptor(){
 		sessionDescriptor.setAbsSyntax(-1);
 		sessionDescriptor.setAuthMech(null);
 		sessionDescriptor.setAuthValue(null);

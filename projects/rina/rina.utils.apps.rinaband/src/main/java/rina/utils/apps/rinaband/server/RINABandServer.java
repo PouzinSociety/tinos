@@ -86,8 +86,7 @@ public class RINABandServer implements FlowListener, FlowAcceptor{
 	 * Called when the control flow with the RINABand client is deallocated
 	 */
 	public synchronized void flowDeallocated(Flow flow) {
-		TestController testController = ongoingTests.remove(new Integer(flow.getPortId()));
-		testController.abort();
+		ongoingTests.remove(new Integer(flow.getPortId()));
 		System.out.println("Control flow with port id "+flow.getPortId()+" deallocated");
 	}
 

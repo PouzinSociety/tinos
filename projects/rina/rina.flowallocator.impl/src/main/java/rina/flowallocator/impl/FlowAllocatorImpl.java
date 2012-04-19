@@ -1,12 +1,12 @@
 package rina.flowallocator.impl;
 
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Timer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,7 +47,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	/**
 	 * Flow allocator instances, each one associated to a port_id
 	 */
-	private Map<Integer, FlowAllocatorInstance> flowAllocatorInstances = null;
+	private ConcurrentMap<Integer, FlowAllocatorInstance> flowAllocatorInstances = null;
 	
 	/**
 	 * Validates allocate requests
@@ -90,7 +90,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * Stores the list of pending Sockets for which a 
 	 * M_CREATE message for a Flow object still has not arrived
 	 */
-	private Map<Long, Socket> pendingSockets = null;
+	private ConcurrentMap<Long, Socket> pendingSockets = null;
 	
 	private CDAPSessionManager cdapSessionManager = null;
 	
@@ -98,8 +98,8 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	
 	public FlowAllocatorImpl(){
 		allocateRequestValidator = new AllocateRequestValidator();
-		flowAllocatorInstances = new HashMap<Integer, FlowAllocatorInstance>();
-		pendingSockets = new Hashtable<Long, Socket>();
+		flowAllocatorInstances = new ConcurrentHashMap<Integer, FlowAllocatorInstance>();
+		pendingSockets = new ConcurrentHashMap<Long, Socket>();
 		timer = new Timer();
 	}
 	
@@ -127,7 +127,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * Called by the flow allocator instance when it finishes to cleanup the state.
 	 * @param portId
 	 */
-	public synchronized void removeFlowAllocatorInstance(int portId){
+	public void removeFlowAllocatorInstance(int portId){
 		this.flowAllocatorInstances.remove(new Integer(portId));
 	}
 	
@@ -153,11 +153,11 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		}
 	}
 	
-	public synchronized Map<Long, Socket> getPendingSockets(){
+	public Map<Long, Socket> getPendingSockets(){
 		return this.pendingSockets;
 	}
 	
-	public synchronized Map<Integer, FlowAllocatorInstance> getFlowAllocatorInstances(){
+	public Map<Integer, FlowAllocatorInstance> getFlowAllocatorInstances(){
 		return this.flowAllocatorInstances;
 	}
 	
@@ -180,9 +180,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			Unsigned unsigned = new Unsigned(4);
 			unsigned.setValue(buffer);
 			tcpRendezvousId = unsigned.getValue();
-			synchronized(this){
-				pendingSockets.put(new Long(tcpRendezvousId), socket);
-			}
+			pendingSockets.put(new Long(tcpRendezvousId), socket);
 			
 			boolean exists = notifyFlowAllocatorInstanceIfExists(tcpRendezvousId, socket);
 			if (!exists){
@@ -211,9 +209,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	private boolean notifyFlowAllocatorInstanceIfExists(long rendezVousId, Socket socket){
 		Iterator<Entry<Integer, FlowAllocatorInstance>> iterator = null;
 		
-		synchronized(this){
-			iterator = flowAllocatorInstances.entrySet().iterator();
-		}
+		iterator = flowAllocatorInstances.entrySet().iterator();
 		
 		FlowAllocatorInstance flowAllocatorInstance = null;
 		long candidateRendezvousId = 0;
@@ -254,7 +250,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @param candidate
 	 * @return
 	 */
-	private synchronized boolean portIdAlreadyInUse(int candidate){
+	private boolean portIdAlreadyInUse(int candidate){
 		return flowAllocatorInstances.get(new Integer(candidate)) != null;
 	}
 	
@@ -294,9 +290,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			log.debug("The destination application process is reachable through me. Assigning the local portId "+portId+" to the flow allocation.");
 			FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), this, cdapSessionManager, portId);
 			flowAllocatorInstance.createFlowRequestMessageReceived(flow, cdapMessage, underlyingPortId);
-			synchronized(this){
-				flowAllocatorInstances.put(new Integer(new Integer(portId)), flowAllocatorInstance);
-			}
+			flowAllocatorInstances.put(new Integer(new Integer(portId)), flowAllocatorInstance);
 			
 			//Check if the socket was already established
 			tcpRendezvousId = (flow.getSourceAddress() << 16) + flow.getSourcePortId();
@@ -354,9 +348,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		clonedFlowService.setQoSSpecification(flowService.getQoSSpecification());
 		clonedFlowService.setPortId(flowService.getPortId());
 		flowAllocatorInstance.receivedLocalFlowRequest(clonedFlowService, objectName);
-		synchronized(this){
-			flowAllocatorInstances.put(new Integer(new Integer(portId)), flowAllocatorInstance);
-		}
+		flowAllocatorInstances.put(new Integer(new Integer(portId)), flowAllocatorInstance);
 	}
 	
 	/**
@@ -371,9 +363,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		FlowAllocatorInstance flowAllocatorInstance = getFlowAllocatorInstance(portId);
 		flowAllocatorInstance.receivedLocalFlowResponse(remotePortId, result, resultReason);
 		if (!result){
-			synchronized(this){
-				flowAllocatorInstances.remove(new Integer(portId));
-			}
+			flowAllocatorInstances.remove(new Integer(portId));
 		}
 	}
 	
@@ -383,16 +373,14 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @param applicationProcess
 	 * @throws IPCException
 	 */
-	public synchronized int submitAllocateRequest(FlowService flowService) throws IPCException{
+	public int submitAllocateRequest(FlowService flowService) throws IPCException{
 		log.debug("Local application invoked allocate request: "+flowService.toString());
 		allocateRequestValidator.validateAllocateRequest(flowService);
 		int portId = generatePortId();
 		flowService.setPortId(portId);
 		FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), this, cdapSessionManager, portId);
 		flowAllocatorInstance.submitAllocateRequest(flowService);
-		synchronized(this){
-			flowAllocatorInstances.put(new Integer(portId), flowAllocatorInstance);
-		}
+		flowAllocatorInstances.put(new Integer(portId), flowAllocatorInstance);
 		return portId;
 	}
 
@@ -403,14 +391,12 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @param portId
 	 * @param success
 	 */
-	public synchronized void submitAllocateResponse(int portId, boolean success, String reason) throws IPCException{
+	public void submitAllocateResponse(int portId, boolean success, String reason) throws IPCException{
 		log.debug("Local application invoked allocate response for portId "+portId+" with result "+success);
 		FlowAllocatorInstance flowAllocatorInstance = getFlowAllocatorInstance(portId);
 		flowAllocatorInstance.submitAllocateResponse(success, reason);
 		if (!success){
-			synchronized(this){
-				flowAllocatorInstances.remove(portId);
-			}
+			flowAllocatorInstances.remove(portId);
 		}
 	}
 
@@ -418,7 +404,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * Forward the deallocate request to the Flow Allocator Instance.
 	 * @param portId
 	 */
-	public synchronized void submitDeallocate(int portId) throws IPCException{
+	public void submitDeallocate(int portId) throws IPCException{
 		log.debug("Local application invoked deallocate request for flow at portId "+portId);
 		FlowAllocatorInstance flowAllocatorInstance = getFlowAllocatorInstance(portId);
 		flowAllocatorInstance.submitDeallocate();
@@ -454,11 +440,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @throws IPCException
 	 */
 	private FlowAllocatorInstance getFlowAllocatorInstance(int portId) throws IPCException{
-		FlowAllocatorInstance flowAllocatorInstance = null;
-		
-		synchronized(this){
-			flowAllocatorInstance = flowAllocatorInstances.get(new Integer(portId));
-		}
+		FlowAllocatorInstance flowAllocatorInstance = flowAllocatorInstances.get(new Integer(portId));
 		
 		if (flowAllocatorInstance == null){
 			throw new IPCException(IPCException.NO_FLOW_ALLOCATOR_INSTANCE_FOR_THIS_PORTID_CODE , 

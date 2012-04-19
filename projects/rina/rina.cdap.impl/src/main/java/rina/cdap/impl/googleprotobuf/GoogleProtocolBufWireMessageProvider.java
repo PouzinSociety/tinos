@@ -22,9 +22,7 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 		CDAP.CDAPMessage cdapMessage = null;
 		
 		try{
-			synchronized(this){
-				cdapMessage = CDAP.CDAPMessage.parseFrom(message);
-			}
+			cdapMessage = CDAP.CDAPMessage.parseFrom(message);
 			AuthTypes authMech = getAuthMech(cdapMessage);
 			AuthValue authValue = getAuthValue(cdapMessage);
 			Flags flags = getFlags(cdapMessage);
@@ -293,36 +291,34 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 			if (srcApName == null){
 				srcApName = "";
 			}
-			
+
 			CDAP.CDAPMessage response = null;
-			
-			synchronized(this){
-				response = CDAP.CDAPMessage.newBuilder().
-				setAbsSyntax(cdapMessage.getAbsSyntax()).
-				setAuthMech(authMech).
-				setAuthValue(authValue).
-				setDestAEInst(destAEInst).
-				setDestAEName(destAEName).
-				setDestApInst(destApInst).
-				setDestApName(destApName).
-				setFilter(filter).
-				setFlags(flags).
-				setInvokeID(cdapMessage.getInvokeID()).
-				setObjClass(objClass).
-				setObjInst(cdapMessage.getObjInst()).
-				setObjName(objName).
-				setObjValue(objValue).
-				setOpCode(opCode).
-				setResult(cdapMessage.getResult()).
-				setResultReason(resultReason).
-				setScope(cdapMessage.getScope()).
-				setSrcAEInst(srcAEInst).
-				setSrcAEName(srcAEName).
-				setSrcApInst(srcApInst).
-				setSrcApName(srcApName).
-				setVersion(cdapMessage.getVersion()).
-				build();
-			}
+
+			response = CDAP.CDAPMessage.newBuilder().
+			setAbsSyntax(cdapMessage.getAbsSyntax()).
+			setAuthMech(authMech).
+			setAuthValue(authValue).
+			setDestAEInst(destAEInst).
+			setDestAEName(destAEName).
+			setDestApInst(destApInst).
+			setDestApName(destApName).
+			setFilter(filter).
+			setFlags(flags).
+			setInvokeID(cdapMessage.getInvokeID()).
+			setObjClass(objClass).
+			setObjInst(cdapMessage.getObjInst()).
+			setObjName(objName).
+			setObjValue(objValue).
+			setOpCode(opCode).
+			setResult(cdapMessage.getResult()).
+			setResultReason(resultReason).
+			setScope(cdapMessage.getScope()).
+			setSrcAEInst(srcAEInst).
+			setSrcAEName(srcAEName).
+			setSrcApInst(srcApInst).
+			setSrcApName(srcApName).
+			setVersion(cdapMessage.getVersion()).
+			build();
 
 			return response.toByteArray();
 		}catch(Exception ex){
@@ -374,13 +370,11 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 			authPassword = "";
 		}
 		
-		synchronized(this){
-			authValue = CDAP.authValue_t.newBuilder().
+		authValue = CDAP.authValue_t.newBuilder().
 			setAuthName(authName).
 			setAuthPassword(authPassword).
 			setAuthOther(authOther).
 			build();
-		}
 		
 		return authValue;
 	}
@@ -419,8 +413,7 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 			strVal = "";
 		}
 		
-		synchronized(this){
-			objValue = CDAP.objVal_t.newBuilder().setByteval(byteVal).
+		objValue = CDAP.objVal_t.newBuilder().setByteval(byteVal).
 			setDoubleval(cdapMessage.getObjValue().getDoubleval()).
 			setFloatval(cdapMessage.getObjValue().getFloatval()).
 			setIntval(cdapMessage.getObjValue().getIntval()).
@@ -430,7 +423,6 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 			setStrval(strVal).
 			setBoolval(cdapMessage.getObjValue().isBooleanval()).
 			build();
-		}
 		
 		return objValue;
 	}

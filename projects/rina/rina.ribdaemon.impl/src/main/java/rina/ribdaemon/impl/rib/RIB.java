@@ -2,10 +2,10 @@ package rina.ribdaemon.impl.rib;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
@@ -20,7 +20,7 @@ public class RIB{
      * Default ctor.
      */
     public RIB(){
-    	rib = new Hashtable<String, RIBObject>();
+    	rib = new ConcurrentHashMap<String, RIBObject>();
     }
     
     /**
