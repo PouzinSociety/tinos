@@ -96,11 +96,20 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	
 	private Timer timer = null;
 	
+	/**
+	 * The lock to control that the Thread notifying about the
+	 * new TCP connection to the flow allocator TCP server and 
+	 * the Thread that receives the M_CREATE Flow message are 
+	 * synchronized
+	 */
+	private Object tcpRendezVousLock = null;
+	
 	public FlowAllocatorImpl(){
 		allocateRequestValidator = new AllocateRequestValidator();
 		flowAllocatorInstances = new ConcurrentHashMap<Integer, FlowAllocatorInstance>();
 		pendingSockets = new ConcurrentHashMap<Long, Socket>();
 		timer = new Timer();
+		this.tcpRendezVousLock = new Object();
 	}
 	
 	@Override
@@ -172,6 +181,8 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		byte[] buffer = new byte[4];
 		long tcpRendezvousId = -1;
 		try{
+			//1 Read the TCP Rendez vous ID from the socket
+			//It will be the first 4 bytes
 			int dataRead = socket.getInputStream().read(buffer);
 			if (dataRead <1){
 				//TODO fix this
@@ -180,15 +191,19 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			Unsigned unsigned = new Unsigned(4);
 			unsigned.setValue(buffer);
 			tcpRendezvousId = unsigned.getValue();
-			pendingSockets.put(new Long(tcpRendezvousId), socket);
-			
-			boolean exists = notifyFlowAllocatorInstanceIfExists(tcpRendezvousId, socket);
-			if (!exists){
-				ExpiredFlowAllocationAttemptTimerTask timerTask = 
-					new ExpiredFlowAllocationAttemptTimerTask(this, 0, tcpRendezvousId, true);
-				timer.schedule(timerTask, RINAConfiguration.getInstance().getLocalConfiguration().getFlowAllocatorTimeoutInMs());
-			}
 			log.debug("The TCP Rendez-vous Id is: "+tcpRendezvousId);
+			
+			//2 Put the socket in the pending sockets map and see if the M_CREATE message
+			//already arrived. If so, notify the flow allocator
+			synchronized(this.tcpRendezVousLock){
+				boolean exists = notifyFlowAllocatorInstanceIfExists(tcpRendezvousId, socket);
+				if (!exists){
+					pendingSockets.put(new Long(tcpRendezvousId), socket);
+					ExpiredFlowAllocationAttemptTimerTask timerTask = 
+						new ExpiredFlowAllocationAttemptTimerTask(this, 0, tcpRendezvousId, true);
+					timer.schedule(timerTask, RINAConfiguration.getInstance().getLocalConfiguration().getFlowAllocatorTimeoutInMs());
+				}
+			}
 		}catch(Exception ex){
 			log.error("Accepted incoming TCP connection, but could not read the TCP Rendez-vous Id, closing the socket.");
 			try{
@@ -296,7 +311,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			tcpRendezvousId = (flow.getSourceAddress() << 16) + flow.getSourcePortId();
 			log.debug("Looking for the socket associated to TCP rendez-vous Id "+tcpRendezvousId);
 			Socket socket = null;
-			synchronized(this){
+			synchronized(this.tcpRendezVousLock){
 				socket = pendingSockets.remove(new Long(tcpRendezvousId));
 			}
 			

@@ -73,6 +73,7 @@ public class TestController implements SDUListener, FlowListener{
 	public void sduDelivered(byte[] sdu) {
 		try{
 			CDAPMessage cdapMessage = this.cdapSessionManager.decodeCDAPMessage(sdu);
+			System.out.println("Received CDAP Message: "+cdapMessage.toString());
 			switch(cdapMessage.getOpCode()){
 			case M_CREATE:
 				handleCreateMessageReceived(cdapMessage);

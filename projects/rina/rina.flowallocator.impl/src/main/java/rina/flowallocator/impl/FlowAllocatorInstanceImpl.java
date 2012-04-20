@@ -157,13 +157,19 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 */
 	private Encoder encoder = null;
 	
+	/**
+	 * Object used as a lock to synchronize allocate requests and responses
+	 */
+	private Object allocateLock = null;
+	
 	public FlowAllocatorInstanceImpl(IPCProcess ipcProcess, FlowAllocator flowAllocator, CDAPSessionManager cdapSessionManager, int portId){
 		initialize(ipcProcess, flowAllocator, portId);
 		this.timer = new Timer();
 		this.cdapSessionManager = cdapSessionManager;
-		connections = new ArrayList<Connection>();
+		this.connections = new ArrayList<Connection>();
 		//TODO initialize the newFlowRequestPolicy
-		newFlowRequestPolicy = new NewFlowRequestPolicyImpl();
+		this.newFlowRequestPolicy = new NewFlowRequestPolicyImpl();
+		this.allocateLock = new Object();
 		log.debug("Created flow allocator instance to manage the flow identified by portId "+portId);
 	}
 	
@@ -252,9 +258,13 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			objectValue.setByteval(this.encoder.encode(flow));
 			cdapMessage = cdapSessionManager.getCreateObjectRequestMessage(cdapSessionId, null, null, 
 					Flow.FLOW_RIB_OBJECT_CLASS, 0, objectName, objectValue, 0, true);
-			this.ribDaemon.sendMessage(cdapMessage, cdapSessionId, this);
-			this.underlyingPortId = cdapSessionId;
-			this.requestMessage = cdapMessage;
+			//Synchronize the actions to send the allocate request and updating state, just in case
+			//the response arrived before the request ends
+			synchronized(allocateLock){
+				this.ribDaemon.sendMessage(cdapMessage, cdapSessionId, this);
+				this.underlyingPortId = cdapSessionId;
+				this.requestMessage = cdapMessage;
+			}
 		}catch(Exception ex){
 			log.error(ex);
 			throw new IPCException(IPCException.PROBLEMS_ALLOCATING_FLOW_CODE, 
@@ -515,11 +525,14 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 * @param CDAPSessionDescriptor
 	 */
 	public void createResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		if (!cdapMessage.getObjName().equals(requestMessage.getObjName())){
-			log.error("Expected create flow response message for flow "+requestMessage.getObjName()+
-					", but received create flow response message for flow "+cdapMessage.getObjName());
-			//TODO, what to do?
-			return;
+		//Synchronize here, just in case the allocate response arrived before finishing processing the allocation request
+		synchronized(allocateLock){
+			if (!cdapMessage.getObjName().equals(requestMessage.getObjName())){
+				log.error("Expected create flow response message for flow "+requestMessage.getObjName()+
+						", but received create flow response message for flow "+cdapMessage.getObjName());
+				//TODO, what to do?
+				return;
+			}
 		}
 		
 		if (cdapMessage.getResult() != 0){
@@ -531,7 +544,6 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 
 		try{
 			if (cdapMessage.getObjValue() != null){
-				//TODO temporal to accept Peter's code. Should signal an error and close the flow allocator socket.
 				this.flow = (Flow) this.encoder.decode(cdapMessage.getObjValue().getByteval(), Flow.class);
 			}
 			log.debug("Successfull create flow message response received for flow "+cdapMessage.getObjName()+".\n "+this.flow.toString());

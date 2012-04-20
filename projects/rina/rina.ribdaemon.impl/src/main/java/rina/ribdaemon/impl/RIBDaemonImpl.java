@@ -95,12 +95,11 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		CDAPMessage cdapMessage = null;
 		CDAPSessionDescriptor cdapSessionDescriptor = null;
 
-		log.debug("Got an encoded CDAP message from portId "+portId);
-
 		//1 Decode the message and obtain the CDAP session descriptor
 		try{
 			//If another thread was sending a message, let him finish
 			synchronized(atomicSendLock){
+				log.debug("Got an encoded CDAP message from portId "+portId);
 				cdapMessage = cdapSessionManager.messageReceived(encodedCDAPMessage, portId);
 				cdapSessionDescriptor = cdapSessionManager.getCDAPSession(portId).getSessionDescriptor();
 			}

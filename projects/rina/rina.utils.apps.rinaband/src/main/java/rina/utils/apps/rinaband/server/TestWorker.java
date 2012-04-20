@@ -32,6 +32,11 @@ public class TestWorker implements SDUListener{
 	 */
 	private int deliveredSDUs = 0;
 	
+	/**
+	 * The time of the first SDU Received
+	 */
+	private long timeOfFirstSDUReceived =0;
+	
 	public TestWorker(TestInformation testInformation, Flow flow){
 		this.testInformation = testInformation;
 		this.flow = flow;
@@ -67,6 +72,16 @@ public class TestWorker implements SDUListener{
 
 	public void sduDelivered(byte[] sdu) {
 		deliveredSDUs ++;
+		if (timeOfFirstSDUReceived == 0){
+			timeOfFirstSDUReceived = System.nanoTime();
+		}
+		if (deliveredSDUs == this.testInformation.getNumberOfSDUs()){
+			long time = System.nanoTime() - timeOfFirstSDUReceived;
+			long sentSDUsperSecond = 1000L*1000L*1000L*this.testInformation.getNumberOfSDUs()/time;
+			System.out.println("Flow at portId "+flow.getPortId()+": Received SDUs per second: "+sentSDUsperSecond);
+			System.out.println("Flow at portId "+flow.getPortId()+": Received KiloBytes per second (KBps): "
+					+sentSDUsperSecond*this.testInformation.getSduSize()/1024);
+		}
 	}
 
 }

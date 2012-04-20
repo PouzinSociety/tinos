@@ -31,6 +31,7 @@ public class SDUSender implements Runnable {
 	}
 
 	public void run() {
+		long before = System.nanoTime();
 		
 		int numberOfSdus = testInformation.getNumberOfSDUs();
 		for(generatedSDUs=0; generatedSDUs<numberOfSdus; generatedSDUs++){
@@ -48,6 +49,12 @@ public class SDUSender implements Runnable {
 				break;
 			}
 		}
+		
+		long time = System.nanoTime() - before;
+		long sentSDUsperSecond = 1000L*1000L*1000L*numberOfSdus/time;
+		System.out.println("Flow at portId "+flow.getPortId()+": Sent SDUs per second: "+sentSDUsperSecond);
+		System.out.println("Flow at portId "+flow.getPortId()+": Sent KiloBytes per second (KBps): "
+				+sentSDUsperSecond*this.testInformation.getSduSize()/1024);
 	}
 	
 	private byte[] getNextSDU(){

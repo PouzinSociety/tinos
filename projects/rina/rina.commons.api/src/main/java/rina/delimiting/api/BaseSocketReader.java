@@ -81,7 +81,11 @@ public abstract class BaseSocketReader implements Runnable{
 						index ++;
 						if (index == length){
 							log.debug("Received PDU of length "+length+" through socket "+socket.getPort()+": "+printBytes(pdu));
-							processPDU(pdu);
+							try{
+								processPDU(pdu);
+							}catch(Exception ex){
+								log.error("Problems when processing PDU: "+ex.getMessage());
+							}
 							index = 0;
 							length = 0;
 							lookingForSduLength = true;
@@ -89,13 +93,16 @@ public abstract class BaseSocketReader implements Runnable{
 						}
 					}
 				}
-			}catch(IOException ex){
+			}catch(Exception ex){
+				ex.printStackTrace();
 				end = true;
 			}
 		}
 		
 		try{
-			socket.close();
+			if (!socket.isClosed()){
+				socket.close();
+			}
 		}catch(IOException ex){
 		}
 		
