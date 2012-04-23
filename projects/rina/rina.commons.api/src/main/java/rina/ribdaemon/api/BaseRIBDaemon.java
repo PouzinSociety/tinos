@@ -1,13 +1,137 @@
 package rina.ribdaemon.api;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import rina.events.api.Event;
+import rina.events.api.EventListener;
 import rina.ipcprocess.api.BaseIPCProcessComponent;
 
 /**
- * Provides the component name for the RIB Daemon
+ * Provides the component name for the RIB Daemon, and implements the basic 
+ * RIB Daemon and event Manager behavior
  * @author eduardgrasa
  *
  */
-public abstract class BaseRIBDaemon extends BaseIPCProcessComponent implements RIBDaemon {
+public abstract class BaseRIBDaemon extends BaseIPCProcessComponent implements RIBDaemon{
+	
+	private static final Log log = LogFactory.getLog(BaseRIBDaemon.class);
+	
+	protected Map<String, List<EventListener>> eventListeners = null;
+	
+	public BaseRIBDaemon(){
+		this.eventListeners = new HashMap<String, List<EventListener>>();
+	}
+	
+	/**
+	 * Subscribe to a single event
+	 * @param eventId The id of the event
+	 * @param eventListener The event listener
+	 */
+	public void subscribeToEvent(String eventId, EventListener eventListener){
+		if (eventId == null || eventListener == null){
+			return;
+		}
+		
+		List<EventListener> listeners = null;
+		synchronized(this.eventListeners){
+			if(this.eventListeners.containsKey(eventId)){
+				listeners = this.eventListeners.get(eventId);
+				if(!listeners.contains(eventListener)){
+					listeners.add(eventListener);
+				}
+			}else{
+				listeners = new ArrayList<EventListener>();
+				listeners.add(eventListener);
+				this.eventListeners.put(eventId, listeners);
+			}
+			
+			log.info("EventListener "+eventListener.toString()+
+					" subscribed to event "+eventId);
+		}
+	}
+	
+	/**
+	 * Subscribes to a list of events
+	 * @param eventIds the list of event ids
+	 * @param eventListener The event listener
+	 */
+	public void subscribeToEvents(List<String> eventIds, EventListener eventListener){
+		if (eventIds == null || eventListener == null){
+			return;
+		}
+		
+		for(int i=0; i<eventIds.size(); i++){
+			this.subscribeToEvent(eventIds.get(i), eventListener);
+		}
+	}
+	
+	/**
+	 * Unubscribe from a single event
+	 * @param eventId The id of the event
+	 * @param eventListener The event listener
+	 */
+	public void unsubscribeFromEvent(String eventId, EventListener eventListener){
+		if (eventId == null || eventListener == null){
+			return;
+		}
+		
+		List<EventListener> listeners = null;
+		synchronized(this.eventListeners){
+			if(this.eventListeners.containsKey(eventId)){
+				listeners = this.eventListeners.get(eventId);
+				if (listeners.contains(eventListener)){
+					listeners.remove(eventListener);
+					log.info("EventListener "+eventListener.toString()+
+							" unsubscribed from event "+eventId);
+					if (listeners.size() == 0){
+						this.eventListeners.remove(eventId);
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Unsubscribe from a list of events
+	 * @param eventIds the list of event ids
+	 * @param eventListener The event listener
+	 */
+	public void unsubscribeFromEvents(List<String> eventIds, EventListener eventListener){
+		if (eventIds == null || eventListener == null){
+			return;
+		}
+		
+		for(int i=0; i<eventIds.size(); i++){
+			this.unsubscribeFromEvent(eventIds.get(i), eventListener);
+		}
+	}
+	
+	/**
+	 * Invoked when a certain event has happened
+	 * @param event
+	 */
+	public void deliverEvent(Event event){
+		log.info("Event "+event.getId()+" has just happened. Notifying event listeners.");
+		
+		List<EventListener> listeners = null;
+		synchronized(this.eventListeners){
+			listeners = this.eventListeners.get(event.getId());
+		}
+		
+		if (listeners == null){
+			return;
+		}
+		
+		for(int i=0; i<listeners.size(); i++){
+			listeners.get(i).eventHappened(event);
+		}
+	}
 
 	public static final String getComponentName(){
 		return RIBDaemon.class.getName();

@@ -5,13 +5,14 @@ import java.util.List;
 import rina.cdap.api.CDAPMessageHandler;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
+import rina.events.api.EventManager;
 import rina.ipcprocess.api.IPCProcessComponent;
 
 /**
  * Specifies the interface of the RIB Daemon
  * @author eduardgrasa
  */
-public interface RIBDaemon extends IPCProcessComponent{
+public interface RIBDaemon extends IPCProcessComponent, EventManager{
 	
 	/**
 	 * Invoked by the RMT when it detects a CDAP message. The RIB Daemon has to process the CDAP message and, 
@@ -23,13 +24,6 @@ public interface RIBDaemon extends IPCProcessComponent{
 	 * @param the portId of the flow from where the CDAP message was obtained
 	 */
 	public void cdapMessageDelivered(byte[] cdapMessage, int portId);
-	
-	/**
-	 * Invoked by the RMT when it detects that a certain flow has been deallocated, and therefore any CDAP sessions 
-	 * over it should be terminated.
-	 * @param portId identifies the flow that has been deallocated
-	 */
-	public void flowDeallocated(int portId);
 	
 	/**
 	 * Add a RIB object to the RIB

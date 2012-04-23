@@ -8,6 +8,10 @@ import org.apache.commons.logging.LogFactory;
 
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
+import rina.enrollment.api.Neighbor;
+import rina.events.api.Event;
+import rina.events.api.EventListener;
+import rina.events.api.events.ConnectivityToNeighborLostEvent;
 import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.DirectoryForwardingTableEntry;
 import rina.ipcprocess.api.IPCProcess;
@@ -19,7 +23,7 @@ import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
 
-public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
+public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject implements EventListener{
 	
 	private static final Log log = LogFactory.getLog(DirectoryForwardingTableEntrySetRIBObject.class);
 	
@@ -27,6 +31,43 @@ public class DirectoryForwardingTableEntrySetRIBObject extends BaseRIBObject{
 		super(ipcProcess, DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_ENTRY_SET_RIB_OBJECT_CLASS, 
 				ObjectInstanceGenerator.getObjectInstance(), 
 				DirectoryForwardingTable.DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME);
+		//Subscribe to events
+		this.getRIBDaemon().subscribeToEvent(Event.CONNECTIVITY_TO_NEIGHBOR_LOST, this);
+	}
+	
+	/**
+	 * Called by the event manager when one of the events we're subscribed to happens
+	 */
+	public void eventHappened(Event event) {
+		if (event.getId().equals(Event.CONNECTIVITY_TO_NEIGHBOR_LOST)){
+			ConnectivityToNeighborLostEvent conEvent = (ConnectivityToNeighborLostEvent) event;
+			this.connectivityToNeighborLost(conEvent.getNeighbor());
+		}
+	}
+	
+	/**
+	 * Called when the connectivity to a neighbor has been lost. All the 
+	 * applications registered from that neighbor have to be removed from the directory
+	 * @param cdapSessionDescriptor
+	 */
+	private void connectivityToNeighborLost(Neighbor neighbor){
+		List<DirectoryForwardingTableEntry> entriesToDelete = new ArrayList<DirectoryForwardingTableEntry>();
+		DirectoryForwardingTableEntry currentEntry = null;
+
+		for(int i=0; i<this.getChildren().size(); i++){
+			currentEntry = (DirectoryForwardingTableEntry) this.getChildren().get(i).getObjectValue();
+			if (currentEntry.getAddress() == neighbor.getAddress()){
+				entriesToDelete.add(currentEntry);
+			}
+		}
+		
+		if(entriesToDelete.size() > 0){
+			try{
+				this.delete(entriesToDelete.toArray(new DirectoryForwardingTableEntry[entriesToDelete.size()]));
+			}catch(Exception ex){
+				log.error("Problems deleting entries. "+ex.getMessage());
+			}
+		}
 	}
 	
 	@Override

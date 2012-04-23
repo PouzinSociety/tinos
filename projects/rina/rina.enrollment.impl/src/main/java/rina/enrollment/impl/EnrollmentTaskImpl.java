@@ -27,6 +27,10 @@ import rina.enrollment.impl.statemachines.BaseEnrollmentStateMachine;
 import rina.enrollment.impl.statemachines.BaseEnrollmentStateMachine.State;
 import rina.enrollment.impl.statemachines.EnrolleeStateMachine;
 import rina.enrollment.impl.statemachines.EnrollerStateMachine;
+import rina.events.api.Event;
+import rina.events.api.EventListener;
+import rina.events.api.events.ConnectivityToNeighborLostEvent;
+import rina.events.api.events.NMinusOneFlowDeallocatedEvent;
 import rina.ipcprocess.api.IPCProcess;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
@@ -42,7 +46,7 @@ import rina.rmt.api.RMT;
  * @author eduardgrasa
  *
  */
-public class EnrollmentTaskImpl extends BaseEnrollmentTask {
+public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListener{
 	
 	private static final Log log = LogFactory.getLog(EnrollmentTaskImpl.class);
 	
@@ -79,6 +83,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		this.rmt = (RMT) getIPCProcess().getIPCProcessComponent(BaseRMT.getComponentName());
 		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 		populateRIB(ipcProcess);
+		subscribeToEvents();
 		this.neighborsEnroller = new NeighborsEnroller(this);
 		ipcProcess.execute(this.neighborsEnroller);
 	}
@@ -89,17 +94,21 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	private void populateRIB(IPCProcess ipcProcess){
 		try{
 			RIBObject ribObject = new NeighborSetRIBObject(ipcProcess);
-			ribDaemon.addRIBObject(ribObject);
+			this.ribDaemon.addRIBObject(ribObject);
 			ribObject = new EnrollmentRIBObject(this, ipcProcess);
-			ribDaemon.addRIBObject(ribObject);
+			this.ribDaemon.addRIBObject(ribObject);
 			ribObject = new OperationalStatusRIBObject(this, ipcProcess);
-			ribDaemon.addRIBObject(ribObject);
+			this.ribDaemon.addRIBObject(ribObject);
 			ribObject = new AddressRIBObject(ipcProcess, this);
-			ribDaemon.addRIBObject(ribObject);
+			this.ribDaemon.addRIBObject(ribObject);
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();
 			log.error("Could not subscribe to RIB Daemon:" +ex.getMessage());
 		}
+	}
+	
+	private void subscribeToEvents(){
+		this.ribDaemon.subscribeToEvent(Event.N_MINUS_1_FLOW_DEALLOCATED, this);
 	}
 	
 	public RIBDaemon getRIBDaemon(){
@@ -394,11 +403,22 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	}
 	
 	/**
+	 * Called when the events we're subscribed to happen
+	 */
+	public void eventHappened(Event event) {
+		if (event.getId().equals(Event.N_MINUS_1_FLOW_DEALLOCATED)){
+			NMinusOneFlowDeallocatedEvent flowEvent = (NMinusOneFlowDeallocatedEvent) event;
+			this.nMinusOneFlowDeallocated(flowEvent.getCDAPSessionDescriptor());
+		}
+	}
+	
+	/**
 	 * Called by the RIB Daemon when the flow supporting the CDAP session with the remote peer
 	 * has been deallocated
 	 * @param cdapSessionDescriptor
 	 */
-	public void flowDeallocated(CDAPSessionDescriptor cdapSessionDescriptor){
+	private void nMinusOneFlowDeallocated(CDAPSessionDescriptor cdapSessionDescriptor){
+		//1 Remove the enrollment state machine from the list
 		try{
 			BaseEnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor, true);
 			if (enrollmentStateMachine == null){
@@ -410,6 +430,27 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 		}catch(Exception ex){
 			log.error(ex);
 		}
+		
+		//2 Check if we still have connectivity to the neighbor, if not, issue a ConnectivityLostEvent
+		Iterator<String> iterator = this.enrollmentStateMachines.keySet().iterator();
+		while(iterator.hasNext()){
+			if (iterator.next().startsWith(cdapSessionDescriptor.getDestApName())){
+				//We still have connectivity with the neighbor, return
+				return;
+			}
+		}
+		
+		//We don't have connectivity to the neighbor, issue a Connectivity lost event
+		List<Neighbor> neighbors = this.getIPCProcess().getNeighbors();
+		for(int i=0; i<neighbors.size(); i++){
+			if(neighbors.get(i).getApplicationProcessName().equals(cdapSessionDescriptor.getDestApName())){
+				ConnectivityToNeighborLostEvent event = new ConnectivityToNeighborLostEvent(neighbors.get(i));
+				log.debug("Notifying the Event Manager about a new event.");
+				log.debug(event.toString());
+				this.ribDaemon.deliverEvent(event);
+				return;
+			}
+		}
 	}
 	
 	/**
@@ -420,23 +461,23 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask {
 	 * @param sendMessage
 	 * @param reason
 	 */
-	 public void enrollmentFailed(ApplicationProcessNamingInfo remotePeerNamingInfo, int portId, 
-			 String reason, boolean enrollee, boolean sendReleaseMessage){
-		 log.error("An error happened during enrollment of remote IPC Process "+ 
-					remotePeerNamingInfo.getEncodedString()+ " because of " +reason+". Aborting the operation");
-		 //1 Remove enrollment state machine from the store
-		 this.getEnrollmentStateMachine(remotePeerNamingInfo.getApplicationProcessName(), portId, true);
-		 
-		 //2 Send message and deallocate flow if required
-		 if(sendReleaseMessage){
-			 try{
-					CDAPMessage errorMessage = cdapSessionManager.getReleaseConnectionRequestMessage(portId, null, false);
-					sendErrorMessageAndDeallocateFlow(errorMessage, portId);
-				}catch(Exception ex){
-					log.error(ex);
-				}
-		 }
-	 }
+	public void enrollmentFailed(ApplicationProcessNamingInfo remotePeerNamingInfo, int portId, 
+			String reason, boolean enrollee, boolean sendReleaseMessage){
+		log.error("An error happened during enrollment of remote IPC Process "+ 
+				remotePeerNamingInfo.getEncodedString()+ " because of " +reason+". Aborting the operation");
+		//1 Remove enrollment state machine from the store
+		this.getEnrollmentStateMachine(remotePeerNamingInfo.getApplicationProcessName(), portId, true);
+
+		//2 Send message and deallocate flow if required
+		if(sendReleaseMessage){
+			try{
+				CDAPMessage errorMessage = cdapSessionManager.getReleaseConnectionRequestMessage(portId, null, false);
+				sendErrorMessageAndDeallocateFlow(errorMessage, portId);
+			}catch(Exception ex){
+				log.error(ex);
+			}
+		}
+	}
 	 
 	 /**
 	  * Called by the enrollment state machine when the enrollment request has been completed, either successfully or unsuccessfully

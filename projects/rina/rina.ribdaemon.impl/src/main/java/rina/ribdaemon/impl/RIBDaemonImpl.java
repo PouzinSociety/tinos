@@ -22,6 +22,9 @@ import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
 import rina.enrollment.api.BaseEnrollmentTask;
 import rina.enrollment.api.EnrollmentTask;
+import rina.events.api.Event;
+import rina.events.api.EventListener;
+import rina.events.api.events.NMinusOneFlowDeallocatedEvent;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.NotificationPolicy;
@@ -39,7 +42,7 @@ import rina.rmt.api.RMT;
  * @author eduardgrasa
  *
  */
-public class RIBDaemonImpl extends BaseRIBDaemon{
+public class RIBDaemonImpl extends BaseRIBDaemon implements EventListener{
 	
 	private static final Log log = LogFactory.getLog(RIBDaemonImpl.class);
 	
@@ -71,6 +74,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		this.encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
 		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 		populateRIB(ipcProcess);
+		subscribeToEvents();
 	}
 	
 	private void populateRIB(IPCProcess ipcProcess){
@@ -81,6 +85,10 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 			ex.printStackTrace();
 			log.error("Could not subscribe to RIB Daemon:" +ex.getMessage());
 		}
+	}
+	
+	private void subscribeToEvents(){
+		this.subscribeToEvent(Event.N_MINUS_1_FLOW_DEALLOCATED, this);
 	}
 
 	/**
@@ -284,19 +292,23 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	}
 	
 	/**
+	 * Called when an event has happened
+	 */
+	public void eventHappened(Event event) {
+		if (event.getId().equals(Event.N_MINUS_1_FLOW_DEALLOCATED)){
+			NMinusOneFlowDeallocatedEvent flowEvent = (NMinusOneFlowDeallocatedEvent) event;
+			this.nMinusOneFlowDeallocated(flowEvent.getPortId());
+		}
+	}
+	
+	/**
 	 * Invoked by the RMT when it detects that a certain flow has been deallocated, and therefore any CDAP sessions 
 	 * over it should be terminated.
 	 * @param portId identifies the flow that has been deallocated
 	 */
-	public void flowDeallocated(int portId) {
-		CDAPSessionDescriptor cdapSessionDescriptor = cdapSessionManager.getCDAPSession(portId).getSessionDescriptor();
-		//Remove the CDAP session
+	private void nMinusOneFlowDeallocated(int portId) {
 		cdapSessionManager.removeCDAPSession(portId);
-		//Clean the messageHandlersWaitingForReply queue
 		cleanMessageHandlersWaitingForReply(portId);
-		//Inform the enrollment task
-		EnrollmentTask enrollmentTask = (EnrollmentTask) this.getIPCProcess().getIPCProcessComponent(BaseEnrollmentTask.getComponentName());
-		enrollmentTask.flowDeallocated(cdapSessionDescriptor);
 	}
 	
 	/**

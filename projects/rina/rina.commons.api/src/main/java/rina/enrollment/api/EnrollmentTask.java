@@ -76,13 +76,6 @@ public interface EnrollmentTask extends IPCProcessComponent{
 	 public void enrollmentFailed(ApplicationProcessNamingInfo remotePeerNamingInfo, int portId, String reason, boolean enrolle, boolean sendReleaseMessage);
 	
 	/**
-	 * Called by the RIB Daemon when the flow supporting the CDAP session with the remote peer
-	 * has been deallocated
-	 * @param cdapSessionDescriptor
-	 */
-	public void flowDeallocated(CDAPSessionDescriptor cdapSessionDescriptor);
-	
-	/**
 	 * Finds out if the ICP process is already enrolled to the IPC process identified by 
 	 * the provided apNamingInfo
 	 * @param apNamingInfo

@@ -9,10 +9,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.cdap.api.BaseCDAPSessionManager;
+import rina.cdap.api.CDAPSessionManager;
 import rina.configuration.KnownIPCProcessConfiguration;
 import rina.configuration.RINAConfiguration;
 import rina.delimiting.api.BaseDelimiter;
 import rina.delimiting.api.Delimiter;
+import rina.events.api.Event;
+import rina.events.api.EventListener;
+import rina.events.api.events.NMinusOneFlowDeallocatedEvent;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.QualityOfServiceSpecification;
@@ -25,7 +30,7 @@ import rina.rmt.api.BaseRMT;
  * or physical media
  * @author eduardgrasa
  */
-public class TCPRMTImpl extends BaseRMT{
+public class TCPRMTImpl extends BaseRMT implements EventListener{
 	private static final Log log = LogFactory.getLog(TCPRMTImpl.class);
 	
 	/**
@@ -51,7 +56,13 @@ public class TCPRMTImpl extends BaseRMT{
 	@Override
 	public void setIPCProcess(IPCProcess ipcProcess){
 		super.setIPCProcess(ipcProcess);
+		
+		//Start RMT Server
 		this.rmtServer = new RMTServer(this);
+		
+		//Subscribe to N-1 Flow deallocated events
+		RIBDaemon ribDaemon = (RIBDaemon) this.getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+		ribDaemon.subscribeToEvent(Event.N_MINUS_1_FLOW_DEALLOCATED, this);
 	}
 	
 	/**
@@ -195,15 +206,27 @@ public class TCPRMTImpl extends BaseRMT{
 		}
 		Delimiter delimiter = (Delimiter) getIPCProcess().getIPCProcessComponent(BaseDelimiter.getComponentName());
 		RIBDaemon ribdaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-		TCPSocketReader tcpSocketReader = new TCPSocketReader(socket, portId, ribdaemon, delimiter, this);
+		CDAPSessionManager cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
+		TCPSocketReader tcpSocketReader = new TCPSocketReader(socket, portId, ribdaemon, delimiter, cdapSessionManager);
 		this.getIPCProcess().execute(tcpSocketReader);
+	}
+	
+	/**
+	 * Called when a new event has happened
+	 * @param event
+	 */
+	public void eventHappened(Event event) {
+		if (event.getId().equals(Event.N_MINUS_1_FLOW_DEALLOCATED)){
+			NMinusOneFlowDeallocatedEvent flowEvent = (NMinusOneFlowDeallocatedEvent) event;
+			this.connectionEnded(flowEvent.getPortId());
+		}
 	}
 	
 	/**
 	 * Called when the socket identified by portId is no longer connected
 	 * @param portId
 	 */
-	public void connectionEnded(int portId){
+	private void connectionEnded(int portId){
 		synchronized(flowTable){
 			flowTable.remove(new Integer(portId));
 		}
