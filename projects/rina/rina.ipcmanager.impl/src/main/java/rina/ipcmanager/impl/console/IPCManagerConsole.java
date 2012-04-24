@@ -14,6 +14,7 @@ import java.util.Scanner;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.configuration.RINAConfiguration;
 import rina.ipcmanager.impl.IPCManagerImpl;
 
 /**
@@ -27,7 +28,7 @@ public class IPCManagerConsole implements Runnable{
 	private static final Log log = LogFactory.getLog(IPCManagerConsole.class);
 	
 	private static final String PROMPT = "ipcmanager> ";
-	private static final int PORT = 32766;
+	private static int DEFAULT_PORT = 32766;
 	
 	private ServerSocket serverSocket = null;
 	
@@ -42,6 +43,7 @@ public class IPCManagerConsole implements Runnable{
 		commands.put(DeallocateFlowCommand.ID, new DeallocateFlowCommand(ipcManagerImpl));
 		commands.put(CreateIPCProcessCommand.ID, new CreateIPCProcessCommand(ipcManagerImpl));
 		commands.put(AllocateFlowCommand.ID, new AllocateFlowCommand(ipcManagerImpl));
+		commands.put(WriteDataToFlowCommand.ID, new WriteDataToFlowCommand(ipcManagerImpl));
 	}
 	
 	public void stop(){
@@ -58,10 +60,17 @@ public class IPCManagerConsole implements Runnable{
 		String[] splittedCommand = null;
 		ConsoleCommand command = null;
 		String answer = null;
+		int port = 0;
 		
 		try{
-			serverSocket = new ServerSocket(PORT);
-			log.info("Waiting for connections to the IPC Manager console at port "+PORT);
+			port = RINAConfiguration.getInstance().getLocalConfiguration().getConsolePort();
+		}catch(Exception ex){
+			port = DEFAULT_PORT;
+		}
+		
+		try{
+			serverSocket = new ServerSocket(port);
+			log.info("Waiting for connections to the IPC Manager console at port "+port);
 			while (true){
 				Socket socket = serverSocket.accept();
 				String address = socket.getInetAddress().getHostAddress();

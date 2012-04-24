@@ -10,7 +10,7 @@ import rina.ipcmanager.impl.IPCManagerImpl;
 public class EnrollCommand extends ConsoleCommand{
 
 	public static final String ID = "enroll";
-	private static final String USAGE = "sourceapplicationprocessname sourceapplicationprocessInstance destinationapplicationprocessname destinationapplicationprocessInstance";
+	private static final String USAGE = "enroll sourceapplicationprocessname sourceapplicationprocessinstance destinationapplicationprocessname destinationapplicationprocessinstance";
 	
 	/**
 	 * Required parameter

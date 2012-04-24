@@ -9,7 +9,7 @@ import junit.framework.Assert;
 import rina.ipcmanager.impl.test.APNotifier.Status;
 import rina.ipcprocess.api.BaseIPCProcess;
 import rina.ipcservice.api.APService;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;

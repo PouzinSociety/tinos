@@ -6,7 +6,6 @@ import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.AuthTypes;
-import rina.cdap.impl.CDAPSessionInvokeIdManagerImpl;
 import rina.cdap.impl.CDAPSessionManagerImpl;
 import rina.cdap.impl.CDAPSessionImpl;
 import rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory;
@@ -15,11 +14,10 @@ public abstract class BaseCDAPTest {
 	
 	protected CDAPSessionImpl sendingCDAPSession = null;
 	protected CDAPSessionImpl receivingCDAPSession = null;
-	protected CDAPSessionManager cdapSessionManager = new CDAPSessionManagerImpl();
+	protected CDAPSessionManager cdapSessionManager = new CDAPSessionManagerImpl(new GoogleProtocolBufWireMessageProviderFactory());
 	
 	@Before
 	public void setup(){
-		((CDAPSessionManagerImpl)cdapSessionManager).setWireMessageProviderFactory(new GoogleProtocolBufWireMessageProviderFactory());
 		sendingCDAPSession = (CDAPSessionImpl) ((CDAPSessionManagerImpl)cdapSessionManager).createCDAPSession(32768);
 		receivingCDAPSession = (CDAPSessionImpl) ((CDAPSessionManagerImpl)cdapSessionManager).createCDAPSession(32769);
 	}

@@ -2,7 +2,7 @@ package rina.applibrary.api;
 
 import java.util.List;
 
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 
 /**
@@ -31,10 +31,9 @@ public interface ApplicationRegistrationImpl {
 	
 	/**
 	 * This operation will block until a new incoming flow is accepted.
-	 * @param SDUListener the SDUs received by this flow will be sent to the SDUListener
 	 * @return the accepted Flow
 	 */
-	public Flow accept(SDUListener sduListener) throws IPCException;
+	public FlowImpl accept() throws IPCException;
 	
 	/**
 	 * Cancel the registration

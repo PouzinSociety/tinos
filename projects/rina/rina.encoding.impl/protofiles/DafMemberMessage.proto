@@ -1,8 +1,0 @@
-package rina.messages;
-option java_package="rina.encoding.impl.googleprotobuf.dafmember";
-
-message dafMember_t{   //carries information about a daf member
-        optional string applicationProcessName = 1;
-        optional string applicationProcessInstance = 2;
-        optional uint64 synonym = 3;
-}

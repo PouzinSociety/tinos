@@ -2,6 +2,8 @@ package rina.ipcservice.api;
 
 import java.util.List;
 
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
+
 /**
  * Issued by the RINA library to the IPC Manager when an application wants to express that it
  * is willing to accept flows.

@@ -9,7 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import rina.applibrary.api.ApplicationRegistration;
 import rina.applibrary.api.Flow;
 import rina.applibrary.api.FlowListener;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 
 /**
@@ -19,7 +19,7 @@ import rina.ipcservice.api.IPCException;
  */
 public class EchoServer implements FlowListener{
 	
-	public static final String APPLICATION_PROCESS_NAME = "/rina/examples/apps/echoServer";
+	public static final String APPLICATION_PROCESS_NAME = "rina.examples.apps.echoServer";
 	
 	private static final Log log = LogFactory.getLog(EchoServer.class);
 	

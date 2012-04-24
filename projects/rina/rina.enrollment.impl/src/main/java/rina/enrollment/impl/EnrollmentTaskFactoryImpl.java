@@ -5,7 +5,7 @@ import java.util.Map;
 
 import rina.enrollment.api.EnrollmentTask;
 import rina.enrollment.api.EnrollmentTaskFactory;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 public class EnrollmentTaskFactoryImpl implements EnrollmentTaskFactory{
 	
@@ -17,16 +17,16 @@ public class EnrollmentTaskFactoryImpl implements EnrollmentTaskFactory{
 
 	public EnrollmentTask createEnrollmentTask(ApplicationProcessNamingInfo apNamingInfo) {
 		EnrollmentTask enrollmentTask = new EnrollmentTaskImpl();
-		enrollmentTaskRespository.put(apNamingInfo.getProcessKey(), enrollmentTask);
+		enrollmentTaskRespository.put(apNamingInfo.getEncodedString(), enrollmentTask);
 		return enrollmentTask;
 	}
 
 	public void destroyEnrollmentTask(ApplicationProcessNamingInfo apNamingInfo) {
-		enrollmentTaskRespository.remove(apNamingInfo.getProcessKey());
+		enrollmentTaskRespository.remove(apNamingInfo.getEncodedString());
 	}
 
 	public EnrollmentTask getEnrollmentTask(ApplicationProcessNamingInfo apNamingInfo) {
-		return enrollmentTaskRespository.get(apNamingInfo.getProcessKey());
+		return enrollmentTaskRespository.get(apNamingInfo.getEncodedString());
 	}
 
 }

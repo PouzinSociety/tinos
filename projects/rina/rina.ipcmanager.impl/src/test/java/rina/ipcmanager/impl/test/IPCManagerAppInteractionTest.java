@@ -16,11 +16,11 @@ import rina.cdap.api.message.ObjectValue;
 import rina.delimiting.api.Delimiter;
 import rina.delimiting.api.DelimiterFactory;
 import rina.encoding.api.Encoder;
-import rina.ipcmanager.api.InterDIFDirectory;
+import rina.idd.api.InterDIFDirectoryFactory;
 import rina.ipcmanager.impl.IPCManagerImpl;
 import rina.ipcmanager.impl.apservice.APServiceTCPServer;
 import rina.ipcprocess.api.IPCProcessFactory;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.ApplicationRegistration;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCService;
@@ -32,7 +32,7 @@ public class IPCManagerAppInteractionTest {
 	private CDAPSessionManager cdapSessionManager = null;
 	private Delimiter delimiter = null;
 	private Encoder encoder = null;
-	private InterDIFDirectory idd = null;
+	private InterDIFDirectoryFactory iddFactory = null;
 	private ExecutorService executorService = null;
 	
 	@Before
@@ -40,8 +40,8 @@ public class IPCManagerAppInteractionTest {
 		ipcManager = new IPCManagerImpl();
 		mockIPCProcessFactory = new MockIPCProcessFactory(ipcManager.getAPService());
 		ipcManager.setIPCProcessFactory(mockIPCProcessFactory);
-		idd = new MockInterDIFDirectory();
-		ipcManager.setInterDIFDirectory(idd);
+		iddFactory = new MockInterDIFDirectoryFactory();
+		ipcManager.setInterDIFDirectoryFactory(iddFactory);
 		cdapSessionManager = mockIPCProcessFactory.getCDAPSessionManagerFactory().createCDAPSessionManager();
 		delimiter = mockIPCProcessFactory.getDelimiterFactory().createDelimiter(DelimiterFactory.DIF);
 		encoder = mockIPCProcessFactory.getEncoderFactory().createEncoderInstance();
@@ -70,7 +70,7 @@ public class IPCManagerAppInteractionTest {
 			Assert.assertEquals(cdapMessage.getResult(), 0);
 			Assert.assertEquals(cdapMessage.getOpCode(), Opcode.M_CREATE_R);
 			byte[] encodedValue = cdapMessage.getObjValue().getByteval();
-			FlowService flowService = (FlowService) encoder.decode(encodedValue, FlowService.class.toString());
+			FlowService flowService = (FlowService) encoder.decode(encodedValue, FlowService.class);
 			System.out.println("Allocated portId: "+flowService.getPortId());
 			
 			//5 Write data
@@ -135,7 +135,7 @@ public class IPCManagerAppInteractionTest {
 			flowService.setDestinationAPNamingInfo(new ApplicationProcessNamingInfo("A", "1"));
 			flowService.setSourceAPNamingInfo(new ApplicationProcessNamingInfo("B", "1"));
 			flowService.setPortId(24);
-			MockIPCProcess ipcService = (MockIPCProcess) mockIPCProcessFactory.createIPCProcess(null);
+			MockIPCProcess ipcService = (MockIPCProcess) mockIPCProcessFactory.createIPCProcess(null, null);
 			ipcService.setFlowService(flowService);
 			String result = ipcManager.getAPService().deliverAllocateRequest(flowService, (IPCService) ipcService);
 			Assert.assertNull(result);
@@ -192,7 +192,7 @@ public class IPCManagerAppInteractionTest {
 	}
 	
 	private CDAPMessage getDeallocateRequest() throws Exception{
-		CDAPMessage cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, null, 0, null, 0);
+		CDAPMessage cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, null, 0, null, null, 0);
 		return cdapMessage;
 	}
 	

@@ -9,7 +9,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import rina.ipcprocess.api.IPCProcess;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.rmt.impl.tcp.TCPRMTImpl;
 
@@ -40,8 +39,7 @@ public class TCPRMTImplCalledTest {
 	
 	@Test
 	public void testConnectionFromRemoteProcess() throws Exception{
-		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo("localhost", "40000");
-		int portId = rmt.allocateFlow(apNamingInfo, null);
+		int portId = rmt.allocateFlow("test", null);
 		rmt.sendCDAPMessage(portId, "Request message".getBytes());
 		Thread.sleep(2000);
 		Assert.assertTrue(ribdaemon.isMessageReceived());

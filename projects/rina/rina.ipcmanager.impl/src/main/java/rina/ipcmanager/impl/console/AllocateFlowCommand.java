@@ -10,7 +10,7 @@ import rina.ipcmanager.impl.IPCManagerImpl;
 public class AllocateFlowCommand extends ConsoleCommand{
 
 	public static final String ID = "allocateflow";
-	private static final String USAGE = "sourceipcprocessname sourceipcprocessInstance destinationapplicationprocessname destinationapplicationprocessInstance";
+	private static final String USAGE = "allocateflow sourceipcprocessname sourceipcprocessinstance destinationapplicationprocessname [destinationapplicationprocessinstance]";
 	
 	/**
 	 * Required parameter
@@ -38,14 +38,16 @@ public class AllocateFlowCommand extends ConsoleCommand{
 	
 	@Override
 	public String execute(String[] splittedCommand) {
-		if (splittedCommand.length != 5){
+		if (splittedCommand.length < 4 || splittedCommand.length >5){
 			return "Wrong number of parameters. Usage: "+USAGE;
 		}
 		
 		sourceIPCProcessName = splittedCommand[1];
 		sourceIPCProcessInstance = splittedCommand[2];
 		destinationApplicationProcessName = splittedCommand[3];
-		destinationApplicationProcessInstance = splittedCommand[4];
+		if (splittedCommand.length == 5){
+			destinationApplicationProcessInstance = splittedCommand[4];
+		}
 		
 		try{
 			this.getIPCManagerImpl().allocateFlow(sourceIPCProcessName, sourceIPCProcessInstance, 

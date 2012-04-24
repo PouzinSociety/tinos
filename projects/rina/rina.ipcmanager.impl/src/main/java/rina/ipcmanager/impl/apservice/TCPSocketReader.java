@@ -11,7 +11,7 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.delimiting.api.BaseSocketReader;
 import rina.delimiting.api.Delimiter;
 import rina.encoding.api.Encoder;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.ApplicationRegistration;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
@@ -135,7 +135,7 @@ public class TCPSocketReader extends BaseSocketReader{
 		}
 		
 		try{
-			FlowService flowService = (FlowService) encoder.decode(cdapMessage.getObjValue().getByteval(), FlowService.class.toString());
+			FlowService flowService = (FlowService) encoder.decode(cdapMessage.getObjValue().getByteval(), FlowService.class);
 			apService.processAllocateRequest(flowService, cdapMessage, getSocket(), this);
 		}catch(Exception ex){
 			ex.printStackTrace();
@@ -208,7 +208,7 @@ public class TCPSocketReader extends BaseSocketReader{
 		}
 		
 		try{
-			ApplicationRegistration applicationRegistration = (ApplicationRegistration) encoder.decode(cdapMessage.getObjValue().getByteval(), ApplicationRegistration.class.toString());
+			ApplicationRegistration applicationRegistration = (ApplicationRegistration) encoder.decode(cdapMessage.getObjValue().getByteval(), ApplicationRegistration.class);
 			apService.processApplicationRegistrationRequest(applicationRegistration, cdapMessage, getSocket(), this);
 			apNamingInfo = applicationRegistration.getApNamingInfo();
 		}catch(Exception ex){

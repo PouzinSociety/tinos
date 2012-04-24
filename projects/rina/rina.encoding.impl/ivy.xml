@@ -20,8 +20,6 @@
 		<dependency org="com.google" name="com.google.protobuf" rev="${com.google.protobuf}" />
 <!-- RINA Commons API -->
 		<dependency org="org.pouzinsociety.rina" name="rina.commons.api" rev="${rina.commons.api}" />
-<!-- RINA Utils Types -->
-		<dependency org="org.pouzinsociety.rina" name="rina.utils.types" rev="${rina.utils.types}" />
 <!-- Tests -->
 		<dependency org="org.antlr" name="com.springsource.antlr" rev="${org.antlr}" conf="test->runtime" />
 		<dependency org="org.junit" name="com.springsource.org.junit" rev="${org.junit}" conf="test->runtime" />

@@ -1,8 +1,10 @@
 package rina.ipcmanager.api;
 
+import rina.flowallocator.api.Flow;
 import rina.flowallocator.api.FlowAllocatorInstance;
-import rina.flowallocator.api.message.Flow;
+import rina.idd.api.InterDIFDirectoryFactory;
 import rina.ipcservice.api.APService;
+
 /**
  * The IPC Manager is the component of a DAF that manages the local IPC resources. In its current implementation it 
  * manages IPC Processes (creates/destroys them), and serves as a broker between applications and IPC Processes. Applications 
@@ -21,10 +23,10 @@ public interface IPCManager {
 	public void createFlowRequestMessageReceived(Flow flow, FlowAllocatorInstance flowAllocatorInstance);
 	
 	/**
-	 * Setter for the InterDIFDirectory
-	 * @param idd
+	 * Setter for the InterDIFDirectoryFactory
+	 * @param iddFactory
 	 */
-	public void setInterDIFDirectory(InterDIFDirectory idd);
+	public void setInterDIFDirectoryFactory(InterDIFDirectoryFactory idd);
 	
 	/**
 	 * Get the service to interact with the applications having registered or requested a service 

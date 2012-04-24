@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: api Bundle
-Bundle-SymbolicName: rina.idd.api
-Bundle-Version: 1.0.0
-Bundle-Vendor: Pouzin Society
-Export-Package: rina.idd.api;version="1.0.0"

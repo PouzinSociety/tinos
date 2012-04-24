@@ -3,13 +3,8 @@ package rina.ribdaemon.api;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
-import rina.cdap.api.message.ObjectValue;
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
 import rina.ipcprocess.api.IPCProcess;
@@ -28,7 +23,6 @@ import rina.ipcprocess.api.IPCProcess;
  */
 public abstract class BaseRIBObject implements RIBObject{
 	
-	private static final Log log = LogFactory.getLog(BaseRIBObject.class);
 	private IPCProcess ipcProcess = null;
 	private Encoder encoder = null;
 	private RIBDaemon ribDaemon = null;
@@ -49,8 +43,13 @@ public abstract class BaseRIBObject implements RIBObject{
      * The parent object of this object in the RIB
      */
     private RIBObject parent = null;
+    
+    /**
+     * The permissions associated to this RIB node
+     */
+    private Permissions permissions = null;
 	
-	public BaseRIBObject(IPCProcess ipcProcess, String objectName, String objectClass, long objectInstance){
+	public BaseRIBObject(IPCProcess ipcProcess, String objectClass, long objectInstance, String objectName){
 		children = new ArrayList<RIBObject>();
 		this.ipcProcess = ipcProcess;
 		this.objectName = objectName;
@@ -58,6 +57,14 @@ public abstract class BaseRIBObject implements RIBObject{
 		this.objectInstance = objectInstance;
 	}
 	
+	public Permissions getPermissions() {
+		return permissions;
+	}
+
+	public void setPermissions(Permissions permissions) {
+		this.permissions = permissions;
+	}
+
 	public String getObjectName(){
 		return this.objectName;
 	}
@@ -142,7 +149,27 @@ public abstract class BaseRIBObject implements RIBObject{
 	   
 	   throw new RIBDaemonException(RIBDaemonException.CHILD_NOT_FOUND);
    }
-	
+   
+   public boolean hasChild(String objectName){
+	   for(int i=0; i<children.size(); i++){
+		   if (children.get(i).getObjectName().equals(objectName)){
+			   return true;
+		   }
+	   }
+
+	   return false;
+   }
+
+   public RIBObject getChild(String objectName){
+	   for(int i=0; i<children.size(); i++){
+		   if (children.get(i).getObjectName().equals(objectName)){
+			   return children.get(i);
+		   }
+	   }
+
+	   return null;
+   }
+
 	public Encoder getEncoder(){
 		if (this.encoder == null){
 			this.encoder = (Encoder) ipcProcess.getIPCProcessComponent(BaseEncoder.getComponentName());
@@ -159,155 +186,54 @@ public abstract class BaseRIBObject implements RIBObject{
 		return this.ribDaemon;
 	}
 
-	public void create(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+	public void create(String objectClass, long objectInstance, String objectName, Object objectValue) throws RIBDaemonException{
 		throw new RIBDaemonException(RIBDaemonException.OPERATION_NOT_ALLOWED_AT_THIS_OBJECT, 
 				"Operation CREATE not allowed for objectName "+objectName);
 	}
 
-	public void delete(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+	public void delete(Object object) throws RIBDaemonException {
 		throw new RIBDaemonException(RIBDaemonException.OPERATION_NOT_ALLOWED_AT_THIS_OBJECT, 
 				"Operation DELETE not allowed for objectName "+objectName);
 	}
 
-	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException {
+	public RIBObject read() throws RIBDaemonException {
 		throw new RIBDaemonException(RIBDaemonException.OPERATION_NOT_ALLOWED_AT_THIS_OBJECT, 
 				"Operation READ not allowed for objectName "+objectName);
 	}
 
-	public void write(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+	public void write(Object object) throws RIBDaemonException {
 		throw new RIBDaemonException(RIBDaemonException.OPERATION_NOT_ALLOWED_AT_THIS_OBJECT, 
 				"Operation WRITE not allowed for objectName "+objectName);
 	}
 
-	public void start(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+	public void start(Object object) throws RIBDaemonException {
 		throw new RIBDaemonException(RIBDaemonException.OPERATION_NOT_ALLOWED_AT_THIS_OBJECT, 
 				"Operation START not allowed for objectName "+objectName);
 	}
 
-	public void stop(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
+	public void stop(Object object) throws RIBDaemonException {
 		throw new RIBDaemonException(RIBDaemonException.OPERATION_NOT_ALLOWED_AT_THIS_OBJECT, 
 				"Operation STOP not allowed for objectName "+objectName);
 	}
 
 	public void read(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		CDAPMessage responseMessage = null;
-		
-		try{
-			Object object = this.read(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst());
-			ObjectValue objectValue = null;
-			if (object != null){
-				objectValue = new ObjectValue();
-				objectValue.setByteval(getEncoder().encode(object));
-			}
-			responseMessage = CDAPMessage.getReadObjectResponseMessage(null, cdapMessage.getObjClass(), 
-					cdapMessage.getObjInst(), cdapMessage.getObjName(), objectValue, 0, null, cdapMessage.getInvokeID());
-			getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
-		}catch(RIBDaemonException ex){
-			try{
-				responseMessage = CDAPMessage.getReadObjectResponseMessage(null, cdapMessage.getObjClass(), 
-						cdapMessage.getObjInst(), cdapMessage.getObjName(), null, 1, ex.getMessage(), cdapMessage.getInvokeID());
-				getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
-			}catch(CDAPException cdapEx){
-				log.error(cdapEx);
-			}
-		}catch(Exception ex){
-			log.error(ex);
-		}
 	}
 
 	public void write(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		CDAPMessage responseMessage = null;
-		
-		try{
-			Object object = getEncoder().decode(cdapMessage.getObjValue().getByteval(), ObjectNametoClassMapper.getObjectClass(cdapMessage.getObjName()));
-			this.write(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), object);
-			if (cdapMessage.getInvokeID() != 0){
-				responseMessage = CDAPMessage.getWriteObjectResponseMessage(null, cdapMessage.getInvokeID(), 0, null);
-				getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
-			}
-		}catch(Exception ex){
-			try{
-				responseMessage = CDAPMessage.getWriteObjectResponseMessage(null, cdapMessage.getInvokeID(), 1, ex.getMessage());
-				getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
-			}catch(CDAPException cdapEx){
-				log.error(ex);
-			}
-		}
 	}
 	
 	public void create(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		CDAPMessage responseMessage = null;
-		
-		try{
-			Object object = getEncoder().decode(cdapMessage.getObjValue().getByteval(), ObjectNametoClassMapper.getObjectClass(cdapMessage.getObjName()));
-			this.create(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), object);
-			if (cdapMessage.getInvokeID() != 0){
-				responseMessage = CDAPMessage.getCreateObjectResponseMessage(null, cdapMessage.getObjClass(), 0, cdapMessage.getObjName(),
-						cdapMessage.getObjValue(), 0, null, cdapMessage.getInvokeID());
-				getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
-			}
-		}catch(Exception ex){
-			try{
-				responseMessage = CDAPMessage.getCreateObjectResponseMessage(null, cdapMessage.getObjClass(), 0, cdapMessage.getObjName(), 
-						cdapMessage.getObjValue(), 1, ex.getMessage(), cdapMessage.getInvokeID());
-				getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
-			}catch(CDAPException cdapEx){
-				log.error(ex);
-			}
-		}
 	}
 
 	public void delete(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		CDAPMessage responseMessage = null;
-
-		try{
-			this.delete(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst(), null);
-			if (cdapMessage.getInvokeID() != 0){
-				responseMessage = CDAPMessage.getDeleteObjectResponseMessage(null, cdapMessage.getObjClass(), 0, cdapMessage.getObjName(), 0, 
-						null, cdapMessage.getInvokeID());
-				getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
-			}
-		}catch(Exception ex){
-			try{
-				responseMessage = CDAPMessage.getDeleteObjectResponseMessage(null, cdapMessage.getObjClass(), 0, cdapMessage.getObjName(), 
-						1, ex.getMessage(), cdapMessage.getInvokeID());
-				getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
-			}catch(CDAPException cdapEx){
-				log.error(ex);
-			}
-		}
 	}
 
 	public void cancelRead(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		try{
-			CDAPMessage responseMessage = CDAPMessage.getCancelReadResponseMessage(null, 
-					cdapMessage.getInvokeID(), 1, "Operation CANCELREAD not allowed for objectName "+cdapMessage.getObjName());
-			getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
-		}catch(CDAPException ex){
-			log.error("Error generating CANCELREAD response message. Details:");
-			log.error(ex);
-		}
 	}
 
 	public void start(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		try{
-			CDAPMessage responseMessage = CDAPMessage.getStartObjectResponseMessage(null, 
-					1, "Operation START not allowed for objectName "+cdapMessage.getObjName(), cdapMessage.getInvokeID());
-			getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
-		}catch(CDAPException ex){
-			log.error("Error generating START response message. Details:");
-			log.error(ex);
-		}
 	}
 
 	public void stop(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException {
-		try{
-			CDAPMessage responseMessage = CDAPMessage.getStopObjectResponseMessage(null, 
-					1, "Operation STOP not allowed for objectName "+cdapMessage.getObjName(), cdapMessage.getInvokeID());
-			getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
-		}catch(CDAPException ex){
-			log.error("Error generating STOP response message. Details:");
-			log.error(ex);
-		}
 	}
 }

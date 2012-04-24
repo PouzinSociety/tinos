@@ -1,5 +1,7 @@
 package rina.ipcservice.api;
 
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
+
 public class FlowService {
 
 	public static final String OBJECT_NAME="/flowservice";

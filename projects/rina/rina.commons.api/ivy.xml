@@ -16,8 +16,6 @@
 	</publications>
 
 	<dependencies>
-<!-- Utils types -->
-		<dependency org="org.pouzinsociety.rina" name="rina.utils.types" rev="${rina.utils.types}" />
 <!-- Logging -->
 		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" />
 <!-- Tests -->

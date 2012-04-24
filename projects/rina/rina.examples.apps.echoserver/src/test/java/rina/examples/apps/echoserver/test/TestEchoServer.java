@@ -20,7 +20,7 @@ import rina.cdap.api.message.ObjectValue;
 import rina.delimiting.api.Delimiter;
 import rina.encoding.api.Encoder;
 import rina.examples.apps.echoserver.EchoServer;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.ApplicationRegistration;
 import rina.ipcservice.api.FlowService;
 
@@ -75,7 +75,7 @@ public class TestEchoServer {
 		sdu = getNextSDU(registerSocket);
 		cdapMessage = cdapSessionManager.decodeCDAPMessage(sdu);
 		Assert.assertEquals(Opcode.M_START, cdapMessage.getOpCode());
-		applicationRegistration = (ApplicationRegistration) encoder.decode(cdapMessage.getObjValue().getByteval(), ApplicationRegistration.class.toString());
+		applicationRegistration = (ApplicationRegistration) encoder.decode(cdapMessage.getObjValue().getByteval(), ApplicationRegistration.class);
 		Assert.assertEquals(EchoServer.APPLICATION_PROCESS_NAME, applicationRegistration.getApNamingInfo().getApplicationProcessName());
 		serverPort = applicationRegistration.getSocketNumber();
 		cdapMessage = cdapMessage.getReplyMessage();
@@ -110,7 +110,7 @@ public class TestEchoServer {
 		Assert.assertEquals("Today it's sunny but we are still enjoying the cold air from Siberia", new String(cdapMessage.getObjValue().getByteval()));
 		
 		//4 disconnect
-		cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, null, 0, null, 0);
+		cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, null, 0, null, null, 0);
 		flowSocket.getOutputStream().write(delimiter.getDelimitedSdu(cdapSessionManager.encodeCDAPMessage(cdapMessage)));
 		wait1Second();
 		

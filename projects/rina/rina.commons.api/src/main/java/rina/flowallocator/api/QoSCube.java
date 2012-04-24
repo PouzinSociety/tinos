@@ -23,7 +23,12 @@ public class QoSCube {
 	/**
 	 * Identifies the type of QoS-cube
 	 */
-	private byte[] qosId = null;
+	private int qosId = 0;
+	
+	/**
+	 * A descriptive name (human readable) for the QoS-cube
+	 */
+	private String name = null;
 	
 	/**
 	 * in bytes/s, a value of 0 indicates 'don't care'
@@ -97,12 +102,20 @@ public class QoSCube {
 	 */
 	private Map<String, String> policyDefaultParameters = null;
 
-	public byte[] getQosId() {
+	public int getQosId() {
 		return qosId;
 	}
 
-	public void setQosId(byte[] qosId) {
+	public void setQosId(int qosId) {
 		this.qosId = qosId;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public long getAverageBandwidth() {
@@ -206,6 +219,7 @@ public class QoSCube {
 	public String toString(){
 		String result = "";
 		result = result + "QoS id: " + this.getQosId() +  "\n";
+		result = result + "Name: " + this.getName() + "\n";
 		result = result + "Average bandwidth: " + this.getAverageBandwidth() +  "\n";
 		result = result + "Average SDU bandwidth: " + this.getAverageSDUBandwidth() +  "\n";
 		result = result + "Peak bandwidth duration: " + this.getPeakBandwidthDuration() +  "\n";
@@ -217,5 +231,41 @@ public class QoSCube {
 		result = result + "Delay: " + this.getDelay() +  "\n";
 		result = result + "Jitter: " + this.getJitter() +  "\n";
 		return result;
+	}
+	
+	public static QoSCube getDefaultUnreliableQoSCube(){
+		QoSCube qosCube = new QoSCube();
+		qosCube.setAverageBandwidth(0);
+		qosCube.setAverageSDUBandwidth(0);
+		qosCube.setDelay(0);
+		qosCube.setJitter(0);
+		qosCube.setMaxAllowableGapSdu(-1);
+		qosCube.setName("unreliable");
+		qosCube.setOrder(false);
+		qosCube.setPartialDelivery(true);
+		qosCube.setPeakBandwidthDuration(0);
+		qosCube.setPeakSDUBandwidthDuration(0);
+		qosCube.setQosId(1);
+		qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
+		
+		return qosCube;
+	}
+	
+	public static QoSCube getDefaultReliableQoSCube(){
+		QoSCube qosCube = new QoSCube();
+		qosCube.setAverageBandwidth(0);
+		qosCube.setAverageSDUBandwidth(0);
+		qosCube.setDelay(0);
+		qosCube.setJitter(0);
+		qosCube.setMaxAllowableGapSdu(0);
+		qosCube.setName("reliable");
+		qosCube.setOrder(true);
+		qosCube.setPartialDelivery(false);
+		qosCube.setPeakBandwidthDuration(0);
+		qosCube.setPeakSDUBandwidthDuration(0);
+		qosCube.setQosId(2);
+		qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
+		
+		return qosCube;
 	}
 }

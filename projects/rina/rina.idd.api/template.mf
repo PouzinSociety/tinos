@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: RINA IDD API
-Bundle-SymbolicName: rina.idd.api
-Bundle-Version: ${version}
-Bundle-Vendor: Pouzin Society
-Export-Template: rina.idd.api;version="${version}"
-Import-Template: org.apache.commons.logging;version="${org.apache.commons.logging}"

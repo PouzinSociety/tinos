@@ -19,11 +19,11 @@ public interface Encoder extends IPCProcessComponent{
 	
 	/**
 	 * Converts a byte array to an object of the type specified by "className"
-	 * @param serializedObject
-	 * @param className
+	 * @param byte[] serializedObject
+	 * @param objectClass The type of object to be decoded
 	 * @throws exception if the byte array is not an encoded in a way that the encoder can recognize, or the 
 	 * byte array value doesn't correspond to an object of the type "className"
 	 * @return
 	 */
-	public Object decode(byte[] serializedObject, String className) throws Exception;
+	public Object decode(byte[] serializedObject, Class<?> objectClass) throws Exception;
 }

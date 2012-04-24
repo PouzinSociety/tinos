@@ -3,20 +3,23 @@ package rina.ipcservice.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applicationprocess.api.WhatevercastName;
 import rina.flowallocator.api.BaseFlowAllocator;
+import rina.flowallocator.api.DirectoryForwardingTable;
+import rina.flowallocator.api.DirectoryForwardingTableEntry;
 import rina.flowallocator.api.FlowAllocator;
 import rina.ipcprocess.api.BaseIPCProcess;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
+import rina.ipcservice.impl.ribobjects.WhatevercastNameSetRIBObject;
+import rina.ribdaemon.api.BaseRIBDaemon;
+import rina.ribdaemon.api.NotificationPolicy;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
 import rina.ribdaemon.api.SimpleRIBObject;
-import rina.ribdaemon.api.SimpleSetRIBObject;
 
 /**
  * Point of entry to the IPC process for the application process. It is in charge 
@@ -57,14 +60,11 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 		try{
 			ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance);
 			RIBObject ribObject = new SimpleRIBObject(this, 
-					ApplicationProcessNamingInfo.APPLICATION_PROCESS_NAMING_INFO_RIB_OBJECT_NAME, 
 					ApplicationProcessNamingInfo.APPLICATION_PROCESS_NAMING_INFO_RIB_OBJECT_CLASS, 
+					ApplicationProcessNamingInfo.APPLICATION_PROCESS_NAMING_INFO_RIB_OBJECT_NAME, 
 					apNamingInfo);
 			ribDaemon.addRIBObject(ribObject);
-			ribObject = new SimpleSetRIBObject(this, 
-					WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME, 
-					WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_CLASS, 
-					WhatevercastName.WHATEVERCAST_NAME_RIB_OBJECT_CLASS);
+			ribObject = new WhatevercastNameSetRIBObject(this); 
 			ribDaemon.addRIBObject(ribObject);
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();
@@ -78,7 +78,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * @param applicationProcess
 	 * @throws IPCException
 	 */
-	public synchronized int submitAllocateRequest(FlowService flowService) throws IPCException{
+	public int submitAllocateRequest(FlowService flowService) throws IPCException{
 		log.debug("Allocate request received, forwarding it to the Flow Allocator");
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(BaseFlowAllocator.getComponentName());
 		return flowAllocator.submitAllocateRequest(flowService);
@@ -89,7 +89,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * @param portId
 	 * @param success
 	 */
-	public synchronized void submitAllocateResponse(int portId, boolean success, String reason) throws IPCException{
+	public void submitAllocateResponse(int portId, boolean success, String reason) throws IPCException{
 		log.debug("Allocate request received, forwarding it to the Flow Allocator");
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
 		flowAllocator.submitAllocateResponse(portId, success, reason);
@@ -99,13 +99,13 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * Forward the deallocate call to the Flow Allocator
 	 * @param portId 
 	 */
-	public synchronized void submitDeallocate(int portId) throws IPCException{
+	public void submitDeallocate(int portId) throws IPCException{
 		log.debug("Deallocate request received, forwarding it to the Flow Allocator");
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
 		flowAllocator.submitDeallocate(portId);
 	}
 
-	public synchronized void submitStatus(int arg0) {
+	public void submitStatus(int arg0) {
 		// TODO Auto-generated method stub
 	}
 
@@ -115,7 +115,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * @param sdu
 	 * @throws IPCException
 	 */
-	public synchronized void submitTransfer(int portId, byte[] sdu) throws IPCException{
+	public void submitTransfer(int portId, byte[] sdu) throws IPCException{
 		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
 		flowAllocator.submitTransfer(portId, sdu);
 		
@@ -129,24 +129,33 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	/**
 	 * An application says it is no longer available through this DIF
 	 */
-	public synchronized void unregister(ApplicationProcessNamingInfo apNamingInfo) {
-		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
-		flowAllocator.getDirectoryForwardingTable().removeEntry(apNamingInfo);
-		//TODO tell the RIB Daemon to disseminate this
+	public void unregister(ApplicationProcessNamingInfo apNamingInfo) {
+		RIBDaemon ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+		try{
+			NotificationPolicy notificationPolicy = new NotificationPolicy(new int[0]);
+			ribDaemon.delete(DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_ENTRY_RIB_OBJECT_CLASS, 
+					DirectoryForwardingTable.DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + 
+					apNamingInfo.getEncodedString(), null, notificationPolicy);
+		}catch(RIBDaemonException ex){
+			log.error(ex);
+		}
 	}
 
 	/**
 	 * An application process says it is available through this DIF
 	 */
-	public synchronized void register(ApplicationProcessNamingInfo apNamingInfo) {
-		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
+	public void register(ApplicationProcessNamingInfo apNamingInfo) {
+		RIBDaemon ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		try{
-			Long currentSynonym = (Long) ribDaemon.read(null, RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
-					RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + RIBObjectNames.SEPARATOR + 
-					RIBObjectNames.CURRENT_SYNONYM, 0).getObjectValue();
-			//TODO fix this
-			//flowAllocator.getDirectoryForwardingTable().addEntry(apNamingInfo, currentSynonym.);
-			//TODO tell the RIB Daemon to disseminate this
+			DirectoryForwardingTableEntry entry = new DirectoryForwardingTableEntry();
+			entry.setAddress(this.getAddress().longValue());
+			entry.setApNamingInfo(apNamingInfo);
+			entry.setTimestamp(System.nanoTime()/1000L);
+			
+			NotificationPolicy notificationPolicy = new NotificationPolicy(new int[0]);
+			ribDaemon.create(DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_ENTRY_RIB_OBJECT_CLASS, 
+					DirectoryForwardingTable.DIRECTORY_FORWARDING_ENTRY_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR 
+					+ apNamingInfo.getEncodedString(), entry, notificationPolicy);
 		}catch(RIBDaemonException ex){
 			log.error(ex);
 		}

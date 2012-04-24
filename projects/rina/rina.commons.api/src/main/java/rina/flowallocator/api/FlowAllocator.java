@@ -12,6 +12,12 @@ import rina.ipcservice.api.IPCException;
  * @author eduardgrasa
  */
 public interface FlowAllocator extends IPCProcessComponent{
+	
+	/**
+	 * Returns the directory
+	 * @return
+	 */
+	public DirectoryForwardingTable getDirectoryForwardingTable();
 
 	/**
 	 * The Flow Allocator is invoked when an Allocate_Request.submit is received.  The source Flow 
@@ -43,12 +49,6 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * @throws IPCException
 	 */
 	public void submitDeallocate(int portId) throws IPCException;
-	
-	/**
-	 * Returns the directory
-	 * @return
-	 */
-	public DirectoryForwardingTable getDirectoryForwardingTable();
 	
 	/**
 	 * When an Flow Allocator receives a Create_Request PDU for a Flow object, it consults its local Directory to see if it has an entry.

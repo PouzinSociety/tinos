@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import rina.applibrary.api.ApplicationRegistration;
 import rina.applibrary.api.Flow;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 
 /**

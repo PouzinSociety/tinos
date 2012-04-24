@@ -5,7 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import rina.encoding.impl.googleprotobuf.flowservice.FlowServiceEncoder;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 
@@ -62,7 +62,7 @@ public class FlowServiceEncoderTest {
 		}
 		System.out.println("");
 		
-		FlowService recoveredRequest= (FlowService) flowServiceEncoder.decode(encodedRequest, FlowService.class.toString());
+		FlowService recoveredRequest= (FlowService) flowServiceEncoder.decode(encodedRequest, FlowService.class);
 		Assert.assertEquals(flowService.getPortId(), recoveredRequest.getPortId());
 		Assert.assertEquals(flowService.getSourceAPNamingInfo(), recoveredRequest.getSourceAPNamingInfo());
 		Assert.assertEquals(flowService.getDestinationAPNamingInfo(), recoveredRequest.getDestinationAPNamingInfo());
@@ -73,7 +73,7 @@ public class FlowServiceEncoderTest {
 		}
 		System.out.println("");
 		
-		recoveredRequest= (FlowService) flowServiceEncoder.decode(encodedRequest, FlowService.class.toString());
+		recoveredRequest= (FlowService) flowServiceEncoder.decode(encodedRequest, FlowService.class);
 		System.out.println(recoveredRequest.toString());
 		Assert.assertEquals(flowService2.getPortId(), recoveredRequest.getPortId());
 		Assert.assertEquals(flowService2.getDestinationAPNamingInfo(), recoveredRequest.getDestinationAPNamingInfo());
@@ -84,7 +84,7 @@ public class FlowServiceEncoderTest {
 		}
 		System.out.println("");
 		
-		recoveredRequest= (FlowService) flowServiceEncoder.decode(encodedRequest, FlowService.class.toString());
+		recoveredRequest= (FlowService) flowServiceEncoder.decode(encodedRequest, FlowService.class);
 		System.out.println(recoveredRequest.toString());
 		Assert.assertEquals(flowService3.getPortId(), recoveredRequest.getPortId());
 		Assert.assertEquals(flowService3.getDestinationAPNamingInfo(), recoveredRequest.getDestinationAPNamingInfo());
@@ -96,7 +96,7 @@ public class FlowServiceEncoderTest {
 		}
 		System.out.println("");
 		
-		recoveredRequest= (FlowService) flowServiceEncoder.decode(encodedRequest, FlowService.class.toString());
+		recoveredRequest= (FlowService) flowServiceEncoder.decode(encodedRequest, FlowService.class);
 		System.out.println(recoveredRequest.toString());
 		Assert.assertEquals(flowService4.getPortId(), recoveredRequest.getPortId());
 		Assert.assertEquals(flowService4.getDestinationAPNamingInfo(), recoveredRequest.getDestinationAPNamingInfo());

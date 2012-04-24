@@ -1,7 +1,7 @@
 package rina.flowallocator.impl.policies;
 
-import rina.flowallocator.api.message.Flow;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.flowallocator.api.Flow;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 

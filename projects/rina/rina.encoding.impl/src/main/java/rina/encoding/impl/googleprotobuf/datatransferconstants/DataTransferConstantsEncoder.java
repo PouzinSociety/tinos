@@ -9,9 +9,9 @@ public class DataTransferConstantsEncoder extends BaseEncoder{
 	public void setIPCProcess(IPCProcess ipcProcess) {
 	}
 
-	public Object decode(byte[] serializedObject, String objectClass) throws Exception {
-		if (objectClass == null || !(objectClass.equals(DataTransferConstants.class.toString()))){
-			throw new Exception("This is not the encoder for objects of type "+objectClass);
+	public synchronized Object decode(byte[] serializedObject, Class<?> objectClass) throws Exception {
+		if (objectClass == null || !(objectClass.equals(DataTransferConstants.class))){
+			throw new Exception("This is not the encoder for objects of type "+objectClass.getName());
 		}
 		
 		DataTransferConstantsMessage.dataTransferConstants_t gpbDataTransferConstants = 
@@ -33,7 +33,7 @@ public class DataTransferConstantsEncoder extends BaseEncoder{
 		return dataTransferConstants;
 	}
 
-	public byte[] encode(Object object) throws Exception {
+	public synchronized byte[] encode(Object object) throws Exception {
 		if (object == null || !(object instanceof DataTransferConstants)){
 			throw new Exception("This is not the encoder for objects of type " + DataTransferConstants.class.toString());
 		}

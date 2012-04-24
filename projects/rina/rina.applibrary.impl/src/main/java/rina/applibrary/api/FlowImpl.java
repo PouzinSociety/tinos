@@ -3,7 +3,7 @@ package rina.applibrary.api;
 import java.net.Socket;
 
 import rina.cdap.api.message.CDAPMessage;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 
@@ -32,6 +32,15 @@ public interface FlowImpl {
 	 * @param sdu
 	 */
 	public void write(byte[] sdu) throws IPCException;
+	
+	/**
+	 * Write length bytes from the buffer, starting from 
+	 * the position 0 of the byte array.
+	 * @param buffer the data
+	 * @param length the number of bytes to write
+	 * @throws IPCException
+	 */
+	public void write(byte[] buffer, int length) throws IPCException;
 	
 	/**
 	 * Causes the flow to be terminated. All the resources associated to it will be deallocated 

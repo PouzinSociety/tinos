@@ -5,8 +5,8 @@ import java.util.List;
 
 import rina.encoding.api.BaseEncoder;
 import rina.flowallocator.api.ConnectionId;
-import rina.flowallocator.api.message.Flow;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.flowallocator.api.Flow;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 import rina.encoding.impl.googleprotobuf.GPBUtils;
 import rina.encoding.impl.googleprotobuf.apnaminginfo.ApplicationProcessNamingInfoMessage;
@@ -21,9 +21,9 @@ import rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSp
  */
 public class FlowEncoder extends BaseEncoder{
 
-	public Object decode(byte[] serializedObject, String objectClass) throws Exception {
-		if (objectClass == null || !(objectClass.equals(Flow.class.toString()))){
-			throw new Exception("This is not the serializer for objects of type "+objectClass);
+	public synchronized Object decode(byte[] serializedObject, Class<?> objectClass) throws Exception {
+		if (objectClass == null || !(objectClass.equals(Flow.class))){
+			throw new Exception("This is not the serializer for objects of type "+objectClass.getName());
 		}
 		
 		FlowMessage.Flow gpbFlow = FlowMessage.Flow.parseFrom(serializedObject);
@@ -50,7 +50,6 @@ public class FlowEncoder extends BaseEncoder{
 		flow.setSourceAddress(gpbFlow.getSourceAddress());
 		flow.setSourceNamingInfo(sourceAPName);
 		flow.setSourcePortId(gpbFlow.getSourcePortId());
-		flow.setTcpRendezvousId(gpbFlow.getTcprendezvousid());
 		if (status != null){
 			flow.setStatus(status[0]);
 		}
@@ -61,8 +60,11 @@ public class FlowEncoder extends BaseEncoder{
 	private ApplicationProcessNamingInfo getApplicationProcessNamingInfo(applicationProcessNamingInfo_t apNamingInfo) {
 		String apName = GPBUtils.getString(apNamingInfo.getApplicationProcessName());
 		String apInstance = GPBUtils.getString(apNamingInfo.getApplicationProcessInstance());
+		String aeName = GPBUtils.getString(apNamingInfo.getApplicationEntityName());
+		String aeInstance = GPBUtils.getString(apNamingInfo.getApplicationEntityInstance());
 		
-		ApplicationProcessNamingInfo result = new ApplicationProcessNamingInfo(apName, apInstance);
+		ApplicationProcessNamingInfo result = new ApplicationProcessNamingInfo(
+				apName, apInstance, aeName, aeInstance);
 		return result;
 	}
 
@@ -86,7 +88,7 @@ public class FlowEncoder extends BaseEncoder{
 	}
 	 
 	
-	public byte[] encode(Object object) throws Exception {
+	public synchronized byte[] encode(Object object) throws Exception {
 		if (object == null || !(object instanceof Flow)){
 			throw new Exception("This is not the serializer for objects of type "+Flow.class.toString());
 		}
@@ -119,7 +121,6 @@ public class FlowEncoder extends BaseEncoder{
 			setSourceNamingInfo(getApplicationProcessNamingInfoT(flow.getSourceNamingInfo())).
 			setSourcePortId(flow.getSourcePortId()).
 			setState(GPBUtils.getByteString(new byte[]{flow.getStatus()})).
-			setTcprendezvousid(flow.getTcpRendezvousId()).
 			build();
 		}else{
 			gpbFlow = FlowMessage.Flow.newBuilder().
@@ -137,7 +138,6 @@ public class FlowEncoder extends BaseEncoder{
 			setSourceNamingInfo(getApplicationProcessNamingInfoT(flow.getSourceNamingInfo())).
 			setSourcePortId(flow.getSourcePortId()).
 			setState(GPBUtils.getByteString(new byte[]{flow.getStatus()})).
-			setTcprendezvousid(flow.getTcpRendezvousId()).
 			build();
 		}
 
@@ -149,9 +149,13 @@ public class FlowEncoder extends BaseEncoder{
 		if (apNamingInfo != null){
 			String apName = GPBUtils.getGPBString(apNamingInfo.getApplicationProcessName());
 			String apInstance = GPBUtils.getGPBString(apNamingInfo.getApplicationProcessInstance());
+			String aeName = GPBUtils.getGPBString(apNamingInfo.getApplicationEntityName());
+			String aeInstance = GPBUtils.getGPBString(apNamingInfo.getApplicationEntityInstance());
 			result = ApplicationProcessNamingInfoMessage.applicationProcessNamingInfo_t.newBuilder().
 			setApplicationProcessName(apName).
 			setApplicationProcessInstance(apInstance).
+			setApplicationEntityName(aeName).
+			setApplicationEntityInstance(aeInstance).
 			build();
 		}
 		return result;

@@ -28,7 +28,7 @@ public class TCPRMTImplCallerTest {
 	
 	@Before
 	public void setup(){
-		this.rmt = new TCPRMTImpl(40001);
+		this.rmt = new TCPRMTImpl();
 		IPCProcess fakeIPCProcess = new FakeIPCProcess();
 		this.rmt.setIPCProcess(fakeIPCProcess);
 		fakeIPCProcess.addIPCProcessComponent(rmt);
@@ -40,7 +40,8 @@ public class TCPRMTImplCallerTest {
 	public void testConnectionFromRemoteProcess() throws Exception{
 		byte[] buffer = new byte[50];
 
-		Socket clientSocket = new Socket("localhost", 40001);
+		int port = 32769;
+		Socket clientSocket = new Socket("localhost", port);
 		byte[] delimitedSdu = delimiter.getDelimitedSdu("CDAP message coming".getBytes());
 		clientSocket.getOutputStream().write(delimitedSdu);
 		try{

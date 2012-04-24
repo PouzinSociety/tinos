@@ -5,14 +5,14 @@ import java.util.Map;
 
 import rina.flowallocator.api.FlowAllocator;
 import rina.flowallocator.api.FlowAllocatorFactory;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 public class FlowAllocatorFactoryImpl implements FlowAllocatorFactory{
 
-	private Map<ApplicationProcessNamingInfo, FlowAllocator> flowAllocatorRespository = null;
+	private Map<String, FlowAllocator> flowAllocatorRespository = null;
 	
 	public FlowAllocatorFactoryImpl(){
-		flowAllocatorRespository = new HashMap<ApplicationProcessNamingInfo, FlowAllocator>();
+		flowAllocatorRespository = new HashMap<String, FlowAllocator>();
 	}
 	
 	public FlowAllocator createFlowAllocator(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
@@ -23,17 +23,29 @@ public class FlowAllocatorFactoryImpl implements FlowAllocatorFactory{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		flowAllocatorRespository.put(ipcProcessNamingInfo, flowAllocator);
+		synchronized(flowAllocatorRespository){
+			flowAllocatorRespository.put(ipcProcessNamingInfo.getEncodedString(), flowAllocator);
+		}
 		return flowAllocator;
 	}
 
 	public void destroyFlowAllocator(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
-		FlowAllocator flowAllocator = (FlowAllocatorImpl) flowAllocatorRespository.remove(ipcProcessNamingInfo);
-		flowAllocator.stop();
+		FlowAllocator flowAllocator = null;
+		
+		synchronized(flowAllocatorRespository){
+			flowAllocator = (FlowAllocatorImpl) flowAllocatorRespository.remove(ipcProcessNamingInfo.
+				getEncodedString());
+		}
+		
+		if (flowAllocator != null){
+			flowAllocator.stop();
+		}
 	}
 
 	public FlowAllocator getFlowAllocator(ApplicationProcessNamingInfo ipcProcessNamingInfo) {
-		return flowAllocatorRespository.get(ipcProcessNamingInfo);
+		synchronized(flowAllocatorRespository){
+			return flowAllocatorRespository.get(ipcProcessNamingInfo.getEncodedString());
+		}
 	}
 
 }

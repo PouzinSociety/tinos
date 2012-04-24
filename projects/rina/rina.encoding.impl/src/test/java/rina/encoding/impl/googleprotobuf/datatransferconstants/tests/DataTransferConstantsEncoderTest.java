@@ -31,7 +31,7 @@ public class DataTransferConstantsEncoderTest {
 		}
 		
 		DataTransferConstants recoveredDataTransferConstants = 
-			(DataTransferConstants) dataTransferConstantsEncoder.decode(serializedDTC, DataTransferConstants.class.toString());
+			(DataTransferConstants) dataTransferConstantsEncoder.decode(serializedDTC, DataTransferConstants.class);
 		Assert.assertEquals(dataTransferConstants.getAddressLength(), recoveredDataTransferConstants.getAddressLength());
 		Assert.assertEquals(dataTransferConstants.getCepIdLength(), recoveredDataTransferConstants.getCepIdLength());
 		Assert.assertEquals(dataTransferConstants.getLengthLength(), recoveredDataTransferConstants.getLengthLength());

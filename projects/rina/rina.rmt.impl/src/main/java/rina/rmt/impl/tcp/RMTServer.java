@@ -7,6 +7,8 @@ import java.net.Socket;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.configuration.RINAConfiguration;
+
 /**
  * TCP server that listens for incoming connections.
  * @author eduardgrasa
@@ -15,8 +17,6 @@ import org.apache.commons.logging.LogFactory;
 public class RMTServer implements Runnable{
 
 	private static final Log log = LogFactory.getLog(RMTServer.class);
-	
-	public static final int DEFAULT_PORT = 32769;
 	
 	/**
 	 * A relaying and multiplexing task that operates on top of a TCP/IP network
@@ -29,6 +29,11 @@ public class RMTServer implements Runnable{
 	private boolean end = false;
 	
 	/**
+	 * Controls whether the server is listening
+	 */
+	private boolean listening = false;
+	
+	/**
 	 * The TCP port to listen for incoming connections
 	 */
 	private int port = 0;
@@ -37,14 +42,10 @@ public class RMTServer implements Runnable{
 	 * The server socket that listens for incoming connections
 	 */
 	private ServerSocket serverSocket = null;
-	
+
 	public RMTServer(TCPRMTImpl tcpRmtImpl){
-		this(tcpRmtImpl, DEFAULT_PORT);
-	}
-	
-	public RMTServer(TCPRMTImpl tcpRmtImpl, int port){
 		this.tcpRmtImpl = tcpRmtImpl;
-		this.port = port;
+		this.port = RINAConfiguration.getInstance().getRMTPortNumber(tcpRmtImpl.getIPCProcess().getApplicationProcessName());
 	}
 	
 	public void setEnd(boolean end){
@@ -54,21 +55,30 @@ public class RMTServer implements Runnable{
 				this.serverSocket.close();
 			}catch(IOException ex){
 				log.error(ex.getMessage());
+			}finally{
+				listening = false;
 			}
 		}
+	}
+	
+	public boolean isListening(){
+		return listening;
 	}
 
 	public void run() {
 		try{
 			serverSocket = new ServerSocket(port);
+			listening = true;
 			log.info("Waiting for incoming TCP connections on port "+port);
 			while (!end){
 				Socket socket = serverSocket.accept();
 				log.info("Got a new request from "+socket.getInetAddress().getHostAddress());
-				tcpRmtImpl.newConnectionAccepted(socket);
+				tcpRmtImpl.newConnectionAccepted(socket, socket.getPort());
 			}
 		}catch(IOException e){
 			log.error(e.getMessage());
+		}finally{
+			listening = false;
 		}
 	}
 }

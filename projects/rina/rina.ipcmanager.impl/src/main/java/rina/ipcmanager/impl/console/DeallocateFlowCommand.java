@@ -10,7 +10,7 @@ import rina.ipcmanager.impl.IPCManagerImpl;
 public class DeallocateFlowCommand extends ConsoleCommand{
 
 	public static final String ID = "deallocateflow";
-	private static final String USAGE = "sourceipcprocessname sourceipcprocessInstance portId";
+	private static final String USAGE = "deallocateflow apName apInstance portId";
 	
 	/**
 	 * Required parameter

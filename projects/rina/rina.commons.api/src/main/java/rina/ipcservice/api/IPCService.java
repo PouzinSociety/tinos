@@ -1,5 +1,6 @@
 package rina.ipcservice.api;
 
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 /** 
  * Implements the IPC API for the part of the requested application

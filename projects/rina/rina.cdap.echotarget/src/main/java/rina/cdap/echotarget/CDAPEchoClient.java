@@ -119,7 +119,7 @@ public class CDAPEchoClient extends CDAPClient{
 	
 	private CDAPMessage getMDeleteMessage(CDAPMessage cdapMessage) throws CDAPException{
 		return cdapSessionManager.getDeleteObjectRequestMessage(clientSocket.getLocalPort(), null, null, cdapMessage.getObjClass(), 
-				cdapMessage.getObjInst(), cdapMessage.getObjName(), 0, true);
+				cdapMessage.getObjInst(), cdapMessage.getObjName(), null, 0, true);
 	}
 	
 	private CDAPMessage getMReleaseMessage(CDAPMessage cdapMessage) throws CDAPException{

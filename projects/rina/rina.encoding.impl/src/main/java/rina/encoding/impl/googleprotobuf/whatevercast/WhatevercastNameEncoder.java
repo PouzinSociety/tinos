@@ -8,17 +8,22 @@ import com.google.protobuf.ByteString;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.impl.googleprotobuf.GPBUtils;
+import rina.encoding.impl.googleprotobuf.whatevercast.WhatevercastNameMessage.whatevercastName_t;
 
 public class WhatevercastNameEncoder extends BaseEncoder{
 	
-	public Object decode(byte[] serializedObject, String objectClass) throws Exception {
-		if (objectClass == null || !(objectClass.equals(WhatevercastName.class.toString()))){
-			throw new Exception("This is not the encoder for objects of type "+objectClass);
+	public synchronized Object decode(byte[] serializedObject, Class<?> objectClass) throws Exception {
+		if (objectClass == null || !(objectClass.equals(WhatevercastName.class))){
+			throw new Exception("This is not the encoder for objects of type "+objectClass.getName());
 		}
 		
-		WhatevercastNameMessage.whatevercastName_t gpbWhatevercastName = 
+		whatevercastName_t gpbWhatevercastName = 
 				WhatevercastNameMessage.whatevercastName_t.parseFrom(serializedObject);
 		
+		return convertGPBToModel(gpbWhatevercastName);
+	}
+	
+	public static WhatevercastName convertGPBToModel(whatevercastName_t gpbWhatevercastName){
 		List<byte[]> setMembers = new ArrayList<byte[]>();
 		for(int i=0; i<gpbWhatevercastName.getSetMembersList().size(); i++){
 			setMembers.add(GPBUtils.getByteArray(gpbWhatevercastName.getSetMembersList().get(i)));
@@ -32,13 +37,15 @@ public class WhatevercastNameEncoder extends BaseEncoder{
 		return whatevercastName;
 	}
 	
-	public byte[] encode(Object object) throws Exception {
+	public synchronized byte[] encode(Object object) throws Exception {
 		if (object == null || !(object instanceof WhatevercastName)){
 			throw new Exception("This is not the encoder for objects of type " + WhatevercastName.class.toString());
 		}
 		
-		WhatevercastName whatevercastName = (WhatevercastName) object;
-		
+		return convertModelToGPB((WhatevercastName) object).toByteArray();
+	}
+	
+	public static whatevercastName_t convertModelToGPB(WhatevercastName whatevercastName){
 		List<ByteString> gpbSetMembers = new ArrayList<ByteString>();
 		for(int i=0; i<whatevercastName.getSetMembers().size(); i++){
 			gpbSetMembers.add(GPBUtils.getByteString(whatevercastName.getSetMembers().get(i)));
@@ -50,7 +57,7 @@ public class WhatevercastNameEncoder extends BaseEncoder{
 													addAllSetMembers(gpbSetMembers).
 													build();
 		
-		return gpbWhatevercastName.toByteArray();
+		return gpbWhatevercastName;
 	}
 
 }

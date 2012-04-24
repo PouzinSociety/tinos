@@ -1,22 +1,24 @@
 package rina.flowallocator.impl.ribobjects;
 
-import java.util.Calendar;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.flowallocator.api.FlowAllocatorInstance;
-import rina.flowallocator.api.message.Flow;
+import rina.flowallocator.api.Flow;
 import rina.ipcprocess.api.IPCProcess;
-import rina.ribdaemon.api.BaseRIBObject;
 import rina.ribdaemon.api.RIBDaemonException;
-import rina.ribdaemon.api.RIBObject;
+import rina.ribdaemon.api.SimpleSetMemberRIBObject;
 
-public class FlowRIBObject extends BaseRIBObject{
+public class FlowRIBObject extends SimpleSetMemberRIBObject{
+	
+	private static final Log log = LogFactory.getLog(FlowRIBObject.class);
 	
 	private FlowAllocatorInstance flowAllocatorInstance = null;
 	
 	public FlowRIBObject(IPCProcess ipcProcess, String objectName, FlowAllocatorInstance flowAllocatorInstance){
-		super(ipcProcess, objectName, Flow.FLOW_RIB_OBJECT_CLASS, Calendar.getInstance().getTimeInMillis());
+		super(ipcProcess, Flow.FLOW_RIB_OBJECT_CLASS, objectName, flowAllocatorInstance.getFlow());
 		this.flowAllocatorInstance = flowAllocatorInstance;
 	}
 	
@@ -25,14 +27,19 @@ public class FlowRIBObject extends BaseRIBObject{
 		flowAllocatorInstance.deleteFlowRequestMessageReceived(cdapMessage, cdapSessionDescriptor.getPortId());
 	}
 	
+	/**
+	 * A new flow named as an already existing flow wants to be created. Send reply message with an error
+	 */
 	@Override
-	public void delete(String objectClass, String objectName, long objectInstance, Object object) throws RIBDaemonException {
-		this.getParent().removeChild(objectName);
-	}
-	
-	@Override
-	public RIBObject read(String objectClass, String objectName, long objectInstance) throws RIBDaemonException{
-		return this;
+	public void create(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
+		log.error("Requesting to create a new flow with an objectName that is already present in the RIB: "+cdapMessage.getObjName());
+		try{
+			CDAPMessage errorMessage = cdapMessage.getReplyMessage();
+			errorMessage.setResult(-5);
+			errorMessage.setResultReason("Requested to create a new flow with an object name that already exists in the RIB");
+			this.getRIBDaemon().sendMessage(errorMessage, cdapSessionDescriptor.getPortId(), null);
+		}catch(Exception ex){	
+		}
 	}
 	
 	@Override

@@ -1,8 +1,5 @@
 package rina.ipcmanager.impl.console;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import rina.ipcmanager.impl.IPCManagerImpl;
 
 /**
@@ -12,13 +9,11 @@ import rina.ipcmanager.impl.IPCManagerImpl;
  */
 public class CreateIPCProcessCommand extends ConsoleCommand{
 	
-	private static final Log log = LogFactory.getLog(CreateIPCProcessCommand.class);
-
 	public static final String ID = "createipcprocess";
-	private static final String USAGE = "createipcprocess applicationprocessname applicationprocessInstace [difname]";
+	private static final String USAGE = "createipcprocess applicationprocessname applicationProcessInstance [difname]";
 	
 	/**
-	 * Required parameter
+	 * Optional parameter
 	 */
 	private String difName = null;
 	
@@ -28,7 +23,7 @@ public class CreateIPCProcessCommand extends ConsoleCommand{
 	private String applicationProcessName = null;
 	
 	/**
-	 * Optional parameter, can be 
+	 * Required parameter
 	 */
 	private String applicationProcessInstance = null;
 	
@@ -49,7 +44,7 @@ public class CreateIPCProcessCommand extends ConsoleCommand{
 		}
 		
 		try{
-			this.getIPCManagerImpl().createIPCProcess(applicationProcessName, applicationProcessInstance, difName);
+			this.getIPCManagerImpl().createIPCProcess(applicationProcessName, applicationProcessInstance, difName, null);
 			return "IPC Process created successfully";
 		}catch(Exception ex){
 			ex.printStackTrace();

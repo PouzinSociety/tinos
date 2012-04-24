@@ -3,14 +3,14 @@ package rina.ipcprocess.api;
 import java.util.List;
 import java.util.Map;
 
-import rina.applicationprocess.api.DAFMember;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.efcp.api.DataTransferConstants;
+import rina.enrollment.api.Neighbor;
+import rina.flowallocator.api.Flow;
 import rina.flowallocator.api.QoSCube;
-import rina.flowallocator.api.message.Flow;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcservice.api.APService;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 /**
  * Represents an IPC Process. Holds together the different components of the IPC 
@@ -19,6 +19,11 @@ import rina.ipcservice.api.ApplicationProcessNamingInfo;
  *
  */
 public interface IPCProcess{
+	
+	/**
+	 * The operational status of the IPC Process
+	 */
+	public enum OperationalStatus {STARTED, STOPPED};
 	
 	/* IPC Process Component management */
 	public Map<String, IPCProcessComponent> getIPCProcessComponents();
@@ -72,9 +77,9 @@ public interface IPCProcess{
 	public String getApplicationProcessInstance();
 	public List<WhatevercastName> getWhatevercastNames();
 	public String getDIFName();
-	public List<DAFMember> getDAFMembers();
+	public List<Neighbor> getNeighbors();
 	public Long getAddress();
-	public Boolean getOperationalStatus();
+	public OperationalStatus getOperationalStatus();
 	public List<QoSCube> getQoSCubes();
 	public List<Flow> getAllocatedFlows();
 	public DataTransferConstants getDataTransferConstants();

@@ -6,19 +6,19 @@ package rina.ribdaemon.api;
  */
 public interface RIBObjectNames {
 	/* Partial names */
+	public static final String ADDRESS = "address";
 	public static final String APNAME = "applicationprocessname";
 	public static final String CONSTANTS = "constants";
-	public static final String CURRENT_SYNONYM = "currentsynonym";
 	public static final String DATA_TRANSFER = "datatransfer";
 	public static final String DAF = "daf";
 	public static final String DIF = "dif";
-	public static final String DIRECTORY_FORWARDING_TABLE = "directoryforwardingtable";
+	public static final String DIRECTORY_FORWARDING_TABLE_ENTRIES = "directoryforwardingtableentries";
 	public static final String ENROLLMENT = "enrollment";
 	public static final String FLOWS = "flows";
 	public static final String FLOW_ALLOCATOR = "flowallocator";
 	public static final String IPC = "ipc";
 	public static final String MANAGEMENT = "management";
-	public static final String MEMBERS = "members";
+	public static final String NEIGHBORS = "neighbors";
 	public static final String NAMING = "naming";
 	public static final String OPERATIONAL_STATUS = "operationalStatus";
 	public static final String QOS_CUBES = "qoscubes";
@@ -34,9 +34,9 @@ public interface RIBObjectNames {
 	
 	public static final String OPERATIONAL_STATUS_RIB_OBJECT_CLASS = "operationstatus";
 	
-	public static final String CURRENT_SYNONYM_RIB_OBJECT_NAME = RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
+	public static final String ADDRESS_RIB_OBJECT_NAME = RIBObjectNames.SEPARATOR + RIBObjectNames.DAF + 
 		RIBObjectNames.SEPARATOR + RIBObjectNames.MANAGEMENT + RIBObjectNames.SEPARATOR + RIBObjectNames.NAMING + 
-		RIBObjectNames.SEPARATOR + RIBObjectNames.CURRENT_SYNONYM;
+		RIBObjectNames.SEPARATOR + RIBObjectNames.ADDRESS;
 
-	public static final String CURRENT_SYNONYM_RIB_OBJECT_CLASS = "synonym";
+	public static final String ADDRESS_RIB_OBJECT_CLASS = "address";
 }

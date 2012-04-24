@@ -1,5 +1,6 @@
 package rina.applibrary.impl;
 
+import java.net.FauxSocketFactory;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -12,12 +13,13 @@ import rina.applibrary.api.Flow;
 import rina.applibrary.api.FlowImpl;
 import rina.applibrary.api.FlowListener;
 import rina.applibrary.api.SDUListener;
+import rina.applibrary.api.SocketFactory;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
 import rina.delimiting.api.Delimiter;
 import rina.encoding.api.Encoder;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.QualityOfServiceSpecification;
@@ -31,7 +33,7 @@ public class DefaultFlowImpl implements FlowImpl{
 	
 	private static final Log log = LogFactory.getLog(DefaultFlowImpl.class);
 	
-	private static final int MAX_WAITTIME_IN_SECONDS = 3;
+	private static final int MAX_WAITTIME_IN_SECONDS = 15;
 	
 	/**
 	 * The name of the source application of this flow (i.e. the application that requested
@@ -93,6 +95,17 @@ public class DefaultFlowImpl implements FlowImpl{
 	 */
 	private BlockingQueue<CDAPMessage> flowQueue = null;
 	
+	/**
+	 * Controls if this object was created by the fauxSockets implementation and 
+	 * therefore needs to use the faux Sockets constructors
+	 */
+	private boolean fauxSockets = false;
+	
+	/**
+	 * The class that creates the socket instances
+	 */
+	private SocketFactory socketFactory = null;
+	
 	/* RINA Infrastructure */
 	private Delimiter delimiter = null;
 	private CDAPSessionManager cdapSessionManager = null;
@@ -104,7 +117,18 @@ public class DefaultFlowImpl implements FlowImpl{
 	private CDAPMessage writeCDAPMessage = null;
 	
 	public DefaultFlowImpl(){
-		this.flowQueue = new LinkedBlockingQueue<CDAPMessage>();	
+		this.flowQueue = new LinkedBlockingQueue<CDAPMessage>();
+		this.socketFactory = new StandardSocketFactory();
+	}
+	
+	public DefaultFlowImpl(boolean fauxSockets){
+		this.flowQueue = new LinkedBlockingQueue<CDAPMessage>();
+		this.fauxSockets = fauxSockets;
+		if (fauxSockets){
+			this.socketFactory = new FauxSocketFactory();
+		}else{
+			this.socketFactory = new StandardSocketFactory();
+		}
 	}
 
 	/**
@@ -126,8 +150,9 @@ public class DefaultFlowImpl implements FlowImpl{
 		try{
 			log.debug("Attempting to allocate a flow from "+sourceApplication.toString()+ " to "+destinationApplication.toString());
 			
-			//1 Connect to the local RINA Software, and start the socket reader
-			socket = new Socket("localhost", RINAFactory.DEFAULT_PORT);
+			//1 Connect to the local RINA Software, and start the socket reader and the standard sockets implementation
+			socket = socketFactory.createSocket(fauxSockets, "localhost", RINAFactory.DEFAULT_PORT);
+			
 			flowSocketReader = new FlowSocketReader(socket, delimiter, cdapSessionManager, flowQueue, this);
 			flowSocketReader.setSDUListener(sduListener);
 			RINAFactory.execute(flowSocketReader);
@@ -159,7 +184,7 @@ public class DefaultFlowImpl implements FlowImpl{
 			
 			//6 Response was successful, update the state and return
 			setState(State.ALLOCATED);
-			flowService = (FlowService) encoder.decode(cdapMessage.getObjValue().getByteval(), FlowService.class.toString());
+			flowService = (FlowService) encoder.decode(cdapMessage.getObjValue().getByteval(), FlowService.class);
 			this.portId = flowService.getPortId();
 			
 			log.debug("Flow allocated successfully! PortId: "+getPortId());
@@ -190,6 +215,22 @@ public class DefaultFlowImpl implements FlowImpl{
 		if (this.encoder == null) {
 			encoder = RINAFactory.getEncoderInstance();
 		}
+	}
+	
+	/**
+	 * Write length bytes from the buffer, starting from 
+	 * the position 0 of the byte array.
+	 * @param buffer the data
+	 * @param length the number of bytes to write
+	 * @throws IPCException
+	 */
+	public void write(byte[] buffer, int length) throws IPCException{
+		byte[] sdu = new byte[length];
+		for(int i=0; i<sdu.length; i++){
+			sdu[i] = buffer[i];
+		}
+		
+		this.write(sdu);
 	}
 
 	/**
@@ -232,22 +273,11 @@ public class DefaultFlowImpl implements FlowImpl{
 		
 		try{
 			//1 Create M_DELETE message, encode it and send it through socket
-			CDAPMessage cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, null, 0, null, 0);
+			CDAPMessage cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, null, 0, null, null, 0);
 			byte[] encodedMessage = cdapSessionManager.encodeCDAPMessage(cdapMessage);
 			socket.getOutputStream().write(delimiter.getDelimitedSdu(encodedMessage));
 			
-			//2 Wait (up to MAX milliseconds) for the response
-			cdapMessage = flowQueue.poll(MAX_WAITTIME_IN_SECONDS, TimeUnit.SECONDS);
-			if (cdapMessage == null){
-				throw new IPCException("Didn't receive the reply from the local RINA software before "+MAX_WAITTIME_IN_SECONDS+" seconds.");
-			}
-			
-			//3 If response is not successful throw exception
-			if (cdapMessage.getResult() != 0){
-				throw new IPCException(cdapMessage.getResultReason());
-			}
-			
-			//4 Response was successful, update the state, close the socket and return
+			//2 Close the socket and return
 			try{
 				if (socket != null && !socket.isClosed()){
 					socket.close();

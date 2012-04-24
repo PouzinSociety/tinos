@@ -267,4 +267,20 @@ public class DataTransferConstants {
 		result = result + "DIF integrity: " + this.isDIFIntegrity() + "\n";
 		return result;
 	}
+	
+	public static DataTransferConstants getDefaultInstance(){
+		DataTransferConstants dataTransferConstants = new DataTransferConstants();
+		dataTransferConstants.setAddressLength(2);
+		dataTransferConstants.setCepIdLength(2);
+		dataTransferConstants.setDIFConcatenation(true);
+		dataTransferConstants.setDIFFragmentation(false);
+		dataTransferConstants.setDIFIntegrity(false);
+		dataTransferConstants.setLengthLength(2);
+		dataTransferConstants.setMaxPDUSize(1950);
+		dataTransferConstants.setPortIdLength(2);
+		dataTransferConstants.setQosIdLength(1);
+		dataTransferConstants.setSequenceNumberLength(2);
+		
+		return dataTransferConstants;
+	}
 }

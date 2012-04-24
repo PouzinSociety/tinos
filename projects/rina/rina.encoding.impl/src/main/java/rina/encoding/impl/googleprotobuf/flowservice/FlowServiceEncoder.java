@@ -2,15 +2,15 @@ package rina.encoding.impl.googleprotobuf.flowservice;
 
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.impl.googleprotobuf.GPBUtils;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 
 public class FlowServiceEncoder extends BaseEncoder{
 
-	public Object decode(byte[] serializedObject, String objectClass) throws Exception {
-		if (objectClass == null || !(objectClass.equals(FlowService.class.toString()))){
-			throw new Exception("This is not the serializer for objects of type "+objectClass);
+	public synchronized Object decode(byte[] serializedObject, Class<?> objectClass) throws Exception {
+		if (objectClass == null || !(objectClass.equals(FlowService.class))){
+			throw new Exception("This is not the serializer for objects of type "+objectClass.getName());
 		}
 		
 		FlowServiceMessage.FlowService gpbFlowService = FlowServiceMessage.FlowService.parseFrom(serializedObject);
@@ -28,7 +28,7 @@ public class FlowServiceEncoder extends BaseEncoder{
 		return result;
 	}
 
-	public byte[] encode(Object object) throws Exception {
+	public synchronized byte[] encode(Object object) throws Exception {
 		if (object == null || !(object instanceof FlowService)){
 			throw new Exception("This is not the serializer for objects of type "+FlowService.class.toString());
 		}

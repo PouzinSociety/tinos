@@ -1,5 +1,8 @@
 package rina.ipcmanager.impl;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -8,33 +11,37 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.applicationprocess.api.DAFMember;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import rina.applicationprocess.api.WhatevercastName;
-import rina.cdap.api.CDAPSessionDescriptor;
-import rina.cdap.api.message.CDAPMessage;
-import rina.cdap.api.message.ObjectValue;
+import rina.configuration.DIFConfiguration;
+import rina.configuration.IPCProcessToCreate;
+import rina.configuration.KnownIPCProcessConfiguration;
+import rina.configuration.RINAConfiguration;
 import rina.efcp.api.DataTransferConstants;
-import rina.encoding.api.BaseEncoder;
-import rina.encoding.api.Encoder;
 import rina.enrollment.api.BaseEnrollmentTask;
 import rina.enrollment.api.EnrollmentTask;
+import rina.enrollment.api.Neighbor;
 import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.flowallocator.api.QoSCube;
-import rina.flowallocator.api.message.Flow;
+import rina.flowallocator.api.Flow;
+import rina.idd.api.InterDIFDirectoryFactory;
 import rina.ipcmanager.api.IPCManager;
-import rina.ipcmanager.api.InterDIFDirectory;
 import rina.ipcmanager.impl.apservice.APServiceImpl;
 import rina.ipcmanager.impl.console.IPCManagerConsole;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
 import rina.ipcservice.api.APService;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCService;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
+import rina.rmt.api.BaseRMT;
+import rina.rmt.api.RMT;
 
 /**
  * The IPC Manager is the component of a DAF that manages the local IPC resources. In its current implementation it 
@@ -44,7 +51,11 @@ import rina.ribdaemon.api.RIBObjectNames;
  *
  */
 public class IPCManagerImpl implements IPCManager{
+	
 	private static final Log log = LogFactory.getLog(IPCManagerImpl.class);
+	
+	public static final String CONFIG_FILE_LOCATION = "config/rina/config.rina"; 
+	public static final long CONFIG_FILE_POLL_PERIOD_IN_MS = 5000;
 	
 	private IPCManagerConsole console = null;
 	
@@ -62,10 +73,62 @@ public class IPCManagerImpl implements IPCManager{
 	
 	public IPCManagerImpl(){
 		executorService = Executors.newCachedThreadPool();
+		initializeConfiguration();
 		console = new IPCManagerConsole(this);
 		apService = new APServiceImpl(this);
 		executorService.execute(console);
 		log.debug("IPC Manager started");
+	}
+	
+	private void initializeConfiguration(){
+		//Read config file
+		RINAConfiguration rinaConfiguration = readConfigurationFile();
+		RINAConfiguration.setConfiguration(rinaConfiguration);
+		
+		//Start thread that will look for config file changes
+		Runnable configFileChangeRunnable = new Runnable(){
+			private long currentLastModified = 0;
+			private RINAConfiguration rinaConfiguration = null;
+
+			public void run(){
+				File file = new File(CONFIG_FILE_LOCATION);
+
+				while(true){
+					if (file.lastModified() > currentLastModified) {
+						log.debug("Configuration file changed, loading the new content");
+						currentLastModified = file.lastModified();
+						rinaConfiguration = readConfigurationFile();
+						RINAConfiguration.setConfiguration(rinaConfiguration);
+					}
+					try {
+						Thread.sleep(CONFIG_FILE_POLL_PERIOD_IN_MS);
+					}catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+
+		};
+
+		executorService.execute(configFileChangeRunnable);
+	}
+	
+	private RINAConfiguration readConfigurationFile(){
+		try {
+    		ObjectMapper objectMapper = new ObjectMapper();
+    		RINAConfiguration rinaConfiguration = (RINAConfiguration) 
+    			objectMapper.readValue(new FileInputStream(CONFIG_FILE_LOCATION), RINAConfiguration.class);
+    		log.info("Read configuration file");
+    		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    		objectMapper.writer(new DefaultPrettyPrinter()).writeValue(outputStream, rinaConfiguration);
+    		log.info(outputStream.toString());
+    		return rinaConfiguration;
+    	} catch (Exception ex) {
+    		log.error(ex);
+    		ex.printStackTrace();
+    		log.debug("Could not find the main configuration file.");
+    		return null;
+        }
 	}
 	
 	/**
@@ -83,75 +146,92 @@ public class IPCManagerImpl implements IPCManager{
 		executorService.shutdownNow();
 	}
 	
-	public void setInterDIFDirectory(InterDIFDirectory idd){
-		apService.setInterDIFDirectory(idd);
+	public void setInterDIFDirectoryFactory(InterDIFDirectoryFactory iddFactory){
+		apService.setInterDIFDirectory(iddFactory.createIDD(this));
 	}
 	
 	public void setIPCProcessFactory(IPCProcessFactory ipcProcessFactory){
 		this.ipcProcessFactory = ipcProcessFactory;
 		ipcProcessFactory.setIPCManager(this);
 		apService.setIPCProcessFactory(ipcProcessFactory);
+		createInitialProcesses();
+	}
+	
+	/**
+	 * Create the initial IPC Processes as specified in the configuration file (if any)
+	 */
+	private void createInitialProcesses(){
+		RINAConfiguration rinaConfiguration = RINAConfiguration.getInstance();
+		if (rinaConfiguration.getIpcProcessesToCreate() == null){
+			return;
+		}
+		
+		IPCProcessToCreate currentProcess = null;
+		for(int i=0; i<rinaConfiguration.getIpcProcessesToCreate().size(); i++){
+			currentProcess = rinaConfiguration.getIpcProcessesToCreate().get(i);
+			try{
+				this.createIPCProcess(currentProcess.getApplicationProcessName(), 
+						currentProcess.getApplicationProcessInstance(), 
+						currentProcess.getDifName(), currentProcess.getNeighbors());
+			}catch(Exception ex){
+				log.error(ex);
+			}
+		}
 	}
 
-	public void createIPCProcess(String applicationProcessName, String applicationProcessInstance, String difName) throws Exception{
-		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance);
-		IPCProcess ipcProcess = ipcProcessFactory.createIPCProcess(apNamingInfo);
+	public void createIPCProcess(String apName, String apInstance, String difName, List<Neighbor> neighbors) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.createIPCProcess(apName, apInstance);
 		ipcProcess.setIPCManager(this);
 		if (difName != null){
+			DIFConfiguration difConfiguration = RINAConfiguration.getInstance().getDIFConfiguration(difName);
+			if (difConfiguration == null){
+				throw new Exception("Unrecognized DIF name: "+difName);
+			}
+			
+			KnownIPCProcessConfiguration ipcProcessConfiguration = 
+				RINAConfiguration.getInstance().getIPCProcessConfiguration(apName);
+			if (ipcProcessConfiguration == null){
+				throw new Exception("Unrecoginzed IPC Process Name: "+apName);
+			}
+			
 			WhatevercastName dan = new WhatevercastName();
 			dan.setName(difName);
-			dan.setRule("Any member");
+			dan.setRule(WhatevercastName.DIF_NAME_WHATEVERCAST_RULE);
 
 			RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-			ribDaemon.create(null, WhatevercastName.DIF_NAME_WHATEVERCAST_OBJECT_NAME, 0, dan);
-			ribDaemon.write(null, RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME, 0, new Long(1));
+			ribDaemon.create(WhatevercastName.WHATEVERCAST_NAME_RIB_OBJECT_CLASS, 
+					WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + 
+					WhatevercastName.DIF_NAME_WHATEVERCAST_RULE, 
+					dan);
 			
-			DataTransferConstants dataTransferConstants = new DataTransferConstants();
-			dataTransferConstants.setAddressLength(2);
-			dataTransferConstants.setCepIdLength(2);
-			dataTransferConstants.setDIFConcatenation(true);
-			dataTransferConstants.setDIFFragmentation(false);
-			dataTransferConstants.setDIFIntegrity(false);
-			dataTransferConstants.setLengthLength(2);
-			dataTransferConstants.setMaxPDUSize(1950);
-			dataTransferConstants.setPortIdLength(2);
-			dataTransferConstants.setQosIdLength(1);
-			dataTransferConstants.setSequenceNumberLength(2);
-			ribDaemon.write(null, DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_NAME, 0, dataTransferConstants);
+			ribDaemon.write(RIBObjectNames.ADDRESS_RIB_OBJECT_CLASS, 
+					RIBObjectNames.ADDRESS_RIB_OBJECT_NAME, 
+					ipcProcessConfiguration.getAddress());
 			
-			QoSCube qosCube = new QoSCube();
-			qosCube.setAverageBandwidth(0);
-			qosCube.setAverageSDUBandwidth(0);
-			qosCube.setDelay(0);
-			qosCube.setJitter(0);
-			qosCube.setMaxAllowableGapSdu(-1);
-			qosCube.setOrder(false);
-			qosCube.setPartialDelivery(true);
-			qosCube.setPeakBandwidthDuration(0);
-			qosCube.setPeakSDUBandwidthDuration(0);
-			qosCube.setQosId(new byte[]{0x01});
-			qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
-			ribDaemon.create(null, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + "unreliable", 0, qosCube);
+			ribDaemon.write(DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_CLASS, 
+					DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_NAME, 
+					difConfiguration.getDataTransferConstants());
 			
-			qosCube = new QoSCube();
-			qosCube.setAverageBandwidth(0);
-			qosCube.setAverageSDUBandwidth(0);
-			qosCube.setDelay(0);
-			qosCube.setJitter(0);
-			qosCube.setMaxAllowableGapSdu(0);
-			qosCube.setOrder(true);
-			qosCube.setPartialDelivery(false);
-			qosCube.setPeakBandwidthDuration(0);
-			qosCube.setPeakSDUBandwidthDuration(0);
-			qosCube.setQosId(new byte[]{0x02});
-			qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
-			ribDaemon.create(null, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + "reliable", 0, qosCube);
+			ribDaemon.create(QoSCube.QOSCUBE_SET_RIB_OBJECT_CLASS,
+					QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME, 
+					(QoSCube[]) difConfiguration.getQosCubes().toArray(new QoSCube[difConfiguration.getQosCubes().size()]));
+			
+			if (neighbors != null){
+				ribDaemon.create(Neighbor.NEIGHBOR_SET_RIB_OBJECT_CLASS, 
+						Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME, 
+						(Neighbor[]) neighbors.toArray(new Neighbor[neighbors.size()]));
+			}
+			
+			ribDaemon.start(RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_CLASS, 
+					RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME);
+
+			RMT rmt = (RMT) ipcProcess.getIPCProcessComponent(BaseRMT.getComponentName());
+			rmt.startListening();
 		}
 	}
 	
-	public void destroyIPCProcesses(String applicationProcessName, String applicationProcessInstance) throws Exception{
-		ApplicationProcessNamingInfo apNamingInfo = new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance);
-		ipcProcessFactory.destroyIPCProcess(apNamingInfo);
+	public void destroyIPCProcesses(String apName, String apInstance) throws Exception{
+		ipcProcessFactory.destroyIPCProcess(apName, apInstance);
 	}
 	
 	public List<String> listIPCProcessesInformation(){
@@ -168,14 +248,15 @@ public class IPCManagerImpl implements IPCManager{
 			information = information + "DIF name: " + difName + "\n";
 			information = information + "Application process name: "+apNamingInfo.getApplicationProcessName() + "\n";
 			information = information + "Application process instance: "+apNamingInfo.getApplicationProcessInstance() + "\n";
+			information = information + "Address: "+ipcProcesses.get(i).getAddress().longValue() + "\n";
 			ipcProcessesInformation.add(information);
 		}
 
 		return ipcProcessesInformation;
 	}
 
-	public List<String> getPrintedRIB(String applicationProcessName, String applicationProcessInstance) throws Exception{
-		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(new ApplicationProcessNamingInfo(applicationProcessName, applicationProcessInstance));
+	public List<String> getPrintedRIB(String apName, String apInstance) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(apName, apInstance);
 		RIBDaemon ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		List<RIBObject> ribObjects = ribDaemon.getRIBObjects();
 		List<String> result = new ArrayList<String>();
@@ -194,41 +275,34 @@ public class IPCManagerImpl implements IPCManager{
 		return result;
 	}
 	
-	public void enroll(String sourceApplicationProcessName, String sourceApplicationProcessInstance, 
-			String destinationApplicationProcessName, String destinationApplicationProcessInstance) throws Exception{
-		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(
-				new ApplicationProcessNamingInfo(sourceApplicationProcessName, sourceApplicationProcessInstance));
+	public void enroll(String sourceAPName, String sourceAPInstance, String destAPName, String destAPInstance) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(sourceAPName, sourceAPInstance);
 		EnrollmentTask enrollmentTask = (EnrollmentTask) ipcProcess.getIPCProcessComponent(BaseEnrollmentTask.getComponentName());
-		Encoder encoder = (Encoder) ipcProcess.getIPCProcessComponent(BaseEncoder.getComponentName());
 		
-		DAFMember dafMember = new DAFMember();
-		dafMember.setApplicationProcessName(destinationApplicationProcessName);
-		dafMember.setApplicationProcessInstance(destinationApplicationProcessInstance);
-		byte[] encodedDafMember = encoder.encode(dafMember);
-		ObjectValue objectValue = new ObjectValue();
-		objectValue.setByteval(encodedDafMember);
-		
-		CDAPMessage cdapMessage = CDAPMessage.getCreateObjectRequestMessage(null, null, "", 0, DAFMember.DAF_MEMBER_SET_RIB_OBJECT_NAME 
-				+ RIBObjectNames.SEPARATOR + destinationApplicationProcessName + "-" + destinationApplicationProcessInstance, objectValue, 0);
-		cdapMessage.setInvokeID(3);
-		CDAPSessionDescriptor cdapSessionDescriptor = new CDAPSessionDescriptor();
-		enrollmentTask.initiateEnrollment(cdapMessage, cdapSessionDescriptor);
+		Neighbor neighbor = new Neighbor();
+		neighbor.setApplicationProcessName(destAPName);
+		neighbor.setApplicationProcessInstance(destAPInstance);
+
+		enrollmentTask.initiateEnrollment(neighbor);
 	}
 	
-	public void allocateFlow(String sourceIPCProcessName, String sourceIPCProcessInstance, 
-			String destinationApplicationProcessName, String destinationApplicationProcessInstance) throws Exception{
-		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(
-				new ApplicationProcessNamingInfo(sourceIPCProcessName, sourceIPCProcessInstance));
+	public void allocateFlow(String sourceAPName, String sourceAPInstance, String destAPName, String destAPInstance) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(sourceAPName, sourceAPInstance);
 		IPCService ipcService = (IPCService) ipcProcess;
 		FlowService flowService = new FlowService();
-		flowService.setDestinationAPNamingInfo(new ApplicationProcessNamingInfo(destinationApplicationProcessName, destinationApplicationProcessInstance));
+		flowService.setDestinationAPNamingInfo(new ApplicationProcessNamingInfo(destAPName, destAPInstance));
 		flowService.setSourceAPNamingInfo(new ApplicationProcessNamingInfo("console", "1"));
 		ipcService.submitAllocateRequest(flowService);
 	}
 	
-	public void deallocateFlow(String sourceIPCProcessName, String sourceIPCProcessInstance, int portId) throws Exception{
-		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(
-				new ApplicationProcessNamingInfo(sourceIPCProcessName, sourceIPCProcessInstance));
+	public void writeDataToFlow(String sourceAPName, String sourceAPInstance, int portId, String data) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(sourceAPName, sourceAPInstance);
+		IPCService ipcService = (IPCService) ipcProcess;
+		ipcService.submitTransfer(portId, data.getBytes());
+	}
+	
+	public void deallocateFlow(String sourceAPName, String sourceAPInstance, int portId) throws Exception{
+		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(sourceAPName, sourceAPInstance);
 		IPCService ipcService = (IPCService) ipcProcess;
 		ipcService.submitDeallocate(portId);
 	}

@@ -6,13 +6,13 @@ import java.util.concurrent.CountDownLatch;
 
 import rina.applibrary.api.Flow;
 import rina.applibrary.api.SDUListener;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 
 public class EchoClient implements SDUListener{
 	
-	public static final String ECHO_SERVER_APPLICATION_PROCESS_NAME = "/rina/examples/apps/echoServer";
-	public static final String APPLICATION_PROCESS_NAME = "/rina/examples/apps/cliClient";
+	public static final String ECHO_SERVER_APPLICATION_PROCESS_NAME = "rina.examples.apps.echoServer";
+	public static final String APPLICATION_PROCESS_NAME = "rina.examples.apps.cliClient";
 	
 	private Scanner scanner = null;
 	private String sent = null;

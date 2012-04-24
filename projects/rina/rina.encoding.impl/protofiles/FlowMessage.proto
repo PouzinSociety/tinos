@@ -12,9 +12,9 @@ message connectionId_t {  //information to identify a connection
 message Flow{  //Contains the information to setup a new flow
 	required rina.messages.applicationProcessNamingInfo_t sourceNamingInfo = 1;  			//The naming information of the source application process
 	required rina.messages.applicationProcessNamingInfo_t destinationNamingInfo = 2; 		//The naming information of the destination application process
-	optional uint64 sourcePortId = 3; 										//The port id allocated to this flow by the source IPC process
+	required uint64 sourcePortId = 3; 										//The port id allocated to this flow by the source IPC process
 	optional uint64 destinationPortId = 4; 									//The port id allocated to this flow by the destination IPC process
-	optional uint64 sourceAddress = 5; 										//The address of the source IPC process for this flow
+	required uint64 sourceAddress = 5; 										//The address of the source IPC process for this flow
 	optional uint64 destinationAddress = 6; 									//The address of the destination IPC process for this flow
 	repeated connectionId_t connectionIds = 7; 								//The identifiers of all the connections associated to this flow
 	optional uint32 currentConnectionId = 8;								//Identifies the index of the current active connection in the flow
@@ -25,5 +25,4 @@ message Flow{  //Contains the information to setup a new flow
 	optional uint32 maxCreateFlowRetries = 13; 								//Maximum number of retries to create the flow before giving up
 	optional uint32 createFlowRetries = 14; 								//The current number of retries
 	optional uint32 hopCount = 15; 									//While the search rules that generate the forwarding table should allow for a natural termination condition, it seems wise to have the means to enforce termination
-	optional uint32 tcprendezvousid = 16;   						//the port number that has to match the one sent over the TCP connection
 }

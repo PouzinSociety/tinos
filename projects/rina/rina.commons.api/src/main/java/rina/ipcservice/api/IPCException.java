@@ -36,6 +36,9 @@ public class IPCException extends Exception{
 	public static final int NO_FLOW_ALLOCATOR_INSTANCE_FOR_THIS_PORTID_CODE = 24;
 	public static final int COULD_NOT_FIND_ENTRY_IN_DIRECTORY_FORWARDING_TABLE_CODE = 25;
 	public static final int PROBLEMS_SENDING_SDU_CODE = 26;
+	public static final int NO_AVAILABLE_ADDRESSES_CODE = 27;
+	public static final int ENROLLMENT_PROBLEM_CODE = 28;
+	public static final int UNKNOWN_IPC_PROCESS_CODE = 29;
 	
 	public static final String APPLICATION_NOT_SPECIFIED = "Application name not specified";
 	public static final String SOURCE_APPLICATION_NOT_SPECIFIED = "Source application name not specified";
@@ -64,6 +67,9 @@ public class IPCException extends Exception{
 	public static final String NO_FLOW_ALLOCATOR_INSTANCE_FOR_THIS_PORTID = "There is no flow allocator instance associated to this portId";
 	public static final String COULD_NOT_FIND_ENTRY_IN_DIRECTORY_FORWARDING_TABLE = "Could not find an entry in the directory forwarding table. ";
 	public static final String PROBLEMS_SENDING_SDU = "Problems sending SDU through flow. ";
+	public static final String NO_AVAILABLE_ADDRESSES = "There are no more available addresses in this DIF";
+	public static final String ENROLLMENT_PROBLEM = "Problems during enrollment. ";
+	public static final String UNKNOWN_IPC_PROCESS = "Unknown IPC Process. ";
 	
 	private int errorCode = 0;
 	

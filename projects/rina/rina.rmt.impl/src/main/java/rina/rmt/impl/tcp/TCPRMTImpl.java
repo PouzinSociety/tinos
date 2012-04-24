@@ -1,22 +1,24 @@
 package rina.rmt.impl.tcp;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.Socket;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.cdap.api.BaseCDAPSessionManager;
+import rina.cdap.api.CDAPSessionManager;
+import rina.configuration.KnownIPCProcessConfiguration;
+import rina.configuration.RINAConfiguration;
 import rina.delimiting.api.BaseDelimiter;
 import rina.delimiting.api.Delimiter;
+import rina.events.api.Event;
+import rina.events.api.EventListener;
+import rina.events.api.events.NMinusOneFlowDeallocatedEvent;
 import rina.ipcprocess.api.IPCProcess;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 import rina.ribdaemon.api.BaseRIBDaemon;
@@ -28,15 +30,8 @@ import rina.rmt.api.BaseRMT;
  * or physical media
  * @author eduardgrasa
  */
-public class TCPRMTImpl extends BaseRMT{
+public class TCPRMTImpl extends BaseRMT implements EventListener{
 	private static final Log log = LogFactory.getLog(TCPRMTImpl.class);
-	
-	private static final String CONFIG_FILE_NAME = "config/rina/aptohostmappings.rina";
-	
-	/**
-	 * Map applicationprocess name + instance to hostname (or IP address) and socket number
-	 */
-	private Map<String, String> apToHostnameMappings = null;
 	
 	/**
 	 * Contains the open TCP flows to other IPC processes, indexed by portId
@@ -47,61 +42,51 @@ public class TCPRMTImpl extends BaseRMT{
 	 * The server that will listen for incoming connections to this RMT
 	 */
 	private RMTServer rmtServer = null;
-
-	public TCPRMTImpl(){
-		this(RMTServer.DEFAULT_PORT);
-	}
-
 	
-	public TCPRMTImpl(int port){
-		this.flowTable = new Hashtable<Integer, Socket>();
-		this.rmtServer = new RMTServer(this, port);
-		readConfigurationFile();
+	/**
+	 * The lock to get before writing data to the socket
+	 */
+	private Object socketWriteLock = null;
+	
+	public TCPRMTImpl(){
+		this.flowTable = new ConcurrentHashMap<Integer, Socket>();
+		this.socketWriteLock = new Object();
 	}
 	
 	@Override
 	public void setIPCProcess(IPCProcess ipcProcess){
 		super.setIPCProcess(ipcProcess);
-		ipcProcess.execute(rmtServer);
-	}
-	
-	private void readConfigurationFile(){
-		try{
-			apToHostnameMappings = new Hashtable<String, String>();
-			FileInputStream fstream = new FileInputStream(CONFIG_FILE_NAME);
-			DataInputStream in = new DataInputStream(fstream);
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			String strLine = null;
-			String[] tokens = null;
-			log.debug("Reading configuration file to learn IPC processes AP naming to host mappings");
-			while ((strLine = br.readLine()) != null)   {
-				if (strLine.startsWith("#")){
-					continue;
-				}
-				tokens = strLine.split(" ");
-				if (tokens.length != 4){
-					log.error("Ignoring line "+strLine+" because it hasn't got enough arguments");
-					continue;
-				}
-				apToHostnameMappings.put(tokens[0]+tokens[1], tokens[2]+"#"+tokens[3]);
-				log.debug("IPC process " + tokens[0] + " " + tokens[1] + " reachable at "+ tokens[2] +" port " + tokens[3]);
-			}
-			in.close();
-		}catch (Exception e){
-			log.error("Error initializing application process name to host mappings: " + e.getMessage());
-		}
+		
+		//Start RMT Server
+		this.rmtServer = new RMTServer(this);
+		
+		//Subscribe to N-1 Flow deallocated events
+		RIBDaemon ribDaemon = (RIBDaemon) this.getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+		ribDaemon.subscribeToEvent(Event.N_MINUS_1_FLOW_DEALLOCATED, this);
 	}
 	
 	/**
-	 * Returns the IP address of the IPC process identified by the tuple ipcProcessName, ipcProcessInstance
+	 * Start listening for connections from remote IPC Processes
+	 */
+	public void startListening(){
+		if (rmtServer.isListening()){
+			return;
+		}
+		
+		this.getIPCProcess().execute(rmtServer);
+	}
+	
+	/**
+	 * Returns the IP address of the IPC process identified by the tuple ipcProcessName, ipcProcessInstance.
+	 * It will read the configuration file every time this operation is called (to get updates)
 	 * @param ipcProcessName
 	 * @param ipcProcessInstance
 	 * @return
 	 */
-	public String getIPAddressFromApplicationNamingInformation(String ipcProcessName, String ipcProcessInstance){
-		String result = apToHostnameMappings.get(ipcProcessName + ipcProcessInstance);
-		if (result != null){
-			return result.split("#")[0];
+	public String getIPAddressFromApplicationNamingInformation(String ipcProcessName){
+		KnownIPCProcessConfiguration ipcConf = RINAConfiguration.getInstance().getIPCProcessConfiguration(ipcProcessName);
+		if (ipcConf != null){
+			return ipcConf.getHostName();
 		}else{
 			return null;
 		}
@@ -116,10 +101,10 @@ public class TCPRMTImpl extends BaseRMT{
 		Socket socket = null;
 		
 		while(iterator.hasNext()){
-			socket = flowTable.get(iterator.next());
 			try{
+				socket = getSocket(iterator.next().intValue());
 				socket.close();
-			}catch(IOException ex){
+			}catch(Exception ex){
 				log.error(ex.getMessage());
 			}
 		}
@@ -133,7 +118,7 @@ public class TCPRMTImpl extends BaseRMT{
 	 * which queue, the PDU should be placed on
 	 * @param pdu
 	 */
-	public synchronized void sendEFCPPDU(byte[] pdu) {
+	public void sendEFCPPDU(byte[] pdu) {
 		//It will never be called by this implementation since DTP is not implemented yet and 
 		//each flow allocation triggers a new TCP connection
 	}
@@ -146,12 +131,16 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @return int the portId allocated to the flow
 	 * @throws Exception if there was an issue allocating the flow
 	 */
-	public int allocateFlow(ApplicationProcessNamingInfo apNamingInfo, QualityOfServiceSpecification qosparams) throws Exception{
-		//Map the application naming information to the DNS name of the interface of the IPC process
-		String[] contactInformation = apToHostnameMappings.get(apNamingInfo.getApplicationProcessName() + apNamingInfo.getApplicationProcessInstance()).split("#");
-		Socket socket = new Socket(contactInformation[0], Integer.parseInt(contactInformation[1]));
-		newConnectionAccepted(socket);
-		return socket.getPort();
+	public int allocateFlow(String ipcProcessName, QualityOfServiceSpecification qosparams) throws Exception{
+		KnownIPCProcessConfiguration ipcConf = RINAConfiguration.getInstance().getIPCProcessConfiguration(ipcProcessName);
+		if(ipcConf == null){
+			throw new Exception("Unrecognized IPC Process: "+ipcProcessName);
+		}
+		
+		Socket socket = new Socket(ipcConf.getHostName(), ipcConf.getRmtPortNumber());
+		int portId = socket.getLocalPort();
+		newConnectionAccepted(socket, portId);
+		return portId;
 	}
 	
 	/**
@@ -160,11 +149,7 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @throws Exception if the flow is not allocated or there are problems deallocating the flow
 	 */
 	public void deallocateFlow(int portId) throws Exception{
-		Socket socket = flowTable.get(new Integer(portId));
-		if (socket == null){
-			throw new Exception("Unexisting flow");
-		}
-		
+		Socket socket = getSocket(portId);
 		socket.close();
 	}
 
@@ -178,22 +163,35 @@ public class TCPRMTImpl extends BaseRMT{
 	 * @param cdapMessage
 	 * @throws IPCException
 	 */
-	public synchronized void sendCDAPMessage(int portId, byte[] cdapMessage) throws Exception{
-		Socket socket = flowTable.get(new Integer(portId));
-		if (socket == null){
-			throw new Exception("Flow closed");
-		}
-		
+	public void sendCDAPMessage(int portId, byte[] cdapMessage) throws Exception{
+		Socket socket = getSocket(portId);
 		Delimiter delimiter = (Delimiter) getIPCProcess().getIPCProcessComponent(BaseDelimiter.getComponentName());
 		byte[] delimitedSdu = delimiter.getDelimitedSdu(cdapMessage);
+		
 		try{
-			socket.getOutputStream().write(delimitedSdu);
-			log.debug("Sent PDU through flow "+portId+": "+printBytes(delimitedSdu));
+			//Writing a PDU on the socket must be an atomic operation
+			synchronized(socketWriteLock){
+				socket.getOutputStream().write(delimitedSdu);
+				log.debug("Sent PDU through flow "+portId+": "+printBytes(delimitedSdu));
+			}
 		}catch(IOException ex){
 			log.error("Problems sending a PDU through flow "+portId+": "+ex.getMessage());
 			this.connectionEnded(portId);
 			throw new Exception("Flow closed", ex);
 		}
+	}
+	
+	private Socket getSocket(int portId) throws Exception{
+		Socket socket = null;
+		synchronized(flowTable){
+			socket = flowTable.get(new Integer(portId));
+		}
+		
+		if (socket == null){
+			throw new Exception("Flow closed");
+		}
+		
+		return socket;
 	}
 	
 	/**
@@ -202,20 +200,36 @@ public class TCPRMTImpl extends BaseRMT{
 	 * socket
 	 * @param socket
 	 */
-	public void newConnectionAccepted(Socket socket){
-		flowTable.put(new Integer(socket.getPort()), socket);
+	public void newConnectionAccepted(Socket socket, int portId){
+		synchronized(flowTable){
+			flowTable.put(new Integer(portId), socket);	
+		}
 		Delimiter delimiter = (Delimiter) getIPCProcess().getIPCProcessComponent(BaseDelimiter.getComponentName());
 		RIBDaemon ribdaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-		TCPSocketReader tcpSocketReader = new TCPSocketReader(socket, ribdaemon, delimiter, this);
+		CDAPSessionManager cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
+		TCPSocketReader tcpSocketReader = new TCPSocketReader(socket, portId, ribdaemon, delimiter, cdapSessionManager);
 		this.getIPCProcess().execute(tcpSocketReader);
+	}
+	
+	/**
+	 * Called when a new event has happened
+	 * @param event
+	 */
+	public void eventHappened(Event event) {
+		if (event.getId().equals(Event.N_MINUS_1_FLOW_DEALLOCATED)){
+			NMinusOneFlowDeallocatedEvent flowEvent = (NMinusOneFlowDeallocatedEvent) event;
+			this.connectionEnded(flowEvent.getPortId());
+		}
 	}
 	
 	/**
 	 * Called when the socket identified by portId is no longer connected
 	 * @param portId
 	 */
-	public synchronized void connectionEnded(int portId){
-		flowTable.remove(new Integer(portId));
+	private void connectionEnded(int portId){
+		synchronized(flowTable){
+			flowTable.remove(new Integer(portId));
+		}
 	}
 	
 	private String printBytes(byte[] message){

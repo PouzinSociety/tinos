@@ -5,14 +5,14 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import rina.applicationprocess.api.DAFMember;
 import rina.applicationprocess.api.WhatevercastName;
 import rina.efcp.api.DataTransferConstants;
+import rina.enrollment.api.Neighbor;
+import rina.flowallocator.api.Flow;
 import rina.flowallocator.api.QoSCube;
-import rina.flowallocator.api.message.Flow;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcservice.api.APService;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBObject;
@@ -80,8 +80,8 @@ public abstract class BaseIPCProcess implements IPCProcess{
 		
 		try{
 			ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-			result = (ApplicationProcessNamingInfo) ribDaemon.read(null, 
-					ApplicationProcessNamingInfo.APPLICATION_PROCESS_NAMING_INFO_RIB_OBJECT_NAME, 0).getObjectValue();
+			result = (ApplicationProcessNamingInfo) ribDaemon.read(ApplicationProcessNamingInfo.APPLICATION_PROCESS_NAMING_INFO_RIB_OBJECT_CLASS, 
+					ApplicationProcessNamingInfo.APPLICATION_PROCESS_NAMING_INFO_RIB_OBJECT_NAME).getObjectValue();
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
@@ -117,7 +117,8 @@ public abstract class BaseIPCProcess implements IPCProcess{
 		
 		try{
 			ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-			ribObject = ribDaemon.read(null, WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME, 0);
+			ribObject = ribDaemon.read(WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_CLASS,
+					WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME);
 			if (ribObject != null && ribObject.getChildren() != null){
 				for(int i=0; i<ribObject.getChildren().size(); i++){
 					childRibObject = ribObject.getChildren().get(i);
@@ -138,8 +139,9 @@ public abstract class BaseIPCProcess implements IPCProcess{
 		
 		try{
 			ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-			whatevercastName = (WhatevercastName) ribDaemon.read(null, 
-					WhatevercastName.DIF_NAME_WHATEVERCAST_OBJECT_NAME , 0).getObjectValue();
+			whatevercastName = (WhatevercastName) ribDaemon.read(WhatevercastName.WHATEVERCAST_NAME_RIB_OBJECT_CLASS, 
+					WhatevercastName.WHATEVERCAST_NAME_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR
+					+ WhatevercastName.DIF_NAME_WHATEVERCAST_RULE).getObjectValue();
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
@@ -155,19 +157,19 @@ public abstract class BaseIPCProcess implements IPCProcess{
 	 * Returns the list of IPC processes that are part of the DIF this IPC Process is part of
 	 * @return
 	 */
-	public List<DAFMember> getDAFMembers(){
-		List<DAFMember> result = new ArrayList<DAFMember>();
+	public List<Neighbor> getNeighbors(){
+		List<Neighbor> result = new ArrayList<Neighbor>();
 		RIBDaemon ribDaemon = null;
 		RIBObject ribObject = null;
 		RIBObject childRibObject = null;
 		
 		try{
 			ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-			ribObject = ribDaemon.read(null, DAFMember.DAF_MEMBER_SET_RIB_OBJECT_NAME, 0);
+			ribObject = ribDaemon.read(Neighbor.NEIGHBOR_SET_RIB_OBJECT_CLASS, Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME);
 			if (ribObject != null && ribObject.getChildren() != null){
 				for(int i=0; i<ribObject.getChildren().size(); i++){
 					childRibObject = ribObject.getChildren().get(i);
-					result.add((DAFMember)childRibObject.getObjectValue());
+					result.add((Neighbor)childRibObject.getObjectValue());
 				}
 			}
 		}catch(Exception ex){
@@ -186,7 +188,8 @@ public abstract class BaseIPCProcess implements IPCProcess{
 		
 		try{
 			ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-			result = (Long) ribDaemon.read(null, RIBObjectNames.CURRENT_SYNONYM_RIB_OBJECT_NAME, 0).getObjectValue();
+			result = (Long) ribDaemon.read(RIBObjectNames.ADDRESS_RIB_OBJECT_CLASS, 
+					RIBObjectNames.ADDRESS_RIB_OBJECT_NAME).getObjectValue();
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
@@ -197,13 +200,14 @@ public abstract class BaseIPCProcess implements IPCProcess{
 	/**
 	 * Return the current operational status of the IPC process
 	 */
-	public Boolean getOperationalStatus(){
-		Boolean result = null;
+	public OperationalStatus getOperationalStatus(){
+		OperationalStatus result = null;
 		RIBDaemon ribDaemon = null;
 		
 		try{
 			ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-			result = (Boolean) ribDaemon.read(null, RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME, 0).getObjectValue();
+			result = (OperationalStatus) ribDaemon.read(RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_CLASS, 
+					RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME).getObjectValue();
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
@@ -224,7 +228,7 @@ public abstract class BaseIPCProcess implements IPCProcess{
 		
 		try{
 			ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-			ribObject = ribDaemon.read(null, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME, 0);
+			ribObject = ribDaemon.read(QoSCube.QOSCUBE_SET_RIB_OBJECT_CLASS, QoSCube.QOSCUBE_SET_RIB_OBJECT_NAME);
 			if (ribObject != null && ribObject.getChildren() != null){
 				for(int i=0; i<ribObject.getChildren().size(); i++){
 					childRibObject = ribObject.getChildren().get(i);
@@ -251,7 +255,7 @@ public abstract class BaseIPCProcess implements IPCProcess{
 		
 		try{
 			ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-			ribObject = ribDaemon.read(null, Flow.FLOW_SET_RIB_OBJECT_NAME, 0);
+			ribObject = ribDaemon.read(Flow.FLOW_SET_RIB_OBJECT_CLASS, Flow.FLOW_SET_RIB_OBJECT_NAME);
 			if (ribObject != null && ribObject.getChildren() != null){
 				for(int i=0; i<ribObject.getChildren().size(); i++){
 					childRibObject = ribObject.getChildren().get(i);
@@ -271,8 +275,8 @@ public abstract class BaseIPCProcess implements IPCProcess{
 		
 		try{
 			ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-			result = (DataTransferConstants) ribDaemon.read(null, 
-					DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_NAME, 0).getObjectValue();
+			result = (DataTransferConstants) ribDaemon.read(DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_CLASS, 
+					DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_NAME).getObjectValue();
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}

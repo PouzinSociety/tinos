@@ -19,8 +19,10 @@ import rina.cdap.impl.googleprotobuf.CDAP.opCode_t;
 public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider{
 
 	public CDAPMessage deserializeMessage(byte[] message) throws CDAPException {
+		CDAP.CDAPMessage cdapMessage = null;
+		
 		try{
-			CDAP.CDAPMessage cdapMessage = CDAP.CDAPMessage.parseFrom(message);
+			cdapMessage = CDAP.CDAPMessage.parseFrom(message);
 			AuthTypes authMech = getAuthMech(cdapMessage);
 			AuthValue authValue = getAuthValue(cdapMessage);
 			Flags flags = getFlags(cdapMessage);
@@ -181,6 +183,7 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 		objectValue.setIntval(cdapMessage.getObjValue().getIntval());
 		objectValue.setSint64val(cdapMessage.getObjValue().getSint64Val());
 		objectValue.setSintval(cdapMessage.getObjValue().getSintval());
+		objectValue.setBooleanval(cdapMessage.getObjValue().getBoolval());
 		strVal = cdapMessage.getObjValue().getStrval();
 		if (!strVal.equals("")){
 			objectValue.setStrval(strVal);
@@ -288,7 +291,10 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 			if (srcApName == null){
 				srcApName = "";
 			}
-			CDAP.CDAPMessage response = CDAP.CDAPMessage.newBuilder().
+
+			CDAP.CDAPMessage response = null;
+
+			response = CDAP.CDAPMessage.newBuilder().
 			setAbsSyntax(cdapMessage.getAbsSyntax()).
 			setAuthMech(authMech).
 			setAuthValue(authValue).
@@ -365,10 +371,11 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 		}
 		
 		authValue = CDAP.authValue_t.newBuilder().
-										setAuthName(authName).
-										setAuthPassword(authPassword).
-										setAuthOther(authOther).
-										build();
+			setAuthName(authName).
+			setAuthPassword(authPassword).
+			setAuthOther(authOther).
+			build();
+		
 		return authValue;
 	}
 	
@@ -407,14 +414,16 @@ public class GoogleProtocolBufWireMessageProvider implements WireMessageProvider
 		}
 		
 		objValue = CDAP.objVal_t.newBuilder().setByteval(byteVal).
-											setDoubleval(cdapMessage.getObjValue().getDoubleval()).
-											setFloatval(cdapMessage.getObjValue().getFloatval()).
-											setIntval(cdapMessage.getObjValue().getIntval()).
-											setInt64Val(cdapMessage.getObjValue().getInt64val()).
-											setSint64Val(cdapMessage.getObjValue().getSint64val()).
-											setSintval(cdapMessage.getObjValue().getSintval()).
-											setStrval(strVal).
-											build();
+			setDoubleval(cdapMessage.getObjValue().getDoubleval()).
+			setFloatval(cdapMessage.getObjValue().getFloatval()).
+			setIntval(cdapMessage.getObjValue().getIntval()).
+			setInt64Val(cdapMessage.getObjValue().getInt64val()).
+			setSint64Val(cdapMessage.getObjValue().getSint64val()).
+			setSintval(cdapMessage.getObjValue().getSintval()).
+			setStrval(strVal).
+			setBoolval(cdapMessage.getObjValue().isBooleanval()).
+			build();
+		
 		return objValue;
 	}
 	

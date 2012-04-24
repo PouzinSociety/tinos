@@ -14,7 +14,6 @@ import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
 import rina.ipcservice.api.APService;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
 
 public class MockIPCProcessFactory implements IPCProcessFactory{
 	
@@ -28,12 +27,12 @@ public class MockIPCProcessFactory implements IPCProcessFactory{
 		ipcProcess.setAPService(apService);
 	}
 
-	public IPCProcess createIPCProcess(ApplicationProcessNamingInfo arg0)
+	public IPCProcess createIPCProcess(String arg0, String arg1)
 			throws Exception {
 		return ipcProcess;
 	}
 
-	public void destroyIPCProcess(ApplicationProcessNamingInfo arg0)
+	public void destroyIPCProcess(String arg0, String arg1)
 			throws Exception {
 		ipcProcess = null;
 	}
@@ -67,7 +66,7 @@ public class MockIPCProcessFactory implements IPCProcessFactory{
 		return encoderFactory;
 	}
 
-	public IPCProcess getIPCProcess(ApplicationProcessNamingInfo arg0) {
+	public IPCProcess getIPCProcess(String arg0, String arg1) {
 		return ipcProcess;
 	}
 	

@@ -4,7 +4,7 @@ import java.util.List;
 
 import rina.applibrary.api.FlowImpl.State;
 import rina.applibrary.impl.DefaultFlowImpl;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 
@@ -31,6 +31,7 @@ public class Flow {
 	
 	public Flow(FlowImpl flowImplementation){
 		this.flowImplementation = flowImplementation;
+		this.flowImplementation.setFlow(this);
 	}
 	
 	/**
@@ -111,6 +112,17 @@ public class Flow {
 	 */
 	public void write(byte[] sdu) throws IPCException{
 		flowImplementation.write(sdu);
+	}
+	
+	/**
+	 * Write length bytes from the buffer, starting from 
+	 * the position 0 of the byte array.
+	 * @param buffer the data
+	 * @param length the number of bytes to write
+	 * @throws IPCException
+	 */
+	public void write(byte[] buffer, int length) throws IPCException{
+		flowImplementation.write(buffer, length);
 	}
 	
 	/**

@@ -7,19 +7,17 @@ import org.apache.commons.logging.LogFactory;
 
 import rina.cdap.api.CDAPMessageHandler;
 import rina.cdap.api.CDAPSessionDescriptor;
-import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
-import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.ipcprocess.api.IPCProcess;
-import rina.ribdaemon.api.MessageSubscriber;
-import rina.ribdaemon.api.MessageSubscription;
+import rina.ribdaemon.api.BaseRIBDaemon;
+import rina.ribdaemon.api.NotificationPolicy;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.UpdateStrategy;
 import rina.rmt.api.RMT;
 
-public class FakeRIBDaemon implements RIBDaemon {
+public class FakeRIBDaemon extends BaseRIBDaemon {
 	
 	private static final Log log = LogFactory.getLog(FakeRIBDaemon.class);
 
@@ -50,40 +48,6 @@ public class FakeRIBDaemon implements RIBDaemon {
 		return messageReceived;
 	}
 
-	public Object read(String arg0, long arg1, String arg2, Object arg3)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void remove(String arg0, long arg1, String arg2)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void sendMessages(CDAPMessage[] arg0, UpdateStrategy arg1) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void subscribeToMessages(MessageSubscription arg0,
-			MessageSubscriber arg1) throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void unsubscribeFromMessages(MessageSubscription arg0,
-			MessageSubscriber arg1) throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void write(String arg0, long arg1, String arg2, Object arg3)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
 	
 	private String printBytes(byte[] message){
 		String result = "";
@@ -94,78 +58,9 @@ public class FakeRIBDaemon implements RIBDaemon {
 		return result;
 	}
 
-	public void setCDAPSessionManager(CDAPSessionManager arg0) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	public String getName() {
 		return RIBDaemon.class.getName();
-	}
-
-	public void flowDeallocated(int arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void processOperation(CDAPMessage arg0, CDAPSessionDescriptor arg1)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public Object processOperation(Opcode arg0, String arg1, String arg2,
-			long arg3, Object arg4) throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void sendMessage(CDAPMessage arg0, int arg1, CDAPMessageHandler arg2)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void cancelRead(String arg0, String arg1, long arg2, Object arg3)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void create(String arg0, String arg1, long arg2, Object arg3)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void delete(String arg0, String arg1, long arg2, Object arg3)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public RIBObject read(String arg0, String arg1, long arg2)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void start(String arg0, String arg1, long arg2, Object arg3)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void stop(String arg0, String arg1, long arg2, Object arg3)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void write(String arg0, String arg1, long arg2, Object arg3)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
 	}
 
 	public void addRIBObject(RIBObject arg0) throws RIBDaemonException {
@@ -173,8 +68,7 @@ public class FakeRIBDaemon implements RIBDaemon {
 		
 	}
 
-	public void removeRIBObject(RIBObject arg0, String arg1)
-			throws RIBDaemonException {
+	public void flowDeallocated(int arg0) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -184,14 +78,73 @@ public class FakeRIBDaemon implements RIBDaemon {
 		return null;
 	}
 
-	public void stop() {
+	public void processOperation(CDAPMessage arg0, CDAPSessionDescriptor arg1)
+			throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public IPCProcess getIPCProcess() {
+	public void removeRIBObject(RIBObject arg0) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void removeRIBObject(String arg0) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void sendMessage(CDAPMessage arg0, int arg1, CDAPMessageHandler arg2)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void sendMessages(CDAPMessage[] arg0, UpdateStrategy arg1) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void create(String arg0, long arg1, String arg2, Object arg3,
+			NotificationPolicy arg4) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void delete(String arg0, long arg1, String arg2, Object arg3,
+			NotificationPolicy arg4) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public RIBObject read(String arg0, long arg1, String arg2)
+			throws RIBDaemonException {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void start(String arg0, long arg1, String arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void stop(String arg0, long arg1, String arg2, Object arg3)
+			throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void write(String arg0, long arg1, String arg2, Object arg3,
+			NotificationPolicy arg4) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

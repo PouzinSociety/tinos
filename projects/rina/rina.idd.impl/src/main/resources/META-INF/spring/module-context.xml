@@ -4,7 +4,5 @@
 			http://www.springframework.org/schema/beans
 			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-<!-- Update for your bean
-	<bean name="bundleService" class="rina.idd.impl.SimpleIDD"/>
--->
+		<bean name="iddFactoryBean" class="rina.idd.impl.StaticInterDIFDirectoryFactory"/>	
 </beans>

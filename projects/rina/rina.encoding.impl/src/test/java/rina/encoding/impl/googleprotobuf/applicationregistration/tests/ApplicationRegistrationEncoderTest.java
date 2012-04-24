@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import rina.encoding.impl.googleprotobuf.applicationregistration.ApplicationRegistrationEncoder;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.ApplicationRegistration;
 
 /**
@@ -42,7 +42,7 @@ public class ApplicationRegistrationEncoderTest {
 		}
 		System.out.println("");
 		
-		ApplicationRegistration recoveredRegistration= (ApplicationRegistration) applicationRegistrationEncoder.decode(encodedRequest, ApplicationRegistration.class.toString());
+		ApplicationRegistration recoveredRegistration= (ApplicationRegistration) applicationRegistrationEncoder.decode(encodedRequest, ApplicationRegistration.class);
 		Assert.assertEquals(applicationRegistration.getApNamingInfo().getApplicationProcessName(), recoveredRegistration.getApNamingInfo().getApplicationProcessName());
 		Assert.assertEquals(applicationRegistration.getApNamingInfo().getApplicationProcessInstance(), recoveredRegistration.getApNamingInfo().getApplicationProcessInstance());
 		Assert.assertEquals(applicationRegistration.getSocketNumber(), recoveredRegistration.getSocketNumber());

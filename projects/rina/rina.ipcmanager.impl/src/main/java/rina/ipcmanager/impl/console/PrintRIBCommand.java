@@ -12,7 +12,7 @@ import rina.ipcmanager.impl.IPCManagerImpl;
 public class PrintRIBCommand extends ConsoleCommand{
 
 	public static final String ID = "printrib";
-	private static final String USAGE = "printrib applicationprocessname applicationprocessInstace";
+	private static final String USAGE = "printrib apName apInstance ";
 	
 	/**
 	 * Required parameter
@@ -20,7 +20,7 @@ public class PrintRIBCommand extends ConsoleCommand{
 	private String applicationProcessName = null;
 	
 	/**
-	 * Optional parameter, can be 
+	 * Required parameter
 	 */
 	private String applicationProcessInstance = null;
 	
@@ -39,7 +39,7 @@ public class PrintRIBCommand extends ConsoleCommand{
 		
 		try{
 			List<String> rib = this.getIPCManagerImpl().getPrintedRIB(applicationProcessName, applicationProcessInstance);
-			String result = "RIB of IPC process " + applicationProcessName + "-" + applicationProcessInstance + ": \n";
+			String result = "RIB of IPC process " + applicationProcessName + ": \n";
 			for(int i=0; i<rib.size(); i++){
 				result = result + rib.get(i);
 			}

@@ -1,6 +1,6 @@
 package rina.efcp.api;
 
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 /**
  * Creates, destroys and stores instances of the DataTransferAE. Each 

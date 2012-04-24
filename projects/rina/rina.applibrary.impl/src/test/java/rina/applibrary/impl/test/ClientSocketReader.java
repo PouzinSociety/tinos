@@ -89,7 +89,7 @@ public class ClientSocketReader extends BaseSocketReader{
 				getSocket().getOutputStream().write(getDelimiter().getDelimitedSdu(cdapSessionManager.encodeCDAPMessage(cdapMessage)));
 				sdusSent = sdusSent + 1;
 			}else{
-				cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, null, 0, null, 0);
+				cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, null, 0, null, null, 0);
 				getSocket().getOutputStream().write(getDelimiter().getDelimitedSdu(cdapSessionManager.encodeCDAPMessage(cdapMessage)));
 			}
 		}catch(Exception ex){

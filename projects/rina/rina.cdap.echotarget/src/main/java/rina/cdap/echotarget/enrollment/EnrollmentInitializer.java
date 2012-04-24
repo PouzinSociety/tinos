@@ -189,11 +189,12 @@ public class EnrollmentInitializer implements Runnable{
 			qosCube.setDelay(0);
 			qosCube.setJitter(0);
 			qosCube.setMaxAllowableGapSdu(-1);
+			qosCube.setName("unreliable");
 			qosCube.setOrder(false);
 			qosCube.setPartialDelivery(true);
 			qosCube.setPeakBandwidthDuration(0);
 			qosCube.setPeakSDUBandwidthDuration(0);
-			qosCube.setQosId(new byte[]{0x01});
+			qosCube.setQosId(1);
 			qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
 			flags = Flags.F_RD_INCOMPLETE;
 		}else if (counter == 1){
@@ -202,11 +203,12 @@ public class EnrollmentInitializer implements Runnable{
 			qosCube.setDelay(0);
 			qosCube.setJitter(0);
 			qosCube.setMaxAllowableGapSdu(0);
+			qosCube.setName("reliable");
 			qosCube.setOrder(true);
 			qosCube.setPartialDelivery(false);
 			qosCube.setPeakBandwidthDuration(0);
 			qosCube.setPeakSDUBandwidthDuration(0);
-			qosCube.setQosId(new byte[]{0x02});
+			qosCube.setQosId(2);
 			qosCube.setUndetectedBitErrorRate(Double.valueOf("1E-09"));
 		}
 		

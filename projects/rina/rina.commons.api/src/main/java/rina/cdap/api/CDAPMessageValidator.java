@@ -152,9 +152,10 @@ public class CDAPMessageValidator{
 				&& !message.getOpCode().equals(Opcode.M_DELETE) && !message.getOpCode().equals(Opcode.M_DELETE_R)
 				&& !message.getOpCode().equals(Opcode.M_READ) && !message.getOpCode().equals(Opcode.M_READ_R)
 				&& !message.getOpCode().equals(Opcode.M_WRITE) && !message.getOpCode().equals(Opcode.M_WRITE_R) 
-				&& !message.getOpCode().equals(Opcode.M_START) && !message.getOpCode().equals(Opcode.M_STOP)){
+				&& !message.getOpCode().equals(Opcode.M_START) && !message.getOpCode().equals(Opcode.M_STOP)
+				&& !message.getOpCode().equals(Opcode.M_START_R) && !message.getOpCode().equals(Opcode.M_STOP_R)){
 					throw new CDAPException("The objInst parameter can only be set for M_CREATE, M_CREATE_R, M_DELETE, M_DELETE_R, " +
-							"M_READ, M_READ_R, M_WRITE, M_WRITE_R, M_START and M_STOP messages", message);
+							"M_READ, M_READ_R, M_WRITE, M_WRITE_R, M_START, M_START_R, M_STOP and M_STOP_R messages", message);
 			}
 		}
 	}
@@ -185,9 +186,10 @@ public class CDAPMessageValidator{
 			if (!message.getOpCode().equals(Opcode.M_CREATE) && !message.getOpCode().equals(Opcode.M_CREATE_R)
 					&& !message.getOpCode().equals(Opcode.M_READ_R) && !message.getOpCode().equals(Opcode.M_WRITE)
 					&& !message.getOpCode().equals(Opcode.M_START) && !message.getOpCode().equals(Opcode.M_STOP)
-					&& !message.getOpCode().equals(Opcode.M_WRITE_R)){
-				throw new CDAPException("The objValue parameter can only be set for M_CREATE, M_CREATE_R, M_READ_R, " +
-						"M_WRITE, M_START, M_STOP and M_WRITE_R messages", message);
+					&& !message.getOpCode().equals(Opcode.M_START_R) && !message.getOpCode().equals(Opcode.M_STOP_R)
+					&& !message.getOpCode().equals(Opcode.M_WRITE_R) && !message.getOpCode().equals(Opcode.M_DELETE)){
+				throw new CDAPException("The objValue parameter can only be set for M_CREATE, M_DELETE, M_CREATE_R, M_READ_R, " +
+						"M_WRITE, M_START, M_START_R, M_STOP, M_STOP_R and M_WRITE_R messages", message);
 			}
 		}
 	}

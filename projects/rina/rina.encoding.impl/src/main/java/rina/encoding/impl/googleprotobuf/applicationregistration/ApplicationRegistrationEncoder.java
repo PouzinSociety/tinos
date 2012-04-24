@@ -5,14 +5,14 @@ import java.util.List;
 
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.impl.googleprotobuf.GPBUtils;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.ApplicationRegistration;
 
 public class ApplicationRegistrationEncoder extends BaseEncoder{
 	
-	public Object decode(byte[] serializedObject, String objectClass) throws Exception {
-		if (objectClass == null || !(objectClass.equals(ApplicationRegistration.class.toString()))){
-			throw new Exception("This is not the serializer for objects of type "+objectClass);
+	public synchronized Object decode(byte[] serializedObject, Class<?> objectClass) throws Exception {
+		if (objectClass == null || !(objectClass.equals(ApplicationRegistration.class))){
+			throw new Exception("This is not the serializer for objects of type "+objectClass.getName());
 		}
 		
 		ApplicationRegistrationMessage.ApplicationRegistration gpbApplicationRegistration = ApplicationRegistrationMessage.ApplicationRegistration.parseFrom(serializedObject);
@@ -27,7 +27,7 @@ public class ApplicationRegistrationEncoder extends BaseEncoder{
 		return result;
 	}
 	
-	public byte[] encode(Object object) throws Exception {
+	public synchronized byte[] encode(Object object) throws Exception {
 		if (object == null || !(object instanceof ApplicationRegistration)){
 			throw new Exception("This is not the serializer for objects of type "+ApplicationRegistration.class.toString());
 		}

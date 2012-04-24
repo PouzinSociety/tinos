@@ -39,7 +39,7 @@ public class FlowRequestsServer implements Runnable{
 	
 	private FlowListener flowListener = null;
 	
-	private BlockingQueue<Flow> acceptedFlowsQueue = null;
+	private BlockingQueue<FlowImpl> acceptedFlowsQueue = null;
 	
 	private Delimiter delimiter = null;
 	
@@ -48,6 +48,12 @@ public class FlowRequestsServer implements Runnable{
 	private Encoder encoder = null;
 	
 	private boolean end = false;
+	
+	/**
+	 * Controls if this object was created by the fauxSockets implementation and 
+	 * therefore needs to use the faux Sockets constructors
+	 */
+	private boolean fauxSockets = false;
 	
 	public void setEnd(boolean end){
 		this.end = end;
@@ -60,12 +66,16 @@ public class FlowRequestsServer implements Runnable{
 		}
 	}
 	
+	public void setFauxSockets(boolean fauxSockets){
+		this.fauxSockets = fauxSockets;
+	}
+	
 	public FlowRequestsServer(ServerSocket serverSocket, FlowAcceptor flowAcceptor, FlowListener flowListener){
 		this(serverSocket, flowAcceptor);
 		this.flowListener = flowListener;
 	}
 	
-	public FlowRequestsServer(ServerSocket serverSocket, FlowAcceptor flowAcceptor, BlockingQueue<Flow> acceptedFlowsQueue){
+	public FlowRequestsServer(ServerSocket serverSocket, FlowAcceptor flowAcceptor, BlockingQueue<FlowImpl> acceptedFlowsQueue){
 		this(serverSocket, flowAcceptor);
 		this.acceptedFlowsQueue = acceptedFlowsQueue;
 	}
@@ -109,6 +119,14 @@ public class FlowRequestsServer implements Runnable{
 			}
 		}catch(IOException e){
 			log.info(e.getMessage());
+			if (flowListener == null){
+				try{
+					FlowImpl flowImpl = new DefaultFlowImpl();
+					acceptedFlowsQueue.put(flowImpl);
+				}catch(Exception ex){
+					ex.printStackTrace();
+				}
+			}
 		}
 		
 		log.info("Application registration terminated. No longer listening for incoming TCP connections");
@@ -127,7 +145,6 @@ public class FlowRequestsServer implements Runnable{
 		CDAPMessage cdapMessage = null;
 		FlowService flowService = null;
 		String result = null;
-		Flow flow = null;
 		
 		//1 Get the first PDU from the socket
 		pdu = getFirstPDUFromSocket(socket);
@@ -147,7 +164,7 @@ public class FlowRequestsServer implements Runnable{
 			}
 			
 			//3 Parse the flowService
-			flowService = (FlowService) encoder.decode(cdapMessage.getObjValue().getByteval(), FlowService.class.toString());
+			flowService = (FlowService) encoder.decode(cdapMessage.getObjValue().getByteval(), FlowService.class);
 			
 			//4 Invoke the flowAcceptor class
 			result = flowAcceptor.acceptFlow(flowService.getSourceAPNamingInfo(), flowService.getDestinationAPNamingInfo());
@@ -172,7 +189,7 @@ public class FlowRequestsServer implements Runnable{
 		
 		//5 Create the flow object, and either notify the flowListener or put it in the queue
 		//(depending if we are on blocking or non-blocking operation)
-		FlowImpl flowImpl = new DefaultFlowImpl();
+		FlowImpl flowImpl = new DefaultFlowImpl(fauxSockets);
 		flowImpl.setSourceApplication(flowService.getSourceAPNamingInfo());
 		flowImpl.setDestinationApplication(flowService.getDestinationAPNamingInfo());
 		flowImpl.setQosSpec(flowService.getQoSSpecification());
@@ -188,12 +205,11 @@ public class FlowRequestsServer implements Runnable{
 		//TODO ignoring QoS parameters for now
 		//SDU listener has to be set by the flowListerner (non-blocking) or will be set by the accept() (blocking) call in the Flow object
 		
-		flow = new Flow(flowImpl);
-		flowImpl.setFlow(flow);
 		try{
 			if (flowListener == null){
-				acceptedFlowsQueue.put(flow);
+				acceptedFlowsQueue.put(flowImpl);
 			}else{
+				Flow flow = new Flow(flowImpl);
 				flow.setFlowListener(flowListener);
 				flowListener.flowAllocated(flow);
 			}

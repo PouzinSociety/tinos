@@ -1,6 +1,6 @@
 package rina.flowallocator.api;
 
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 /**
  * Creates, destroys and stores instances of the FlowAllocator. Each 

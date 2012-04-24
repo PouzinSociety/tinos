@@ -411,7 +411,7 @@ public final class FlowMessage {
     public boolean hasDestinationNamingInfo() { return hasDestinationNamingInfo; }
     public rina.encoding.impl.googleprotobuf.apnaminginfo.ApplicationProcessNamingInfoMessage.applicationProcessNamingInfo_t getDestinationNamingInfo() { return destinationNamingInfo_; }
     
-    // optional uint64 sourcePortId = 3;
+    // required uint64 sourcePortId = 3;
     public static final int SOURCEPORTID_FIELD_NUMBER = 3;
     private boolean hasSourcePortId;
     private long sourcePortId_ = 0L;
@@ -425,7 +425,7 @@ public final class FlowMessage {
     public boolean hasDestinationPortId() { return hasDestinationPortId; }
     public long getDestinationPortId() { return destinationPortId_; }
     
-    // optional uint64 sourceAddress = 5;
+    // required uint64 sourceAddress = 5;
     public static final int SOURCEADDRESS_FIELD_NUMBER = 5;
     private boolean hasSourceAddress;
     private long sourceAddress_ = 0L;
@@ -512,13 +512,6 @@ public final class FlowMessage {
     public boolean hasHopCount() { return hasHopCount; }
     public int getHopCount() { return hopCount_; }
     
-    // optional uint32 tcprendezvousid = 16;
-    public static final int TCPRENDEZVOUSID_FIELD_NUMBER = 16;
-    private boolean hasTcprendezvousid;
-    private int tcprendezvousid_ = 0;
-    public boolean hasTcprendezvousid() { return hasTcprendezvousid; }
-    public int getTcprendezvousid() { return tcprendezvousid_; }
-    
     private void initFields() {
       sourceNamingInfo_ = rina.encoding.impl.googleprotobuf.apnaminginfo.ApplicationProcessNamingInfoMessage.applicationProcessNamingInfo_t.getDefaultInstance();
       destinationNamingInfo_ = rina.encoding.impl.googleprotobuf.apnaminginfo.ApplicationProcessNamingInfoMessage.applicationProcessNamingInfo_t.getDefaultInstance();
@@ -527,6 +520,8 @@ public final class FlowMessage {
     public final boolean isInitialized() {
       if (!hasSourceNamingInfo) return false;
       if (!hasDestinationNamingInfo) return false;
+      if (!hasSourcePortId) return false;
+      if (!hasSourceAddress) return false;
       if (!getSourceNamingInfo().isInitialized()) return false;
       if (!getDestinationNamingInfo().isInitialized()) return false;
       if (hasQosParameters()) {
@@ -582,9 +577,6 @@ public final class FlowMessage {
       }
       if (hasHopCount()) {
         output.writeUInt32(15, getHopCount());
-      }
-      if (hasTcprendezvousid()) {
-        output.writeUInt32(16, getTcprendezvousid());
       }
       getUnknownFields().writeTo(output);
     }
@@ -659,10 +651,6 @@ public final class FlowMessage {
       if (hasHopCount()) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(15, getHopCount());
-      }
-      if (hasTcprendezvousid()) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(16, getTcprendezvousid());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -881,9 +869,6 @@ public final class FlowMessage {
         if (other.hasHopCount()) {
           setHopCount(other.getHopCount());
         }
-        if (other.hasTcprendezvousid()) {
-          setTcprendezvousid(other.getTcprendezvousid());
-        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -986,10 +971,6 @@ public final class FlowMessage {
               setHopCount(input.readUInt32());
               break;
             }
-            case 128: {
-              setTcprendezvousid(input.readUInt32());
-              break;
-            }
           }
         }
       }
@@ -1069,7 +1050,7 @@ public final class FlowMessage {
         return this;
       }
       
-      // optional uint64 sourcePortId = 3;
+      // required uint64 sourcePortId = 3;
       public boolean hasSourcePortId() {
         return result.hasSourcePortId();
       }
@@ -1105,7 +1086,7 @@ public final class FlowMessage {
         return this;
       }
       
-      // optional uint64 sourceAddress = 5;
+      // required uint64 sourceAddress = 5;
       public boolean hasSourceAddress() {
         return result.hasSourceAddress();
       }
@@ -1383,24 +1364,6 @@ public final class FlowMessage {
         return this;
       }
       
-      // optional uint32 tcprendezvousid = 16;
-      public boolean hasTcprendezvousid() {
-        return result.hasTcprendezvousid();
-      }
-      public int getTcprendezvousid() {
-        return result.getTcprendezvousid();
-      }
-      public Builder setTcprendezvousid(int value) {
-        result.hasTcprendezvousid = true;
-        result.tcprendezvousid_ = value;
-        return this;
-      }
-      public Builder clearTcprendezvousid() {
-        result.hasTcprendezvousid = false;
-        result.tcprendezvousid_ = 0;
-        return this;
-      }
-      
       // @@protoc_insertion_point(builder_scope:rina.messages.Flow)
     }
     
@@ -1437,22 +1400,21 @@ public final class FlowMessage {
       "ngInfoMessage.proto\032!protofiles/QoSSpeci" +
       "fication.proto\"N\n\016connectionId_t\022\r\n\005qosI" +
       "d\030\001 \001(\004\022\023\n\013sourceCEPId\030\002 \001(\004\022\030\n\020destinat" +
-      "ionCEPId\030\003 \001(\004\"\252\004\n\004Flow\022G\n\020sourceNamingI" +
+      "ionCEPId\030\003 \001(\004\"\221\004\n\004Flow\022G\n\020sourceNamingI" +
       "nfo\030\001 \002(\0132-.rina.messages.applicationPro" +
       "cessNamingInfo_t\022L\n\025destinationNamingInf" +
       "o\030\002 \002(\0132-.rina.messages.applicationProce" +
-      "ssNamingInfo_t\022\024\n\014sourcePortId\030\003 \001(\004\022\031\n\021",
+      "ssNamingInfo_t\022\024\n\014sourcePortId\030\003 \002(\004\022\031\n\021",
       "destinationPortId\030\004 \001(\004\022\025\n\rsourceAddress" +
-      "\030\005 \001(\004\022\032\n\022destinationAddress\030\006 \001(\004\0224\n\rco" +
+      "\030\005 \002(\004\022\032\n\022destinationAddress\030\006 \001(\004\0224\n\rco" +
       "nnectionIds\030\007 \003(\0132\035.rina.messages.connec" +
       "tionId_t\022\033\n\023currentConnectionId\030\010 \001(\r\022\r\n" +
       "\005state\030\t \001(\014\0228\n\rqosParameters\030\n \001(\0132!.ri" +
       "na.messages.qosSpecification_t\022\020\n\010polici" +
       "es\030\013 \003(\t\022\025\n\raccessControl\030\014 \001(\014\022\034\n\024maxCr" +
       "eateFlowRetries\030\r \001(\r\022\031\n\021createFlowRetri" +
-      "es\030\016 \001(\r\022\020\n\010hopCount\030\017 \001(\r\022\027\n\017tcprendezv" +
-      "ousid\030\020 \001(\rB(\n&rina.encoding.impl.google",
-      "protobuf.flow"
+      "es\030\016 \001(\r\022\020\n\010hopCount\030\017 \001(\rB(\n&rina.encod" +
+      "ing.impl.googleprotobuf.flow"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -1472,7 +1434,7 @@ public final class FlowMessage {
           internal_static_rina_messages_Flow_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rina_messages_Flow_descriptor,
-              new java.lang.String[] { "SourceNamingInfo", "DestinationNamingInfo", "SourcePortId", "DestinationPortId", "SourceAddress", "DestinationAddress", "ConnectionIds", "CurrentConnectionId", "State", "QosParameters", "Policies", "AccessControl", "MaxCreateFlowRetries", "CreateFlowRetries", "HopCount", "Tcprendezvousid", },
+              new java.lang.String[] { "SourceNamingInfo", "DestinationNamingInfo", "SourcePortId", "DestinationPortId", "SourceAddress", "DestinationAddress", "ConnectionIds", "CurrentConnectionId", "State", "QosParameters", "Policies", "AccessControl", "MaxCreateFlowRetries", "CreateFlowRetries", "HopCount", },
               rina.encoding.impl.googleprotobuf.flow.FlowMessage.Flow.class,
               rina.encoding.impl.googleprotobuf.flow.FlowMessage.Flow.Builder.class);
           return null;

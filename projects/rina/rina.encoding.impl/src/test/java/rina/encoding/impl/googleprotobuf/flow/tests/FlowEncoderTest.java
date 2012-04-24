@@ -9,9 +9,9 @@ import org.junit.Test;
 
 import rina.encoding.impl.googleprotobuf.flow.FlowEncoder;
 import rina.flowallocator.api.ConnectionId;
-import rina.flowallocator.api.message.Flow;
+import rina.flowallocator.api.Flow;
 import rina.ipcprocess.api.IPCProcess;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 
 /**
@@ -71,7 +71,7 @@ public class FlowEncoderTest {
 		}
 		System.out.println("");
 		
-		Flow recoveredFlow = (Flow) flowSerializer.decode(serializedFlow, Flow.class.toString());
+		Flow recoveredFlow = (Flow) flowSerializer.decode(serializedFlow, Flow.class);
 		Assert.assertArrayEquals(flow.getAccessControl(), recoveredFlow.getAccessControl());
 		Assert.assertEquals(flow.getCreateFlowRetries(), recoveredFlow.getCreateFlowRetries());
 		Assert.assertEquals(flow.getCurrentFlowId(), recoveredFlow.getCurrentFlowId());
@@ -90,7 +90,7 @@ public class FlowEncoderTest {
 		for(int i=0; i<serializedFlow.length; i++){
 			System.out.print(serializedFlow[i] + " ");
 		}
-		recoveredFlow = (Flow) flowSerializer.decode(serializedFlow, Flow.class.toString());
+		recoveredFlow = (Flow) flowSerializer.decode(serializedFlow, Flow.class);
 		Assert.assertEquals(flow2.getDestinationAddress(), recoveredFlow.getDestinationAddress());
 		Assert.assertEquals(flow2.getDestinationNamingInfo(), recoveredFlow.getDestinationNamingInfo());
 		Assert.assertEquals(flow2.getHopCount(), recoveredFlow.getHopCount());

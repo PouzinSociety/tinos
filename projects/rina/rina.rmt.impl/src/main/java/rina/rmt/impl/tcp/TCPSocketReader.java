@@ -5,8 +5,12 @@ import java.net.Socket;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.cdap.api.CDAPSessionDescriptor;
+import rina.cdap.api.CDAPSessionManager;
 import rina.delimiting.api.BaseSocketReader;
 import rina.delimiting.api.Delimiter;
+import rina.events.api.Event;
+import rina.events.api.events.NMinusOneFlowDeallocatedEvent;
 import rina.ribdaemon.api.RIBDaemon;
 
 /**
@@ -19,14 +23,15 @@ public class TCPSocketReader extends BaseSocketReader{
 	
 	private static final Log log = LogFactory.getLog(TCPSocketReader.class);
 	
-	private TCPRMTImpl rmt = null;
-	
+	private CDAPSessionManager cdapSessionManager = null;
 	private RIBDaemon ribdaemon = null;
-
-	public TCPSocketReader(Socket socket, RIBDaemon ribdaemon, Delimiter delimiter, TCPRMTImpl rmt){
+	private int portId = 0;
+	
+	public TCPSocketReader(Socket socket, int portId, RIBDaemon ribdaemon, Delimiter delimiter, CDAPSessionManager cdapSessionManager){
 		super(socket, delimiter);
+		this.portId = portId;
 		this.ribdaemon = ribdaemon;
-		this.rmt = rmt;
+		this.cdapSessionManager = cdapSessionManager;
 	}
 	
 	/**
@@ -35,15 +40,18 @@ public class TCPSocketReader extends BaseSocketReader{
 	 */
 	public void processPDU(byte[] pdu){
 		log.debug("Passing the PDU to the RIB Daemon");
-		ribdaemon.cdapMessageDelivered(pdu, getSocket().getPort());
+		ribdaemon.cdapMessageDelivered(pdu, portId);
 	}
 	
 	/**
 	 * Invoked when the socket is disconnected
 	 */
 	public void socketDisconnected(){
-		log.debug("Notifying the RMT and the RIB Daemon");
-		this.rmt.connectionEnded(getSocket().getPort());
-		this.ribdaemon.flowDeallocated(getSocket().getPort());
+		CDAPSessionDescriptor cdapSessionDescriptor = this.cdapSessionManager.
+			getCDAPSession(this.portId).getSessionDescriptor();
+		Event event = new NMinusOneFlowDeallocatedEvent(this.portId, cdapSessionDescriptor);
+		log.debug("Notifying the Event Manager about a new event.");
+		log.debug(event.toString());
+		this.ribdaemon.deliverEvent(event);
 	}
 }

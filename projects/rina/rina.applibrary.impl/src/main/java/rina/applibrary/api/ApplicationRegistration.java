@@ -5,7 +5,7 @@ import java.util.List;
 import rina.applibrary.api.ApplicationRegistrationImpl.State;
 import rina.applibrary.impl.DefaultApplicationRegistrationImpl;
 import rina.applibrary.impl.DefaultFlowAcceptor;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 
 /**
@@ -142,7 +142,10 @@ public class ApplicationRegistration {
 			throw ipcException;
 		}
 		
-		return this.applicationRegistrationImplementation.accept(sduListener);
+		FlowImpl flowImpl = this.applicationRegistrationImplementation.accept();
+		Flow flow = new Flow(flowImpl);
+		flow.setSDUListener(sduListener);
+		return flow;
 	}
 	
 	/**

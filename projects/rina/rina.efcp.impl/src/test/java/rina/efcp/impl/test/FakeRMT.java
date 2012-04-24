@@ -2,7 +2,6 @@ package rina.efcp.impl.test;
 
 import rina.efcp.api.DataTransferConstants;
 import rina.ipcprocess.api.IPCProcess;
-import rina.ipcservice.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 import rina.rmt.api.RMT;
 
@@ -115,7 +114,7 @@ public class FakeRMT implements RMT{
 		
 	}
 
-	public int allocateFlow(ApplicationProcessNamingInfo arg0,
+	public int allocateFlow(String arg0,
 			QualityOfServiceSpecification arg1) throws Exception {
 		// TODO Auto-generated method stub
 		return 0;
@@ -135,8 +134,7 @@ public class FakeRMT implements RMT{
 		
 	}
 
-	public String getIPAddressFromApplicationNamingInformation(String arg0,
-			String arg1) {
+	public String getIPAddressFromApplicationNamingInformation(String arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -144,5 +142,10 @@ public class FakeRMT implements RMT{
 	public IPCProcess getIPCProcess() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public void startListening() {
+		// TODO Auto-generated method stub
+		
 	}
 }
