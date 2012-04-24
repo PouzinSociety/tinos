@@ -61,6 +61,14 @@ public class TestWorker implements Runnable, SDUListener{
 		this.rinaBandClient = rinaBandClient;
 		this.statistics = new TestFlowStatistics();
 		this.lock = new Object();
+		
+		if (!this.testInformation.isClientSendsSDUs()){
+			this.sendCompleted = true;
+		}
+		
+		if (!this.testInformation.isServerSendsSDUs()){
+			this.receiveCompleted = true;
+		}
 	}
 
 	public void setFlow(Flow flow, long flowSetupTimeInMillis){
