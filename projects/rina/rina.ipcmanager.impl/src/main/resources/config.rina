@@ -9,10 +9,14 @@
     "neighborsEnrollerPeriodInMs" : 10000 
   },
   "ipcProcessesToCreate" : [ {
-  	"applicationProcessName" : "Barcelona.i2CAT",
+  	"applicationProcessName" : "Nexus.i2CAT",
   	"applicationProcessInstance" : "1",
   	"difName" : "RINA-Demo.DIF",
   	"neighbors" : [ {
+  	  "applicationProcessName" : "Barcelona.i2CAT",
+  	  "applicationProcessInstance" : "1",
+  	  "address" : "64"
+  	}, {
   	  "applicationProcessName" : "Castefa.i2CAT",
   	  "applicationProcessInstance" : "1",
   	  "address" : "65"
@@ -93,6 +97,12 @@
     "apName" : "Glories.i2CAT",
     "address" : 66,
     "hostName" : "84.88.41.35",
+    "rmtPortNumber" : 32769,
+    "flowAllocatorPortNumber" : 32770
+  }, {
+    "apName" : "Nexus.i2CAT",
+    "address" : 67,
+    "hostName" : "147.83.206.92",
     "rmtPortNumber" : 32769,
     "flowAllocatorPortNumber" : 32770
   }, {

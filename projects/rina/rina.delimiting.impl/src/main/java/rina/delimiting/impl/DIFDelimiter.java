@@ -11,6 +11,9 @@ import rina.delimiting.api.BaseDelimiter;
  *
  */
 public class DIFDelimiter extends BaseDelimiter {
+	
+	/** Utility buffer used in some operations **/
+	byte[] buffer = new byte[5];
 
 	/**
 	 * Takes a list of raw sdus and produces a single delimited byte array, consisting in 
@@ -51,13 +54,8 @@ public class DIFDelimiter extends BaseDelimiter {
 	public byte[] getDelimitedSdu(byte[] rawSdu){
 		byte[] encodedSduLength = writeRawVarint32(rawSdu.length);
 		byte[] delimitedSdu = new byte[encodedSduLength.length + rawSdu.length];
-		for(int i=0; i<encodedSduLength.length; i++){
-			delimitedSdu[i] = encodedSduLength[i];
-		}
-
-		for(int i=0; i<rawSdu.length; i++){
-			delimitedSdu[i+encodedSduLength.length] = rawSdu[i];
-		}
+		System.arraycopy(encodedSduLength, 0, delimitedSdu, 0, encodedSduLength.length);
+		System.arraycopy(rawSdu, 0, delimitedSdu, encodedSduLength.length, rawSdu.length);
 
 		return delimitedSdu;
 	}
@@ -70,19 +68,19 @@ public class DIFDelimiter extends BaseDelimiter {
 	private byte[] writeRawVarint32(int value) {
 		int numberOfBytes = 0;
 		byte[] encodedLength = null;
-		byte[] buffer = new byte[5];
+		
 
 		while (true) {
 			if ((value & ~0x7F) == 0) {
-				buffer[numberOfBytes] = (byte)value;
+				this.buffer[numberOfBytes] = (byte)value;
 				numberOfBytes ++;
 				encodedLength = new byte[numberOfBytes];
 				for(int i=0; i<encodedLength.length; i++){
-					encodedLength[i] = buffer[i];
+					encodedLength[i] = this.buffer[i];
 				}
 				return encodedLength;
 			} else {
-				buffer[numberOfBytes] = (byte)((value & 0x7F) | 0x80);
+				this.buffer[numberOfBytes] = (byte)((value & 0x7F) | 0x80);
 				numberOfBytes++;
 				value >>>= 7;
 			}
@@ -107,7 +105,7 @@ public class DIFDelimiter extends BaseDelimiter {
 			candidateVarint = new byte[]{delimitedSdusArray[index], delimitedSdusArray[index+1], 
 											delimitedSdusArray[index+2], delimitedSdusArray[index+3], 
 											delimitedSdusArray[index+4]};
-			length = readVarint32(candidateVarint);
+			length = readVarint32(candidateVarint, candidateVarint.length);
 			if (length == -1){
 				return rawSdus;
 			}
@@ -131,7 +129,7 @@ public class DIFDelimiter extends BaseDelimiter {
 	 * @return the value of the integer encoded as a varint, or -1 if there is not a valid encoded varint32, or -2 if 
 	 * this may be a complete varint32 but still more bytes are needed
 	 */
-	public int readVarint32(byte[] byteArray){
+	public int readVarint32(byte[] byteArray, int length){
 		if (byteArray.length > 5){
 			return -1;
 		}
@@ -142,7 +140,7 @@ public class DIFDelimiter extends BaseDelimiter {
 		}
 		int result = tmp & 0x7f;
 		
-		if (byteArray.length == 1){
+		if (length == 1){
 			return -2;
 		}
 		
@@ -151,7 +149,7 @@ public class DIFDelimiter extends BaseDelimiter {
 		} else {
 			result |= (tmp & 0x7f) << 7;
 			
-			if (byteArray.length == 2){
+			if (length == 2){
 				return -2;
 			}
 			
@@ -160,7 +158,7 @@ public class DIFDelimiter extends BaseDelimiter {
 			} else {
 				result |= (tmp & 0x7f) << 14;
 				
-				if (byteArray.length == 3){
+				if (length == 3){
 					return -2;
 				}
 				
@@ -169,7 +167,7 @@ public class DIFDelimiter extends BaseDelimiter {
 				} else {
 					result |= (tmp & 0x7f) << 21;
 					
-					if (byteArray.length == 4){
+					if (length == 4){
 						return -2;
 					}
 					
