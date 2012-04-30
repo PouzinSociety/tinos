@@ -2,6 +2,9 @@ package rina.utils.apps.rinaband.server;
 
 import rina.applibrary.api.Flow;
 import rina.utils.apps.rinaband.TestInformation;
+import rina.utils.apps.rinaband.generator.BoringSDUGenerator;
+import rina.utils.apps.rinaband.generator.IncrementSDUGenerator;
+import rina.utils.apps.rinaband.generator.SDUGenerator;
 
 /**
  * Sends a number of SDUs through a flow
@@ -25,9 +28,19 @@ public class SDUSender implements Runnable {
 	 */
 	private int generatedSDUs = 0;
 	
+	/**
+	 * The class that generates the SDUs
+	 */
+	private SDUGenerator sduGenerator = null;
+	
 	public SDUSender(TestInformation testInformation, Flow flow){
 		this.testInformation = testInformation;
 		this.flow = flow;
+		if (this.testInformation.getPattern().equals(SDUGenerator.NONE_PATTERN)){
+			sduGenerator = new BoringSDUGenerator(this.testInformation.getSduSize());
+		}else if (this.testInformation.getPattern().equals(SDUGenerator.INCREMENT_PATTERN)){
+			sduGenerator = new IncrementSDUGenerator(this.testInformation.getSduSize());
+		}
 	}
 
 	public void run() {
@@ -36,7 +49,7 @@ public class SDUSender implements Runnable {
 		int numberOfSdus = testInformation.getNumberOfSDUs();
 		for(generatedSDUs=0; generatedSDUs<numberOfSdus; generatedSDUs++){
 			try{
-				flow.write(getNextSDU());
+				flow.write(sduGenerator.getNextSDU());
 			}catch(Exception ex){
 				System.out.println("SDU Sender of flow "+flow.getPortId()+": Error writing SDU. Canceling operation");
 				ex.printStackTrace();
@@ -56,14 +69,4 @@ public class SDUSender implements Runnable {
 		System.out.println("Flow at portId "+flow.getPortId()+": Sent KiloBytes per second (KBps): "
 				+sentSDUsperSecond*this.testInformation.getSduSize()/1024);
 	}
-	
-	private byte[] getNextSDU(){
-		byte[] result = new byte[this.testInformation.getSduSize()];
-		for(int i=0; i<result.length; i++){
-			result[i] = 0x01;
-		}
-		
-		return result;
-	}
-
 }

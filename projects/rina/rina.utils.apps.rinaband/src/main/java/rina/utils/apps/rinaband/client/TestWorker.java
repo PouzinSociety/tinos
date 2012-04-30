@@ -3,6 +3,9 @@ package rina.utils.apps.rinaband.client;
 import rina.applibrary.api.Flow;
 import rina.applibrary.api.SDUListener;
 import rina.utils.apps.rinaband.TestInformation;
+import rina.utils.apps.rinaband.generator.BoringSDUGenerator;
+import rina.utils.apps.rinaband.generator.IncrementSDUGenerator;
+import rina.utils.apps.rinaband.generator.SDUGenerator;
 
 public class TestWorker implements Runnable, SDUListener{
 
@@ -56,6 +59,11 @@ public class TestWorker implements Runnable, SDUListener{
 	 */
 	private boolean sendCompleted = false;
 	
+	/**
+	 * The class that generates the SDUs
+	 */
+	private SDUGenerator sduGenerator = null;
+	
 	public TestWorker(TestInformation testInformation, RINABandClient rinaBandClient){
 		this.testInformation = testInformation;
 		this.rinaBandClient = rinaBandClient;
@@ -68,6 +76,12 @@ public class TestWorker implements Runnable, SDUListener{
 		
 		if (!this.testInformation.isServerSendsSDUs()){
 			this.receiveCompleted = true;
+		}
+		
+		if (this.testInformation.getPattern().equals(SDUGenerator.NONE_PATTERN)){
+			sduGenerator = new BoringSDUGenerator(this.testInformation.getSduSize());
+		}else if (this.testInformation.getPattern().equals(SDUGenerator.INCREMENT_PATTERN)){
+			sduGenerator = new IncrementSDUGenerator(this.testInformation.getSduSize());
 		}
 	}
 
@@ -104,7 +118,7 @@ public class TestWorker implements Runnable, SDUListener{
 		this.timeOfFirstSDUSent = System.nanoTime();
 		for(int i=0; i<this.testInformation.getNumberOfSDUs(); i++){
 			try{
-				flow.write(getNextSDU());
+				flow.write(this.sduGenerator.getNextSDU());
 			}catch(Exception ex){
 				synchronized(lock){
 					this.sendCompleted = true;
@@ -124,16 +138,6 @@ public class TestWorker implements Runnable, SDUListener{
 				rinaBandClient.testCompleted(this);
 			}
 		}
-		
-	}
-	
-	private byte[] getNextSDU(){
-		byte[] result = new byte[this.testInformation.getSduSize()];
-		for(int i=0; i<result.length; i++){
-			result[i] = 0x01;
-		}
-		
-		return result;
 	}
 
 	/**
