@@ -116,6 +116,7 @@ public class TestWorker implements Runnable, SDUListener{
 		}
 		
 		this.timeOfFirstSDUSent = System.nanoTime();
+		rinaBandClient.setFirstSDUSent(this.timeOfFirstSDUSent);
 		for(int i=0; i<this.testInformation.getNumberOfSDUs(); i++){
 			try{
 				flow.write(this.sduGenerator.getNextSDU());
@@ -123,19 +124,21 @@ public class TestWorker implements Runnable, SDUListener{
 				synchronized(lock){
 					this.sendCompleted = true;
 					if (this.receiveCompleted){
-						rinaBandClient.testCompleted(this);
+						this.rinaBandClient.testCompleted(this);
 					}
 				}
 				return;
 			}
 		}
 		
+		long currentTime = System.nanoTime();
+		long totalTimeInNanos = (currentTime - this.timeOfFirstSDUSent);
+		this.rinaBandClient.setLastSDUSent(currentTime);
 		synchronized(lock){
-			long totalTimeInNanos = (System.nanoTime() - this.timeOfFirstSDUSent);
 			this.statistics.setSentSDUsPerSecond(1000L*1000L*1000L*this.testInformation.getNumberOfSDUs()/totalTimeInNanos);
 			this.sendCompleted = true;
 			if (this.receiveCompleted){
-				rinaBandClient.testCompleted(this);
+				this.rinaBandClient.testCompleted(this);
 			}
 		}
 	}
@@ -146,16 +149,19 @@ public class TestWorker implements Runnable, SDUListener{
 	public void sduDelivered(byte[] sdu) {
 		if (this.receivedSDUs == 0){
 			this.timeOfFirstSDUReceived = System.nanoTime();
+			this.rinaBandClient.setFirstSDUReveived(this.timeOfFirstSDUReceived);
 		}
 		
 		this.receivedSDUs++;
 		if (this.receivedSDUs == this.testInformation.getNumberOfSDUs()){
-			long totalTimeInNanos = (System.nanoTime() - this.timeOfFirstSDUReceived);
+			long currentTime = System.nanoTime();
+			long totalTimeInNanos = (currentTime - this.timeOfFirstSDUReceived);
+			this.rinaBandClient.setLastSDUReceived(currentTime);
 			synchronized(lock){
 				this.statistics.setReceivedSDUsPerSecond(1000L*1000L*1000L*this.receivedSDUs/totalTimeInNanos);
 				this.receiveCompleted = true;
 				if (this.sendCompleted){
-					rinaBandClient.testCompleted(this);
+					this.rinaBandClient.testCompleted(this);
 				}
 			}
 		}

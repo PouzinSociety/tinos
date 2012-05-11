@@ -28,6 +28,8 @@ public class RINABandClient implements SDUListener{
 
 	private enum State {NULL, WAIT_CREATE_R, EXECUTING, COMPLETED};
 	
+	private enum Type{FLOW_ALLOCATION, FLOW_DEALLOCATION, SENT_SDUS, RECEIVED_SDUS};
+	
 	/**
 	 * The state of the client
 	 */
@@ -77,6 +79,14 @@ public class RINABandClient implements SDUListener{
 	 * The number of test workers that have completed their individual flow test
 	 */
 	private int completedTestWorkers = 0;
+	
+	private long timeFirstSDUReceived = 0;
+	private long timeLastSDUReceived = 0;
+	private int completedSends = 0;
+	
+	private long timeFirstSDUSent = 0;
+	private long timeLastSDUSent = 0;
+	private int completedReceives = 0;
 	
 	public RINABandClient(TestInformation testInformation, ApplicationProcessNamingInfo controlApNamingInfo, 
 			ApplicationProcessNamingInfo dataApNamingInfo){
@@ -193,6 +203,32 @@ public class RINABandClient implements SDUListener{
 		}
 	}
 	
+	public synchronized void setLastSDUSent(long time){
+		this.completedSends++;
+		if (this.completedSends == this.testInformation.getNumberOfFlows()){
+			this.timeLastSDUSent = time;
+		}
+	}
+	
+	public synchronized void setLastSDUReceived(long time){
+		this.completedReceives++;
+		if (this.completedReceives == this.testInformation.getNumberOfFlows()){
+			this.timeLastSDUReceived = time;
+		}
+	}
+	
+	public synchronized void setFirstSDUSent(long time){
+		if (this.timeFirstSDUSent == 0){
+			this.timeFirstSDUSent = time;
+		}
+	}
+	
+	public synchronized void setFirstSDUReveived(long time){
+		if (this.timeFirstSDUReceived == 0){
+			this.timeFirstSDUReceived = time;
+		}
+	}
+	
 	/**
 	 * Called by the test worker when he has finished sending/receiving SDUs
 	 * @param testWorker
@@ -221,7 +257,7 @@ public class RINABandClient implements SDUListener{
 			}
 			this.state = State.COMPLETED;
 			
-			//3 Print the statistics
+			//3 Print the individual statistics
 			System.out.println("Test successfully completed!");
 			for(int i=0; i<this.testWorkers.size(); i++){
 				currentWorker = this.testWorkers.get(i);
@@ -237,6 +273,37 @@ public class RINABandClient implements SDUListener{
 				System.out.println();
 			}
 			
+			//4 Print the aggregated statistics
+			System.out.println("Mean statistics");
+			System.out.println("Mean flow allocation time (ms): "+ this.getMean(Type.FLOW_ALLOCATION));
+			System.out.println("Mean flow deallocation time (ms): "+ this.getMean(Type.FLOW_DEALLOCATION));
+			if (this.testInformation.isClientSendsSDUs()){
+				long meanSentSdus = this.getMean(Type.SENT_SDUS);
+				System.out.println("Mean sent SDUs per second: "+ meanSentSdus);
+				System.out.println("Mean sent KiloBytes per second (KBps): "+ meanSentSdus*this.testInformation.getSduSize()/1024);
+			}
+			if (this.testInformation.isServerSendsSDUs()){
+				long meanReceivedSdus = this.getMean(Type.RECEIVED_SDUS);
+				System.out.println("Mean received SDUs per second: "+ meanReceivedSdus);
+				System.out.println("Mean received KiloBytes per second (KBps): "+ meanReceivedSdus*this.testInformation.getSduSize()/1024);
+			}
+			System.out.println();
+			System.out.println("Aggregate bandwidth:");
+			if (this.testInformation.isClientSendsSDUs()){
+				long aggregateSentSDUsPerSecond = 1000L*1000L*1000L*this.testInformation.getNumberOfFlows()*
+					this.testInformation.getNumberOfSDUs()/(this.timeLastSDUSent-this.timeFirstSDUSent);
+				System.out.println("Aggregate sent SDUs per second: "+aggregateSentSDUsPerSecond);
+				System.out.println("Aggregate sent KiloBytes per second (KBps): "+ aggregateSentSDUsPerSecond*this.testInformation.getSduSize()/1024);
+				System.out.println("Aggregate sent Megabits per second (Mbps): "+ aggregateSentSDUsPerSecond*this.testInformation.getSduSize()*8/(1024*1024));
+			}
+			if (this.testInformation.isServerSendsSDUs()){
+				long aggregateReceivedSDUsPerSecond = 1000L*1000L*1000L*this.testInformation.getNumberOfFlows()*
+					this.testInformation.getNumberOfSDUs()/(this.timeLastSDUReceived-this.timeFirstSDUReceived);
+				System.out.println("Aggregate received SDUs per second: "+aggregateReceivedSDUsPerSecond);
+				System.out.println("Aggregate received KiloBytes per second (KBps): "+ aggregateReceivedSDUsPerSecond*this.testInformation.getSduSize()/1024);
+				System.out.println("Aggregate received Megabits per second (Mbps): "+ aggregateReceivedSDUsPerSecond*this.testInformation.getSduSize()*8/(1024*1024));
+			}
+			
 			//4 Deallocate the control flow
 			this.controlFlow.deallocate();
 			
@@ -247,6 +314,34 @@ public class RINABandClient implements SDUListener{
 			abortTest("Problems cleaning up the test resources");
 		}
 	}
+	
+	private long getMean(Type type){
+		long accumulatedValue = 0;
+		for(int i=0; i<this.testWorkers.size(); i++){
+			switch(type){
+			case FLOW_ALLOCATION: 
+				accumulatedValue = accumulatedValue + 
+				this.testWorkers.get(i).getStatistics().getFlowSetupTimeInMillis();
+				break;
+			case FLOW_DEALLOCATION: 
+				accumulatedValue = accumulatedValue + 
+				this.testWorkers.get(i).getStatistics().getFlowTearDownTimeInMillis();
+				break;
+			case SENT_SDUS:
+				accumulatedValue = accumulatedValue + 
+				this.testWorkers.get(i).getStatistics().getSentSDUsPerSecond();
+				break;
+			case RECEIVED_SDUS:
+				accumulatedValue = accumulatedValue + 
+				this.testWorkers.get(i).getStatistics().getReceivedSDUsPerSecond();
+				break;
+			}
+			
+		}
+		
+		return accumulatedValue/this.testWorkers.size();
+	}
+	
 	
 	private void abortTest(String message){
 		if (this.state == State.EXECUTING){

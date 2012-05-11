@@ -113,7 +113,6 @@ public abstract class BaseSocketReader implements Runnable{
 					}
 				}
 			}catch(Exception ex){
-				ex.printStackTrace();
 				end = true;
 			}
 		}
