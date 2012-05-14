@@ -9,8 +9,6 @@ package rina.utils.apps.rinaband.generator;
  */
 public class IncrementSDUGenerator extends BaseSDUGenerator{
 	
-	private enum State {FIRST_BYTE, SECOND_BYTE, THIRD_BYTE, FOURTH_BYTE};
-	
 	/**
 	 * The next SDU to return
 	 */
@@ -20,11 +18,6 @@ public class IncrementSDUGenerator extends BaseSDUGenerator{
 	 * The next integer
 	 */
 	private int counter = 0;
-	
-	/**
-	 * The state of the Generator
-	 */
-	private State state = State.FIRST_BYTE;
 	
 	public IncrementSDUGenerator(int sduSize){
 		super(SDUGenerator.INCREMENT_PATTERN, sduSize);
@@ -47,30 +40,12 @@ public class IncrementSDUGenerator extends BaseSDUGenerator{
 	}
 	
 	private byte getNextByte(){
-		byte nextByte = 0x00;
+		byte nextByte = (byte) counter;
 		
-		switch(this.state){
-		case FIRST_BYTE:
-			nextByte = (byte) (counter >>> 24);
-			this.state = State.SECOND_BYTE;
-			break;
-		case SECOND_BYTE:
-			nextByte = (byte) (counter >>> 16);
-			this.state = State.THIRD_BYTE;
-			break;
-		case THIRD_BYTE:
-			nextByte = (byte) (counter >>> 8);
-			this.state = State.FOURTH_BYTE;
-			break;
-		case FOURTH_BYTE:
-			nextByte = (byte) counter;
-			this.state = State.FIRST_BYTE;
-			if (counter < Integer.MAX_VALUE){
-				counter ++;
-			}else{
-				counter = 0;
-			}
-			break;
+		if (counter < 255){
+			counter ++;
+		}else{
+			counter = 0;
 		}
 		
 		return nextByte;

@@ -33,9 +33,15 @@ public class SDUSender implements Runnable {
 	 */
 	private SDUGenerator sduGenerator = null;
 	
-	public SDUSender(TestInformation testInformation, Flow flow){
+	/**
+	 * The controller of this test
+	 */
+	private TestController testController = null;
+	
+	public SDUSender(TestInformation testInformation, Flow flow, TestController testController){
 		this.testInformation = testInformation;
 		this.flow = flow;
+		this.testController = testController;
 		if (this.testInformation.getPattern().equals(SDUGenerator.NONE_PATTERN)){
 			sduGenerator = new BoringSDUGenerator(this.testInformation.getSduSize());
 		}else if (this.testInformation.getPattern().equals(SDUGenerator.INCREMENT_PATTERN)){
@@ -50,6 +56,9 @@ public class SDUSender implements Runnable {
 		for(generatedSDUs=0; generatedSDUs<numberOfSdus; generatedSDUs++){
 			try{
 				flow.write(sduGenerator.getNextSDU());
+				if (generatedSDUs == 0){
+					this.testController.setFirstSDUSent(System.currentTimeMillis());
+				}
 			}catch(Exception ex){
 				System.out.println("SDU Sender of flow "+flow.getPortId()+": Error writing SDU. Canceling operation");
 				ex.printStackTrace();
@@ -64,6 +73,7 @@ public class SDUSender implements Runnable {
 		}
 		
 		long time = System.nanoTime() - before;
+		this.testController.setLastSDUSent(System.currentTimeMillis());
 		long sentSDUsperSecond = 1000L*1000L*1000L*numberOfSdus/time;
 		System.out.println("Flow at portId "+flow.getPortId()+": Sent SDUs per second: "+sentSDUsperSecond);
 		System.out.println("Flow at portId "+flow.getPortId()+": Sent KiloBytes per second (KBps): "
