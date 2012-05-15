@@ -186,9 +186,9 @@ public class TestController implements SDUListener, FlowListener{
 			return;
 		}
 		
-		while (this.epochTimeLastSDUReceived == 0){
+		while (this.epochTimeLastSDUReceived == 0 || this.epochTimeLastSDUSent == 0){
 			try{
-				printMessage("Waiting for the last SDU received value");
+				printMessage("Waiting for the last SDU sent/received value");
 				Thread.sleep(100);
 			}catch(Exception ex){
 				ex.printStackTrace();
@@ -197,6 +197,7 @@ public class TestController implements SDUListener, FlowListener{
 		
 		//1 Write statistics as response and print the stats
 		try{
+			//Update the statistics and send the M_STOP_R message
 			StatisticsInformation statsInformation = RINABandStatisticsMessageEncoder.decode(cdapMessage.getObjValue().getByteval());
 			if (this.testInformation.isClientSendsSDUs()){
 				statsInformation.setServerTimeFirstSDUReceived(this.epochTimeFirstSDUReceived*1000L);

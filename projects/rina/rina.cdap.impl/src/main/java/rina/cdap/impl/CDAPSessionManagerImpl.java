@@ -190,7 +190,13 @@ public class CDAPSessionManagerImpl extends BaseCDAPSessionManager{
 		CDAPMessage cdapMessage = this.decodeCDAPMessage(encodedCDAPMessage);
 		CDAPSession cdapSession = this.getCDAPSession(portId);
 		
-		log.debug("Received CDAP message from port "+portId+". Decoded contents: "+cdapMessage.toString());
+		if (cdapSession != null){
+			log.debug("Received CDAP message from "+ cdapSession.getSessionDescriptor().getDestApName()+ 
+				" through underlying portId "+portId+". Decoded contents: "+cdapMessage.toString());
+		}else{
+			log.debug("Received CDAP message from "+ cdapMessage.getDestApName()+ 
+					" through underlying portId "+portId+". Decoded contents: "+cdapMessage.toString());
+		}
 		
 		switch(cdapMessage.getOpCode()){
 		case M_CONNECT:

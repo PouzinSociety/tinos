@@ -172,7 +172,6 @@ public class TCPRMTImpl extends BaseRMT implements EventListener{
 			//Writing a PDU on the socket must be an atomic operation
 			synchronized(socketWriteLock){
 				socket.getOutputStream().write(delimitedSdu);
-				log.debug("Sent PDU through flow "+portId+": "+printBytes(delimitedSdu));
 			}
 		}catch(IOException ex){
 			log.error("Problems sending a PDU through flow "+portId+": "+ex.getMessage());

@@ -118,10 +118,11 @@ public abstract class BaseSocketReader implements Runnable{
 		}
 		
 		try{
-			if (!socket.isClosed()){
-				socket.close();
-			}
+			log.debug("EOF detected, closing the socket");
+			socket.close();
+			log.debug("Socket closed");
 		}catch(IOException ex){
+			log.error("Exception closing the socket: "+ex.getMessage());
 		}
 		
 		log.info("The remote endpoint of socket "+socket.getPort()+" has disconnected");

@@ -33,7 +33,6 @@ import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
 import rina.ribdaemon.api.UpdateStrategy;
 import rina.ribdaemon.impl.rib.RIB;
-import rina.ribdaemon.impl.ribobjects.WatchdogRIBObject;
 import rina.rmt.api.BaseRMT;
 import rina.rmt.api.RMT;
 
@@ -73,18 +72,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon implements EventListener{
 		super.setIPCProcess(ipcProcess);
 		this.encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
 		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
-		populateRIB(ipcProcess);
 		subscribeToEvents();
-	}
-	
-	private void populateRIB(IPCProcess ipcProcess){
-		try{
-			RIBObject ribObject = new WatchdogRIBObject(ipcProcess);
-			this.addRIBObject(ribObject);
-		}catch(RIBDaemonException ex){
-			ex.printStackTrace();
-			log.error("Could not subscribe to RIB Daemon:" +ex.getMessage());
-		}
 	}
 	
 	private void subscribeToEvents(){

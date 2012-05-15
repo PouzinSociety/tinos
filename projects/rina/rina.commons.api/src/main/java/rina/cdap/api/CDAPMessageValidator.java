@@ -187,7 +187,8 @@ public class CDAPMessageValidator{
 					&& !message.getOpCode().equals(Opcode.M_READ_R) && !message.getOpCode().equals(Opcode.M_WRITE)
 					&& !message.getOpCode().equals(Opcode.M_START) && !message.getOpCode().equals(Opcode.M_STOP)
 					&& !message.getOpCode().equals(Opcode.M_START_R) && !message.getOpCode().equals(Opcode.M_STOP_R)
-					&& !message.getOpCode().equals(Opcode.M_WRITE_R) && !message.getOpCode().equals(Opcode.M_DELETE)){
+					&& !message.getOpCode().equals(Opcode.M_WRITE_R) && !message.getOpCode().equals(Opcode.M_DELETE)
+					&& !message.getOpCode().equals(Opcode.M_READ)){
 				throw new CDAPException("The objValue parameter can only be set for M_CREATE, M_DELETE, M_CREATE_R, M_READ_R, " +
 						"M_WRITE, M_START, M_START_R, M_STOP, M_STOP_R and M_WRITE_R messages", message);
 			}
