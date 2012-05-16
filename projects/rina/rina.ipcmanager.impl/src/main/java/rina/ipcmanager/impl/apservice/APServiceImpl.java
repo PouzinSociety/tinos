@@ -140,6 +140,9 @@ public class APServiceImpl implements APService{
 			ex.printStackTrace();
 			CDAPMessage errorMessage = cdapMessage.getReplyMessage();
 			errorMessage.setResult(1);
+			errorMessage.setResultReason(ex.getMessage());
+			sendErrorMessageAndCloseSocket(errorMessage, socket);
+			return;
 		}
 		
 		//Store the state of the requested flow service
@@ -618,9 +621,10 @@ public class APServiceImpl implements APService{
 	}
 	
 	private void sendCDAPMessage(CDAPMessage cdapMessage, Socket socket) throws CDAPException, IOException{
-		byte[] encodedCDAPMessage = cdapSessionManager.encodeCDAPMessage(cdapMessage);
-		byte[] delimitedMessage = delimiter.getDelimitedSdu(encodedCDAPMessage);
-		socket.getOutputStream().write(delimitedMessage);
+		socket.getOutputStream().write(
+				delimiter.getDelimitedSdu(
+						cdapSessionManager.encodeCDAPMessage(
+								cdapMessage)));
 	}
 
 	public void deliverStatus(int arg0, boolean arg1) {

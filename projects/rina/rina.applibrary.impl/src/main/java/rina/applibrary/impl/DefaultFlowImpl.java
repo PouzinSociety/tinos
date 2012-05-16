@@ -245,14 +245,14 @@ public class DefaultFlowImpl implements FlowImpl{
 		}
 		
 		try{
-			if (writeObjectValue == null){
-				writeObjectValue = new ObjectValue();
+			if (this.writeObjectValue == null){
+				this.writeObjectValue = new ObjectValue();
 			}
-			if (writeCDAPMessage == null){
-				writeCDAPMessage = CDAPMessage.getWriteObjectRequestMessage(null, null, null, 0, writeObjectValue, null, 0);
+			if (this.writeCDAPMessage == null){
+				this.writeCDAPMessage = CDAPMessage.getWriteObjectRequestMessage(null, null, null, 0, writeObjectValue, null, 0);
 			}
-			writeCDAPMessage.getObjValue().setByteval(sdu);
-			socket.getOutputStream().write(delimiter.getDelimitedSdu(cdapSessionManager.encodeCDAPMessage(writeCDAPMessage)));
+			this.writeCDAPMessage.getObjValue().setByteval(sdu);
+			this.socket.getOutputStream().write(delimiter.getDelimitedSdu(cdapSessionManager.encodeCDAPMessage(writeCDAPMessage)));
 		}catch(Exception ex){
 			IPCException ipcException = new IPCException(IPCException.PROBLEMS_WRITING_TO_FLOW + ex.getMessage());
 			ipcException.setErrorCode(IPCException.PROBLEMS_WRITING_TO_FLOW_CODE);

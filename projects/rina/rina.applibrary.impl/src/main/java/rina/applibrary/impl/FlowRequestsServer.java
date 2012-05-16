@@ -256,7 +256,7 @@ public class FlowRequestsServer implements Runnable{
 						currentSduLengthCandidate[i] = lastSduLengthCandidate[i];
 					}
 					currentSduLengthCandidate[lastSduLengthCandidate.length] = nextByte;
-					length = delimiter.readVarint32(currentSduLengthCandidate);
+					length = delimiter.readVarint32(currentSduLengthCandidate, currentSduLengthCandidate.length);
 					if (length == -2){
 						lastSduLengthCandidate = currentSduLengthCandidate;
 					}else{

@@ -13,7 +13,9 @@ import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
+import rina.utils.apps.rinaband.StatisticsInformation;
 import rina.utils.apps.rinaband.TestInformation;
+import rina.utils.apps.rinaband.protobuf.RINABandStatisticsMessageEncoder;
 import rina.utils.apps.rinaband.protobuf.RINABandTestMessageEncoder;
 
 /**
@@ -61,6 +63,17 @@ public class TestController implements SDUListener, FlowListener{
 	 * classes that deal with each individual flow
 	 */
 	private Map<Integer, TestWorker> allocatedFlows = null;
+	
+	/**
+	 * Epoch times are in miliseconds
+	 */
+	private long epochTimeFirstSDUReceived = 0;
+	private long epochTimeLastSDUReceived = 0;
+	private int completedSends = 0;
+	
+	private long epochTimeFirstSDUSent = 0;
+	private long epochTimeLastSDUSent = 0;
+	private int completedReceives = 0;
 	
 	public TestController(ApplicationProcessNamingInfo dataApNamingInfo, Flow flow,
 			CDAPSessionManager cdapSessionManager){
@@ -173,10 +186,80 @@ public class TestController implements SDUListener, FlowListener{
 			return;
 		}
 		
-		//1 State is completed
-		this.state = State.COMPLETED;
+		int counter = 0;
+		while (this.epochTimeLastSDUReceived == 0 || this.epochTimeLastSDUSent == 0){
+			if (counter >=10){
+				break;
+			}
+			
+			try{
+				printMessage("Waiting for the last SDU sent/received value");
+				Thread.sleep(100);
+				counter ++;
+			}catch(Exception ex){
+				ex.printStackTrace();
+			}
+		}
+		
+		//1 Write statistics as response and print the stats
+		try{
+			//Update the statistics and send the M_STOP_R message
+			StatisticsInformation statsInformation = RINABandStatisticsMessageEncoder.decode(cdapMessage.getObjValue().getByteval());
+			if (this.testInformation.isClientSendsSDUs()){
+				statsInformation.setServerTimeFirstSDUReceived(this.epochTimeFirstSDUReceived*1000L);
+				statsInformation.setServerTimeLastSDUReceived(this.epochTimeLastSDUReceived*1000L);
+			}
+			if (this.testInformation.isServerSendsSDUs()){
+				statsInformation.setServerTimeFirstSDUSent(this.epochTimeFirstSDUSent*1000L);
+				statsInformation.setServerTimeLastSDUSent(this.epochTimeLastSDUSent*1000L);
+			}
+			printMessage(statsInformation.toString());
+			ObjectValue objectValue = new ObjectValue();
+			objectValue.setByteval(RINABandStatisticsMessageEncoder.encode(statsInformation));
+			CDAPMessage responseMessage = CDAPMessage.getStopObjectResponseMessage(null, 0, null, cdapMessage.getInvokeID());
+			responseMessage.setObjClass(cdapMessage.getObjClass());
+			responseMessage.setObjName(cdapMessage.getObjName());
+			responseMessage.setObjValue(objectValue);
+			sendCDAPMessage(responseMessage);
+			
+			//Print aggregate statistics
+			long averageClientServerDelay = 0L;
+			long averageServerClientDelay = 0L;
+			printMessage("Aggregate bandwidth:");
+			if (this.testInformation.isClientSendsSDUs()){
+				long aggregateReceivedSDUsPerSecond = 1000L*this.testInformation.getNumberOfFlows()*
+					this.testInformation.getNumberOfSDUs()/(this.epochTimeLastSDUReceived-this.epochTimeFirstSDUReceived);
+				printMessage("Aggregate received SDUs per second: "+aggregateReceivedSDUsPerSecond);
+				averageClientServerDelay = ((this.epochTimeFirstSDUReceived - statsInformation.getClientTimeFirstSDUSent()/1000L) + 
+						(this.epochTimeLastSDUReceived - statsInformation.getClientTimeLastSDUSent()/1000L))/2;
+				printMessage("Aggregate received KiloBytes per second (KBps): "+ aggregateReceivedSDUsPerSecond*this.testInformation.getSduSize()/1024);
+				printMessage("Aggregate received Megabits per second (Mbps): "+ aggregateReceivedSDUsPerSecond*this.testInformation.getSduSize()*8/(1024*1024));
+			}
+			if (this.testInformation.isServerSendsSDUs()){
+				long aggregateSentSDUsPerSecond = 1000L*1000L*this.testInformation.getNumberOfFlows()*
+					this.testInformation.getNumberOfSDUs()/(statsInformation.getClientTimeLastSDUReceived()-statsInformation.getClientTimeFirstSDUReceived());
+				averageServerClientDelay = ((statsInformation.getClientTimeFirstSDUReceived()/1000L - this.epochTimeFirstSDUSent) + 
+						(statsInformation.getClientTimeLastSDUReceived()/1000L - this.epochTimeLastSDUSent))/2;
+				printMessage("Aggregate sent SDUs per second: "+aggregateSentSDUsPerSecond);
+				printMessage("Aggregate sent KiloBytes per second (KBps): "+ aggregateSentSDUsPerSecond*this.testInformation.getSduSize()/1024);
+				printMessage("Aggregate sent Megabits per second (Mbps): "+ aggregateSentSDUsPerSecond*this.testInformation.getSduSize()*8/(1024*1024));
+			}
+			long rttInMs = 0L;
+			if (this.testInformation.isClientSendsSDUs() && this.testInformation.isServerSendsSDUs()){
+				rttInMs = averageClientServerDelay + averageServerClientDelay;
+			}else if (this.testInformation.isClientSendsSDUs()){
+				rttInMs = averageClientServerDelay*2;
+			}else{
+				rttInMs = averageServerClientDelay*2;
+			}
+			printMessage("Estimated round-trip time (RTT) in ms: "+rttInMs);
+		}catch(Exception ex){
+			printMessage("Problems returning STOP RESPONSE message");
+			ex.printStackTrace();
+		}
 		
 		//2 Cancel the registration of the data AE
+		this.state = State.COMPLETED;
 		try{
 			if (dataRegistration.isRegistered()){
 				dataRegistration.unregister();
@@ -184,6 +267,36 @@ public class TestController implements SDUListener, FlowListener{
 		}catch(Exception ex){
 			printMessage("Problems unregistering data AE");
 			ex.printStackTrace();
+		}
+	}
+	
+	public synchronized void setLastSDUSent(long epochTime){
+		this.completedSends++;
+		if (this.completedSends == this.testInformation.getNumberOfFlows()){
+			this.epochTimeLastSDUSent = epochTime;
+			printMessage("Set last SDU sent time: "+epochTime);
+		}
+	}
+	
+	public synchronized void setLastSDUReceived(long epochTime){
+		this.completedReceives++;
+		if (this.completedReceives == this.testInformation.getNumberOfFlows()){
+			this.epochTimeLastSDUReceived = epochTime;
+			printMessage("Set last SDU received time: "+epochTime);
+		}
+	}
+	
+	public synchronized void setFirstSDUSent(long epochTime){
+		if (this.epochTimeFirstSDUSent == 0){
+			this.epochTimeFirstSDUSent = epochTime;
+			printMessage("Set first SDU sent time: "+epochTime);
+		}
+	}
+	
+	public synchronized void setFirstSDUReveived(long epochTime){
+		if (this.epochTimeFirstSDUReceived == 0){
+			this.epochTimeFirstSDUReceived = epochTime;
+			printMessage("Set first SDU received time: "+epochTime);
 		}
 	}
 
@@ -201,7 +314,7 @@ public class TestController implements SDUListener, FlowListener{
 			return;
 		}
 		
-		TestWorker testWorker = new TestWorker(this.testInformation, flow);
+		TestWorker testWorker = new TestWorker(this.testInformation, flow, this);
 		flow.setSDUListener(testWorker);
 		this.allocatedFlows.put(new Integer(flow.getPortId()), testWorker);
 		printMessage("Data flow with portId "+flow.getPortId()+ " allocated");

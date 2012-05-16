@@ -2,6 +2,9 @@ package rina.utils.apps.rinaband.server;
 
 import rina.applibrary.api.Flow;
 import rina.utils.apps.rinaband.TestInformation;
+import rina.utils.apps.rinaband.generator.BoringSDUGenerator;
+import rina.utils.apps.rinaband.generator.IncrementSDUGenerator;
+import rina.utils.apps.rinaband.generator.SDUGenerator;
 
 /**
  * Sends a number of SDUs through a flow
@@ -25,9 +28,25 @@ public class SDUSender implements Runnable {
 	 */
 	private int generatedSDUs = 0;
 	
-	public SDUSender(TestInformation testInformation, Flow flow){
+	/**
+	 * The class that generates the SDUs
+	 */
+	private SDUGenerator sduGenerator = null;
+	
+	/**
+	 * The controller of this test
+	 */
+	private TestController testController = null;
+	
+	public SDUSender(TestInformation testInformation, Flow flow, TestController testController){
 		this.testInformation = testInformation;
 		this.flow = flow;
+		this.testController = testController;
+		if (this.testInformation.getPattern().equals(SDUGenerator.NONE_PATTERN)){
+			sduGenerator = new BoringSDUGenerator(this.testInformation.getSduSize());
+		}else if (this.testInformation.getPattern().equals(SDUGenerator.INCREMENT_PATTERN)){
+			sduGenerator = new IncrementSDUGenerator(this.testInformation.getSduSize());
+		}
 	}
 
 	public void run() {
@@ -36,7 +55,10 @@ public class SDUSender implements Runnable {
 		int numberOfSdus = testInformation.getNumberOfSDUs();
 		for(generatedSDUs=0; generatedSDUs<numberOfSdus; generatedSDUs++){
 			try{
-				flow.write(getNextSDU());
+				flow.write(sduGenerator.getNextSDU());
+				if (generatedSDUs == 0){
+					this.testController.setFirstSDUSent(System.currentTimeMillis());
+				}
 			}catch(Exception ex){
 				System.out.println("SDU Sender of flow "+flow.getPortId()+": Error writing SDU. Canceling operation");
 				ex.printStackTrace();
@@ -51,19 +73,10 @@ public class SDUSender implements Runnable {
 		}
 		
 		long time = System.nanoTime() - before;
+		this.testController.setLastSDUSent(System.currentTimeMillis());
 		long sentSDUsperSecond = 1000L*1000L*1000L*numberOfSdus/time;
 		System.out.println("Flow at portId "+flow.getPortId()+": Sent SDUs per second: "+sentSDUsperSecond);
 		System.out.println("Flow at portId "+flow.getPortId()+": Sent KiloBytes per second (KBps): "
 				+sentSDUsperSecond*this.testInformation.getSduSize()/1024);
 	}
-	
-	private byte[] getNextSDU(){
-		byte[] result = new byte[this.testInformation.getSduSize()];
-		for(int i=0; i<result.length; i++){
-			result[i] = 0x01;
-		}
-		
-		return result;
-	}
-
 }
