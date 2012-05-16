@@ -16,6 +16,7 @@ import rina.enrollment.api.EnrollmentTask;
 import rina.enrollment.api.Neighbor;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.RIBDaemon;
+import rina.ribdaemon.api.RIBObjectNames;
 
 /**
  * The base class that contains the common aspects of both 
@@ -189,6 +190,9 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 			this.setState(State.ENROLLED);
 		}
 		
+		//Create or update the neighbor information in the RIB
+		createOrUpdateNeighborInformation(true);
+		
 		enrollmentTask.enrollmentCompleted(remotePeer, enrollee);
 		log.info("Remote IPC Process enrolled!");
 	}
@@ -221,6 +225,8 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 		if (!isValidPortId(cdapSessionDescriptor)){
 			return;
 		}
+		
+		createOrUpdateNeighborInformation(false);
 
 		synchronized(this){
 			this.setState(State.NULL);
@@ -269,7 +275,9 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 		if (!isValidPortId(cdapSessionDescriptor)){
 			return;
 		}
-
+		
+		createOrUpdateNeighborInformation(false);
+		
 		synchronized(this){
 			this.setState(State.NULL);
 
@@ -277,6 +285,27 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 			if (timer != null){
 				timer.cancel();
 			}
+		}
+	}
+	
+	/**
+	 * Create or update the neighbor information in the RIB
+	 * @param enrolled true if the neighbor is enrolled, false otherwise
+	 */
+	private void createOrUpdateNeighborInformation(boolean enrolled){
+		//Create or update the neighbor information in the RIB
+		try{
+			remotePeer.setEnrolled(enrolled);
+			if (enrolled){
+				remotePeer.setUnderlyingPortId(this.getPortId());
+			}else{
+				remotePeer.setUnderlyingPortId(0);
+			}
+			ribDaemon.create(Neighbor.NEIGHBOR_RIB_OBJECT_CLASS, 
+					Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + remotePeer.getApplicationProcessName(), 
+					remotePeer);
+		}catch(Exception ex){
+			ex.printStackTrace();
 		}
 	}
 }

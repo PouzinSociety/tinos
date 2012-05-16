@@ -1,9 +1,9 @@
 package rina.ipcprocess.api;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import rina.applicationprocess.api.WhatevercastName;
 import rina.efcp.api.DataTransferConstants;
@@ -31,7 +31,7 @@ public abstract class BaseIPCProcess implements IPCProcess{
 	private IPCManager ipcManager = null;
 	
 	public BaseIPCProcess(){
-		ipcProcessComponents = new Hashtable<String, IPCProcessComponent>();
+		ipcProcessComponents = new ConcurrentHashMap<String, IPCProcessComponent>();
 	}
 	
 	public Map<String, IPCProcessComponent> getIPCProcessComponents(){

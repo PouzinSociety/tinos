@@ -422,15 +422,11 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 			this.setState(State.NULL);
 			enrollmentTask.enrollmentFailed(this.remoteNamingInfo, portId, cdapMessage.getResultReason(), false, true);
 		}else{
-			
 			try{
 				CDAPMessage startMessage = cdapSessionManager.getStartObjectRequestMessage(portId, null, null, 
 						RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_CLASS, null, 0, 
 						RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME, 0, false);
 				sendCDAPMessage(startMessage);
-				ribDaemon.create(Neighbor.NEIGHBOR_RIB_OBJECT_CLASS, 
-						Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + remotePeer.getApplicationProcessName(), 
-						remotePeer);
 			}catch(Exception ex){
 				log.error(ex);
 			}

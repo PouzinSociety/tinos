@@ -21,7 +21,7 @@ public class MockDelimiter extends BaseDelimiter{
 		return null;
 	}
 
-	public int readVarint32(byte[] arg0) {
+	public int readVarint32(byte[] arg0, int length) {
 		// TODO Auto-generated method stub
 		return 0;
 	}

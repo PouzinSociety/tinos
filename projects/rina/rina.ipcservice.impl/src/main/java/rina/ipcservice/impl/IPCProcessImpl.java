@@ -37,6 +37,11 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * The RIB Daemon
 	 */
 	private RIBDaemon ribDaemon = null;
+	
+	/**
+	 * The Flow Allocator
+	 */
+	private FlowAllocator flowAllocator = null;
 
 	public IPCProcessImpl(String applicationProcessName, String applicationProcessInstance, RIBDaemon ribDaemon){
 		this.ribDaemon = ribDaemon;
@@ -71,6 +76,14 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 			log.error("Could not subscribe to RIB Daemon:" +ex.getMessage());
 		}
 	}
+	
+	private FlowAllocator getFlowAllocator(){
+		if (this.flowAllocator == null){
+			this.flowAllocator = (FlowAllocator) this.getIPCProcessComponent(BaseFlowAllocator.getComponentName());
+		}
+		
+		return this.flowAllocator;
+	}
 
 	/**
 	 * Forward the allocate request to the Flow Allocator. Before, choose an available portId
@@ -80,8 +93,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 */
 	public int submitAllocateRequest(FlowService flowService) throws IPCException{
 		log.debug("Allocate request received, forwarding it to the Flow Allocator");
-		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(BaseFlowAllocator.getComponentName());
-		return flowAllocator.submitAllocateRequest(flowService);
+		return getFlowAllocator().submitAllocateRequest(flowService);
 	}
 
 	/**
@@ -91,8 +103,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 */
 	public void submitAllocateResponse(int portId, boolean success, String reason) throws IPCException{
 		log.debug("Allocate request received, forwarding it to the Flow Allocator");
-		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
-		flowAllocator.submitAllocateResponse(portId, success, reason);
+		getFlowAllocator().submitAllocateResponse(portId, success, reason);
 	}
 
 	/**
@@ -101,8 +112,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 */
 	public void submitDeallocate(int portId) throws IPCException{
 		log.debug("Deallocate request received, forwarding it to the Flow Allocator");
-		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
-		flowAllocator.submitDeallocate(portId);
+		getFlowAllocator().submitDeallocate(portId);
 	}
 
 	public void submitStatus(int arg0) {
@@ -116,8 +126,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * @throws IPCException
 	 */
 	public void submitTransfer(int portId, byte[] sdu) throws IPCException{
-		FlowAllocator flowAllocator = (FlowAllocator) this.getIPCProcessComponent(FlowAllocator.class.getName());
-		flowAllocator.submitTransfer(portId, sdu);
+		getFlowAllocator().submitTransfer(portId, sdu);
 		
 		/*List<byte[]> sdus = new ArrayList<byte[]>();
 		sdus.add(sdu);

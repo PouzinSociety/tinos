@@ -33,7 +33,7 @@ public class RINAFactory {
 	 * Centralize the executor service for all the classes using the RINA Library in this 
 	 * Java Virtual Machine
 	 */
-	private static ExecutorService executorService = null;
+	private static ExecutorService executorService = Executors.newCachedThreadPool();
 	
 	public static synchronized CDAPSessionManager getCDAPSessionManagerInstance(){
 		if (cdapSessionManagerFactory == null){
@@ -44,11 +44,11 @@ public class RINAFactory {
 		return cdapSessionManagerFactory.createCDAPSessionManager();
 	}
 	
-	public static synchronized Delimiter getDelimiterInstance(){
+	public static Delimiter getDelimiterInstance(){
 		return delimiterFactory.createDelimiter(DelimiterFactory.DIF);
 	}
 	
-	public static synchronized Encoder getEncoderInstance(){
+	public static Encoder getEncoderInstance(){
 		return encoderFactory.createEncoderInstance();
 	}
 	
@@ -57,11 +57,7 @@ public class RINAFactory {
 	 * so that a program can exit when the main class completes.
 	 * @param runnable
 	 */
-	public static synchronized void execute(Runnable runnable){
-		if (executorService == null){
-			executorService = Executors.newCachedThreadPool();
-		}
-		
+	public static void execute(Runnable runnable){
 		executorService.execute(runnable);
 	}
 
