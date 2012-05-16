@@ -45,6 +45,12 @@ public class LocalConfiguration {
 	private int watchdogPeriodInMs = 60000;
 	
 	/**
+	 * The period after which, if no keepAlive message from a neighbor IPC process has
+	 * been received, it will be declared dead (and adequate action will be taken)
+	 */
+	private int declaredDeadIntervalInMs = 120000;
+	
+	/**
 	 * The period of execution of the neighbors enroller. This task looks for known 
 	 * neighbors in the RIB. If we're not enrolled to them, he is going to try to 
 	 * initiate the enrollment.
@@ -105,6 +111,14 @@ public class LocalConfiguration {
 
 	public void setWatchdogPeriodInMs(int watchdogPeriodInMs) {
 		this.watchdogPeriodInMs = watchdogPeriodInMs;
+	}
+
+	public int getDeclaredDeadIntervalInMs() {
+		return declaredDeadIntervalInMs;
+	}
+
+	public void setDeclaredDeadIntervalInMs(int declaredDeadIntervalInMs) {
+		this.declaredDeadIntervalInMs = declaredDeadIntervalInMs;
 	}
 
 	public int getNeighborsEnrollerPeriodInMs() {

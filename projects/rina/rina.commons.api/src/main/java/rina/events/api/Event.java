@@ -9,6 +9,7 @@ public interface Event {
 	
 	public static final String N_MINUS_1_FLOW_DEALLOCATED = "N minus 1 Flow Deallocated";
 	public static final String CONNECTIVITY_TO_NEIGHBOR_LOST = "Connectivity to Neighbor Lost";
+	public static final String NEIGHBOR_DECLARED_DEAD = "Neighbor declared dead";
 
 	/**
 	 * The id of the event

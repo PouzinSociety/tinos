@@ -6,6 +6,7 @@
     "cdapTimeoutInMs" : 10000,
     "enrollmentTimeoutInMs" : 10000,
     "watchdogPeriodInMs" : 60000,
+    "declaredDeadIntervalInMs" : 120000,
     "neighborsEnrollerPeriodInMs" : 10000 
   },
   "ipcProcessesToCreate" : [ {

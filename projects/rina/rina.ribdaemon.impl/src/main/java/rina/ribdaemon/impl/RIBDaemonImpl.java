@@ -351,7 +351,8 @@ public class RIBDaemonImpl extends BaseRIBDaemon implements EventListener{
 				serializedCDAPMessageToBeSend = cdapSessionManager.encodeNextMessageToBeSent(cdapMessage, portId);
 				rmt.sendCDAPMessage(portId, serializedCDAPMessageToBeSend);
 				cdapSessionManager.messageSent(cdapMessage, portId);
-				log.debug("Sent CDAP Message through portId "+portId+": "+ cdapMessage.toString());
+				String destination = cdapSessionManager.getCDAPSession(portId).getSessionDescriptor().getDestApName();
+				log.debug("Sent CDAP Message to "+destination+" through underlying portId "+portId+": "+ cdapMessage.toString());
 			}catch(Exception ex){
 				ex.printStackTrace();
 				if (ex.getMessage().equals("Flow closed")){

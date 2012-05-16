@@ -37,7 +37,7 @@ public class Neighbor {
 	private boolean enrolled = false;
 	
 	/**
-	 * The average RTT in Ms
+	 * The average RTT in ms
 	 */
 	private long averageRTTInMs = 0L;
 	
@@ -45,6 +45,12 @@ public class Neighbor {
 	 * The underlying portId used to communicate with this neighbor
 	 */
 	private int underlyingPortId = 0;
+	
+	/**
+	 * The last time a KeepAlive message was received from
+	 * that neighbor, in ms
+	 */
+	private long lastHeardFromTimeInMs = 0L;
 
 	public String getApplicationProcessName() {
 		return applicationProcessName;
@@ -94,6 +100,14 @@ public class Neighbor {
 		this.underlyingPortId = underlyingPortId;
 	}
 
+	public long getLastHeardFromTimeInMs() {
+		return lastHeardFromTimeInMs;
+	}
+
+	public void setLastHeardFromTimeInMs(long lastHeardFromTimeInMs) {
+		this.lastHeardFromTimeInMs = lastHeardFromTimeInMs;
+	}
+
 	public String getKey(){
 		String key = this.applicationProcessName+".";
 		if (this.applicationProcessInstance != null){
@@ -112,7 +126,8 @@ public class Neighbor {
 		result = result + "Address: " + this.address + "\n";
 		result = result + "Enrolled: " + this.enrolled + "\n";
 		result = result + "Underlying portId: " + this.underlyingPortId + "\n";
-		result = result + "Average RTT: " + this.averageRTTInMs + " ms";
+		result = result + "Average RTT: " + this.averageRTTInMs + " ms \n";
+		result = result + "Last heard from time: " + this.lastHeardFromTimeInMs + " ms";
 		
 		return result;
 	}

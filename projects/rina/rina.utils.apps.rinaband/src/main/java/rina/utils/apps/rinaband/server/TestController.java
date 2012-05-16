@@ -186,10 +186,16 @@ public class TestController implements SDUListener, FlowListener{
 			return;
 		}
 		
+		int counter = 0;
 		while (this.epochTimeLastSDUReceived == 0 || this.epochTimeLastSDUSent == 0){
+			if (counter >=10){
+				break;
+			}
+			
 			try{
 				printMessage("Waiting for the last SDU sent/received value");
 				Thread.sleep(100);
+				counter ++;
 			}catch(Exception ex){
 				ex.printStackTrace();
 			}

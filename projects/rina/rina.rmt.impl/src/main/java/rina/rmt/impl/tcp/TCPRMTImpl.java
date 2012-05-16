@@ -18,6 +18,7 @@ import rina.delimiting.api.Delimiter;
 import rina.events.api.Event;
 import rina.events.api.EventListener;
 import rina.events.api.events.NMinusOneFlowDeallocatedEvent;
+import rina.events.api.events.NeighborDeclaredDeadEvent;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.QualityOfServiceSpecification;
@@ -63,6 +64,7 @@ public class TCPRMTImpl extends BaseRMT implements EventListener{
 		//Subscribe to N-1 Flow deallocated events
 		RIBDaemon ribDaemon = (RIBDaemon) this.getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		ribDaemon.subscribeToEvent(Event.N_MINUS_1_FLOW_DEALLOCATED, this);
+		ribDaemon.subscribeToEvent(Event.NEIGHBOR_DECLARED_DEAD, this);
 	}
 	
 	/**
@@ -218,6 +220,14 @@ public class TCPRMTImpl extends BaseRMT implements EventListener{
 		if (event.getId().equals(Event.N_MINUS_1_FLOW_DEALLOCATED)){
 			NMinusOneFlowDeallocatedEvent flowEvent = (NMinusOneFlowDeallocatedEvent) event;
 			this.connectionEnded(flowEvent.getPortId());
+		}else if (event.getId().equals(Event.NEIGHBOR_DECLARED_DEAD)){
+			NeighborDeclaredDeadEvent neighborEvent = (NeighborDeclaredDeadEvent) event;
+			Socket socket = flowTable.get(new Integer(neighborEvent.getNeighbor().getUnderlyingPortId()));
+			try{
+				socket.close();
+			}catch(Exception ex){
+				ex.printStackTrace();
+			}
 		}
 	}
 	

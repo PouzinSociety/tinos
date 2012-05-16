@@ -15,6 +15,7 @@ import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.configuration.RINAConfiguration;
 import rina.enrollment.api.Neighbor;
+import rina.events.api.events.NeighborDeclaredDeadEvent;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBObject;
 import rina.ribdaemon.api.ObjectInstanceGenerator;
@@ -40,6 +41,16 @@ public class WatchdogRIBObject extends BaseRIBObject implements CDAPMessageHandl
 	private Map<String, NeighborStatistics> neighborStatistics = null;
 	
 	/**
+	 * The keepalive period in ms.
+	 */
+	private long periodInMs = 0L;
+	
+	/**
+	 * The declared dead interval in ms
+	 */
+	private long declaredDeadIntervalInMs = 0L;
+	
+	/**
 	 * Schedule the watchdogtimer_task to run every PERIOD_IN_MS milliseconds
 	 * @param ipcProcess
 	 */
@@ -48,7 +59,8 @@ public class WatchdogRIBObject extends BaseRIBObject implements CDAPMessageHandl
 		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 		this.timer = new Timer();
 		timerTask = new WatchdogTimerTask(this);
-		long periodInMs = RINAConfiguration.getInstance().getLocalConfiguration().getWatchdogPeriodInMs();
+		this.periodInMs = RINAConfiguration.getInstance().getLocalConfiguration().getWatchdogPeriodInMs();
+		this.declaredDeadIntervalInMs = RINAConfiguration.getInstance().getLocalConfiguration().getDeclaredDeadIntervalInMs();
 		this.neighborStatistics = new ConcurrentHashMap<String, NeighborStatistics>();
 		timer.schedule(timerTask, new Double(periodInMs*Math.random()).longValue(), periodInMs);
 	}
@@ -65,10 +77,24 @@ public class WatchdogRIBObject extends BaseRIBObject implements CDAPMessageHandl
 	@Override
 	public void read(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor)
 		throws RIBDaemonException {
+		
+		//1 Send M_READ_R message
 		try{
 			responseMessage = cdapSessionManager.getReadObjectResponseMessage(cdapSessionDescriptor.getPortId(), null, 
 					cdapMessage.getObjClass(), 0L, cdapMessage.getObjName(), null, 0, null, cdapMessage.getInvokeID());
 			this.getRIBDaemon().sendMessage(responseMessage, cdapSessionDescriptor.getPortId(), null);
+		}catch(Exception ex){
+			log.error(ex);
+		}
+		
+		//2 Update the "lastHeardFromTimeInMs" attribute of the neighbor that has issued the read request
+		try{
+			Neighbor neighbor = (Neighbor) ((NeighborRIBObject) this.getRIBDaemon().read(Neighbor.NEIGHBOR_RIB_OBJECT_CLASS, 
+					Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + cdapSessionDescriptor.getDestApName())).getObjectValue();
+			neighbor.setLastHeardFromTimeInMs(System.currentTimeMillis());
+			this.getRIBDaemon().write(Neighbor.NEIGHBOR_RIB_OBJECT_CLASS, 
+					Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + neighbor.getApplicationProcessName(), 
+					neighbor);
 		}catch(Exception ex){
 			log.error(ex);
 		}
@@ -84,20 +110,38 @@ public class WatchdogRIBObject extends BaseRIBObject implements CDAPMessageHandl
 		
 		CDAPMessage cdapMessage = null;
 		NeighborStatistics neighborStats = null;
+		long currentTime = System.currentTimeMillis();
 		for(int i=0; i<neighbors.size(); i++){
-			if (neighbors.get(i).isEnrolled()){
-				try{
-					cdapMessage = cdapSessionManager.getReadObjectRequestMessage(
-							neighbors.get(i).getUnderlyingPortId(), null, null, WatchdogRIBObject.WATCHDOG_OBJECT_CLASS, 
-							0, WatchdogRIBObject.WATCHDOG_OBJECT_NAME, 0, true);
-					neighborStats = new NeighborStatistics(
-							neighbors.get(i).getApplicationProcessName(), 
-							System.currentTimeMillis());
-					this.neighborStatistics.put(neighborStats.getApName(), neighborStats);
-					this.getRIBDaemon().sendMessage(cdapMessage, neighbors.get(i).getUnderlyingPortId(), this);
-				}catch(Exception ex){
-					log.error(ex);
-				}
+			//Skip non enrolled neighbors
+			if (!neighbors.get(i).isEnrolled()){
+				continue;
+			}
+			
+			//Skip neighbors that have sent M_READ messages during the last period
+			if (neighbors.get(i).getLastHeardFromTimeInMs() + this.periodInMs > currentTime){
+				continue;
+			}
+			
+			//If we have not heard from the neighbor during long enough, declare the neighbor
+			//dead and fire a NEIGHBOR_DECLARED_DEAD event
+			if (neighbors.get(i).getLastHeardFromTimeInMs() != 0 && 
+					neighbors.get(i).getLastHeardFromTimeInMs() + this.declaredDeadIntervalInMs < currentTime){
+				NeighborDeclaredDeadEvent event = new NeighborDeclaredDeadEvent(neighbors.get(i));
+				this.getRIBDaemon().deliverEvent(event);
+				continue;
+			}
+			
+			try{
+				cdapMessage = cdapSessionManager.getReadObjectRequestMessage(
+						neighbors.get(i).getUnderlyingPortId(), null, null, WatchdogRIBObject.WATCHDOG_OBJECT_CLASS, 
+						0, WatchdogRIBObject.WATCHDOG_OBJECT_NAME, 0, true);
+				neighborStats = new NeighborStatistics(
+						neighbors.get(i).getApplicationProcessName(), 
+						System.currentTimeMillis());
+				this.neighborStatistics.put(neighborStats.getApName(), neighborStats);
+				this.getRIBDaemon().sendMessage(cdapMessage, neighbors.get(i).getUnderlyingPortId(), this);
+			}catch(Exception ex){
+				log.error(ex);
 			}
 		}
 	}
@@ -114,6 +158,7 @@ public class WatchdogRIBObject extends BaseRIBObject implements CDAPMessageHandl
 			Neighbor neighbor = (Neighbor) ((NeighborRIBObject) this.getRIBDaemon().read(Neighbor.NEIGHBOR_RIB_OBJECT_CLASS, 
 					Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + neighborStats.getApName())).getObjectValue();
 			neighbor.setAverageRTTInMs(time - neighborStats.getMessageSentTimeInMs());
+			neighbor.setLastHeardFromTimeInMs(time);
 			log.debug("RTT to "+neighborStats.getApName()+" : "+neighbor.getAverageRTTInMs()+" ms");
 			this.getRIBDaemon().write(Neighbor.NEIGHBOR_RIB_OBJECT_CLASS, 
 					Neighbor.NEIGHBOR_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + neighborStats.getApName(), 
