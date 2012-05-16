@@ -30,6 +30,27 @@ public class Neighbor {
 	 * The address
 	 */
 	private long address = 0;
+	
+	/**
+	 * Tells if it is enrolled or not
+	 */
+	private boolean enrolled = false;
+	
+	/**
+	 * The average RTT in ms
+	 */
+	private long averageRTTInMs = 0L;
+	
+	/**
+	 * The underlying portId used to communicate with this neighbor
+	 */
+	private int underlyingPortId = 0;
+	
+	/**
+	 * The last time a KeepAlive message was received from
+	 * that neighbor, in ms
+	 */
+	private long lastHeardFromTimeInMs = 0L;
 
 	public String getApplicationProcessName() {
 		return applicationProcessName;
@@ -55,6 +76,38 @@ public class Neighbor {
 		this.address = address;
 	}
 	
+	public boolean isEnrolled() {
+		return enrolled;
+	}
+
+	public void setEnrolled(boolean enrolled) {
+		this.enrolled = enrolled;
+	}
+
+	public long getAverageRTTInMs() {
+		return averageRTTInMs;
+	}
+
+	public void setAverageRTTInMs(long averageRTTInMs) {
+		this.averageRTTInMs = averageRTTInMs;
+	}
+
+	public int getUnderlyingPortId() {
+		return underlyingPortId;
+	}
+
+	public void setUnderlyingPortId(int underlyingPortId) {
+		this.underlyingPortId = underlyingPortId;
+	}
+
+	public long getLastHeardFromTimeInMs() {
+		return lastHeardFromTimeInMs;
+	}
+
+	public void setLastHeardFromTimeInMs(long lastHeardFromTimeInMs) {
+		this.lastHeardFromTimeInMs = lastHeardFromTimeInMs;
+	}
+
 	public String getKey(){
 		String key = this.applicationProcessName+".";
 		if (this.applicationProcessInstance != null){
@@ -70,7 +123,11 @@ public class Neighbor {
 	public String toString(){
 		String result = "Application Process Name: " + this.applicationProcessName + "\n";
 		result = result + "Application Process Instance: " + this.applicationProcessInstance + "\n";
-		result = result + "Address: " + this.address;
+		result = result + "Address: " + this.address + "\n";
+		result = result + "Enrolled: " + this.enrolled + "\n";
+		result = result + "Underlying portId: " + this.underlyingPortId + "\n";
+		result = result + "Average RTT: " + this.averageRTTInMs + " ms \n";
+		result = result + "Last heard from time: " + this.lastHeardFromTimeInMs + " ms";
 		
 		return result;
 	}

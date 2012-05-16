@@ -40,12 +40,35 @@ public class NeighborSetRIBObject extends BaseRIBObject{
 		try{
 			Neighbor[] neighbors = (Neighbor[])
 				this.getEncoder().decode(cdapMessage.getObjValue().getByteval(), Neighbor[].class);
-			this.getRIBDaemon().create(cdapMessage.getObjClass(), cdapMessage.getObjInst(), 
-					cdapMessage.getObjName(), neighbors, null);
+			
+			//Only create the neighbors that we don't know about
+			List<Neighbor> unknownNeighbors = new ArrayList<Neighbor>();
+			for(int i=0; i<neighbors.length; i++){
+				if (!this.contains(neighbors[i])){
+					unknownNeighbors.add(neighbors[i]);
+				}
+			}
+			this.getRIBDaemon().create(cdapMessage.getObjClass(), 
+					cdapMessage.getObjInst(), 
+					cdapMessage.getObjName(), 
+					unknownNeighbors.toArray(new Neighbor[unknownNeighbors.size()]), 
+					null);
 		}catch(Exception ex){
 			log.error(ex);
 			ex.printStackTrace();
 		}
+	}
+	
+	private boolean contains(Neighbor neighbor){
+		Neighbor candidate = null;
+		for(int i=0; i<this.getChildren().size(); i++){
+			candidate = (Neighbor) this.getChildren().get(i).getObjectValue();
+			if (candidate.getApplicationProcessName().equals(neighbor.getApplicationProcessName())){
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	@Override

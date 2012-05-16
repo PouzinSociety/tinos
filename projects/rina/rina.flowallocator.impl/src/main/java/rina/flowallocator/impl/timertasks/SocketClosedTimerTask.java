@@ -6,8 +6,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.flowallocator.impl.FlowAllocatorInstanceImpl;
-import rina.ribdaemon.api.RIBDaemon;
-import rina.ribdaemon.api.RIBDaemonException;
 
 /**
  * Activates when the socket reader detects that the socket has been closed.
@@ -21,14 +19,10 @@ public class SocketClosedTimerTask extends TimerTask {
 	private static final Log log = LogFactory.getLog(SocketClosedTimerTask.class);
 	
 	private FlowAllocatorInstanceImpl flowAllocatorInstance = null;
-	private RIBDaemon ribDaemon = null;
 	private String objectName = null;
-	private String objectClass = null;
 	
-	public SocketClosedTimerTask(FlowAllocatorInstanceImpl flowAllocatorInstance, RIBDaemon ribDaemon, String objectClass, String objectName){
+	public SocketClosedTimerTask(FlowAllocatorInstanceImpl flowAllocatorInstance, String objectName){
 		this.flowAllocatorInstance = flowAllocatorInstance;
-		this.ribDaemon = ribDaemon;
-		this.objectClass = objectClass;
 		this.objectName = objectName;
 	}
 
@@ -36,12 +30,7 @@ public class SocketClosedTimerTask extends TimerTask {
 	public void run() {
 		log.debug("Looking if flow "+objectName+" is still in the RIB");
 		if (!flowAllocatorInstance.isFinished()){
-			flowAllocatorInstance.destroyFlowAllocatorInstance();
-			try{
-				this.ribDaemon.delete(objectClass, objectName);
-			}catch(RIBDaemonException ex){
-				ex.printStackTrace();
-			}
+			flowAllocatorInstance.destroyFlowAllocatorInstance(objectName);
 		}
 
 	}

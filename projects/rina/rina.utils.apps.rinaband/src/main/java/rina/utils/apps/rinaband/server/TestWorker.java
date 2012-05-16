@@ -37,9 +37,15 @@ public class TestWorker implements SDUListener{
 	 */
 	private long timeOfFirstSDUReceived =0;
 	
-	public TestWorker(TestInformation testInformation, Flow flow){
+	/**
+	 * The controller of this test
+	 */
+	private TestController testController = null;
+	
+	public TestWorker(TestInformation testInformation, Flow flow, TestController testController){
 		this.testInformation = testInformation;
 		this.flow = flow;
+		this.testController = testController;
 	}
 	
 	/**
@@ -49,7 +55,7 @@ public class TestWorker implements SDUListener{
 		this.started = true;
 		
 		if (this.testInformation.isServerSendsSDUs()){
-			SDUSender sduSender = new SDUSender(this.testInformation, this.flow);
+			SDUSender sduSender = new SDUSender(this.testInformation, this.flow, this.testController);
 			RINABandServer.executeRunnable(sduSender);
 		}
 	}
@@ -74,9 +80,11 @@ public class TestWorker implements SDUListener{
 		deliveredSDUs ++;
 		if (timeOfFirstSDUReceived == 0){
 			timeOfFirstSDUReceived = System.nanoTime();
+			testController.setFirstSDUReveived(System.currentTimeMillis());
 		}
 		if (deliveredSDUs == this.testInformation.getNumberOfSDUs()){
 			long time = System.nanoTime() - timeOfFirstSDUReceived;
+			testController.setLastSDUReceived(System.currentTimeMillis());
 			long sentSDUsperSecond = 1000L*1000L*1000L*this.testInformation.getNumberOfSDUs()/time;
 			System.out.println("Flow at portId "+flow.getPortId()+": Received SDUs per second: "+sentSDUsperSecond);
 			System.out.println("Flow at portId "+flow.getPortId()+": Received KiloBytes per second (KBps): "

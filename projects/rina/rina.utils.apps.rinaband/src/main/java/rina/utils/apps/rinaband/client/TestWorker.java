@@ -3,6 +3,9 @@ package rina.utils.apps.rinaband.client;
 import rina.applibrary.api.Flow;
 import rina.applibrary.api.SDUListener;
 import rina.utils.apps.rinaband.TestInformation;
+import rina.utils.apps.rinaband.generator.BoringSDUGenerator;
+import rina.utils.apps.rinaband.generator.IncrementSDUGenerator;
+import rina.utils.apps.rinaband.generator.SDUGenerator;
 
 public class TestWorker implements Runnable, SDUListener{
 
@@ -39,7 +42,12 @@ public class TestWorker implements Runnable, SDUListener{
 	/**
 	 * The time when the first SDU was received
 	 */
-	private long timeOfFirstSDUReceived = 0;
+	private long nanoTimeOfFirstSDUReceived = 0;
+	
+	/**
+	 * The epoch time when the first SDU was received (in milliseconds)
+	 */
+	private long epochTimeOfFirstSDUReceived = 0;
 	
 	/**
 	 * The time when the first SDU was received
@@ -56,11 +64,30 @@ public class TestWorker implements Runnable, SDUListener{
 	 */
 	private boolean sendCompleted = false;
 	
+	/**
+	 * The class that generates the SDUs
+	 */
+	private SDUGenerator sduGenerator = null;
+	
 	public TestWorker(TestInformation testInformation, RINABandClient rinaBandClient){
 		this.testInformation = testInformation;
 		this.rinaBandClient = rinaBandClient;
 		this.statistics = new TestFlowStatistics();
 		this.lock = new Object();
+		
+		if (!this.testInformation.isClientSendsSDUs()){
+			this.sendCompleted = true;
+		}
+		
+		if (!this.testInformation.isServerSendsSDUs()){
+			this.receiveCompleted = true;
+		}
+		
+		if (this.testInformation.getPattern().equals(SDUGenerator.NONE_PATTERN)){
+			sduGenerator = new BoringSDUGenerator(this.testInformation.getSduSize());
+		}else if (this.testInformation.getPattern().equals(SDUGenerator.INCREMENT_PATTERN)){
+			sduGenerator = new IncrementSDUGenerator(this.testInformation.getSduSize());
+		}
 	}
 
 	public void setFlow(Flow flow, long flowSetupTimeInMillis){
@@ -93,39 +120,32 @@ public class TestWorker implements Runnable, SDUListener{
 			return;
 		}
 		
-		this.timeOfFirstSDUSent = System.nanoTime();
+		this.timeOfFirstSDUSent = System.currentTimeMillis();
+		rinaBandClient.setFirstSDUSent(this.timeOfFirstSDUSent);
 		for(int i=0; i<this.testInformation.getNumberOfSDUs(); i++){
 			try{
-				flow.write(getNextSDU());
+				flow.write(this.sduGenerator.getNextSDU());
 			}catch(Exception ex){
 				synchronized(lock){
 					this.sendCompleted = true;
 					if (this.receiveCompleted){
-						rinaBandClient.testCompleted(this);
+						this.rinaBandClient.testCompleted(this);
 					}
 				}
 				return;
 			}
 		}
 		
+		long currentTime = System.currentTimeMillis();
+		long totalTimeInMilis = (currentTime - this.timeOfFirstSDUSent);
+		this.rinaBandClient.setLastSDUSent(currentTime);
 		synchronized(lock){
-			long totalTimeInNanos = (System.nanoTime() - this.timeOfFirstSDUSent);
-			this.statistics.setSentSDUsPerSecond(1000L*1000L*1000L*this.testInformation.getNumberOfSDUs()/totalTimeInNanos);
+			this.statistics.setSentSDUsPerSecond(1000L*this.testInformation.getNumberOfSDUs()/totalTimeInMilis);
 			this.sendCompleted = true;
 			if (this.receiveCompleted){
-				rinaBandClient.testCompleted(this);
+				this.rinaBandClient.testCompleted(this);
 			}
 		}
-		
-	}
-	
-	private byte[] getNextSDU(){
-		byte[] result = new byte[this.testInformation.getSduSize()];
-		for(int i=0; i<result.length; i++){
-			result[i] = 0x01;
-		}
-		
-		return result;
 	}
 
 	/**
@@ -133,17 +153,22 @@ public class TestWorker implements Runnable, SDUListener{
 	 */
 	public void sduDelivered(byte[] sdu) {
 		if (this.receivedSDUs == 0){
-			this.timeOfFirstSDUReceived = System.nanoTime();
+			this.nanoTimeOfFirstSDUReceived = System.nanoTime();
+			this.epochTimeOfFirstSDUReceived = System.currentTimeMillis();
+			this.rinaBandClient.setFirstSDUReveived(this.epochTimeOfFirstSDUReceived);
 		}
 		
 		this.receivedSDUs++;
 		if (this.receivedSDUs == this.testInformation.getNumberOfSDUs()){
-			long totalTimeInNanos = (System.nanoTime() - this.timeOfFirstSDUReceived);
+			long currentTimeInNanos = System.nanoTime();
+			long epochTime = System.currentTimeMillis();
+			long totalTimeInNanos = (currentTimeInNanos - this.nanoTimeOfFirstSDUReceived);
+			this.rinaBandClient.setLastSDUReceived(epochTime);
 			synchronized(lock){
 				this.statistics.setReceivedSDUsPerSecond(1000L*1000L*1000L*this.receivedSDUs/totalTimeInNanos);
 				this.receiveCompleted = true;
 				if (this.sendCompleted){
-					rinaBandClient.testCompleted(this);
+					this.rinaBandClient.testCompleted(this);
 				}
 			}
 		}

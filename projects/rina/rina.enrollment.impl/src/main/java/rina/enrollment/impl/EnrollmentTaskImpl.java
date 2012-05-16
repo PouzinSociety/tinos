@@ -23,6 +23,7 @@ import rina.enrollment.impl.ribobjects.AddressRIBObject;
 import rina.enrollment.impl.ribobjects.NeighborSetRIBObject;
 import rina.enrollment.impl.ribobjects.EnrollmentRIBObject;
 import rina.enrollment.impl.ribobjects.OperationalStatusRIBObject;
+import rina.enrollment.impl.ribobjects.WatchdogRIBObject;
 import rina.enrollment.impl.statemachines.BaseEnrollmentStateMachine;
 import rina.enrollment.impl.statemachines.BaseEnrollmentStateMachine.State;
 import rina.enrollment.impl.statemachines.EnrolleeStateMachine;
@@ -100,6 +101,8 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 			ribObject = new OperationalStatusRIBObject(this, ipcProcess);
 			this.ribDaemon.addRIBObject(ribObject);
 			ribObject = new AddressRIBObject(ipcProcess, this);
+			this.ribDaemon.addRIBObject(ribObject);
+			ribObject = new WatchdogRIBObject(ipcProcess);
 			this.ribDaemon.addRIBObject(ribObject);
 		}catch(RIBDaemonException ex){
 			ex.printStackTrace();

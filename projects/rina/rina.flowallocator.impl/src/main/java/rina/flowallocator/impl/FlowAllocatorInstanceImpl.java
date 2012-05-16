@@ -441,34 +441,30 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 * @throws IPCException
 	 */
 	public void submitDeallocate() throws IPCException{
+		String flowObjectName = null;
+		
 		if (local){
+			//1 Notify the flow allocator
 			this.flowAllocator.receivedDeallocateLocalFlowRequest(this.remotePortId);
+			flowObjectName = this.objectName;
+		}else{
 			try{
-				this.ribDaemon.delete(Flow.FLOW_RIB_OBJECT_CLASS, objectName);
-				this.flowAllocator.removeFlowAllocatorInstance(this.portId);
+				//1 Send the M_DELETE Flow message
+				ObjectValue objectValue = new ObjectValue();
+				objectValue.setByteval(this.encoder.encode(flow));
+				requestMessage = cdapSessionManager.getDeleteObjectRequestMessage(
+						underlyingPortId, null, null, "flow", 0, requestMessage.getObjName(), null, 0, false); 
+				this.ribDaemon.sendMessage(requestMessage, underlyingPortId, null);
+				flowObjectName = requestMessage.getObjName();
 			}catch(Exception ex){
-				ex.printStackTrace();
+				log.error(ex);
+				throw new IPCException(IPCException.PROBLEMS_DEALLOCATING_FLOW_CODE, 
+						IPCException.PROBLEMS_DEALLOCATING_FLOW + ex.getMessage());
 			}
-			return;
 		}
 		
-		//1 Send the M_DELETE Flow message
-		try{
-			ObjectValue objectValue = new ObjectValue();
-			objectValue.setByteval(this.encoder.encode(flow));
-			requestMessage = cdapSessionManager.getDeleteObjectRequestMessage(
-					underlyingPortId, null, null, "flow", 0, requestMessage.getObjName(), null, 0, true); 
-			this.ribDaemon.sendMessage(requestMessage, underlyingPortId, this);
-			//TODO set timer to wait for M_DELETE_R message. If the message is not received before timer expiration, remove
-			//the Flow object from the RIB
-		}catch(Exception ex){
-			log.error(ex);
-			throw new IPCException(IPCException.PROBLEMS_DEALLOCATING_FLOW_CODE, 
-					IPCException.PROBLEMS_DEALLOCATING_FLOW + ex.getMessage());
-		}
-		
-		//2 Delete the binding between the TCP connection and the portId, and terminate the TCP connection
-		destroyFlowAllocatorInstance();
+		//2 Housekeeping and remove state from RIB
+		destroyFlowAllocatorInstance(flowObjectName);
 	}
 
 	/**
@@ -481,18 +477,8 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		//1 Notify application
 		this.apService.deliverDeallocate(portId);
 		
-		//2 Reply back
-		try{
-			CDAPMessage responseMessage = cdapSessionManager.getDeleteObjectResponseMessage(underlyingPortId, null, 
-					cdapMessage.getObjClass(), cdapMessage.getObjInst(), cdapMessage.getObjName(), 0, null, cdapMessage.getInvokeID());
-			this.ribDaemon.sendMessage(responseMessage, underlyingPortId, null);
-			this.ribDaemon.delete(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst());
-		}catch(Exception ex){
-			ex.printStackTrace(); 
-		}
-		
-		//3 Destroy flow allocator instance
-		destroyFlowAllocatorInstance();
+		//2 HouseKeeping and remove state from RIB
+		destroyFlowAllocatorInstance(cdapMessage.getObjName());
 	}
 	
 	/**
@@ -503,13 +489,8 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		//1 Notify application
 		this.apService.deliverDeallocate(portId);
 		
-		//2 Cleanup
-		try{
-			this.ribDaemon.delete(Flow.FLOW_RIB_OBJECT_CLASS, objectName);
-			this.flowAllocator.removeFlowAllocatorInstance(this.portId);
-		}catch(Exception ex){
-			ex.printStackTrace();
-		}
+		//2 HouseKeeping and remove state from RIB
+		destroyFlowAllocatorInstance(this.objectName);
 	}
 	
 	/**
@@ -537,7 +518,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		
 		if (cdapMessage.getResult() != 0){
 			log.debug("Unsuccessful create flow response message received for flow "+cdapMessage.getObjName());
-			destroyFlowAllocatorInstance();
+			destroyFlowAllocatorInstance(objectName);
 			this.apService.deliverAllocateResponse(portId, cdapMessage.getResult(), cdapMessage.getResultReason());
 			return;
 		}
@@ -604,42 +585,36 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		}
 	}
 	
-	public void destroyFlowAllocatorInstance(){
-		//Close the socket if it is still open
-		if (!this.socket.isClosed()){
+	public void destroyFlowAllocatorInstance(String flowObjectName){
+		//1 Close the socket if it is still open
+		if (this.socket != null){
 			try{
 				this.socket.close();
 			}catch(Exception ex){
+				log.error(ex.getMessage());
 				ex.printStackTrace();
 			}
 		}
 		
-		this.flowAllocator.removeFlowAllocatorInstance(this.portId);
-		this.finished = true;
-		timer.cancel();
-	}
-
-	/**
-	 * When a Delete_Response PDU is received, the FAI completes any housekeeping and terminates.
-	 * @param cdapMessage
-	 * @param cdapSessionDescriptor
-	 */
-	public void deleteResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
-		if (!cdapMessage.getObjName().equals(requestMessage.getObjName())){
-			log.error("Expected delete flow response message for flow "+requestMessage.getObjName()+
-					", but received delete flow response message for flow "+cdapMessage.getObjName());
-			//TODO, what to do?
-			return;
-		}
-		
-		//TODO Cancel timer
-		
-		RIBDaemon ribDaemon = (RIBDaemon) flowAllocator.getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+		//2 Delete the object from the RIB
 		try{
-			ribDaemon.delete(cdapMessage.getObjClass(), cdapMessage.getObjName(), cdapMessage.getObjInst());
-		}catch(RIBDaemonException ex){
+			this.ribDaemon.delete(Flow.FLOW_RIB_OBJECT_CLASS, flowObjectName);
+		}catch(Exception ex){
+			log.error(ex.getMessage());
 			ex.printStackTrace();
 		}
+		
+		//3 Cancel any pending timers
+		if (timer != null){
+			timer.cancel();
+		}
+		
+		//4 Remove the FAI from the Flow Allocator list
+		this.flowAllocator.removeFlowAllocatorInstance(this.portId);
+		this.finished = true;
+	}
+
+	public void deleteResponse(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) throws RIBDaemonException{
 	}
 	
 	/**
@@ -647,7 +622,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 * it will notify the Flow Allocator instance
 	 */
 	public void socketClosed(){
-		SocketClosedTimerTask task = new SocketClosedTimerTask(this, ribDaemon, requestMessage.getObjClass(), requestMessage.getObjName());
+		SocketClosedTimerTask task = new SocketClosedTimerTask(this, requestMessage.getObjName());
 		timer.schedule(task, SocketClosedTimerTask.DELAY);
 	}
 	

@@ -83,7 +83,7 @@ public class TCPSocketReader extends BaseSocketReader{
 
 		try{
 			cdapMessage = cdapSessionManager.decodeCDAPMessage(pdu);
-			log.info(cdapMessage.toString());
+			//log.info(cdapMessage.toString());
 
 			switch(cdapMessage.getOpCode()){
 			case M_CREATE:
@@ -105,7 +105,7 @@ public class TCPSocketReader extends BaseSocketReader{
 				handleMStopReceived(cdapMessage);
 				break;
 			default:
-				//TODO
+				log.warn("Received unexpected CDAP message, ignoring it.\n"+cdapMessage.toString());
 			}
 		}catch(CDAPException ex){
 			ex.printStackTrace();
