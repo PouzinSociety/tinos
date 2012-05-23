@@ -11,7 +11,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.applibrary.api.ApplicationRegistrationImpl;
-import rina.applibrary.api.Flow;
 import rina.applibrary.api.FlowImpl;
 import rina.applibrary.api.FlowImpl.State;
 import rina.applibrary.api.SDUListener;
@@ -120,20 +119,20 @@ public class RINASocketImpl extends SocketImpl implements SDUListener{
 				throw new IOException("Socket closed");
 			}
 			
-			try{
+			try {
 				applicationRegistration.unregister();
-			}catch(IPCException ex){
-				throw new IOException(ex);
+			} catch (IPCException e) {
+				throw new IOException(e);
 			}
 		}else{
 			if (flowImpl == null || flowImpl.getState() == State.DEALLOCATED){
 				throw new IOException("Socket closed");
 			}
 
-			try{
+			try {
 				flowImpl.deallocate();
-			}catch(IPCException ex){
-				throw new IOException(ex);
+			} catch (IPCException e) {
+				throw new IOException(e);
 			}
 		}
 	}
