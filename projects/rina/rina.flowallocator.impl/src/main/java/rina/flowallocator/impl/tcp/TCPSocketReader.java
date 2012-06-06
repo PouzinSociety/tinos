@@ -4,8 +4,8 @@ import java.net.Socket;
 
 import rina.delimiting.api.BaseSocketReader;
 import rina.delimiting.api.Delimiter;
+import rina.efcp.api.DataTransferAE;
 import rina.flowallocator.api.FlowAllocatorInstance;
-import rina.ipcservice.api.APService;
 
 /**
  * Continuously reads data from a socket. When an amount of data has been received
@@ -24,22 +24,16 @@ public class TCPSocketReader extends BaseSocketReader{
 	/**
 	 * The class that interacts with the local application
 	 */
-	private APService apService = null;
+	private DataTransferAE dataTransferAE = null;
 	
-	/**
-	 * The portId associated to this flow
-	 */
-	private int portId = 0;
-	
-	public TCPSocketReader(Socket socket, Delimiter delimiter, APService apService, int portId){
+	public TCPSocketReader(Socket socket, Delimiter delimiter, DataTransferAE dataTransferAE){
 		super(socket, delimiter);
-		this.apService = apService;
-		this.portId = portId;
+		this.dataTransferAE = dataTransferAE;
 	}
 
 	@Override
-	public void processPDU(byte[] sdu) {
-		apService.deliverTransfer(portId, sdu);
+	public void processPDU(byte[] pdu) {
+		this.dataTransferAE.pduDelivered(pdu);
 	}
 
 	@Override

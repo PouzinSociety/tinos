@@ -1,9 +1,11 @@
 package rina.flowallocator.api;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.google.common.primitives.UnsignedLongs;
 
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.QualityOfServiceSpecification;
@@ -57,19 +59,19 @@ public class Flow {
 	private long destinationAddress = 0;
 	
 	/**
-	 * All the possible flowIds of this flow
+	 * All the possible connectionIds of this flow
 	 */
-	private List<ConnectionId> flowIds = null;
+	private List<ConnectionId> connectionIds = null;
 	
 	/**
-	 * The index of the current flowId
+	 * The index of the connection that is currently Active in this flow
 	 */
-	private int currentFlowId = 0;
+	private int currentConnectionIdIndex = 0;
 	
 	/**
 	 * The status of this flow
 	 */
-	private byte status = 0x00;
+	private int state = 0x00;
 	
 	/**
 	 * The list of parameters from the AllocateRequest that generated this flow
@@ -81,7 +83,7 @@ public class Flow {
 	 * anything beyond the list used within the QoS-cube? Can we override or specialize those, 
 	 * somehow?
 	 */
-	private List<String> policies = null;
+	private Map<String, String> policies = null;
 	
 	/**
 	 * The merged list of parameters from QoS.policy-Default-Parameters and QoS-Params.
@@ -109,12 +111,25 @@ public class Flow {
 	 */  
 	private int hopCount = 0;
 	
+	/**
+	 * True if this IPC process is the source of the flow, false otherwise
+	 */
+	private boolean source = false;
+	
 	public Flow(){
-		flowIds = new ArrayList<ConnectionId>();
-		policies = new ArrayList<String>();
-		policyParameters = new Hashtable<String, String>();
+		this.connectionIds = new ArrayList<ConnectionId>();
+		this.policies = new ConcurrentHashMap<String, String>();
+		this.policyParameters = new ConcurrentHashMap<String, String>();
 	}
 
+	public boolean isSource() {
+		return source;
+	}
+
+	public void setSource(boolean source) {
+		this.source = source;
+	}
+	
 	public ApplicationProcessNamingInfo getSourceNamingInfo() {
 		return sourceNamingInfo;
 	}
@@ -164,28 +179,28 @@ public class Flow {
 		this.destinationAddress = destinationAddress;
 	}
 
-	public List<ConnectionId> getFlowIds() {
-		return flowIds;
+	public List<ConnectionId> getConnectionIds() {
+		return this.connectionIds;
 	}
 
-	public void setFlowIds(List<ConnectionId> flowIds) {
-		this.flowIds = flowIds;
+	public void setConnectionIds(List<ConnectionId> connectionIds) {
+		this.connectionIds = connectionIds;
 	}
 
-	public int getCurrentFlowId() {
-		return currentFlowId;
+	public int getCurrentConnectionIdIndex() {
+		return currentConnectionIdIndex;
 	}
 
-	public void setCurrentFlowId(int currentFlowId) {
-		this.currentFlowId = currentFlowId;
+	public void setCurrentConnectionIdIndex(int currentConnectionIdIndex) {
+		this.currentConnectionIdIndex = currentConnectionIdIndex;
 	}
 
-	public byte getStatus() {
-		return status;
+	public int getState() {
+		return state;
 	}
 
-	public void setStatus(byte status) {
-		this.status = status;
+	public void setState(int state) {
+		this.state = state;
 	}
 
 	public QualityOfServiceSpecification getQosParameters() {
@@ -196,11 +211,11 @@ public class Flow {
 		this.qosParameters = qosParameters;
 	}
 
-	public List<String> getPolicies() {
+	public Map<String, String> getPolicies() {
 		return policies;
 	}
 
-	public void setPolicies(List<String> policies) {
+	public void setPolicies(Map<String, String> policies) {
 		this.policies = policies;
 	}
 
@@ -246,14 +261,22 @@ public class Flow {
 
 	public String toString(){
 		String result = "";
+		result = result + "Is this IPC Process the source of the flow? " + this.isSource() + "\n";
 		result = result + "Max create flow retries: " + this.getMaxCreateFlowRetries() + "\n";
 		result = result + "Hop count: " + this.getHopCount() + "\n";
 		result = result + "Source AP Naming Info: "+this.sourceNamingInfo;
-		result = result + "Source address: " + this.getSourceAddress() + "\n";
-		result = result + "Source port id: " + this.getSourcePortId() + "\n";
+		result = result + "Source address: " + UnsignedLongs.toString(this.getSourceAddress()) + "\n";
+		result = result + "Source port id: " + UnsignedLongs.toString(this.getSourcePortId()) + "\n";
 		result = result + "Destination AP Naming Info: "+ this.getDestinationNamingInfo();
-		result = result + "Destination addres: " + this.getDestinationAddress() + "\n";
-		result = result + "Destination port id: "+ this.getDestinationPortId() + "\n";
+		result = result + "Destination addres: " + UnsignedLongs.toString(this.getDestinationAddress()) + "\n";
+		result = result + "Destination port id: "+ UnsignedLongs.toString(this.getDestinationPortId()) + "\n";
+		if (connectionIds.size() > 0){
+			result = result + "Connection ids of the connection supporting this flow: +\n";
+			for(int i=0; i<connectionIds.size(); i++){
+				result = result + connectionIds.get(i).toString();
+			}
+		}
+		result = result + "Index of the current active connection for this flow: "+this.currentConnectionIdIndex +"\n";
 		return result;
 	}
 }

@@ -41,6 +41,7 @@ public class IPCException extends Exception{
 	public static final int UNKNOWN_IPC_PROCESS_CODE = 29;
 	public static final int APPLICATION_ALREADY_REGISTERED_CODE = 30;
 	public static final int APPLICATION_ALREADY_UNREGISTERED_CODE = 31;
+	public static final int PROBLEMS_RESERVING_CEP_IDS_CODE = 32;
 	
 	public static final String APPLICATION_NOT_SPECIFIED = "Application name not specified";
 	public static final String SOURCE_APPLICATION_NOT_SPECIFIED = "Source application name not specified";
@@ -74,6 +75,7 @@ public class IPCException extends Exception{
 	public static final String UNKNOWN_IPC_PROCESS = "Unknown IPC Process. ";
 	public static final String APPLICATION_ALREADY_REGISTERED = "The application is already registered";
 	public static final String APPLICATION_ALREADY_UNREGISTERED = "The application is already unregistered";
+	public static final String PROBLEMS_RESERVING_CEP_IDS = "Problems reserving Connection Endpoint IDs: either no more available or the flow had already CEP ids allocated";
 	
 	private int errorCode = 0;
 	

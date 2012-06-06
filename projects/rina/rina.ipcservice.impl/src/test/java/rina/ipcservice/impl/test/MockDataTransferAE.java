@@ -1,40 +1,47 @@
 package rina.ipcservice.impl.test;
 
+import java.net.Socket;
+
 import rina.efcp.api.BaseDataTransferAE;
-import rina.efcp.api.DataTransferAEInstance;
-import rina.efcp.api.DataTransferConstants;
-import rina.flowallocator.api.Connection;
+import rina.flowallocator.api.ConnectionId;
+import rina.flowallocator.api.Flow;
 
 public class MockDataTransferAE extends BaseDataTransferAE{
 
-	public DataTransferAEInstance createDataTransferAEInstance(Connection arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void destroyDataTransferAEInstance(Connection arg0) {
+	@Override
+	public void createConnectionAndBindToPortId(Flow arg0, Socket arg1) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public DataTransferAEInstance getDataTransferAEInstance(Connection arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public DataTransferAEInstance getDataTransferAEInstance(int arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public DataTransferConstants getDataTransferConstants() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void setDataTransferConstants(DataTransferConstants arg0) {
+	@Override
+	public void deleteConnection(ConnectionId arg0) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void freeCEPIds(int arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void pduDelivered(byte[] arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void postSDU(int arg0, byte[] arg1) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public int[] reserveCEPIds(int arg0, int arg1) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -11,6 +11,8 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.google.common.io.LittleEndianDataInputStream;
+
 import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
@@ -35,7 +37,6 @@ import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
-import rina.utils.types.Unsigned;
 
 /** 
  * Implements the Flow Allocator
@@ -178,19 +179,10 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @param socket
 	 */
 	public void newConnectionAccepted(Socket socket){
-		byte[] buffer = new byte[4];
 		long tcpRendezvousId = -1;
 		try{
-			//1 Read the TCP Rendez vous ID from the socket
-			//It will be the first 4 bytes
-			int dataRead = socket.getInputStream().read(buffer);
-			if (dataRead <1){
-				//TODO fix this
-				throw new Exception();
-			}
-			Unsigned unsigned = new Unsigned(4);
-			unsigned.setValue(buffer);
-			tcpRendezvousId = unsigned.getValue();
+			LittleEndianDataInputStream liStream = new LittleEndianDataInputStream(socket.getInputStream());
+			tcpRendezvousId = liStream.readInt();
 			log.debug("The TCP Rendez-vous Id is: "+tcpRendezvousId);
 			
 			//2 Put the socket in the pending sockets map and see if the M_CREATE message

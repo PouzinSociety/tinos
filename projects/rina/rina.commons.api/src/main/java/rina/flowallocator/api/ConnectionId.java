@@ -10,7 +10,7 @@ public class ConnectionId {
 	 * A DIF-assigned identifier only known within the DIF that stands for a 
 	 * particular QoS hypercube.
 	 */
-	private long qosId = 0;
+	private byte qosId = 0;
 	
 	/**
 	 * An identifier unique within the DT-AEI of the source IPC Process that identifies 
@@ -24,11 +24,11 @@ public class ConnectionId {
 	 */
 	private long destinationCEPId = 0;
 
-	public long getQosId() {
+	public byte getQosId() {
 		return qosId;
 	}
 
-	public void setQosId(long qosId) {
+	public void setQosId(byte qosId) {
 		this.qosId = qosId;
 	}
 
@@ -49,19 +49,40 @@ public class ConnectionId {
 	}
 	
 	@Override
-	public boolean equals(Object candidate){
-		if (candidate == null){
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ (int) (destinationCEPId ^ (destinationCEPId >>> 32));
+		result = prime * result + qosId;
+		result = prime * result + (int) (sourceCEPId ^ (sourceCEPId >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
 			return false;
-		}
-		
-		if (!(candidate instanceof ConnectionId)){
+		if (getClass() != obj.getClass())
 			return false;
-		}
-		
-		ConnectionId connectionId = (ConnectionId) candidate;
-		
-		return (connectionId.getDestinationCEPId() == this.getDestinationCEPId() &&
-				connectionId.getSourceCEPId() == this.getSourceCEPId() && 
-				connectionId.getQosId() == this.getQosId());
+		ConnectionId other = (ConnectionId) obj;
+		if (destinationCEPId != other.destinationCEPId)
+			return false;
+		if (qosId != other.qosId)
+			return false;
+		if (sourceCEPId != other.sourceCEPId)
+			return false;
+		return true;
+	}
+	
+	@Override
+	public String toString(){
+		String result = "";
+		result = result + "QoS id: "+this.qosId + "\n";
+		result = result + "Source connection endpoint id: " + this.sourceCEPId + "\n";
+		result = result + "Destination connection endpoint id: " + this.destinationCEPId + "\n";
+		return result;
 	}
 }

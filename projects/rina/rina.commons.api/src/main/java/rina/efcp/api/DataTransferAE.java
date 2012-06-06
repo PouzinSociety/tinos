@@ -1,7 +1,11 @@
 package rina.efcp.api;
 
-import rina.flowallocator.api.Connection;
+import java.net.Socket;
+
+import rina.flowallocator.api.ConnectionId;
+import rina.flowallocator.api.Flow;
 import rina.ipcprocess.api.IPCProcessComponent;
+import rina.ipcservice.api.IPCException;
 
 /**
  * Creates and manages the lifecycle of DataTrasnferAEInstances
@@ -9,42 +13,47 @@ import rina.ipcprocess.api.IPCProcessComponent;
  *
  */
 public interface DataTransferAE extends IPCProcessComponent {
+	
+	/**
+	 * Reserve a number of CEP ids (connection endpoint ids) that will be used during the lifetime
+	 * of a flow (identified by portId).
+	 * @param numberOfCEPIds The number of CEP ids to reserve
+	 * @param portId the portId of the flow that will use these CEP ids
+	 * @return
+	 */
+	public int[] reserveCEPIds(int numberOfCEPIds, int portId);
+	
+	/**
+	 * Free the CEP ids (connection endpoint ids) associated to a flow identified by portId
+	 * @param portId
+	 */
+	public void freeCEPIds(int portId);
 
 	/**
-	 * Create a new instance of a data transfer AE (called by the FA or FAI)
-	 * @param connection
-	 * @return
+	 * Initialize the state of a new connection, and bind it to the portId (all the SDUs delivered 
+	 * to the portId by an application will be sent through this connection)
+	 * @param flow the flow object, describing the service supported by this connection
+	 * @param socket The socket used to send the data
 	 */
-	public DataTransferAEInstance createDataTransferAEInstance(Connection connection);
+	public void createConnectionAndBindToPortId(Flow flow, Socket socket);
 	
 	/**
-	 * Destroy the instance of the data transfer AE associated to this connection
-	 * @param connection
+	 * Destroy the instance of the data transfer AE associated to this connection endpoint Id
+	 * @param connection endpoint id
 	 */
-	public void destroyDataTransferAEInstance(Connection connection);
+	public void deleteConnection(ConnectionId connectionId);
 	
 	/**
-	 * Get the instance of the data transfer AE associated to this connection
-	 * @param connection
+	 * Post an SDU to the portId (will be sent through the connection identified by portId)
+	 * @param portID
+	 * @param sdu
+	 * @throws IPCException
 	 */
-	public DataTransferAEInstance getDataTransferAEInstance(Connection connection);
+	public void postSDU(int portID, byte[] sdu) throws IPCException;
 	
 	/**
-	 * Get the instance of the data transfer AE associated to this port Id
-	 * @param portId
-	 * @return
+	 * A PDU has been delivered through an N-1 port
+	 * @param pdu
 	 */
-	public DataTransferAEInstance getDataTransferAEInstance(int portId);
-	
-	/**
-	 * Data Transfer constants associated to the DIF where the IPC process belongs
-	 * @return
-	 */
-	public DataTransferConstants getDataTransferConstants();
-	
-	/**
-	 * Data Transfer constants associated to the DIF where the IPC process belongs
-	 * @param dataTransferConstants
-	 */
-	public void setDataTransferConstants(DataTransferConstants dataTransferConstants);
+	public void pduDelivered(byte[] pdu);
 }
