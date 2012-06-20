@@ -64,7 +64,7 @@ public class FlowEncoder extends BaseEncoder{
 		ConnectionId result = new ConnectionId();
 		
 		result.setDestinationCEPId(connectionId.getDestinationCEPId());
-		result.setQosId((byte)connectionId.getQosId());
+		result.setQosId(connectionId.getQosId());
 		result.setSourceCEPId(connectionId.getSourceCEPId());
 		return result;
 	}
@@ -126,7 +126,7 @@ public class FlowEncoder extends BaseEncoder{
 		}
 		
 		connectionId_t result = FlowMessage.connectionId_t.newBuilder().
-									setDestinationCEPId((byte)connectionId.getDestinationCEPId()).
+									setDestinationCEPId((int)connectionId.getDestinationCEPId()).
 									setQosId(connectionId.getQosId()).
 									setSourceCEPId((int)connectionId.getSourceCEPId()).
 									build();

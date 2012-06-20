@@ -11,8 +11,11 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.delimiting.api.BaseSocketReader;
 import rina.delimiting.api.Delimiter;
+import rina.efcp.api.BaseDataTransferAE;
+import rina.efcp.api.DataTransferAE;
 import rina.encoding.api.Encoder;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
+import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationRegistration;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
@@ -65,6 +68,11 @@ public class TCPSocketReader extends BaseSocketReader{
 	 * or to establish a data flow ("client application")
 	 */
 	private ApplicationProcessNamingInfo apNamingInfo = null;
+	
+	/**
+	 * The data transfer AE
+	 */
+	private DataTransferAE dataTransferAE = null;
 
 	public TCPSocketReader(Socket socket, Delimiter delimiter, Encoder encoder, CDAPSessionManager cdapSessionManager, APServiceImpl apService){
 		super(socket, delimiter);
@@ -79,6 +87,7 @@ public class TCPSocketReader extends BaseSocketReader{
 	
 	public void setIPCService(IPCService ipcService){
 		this.ipcService = ipcService;
+		this.dataTransferAE = (DataTransferAE) ((IPCProcess)ipcService).getIPCProcessComponent(BaseDataTransferAE.getComponentName());
 	}
 	
 	/**
@@ -167,7 +176,7 @@ public class TCPSocketReader extends BaseSocketReader{
 			return;
 		}
 		
-		if (ipcService == null){
+		if (this.dataTransferAE == null){
 			log.error("Received a request to transfer data on portId "+portId+", but there is no flow allocated yet");
 			//There is no flow allocated yet, what to do?
 			//TODO a) ignore, b) send an error message c) send and error message and close the flow?
@@ -175,7 +184,7 @@ public class TCPSocketReader extends BaseSocketReader{
 		}
 		
 		try {
-			ipcService.submitTransfer(portId, sdu);
+			this.dataTransferAE.postSDU(this.portId, sdu);
 		} catch (IPCException ex) {
 			ex.printStackTrace();
 			//TODO, what else to do?

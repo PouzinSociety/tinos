@@ -100,16 +100,4 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * @throws IPCException
 	 */
 	public void receivedDeallocateLocalFlowRequest(int portId) throws IPCException;
-	
-	/* Temporary, just for the RINA over TCP prototype */
-	
-	/**
-	 * Sends an SDU through the flow identified by portId
-	 * This function is just for the RINA prototype over TCP. When DTP and DTCP are implemented
-	 * this operation will be removed from here.
-	 * @param portId
-	 * @param sdu
-	 * @throws IPCException
-	 */
-	public void submitTransfer(int portId, byte[] sdu) throws IPCException;
 }

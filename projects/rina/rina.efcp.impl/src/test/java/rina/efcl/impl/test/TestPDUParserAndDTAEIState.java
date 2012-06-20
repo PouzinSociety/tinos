@@ -44,7 +44,7 @@ public class TestPDUParserAndDTAEIState {
 		
 		for(int i=0; i<3; i++){
 			pdu = PDUParser.generatePDU(state.getPreComputedPCI(), 
-					state.getNextSequenceToSend(), (byte)0x01, (byte)0x01, sdu);
+					state.getNextSequenceToSend(), 0x81, 0x00, sdu);
 			printBytes(pdu);
 
 			PDU decodedPDU = PDUParser.parsePDU(pdu);
@@ -58,8 +58,8 @@ public class TestPDUParserAndDTAEIState {
 			Assert.assertEquals(connectionId.getSourceCEPId(), decodedPDU.getConnectionId().getSourceCEPId());
 			Assert.assertEquals(connectionId.getQosId(), decodedPDU.getConnectionId().getQosId());
 			Assert.assertEquals(i, decodedPDU.getSequenceNumber());
-			Assert.assertEquals(0x01, decodedPDU.getPduType());
-			Assert.assertEquals(0x01, decodedPDU.getFlags());
+			Assert.assertEquals(0x81, decodedPDU.getPduType());
+			Assert.assertEquals(0x00, decodedPDU.getFlags());
 			Assert.assertEquals(new String(sdu), new String(decodedPDU.getUserData().get(0)));
 		}
 	}

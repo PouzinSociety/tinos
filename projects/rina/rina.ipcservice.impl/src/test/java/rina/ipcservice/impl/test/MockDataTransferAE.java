@@ -9,12 +9,6 @@ import rina.flowallocator.api.Flow;
 public class MockDataTransferAE extends BaseDataTransferAE{
 
 	@Override
-	public void createConnectionAndBindToPortId(Flow arg0, Socket arg1) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public void deleteConnection(ConnectionId arg0) {
 		// TODO Auto-generated method stub
 		
@@ -42,6 +36,18 @@ public class MockDataTransferAE extends BaseDataTransferAE{
 	public int[] reserveCEPIds(int arg0, int arg1) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void createConnectionAndBindToPortId(Flow arg0, Socket arg1) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void createLocalConnectionAndBindToPortId(int arg0, int arg1) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

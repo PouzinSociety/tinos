@@ -19,15 +19,6 @@ public interface IPCService {
 	public int submitAllocateRequest(FlowService request) throws IPCException;
 	
 	/**
-	 * This primitive is invoked by the Application Process when in the Transfer state to 
-	 * send an SDU on the specified port-id.
-	 * @param port_id
-	 * @param sdu
-	 * @throws IPCException
-	 */
-	public void submitTransfer(int port_id, byte[] sdu) throws IPCException;
-	
-	/**
 	 * This primitive is invoked by the Application Process in any state to deallocate the 
 	 * resources allocated to this instance. 
 	 * @param port_id

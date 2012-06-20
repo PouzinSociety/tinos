@@ -111,12 +111,34 @@ public class DTAEIState {
 	 */
 	private long portId = 0;
 	
+	/**
+	 * True if this is a local connection;
+	 */
+	private boolean local = false;
+	
+	/**
+	 * In case this is a connection supporting a local flow, this
+	 * is the remote port Id
+	 */
+	private int remotePortId = 0;
+	
+	/**
+	 * The constructor used for connections supporting local flows
+	 * @param remotePortId
+	 */
+	public DTAEIState(int portId, int remotePortId){
+		this.local = true;
+		this.portId = portId;
+		this.remotePortId = remotePortId;
+	}
+	
+	/**
+	 * The constructor used for connections supporting remote flows
+	 * @param flow
+	 * @param dataTransferConstants
+	 */
 	public DTAEIState(Flow flow, DataTransferConstants dataTransferConstants){
 		this.flow = flow;
-		this.reasemblyQeueue = new ReassemblyQueue();
-		this.maxFlowSDUSize = dataTransferConstants.getMaxSDUSize();
-		this.maxFlowPDUSize = dataTransferConstants.getMaxPDUSize();
-		this.connectionId = flow.getConnectionIds().get(flow.getCurrentConnectionIdIndex());
 		if (flow.isSource()){
 			this.sourceAddress = flow.getSourceAddress();
 			this.destinationAddress = flow.getDestinationAddress();
@@ -126,7 +148,19 @@ public class DTAEIState {
 			this.destinationAddress = flow.getSourceAddress();
 			this.portId = flow.getDestinationPortId();
 		}
+		this.reasemblyQeueue = new ReassemblyQueue();
+		this.maxFlowSDUSize = dataTransferConstants.getMaxSDUSize();
+		this.maxFlowPDUSize = dataTransferConstants.getMaxPDUSize();
+		this.connectionId = flow.getConnectionIds().get(flow.getCurrentConnectionIdIndex());
 		this.preComputedPCI = PDUParser.computePCI(this.destinationAddress, this.sourceAddress, this.connectionId);
+	}
+	
+	public boolean isLocal(){
+		return this.local;
+	}
+	
+	public int getRemotePortId(){
+		return this.remotePortId;
 	}
 	
 	public byte[] getPreComputedPCI(){

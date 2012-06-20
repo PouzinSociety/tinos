@@ -185,6 +185,7 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	 * @param source true if this is the 'source' part of the connection, false if this 
 	 * is the 'destination' part of the connection
 	 * @param socket The socket used to send the data
+	 * @param local true if this is a connection supporting a local flow, false otherways
 	 */
 	public synchronized void createConnectionAndBindToPortId(Flow flow, Socket socket){
 		DTAEIState state = new DTAEIState(flow, this.dataTransferConstants);
@@ -198,6 +199,16 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		}
 		
 		this.connectionStatesByConnectionId.put(flow.getConnectionIds().get(flow.getCurrentConnectionIdIndex()), state);
+		this.portIdToConnectionMapping.put(new Integer(portId), state);
+	}
+	
+	/**
+	 * Initialize the state of a new local connection and bind it to the portId
+	 * @param portId
+	 * @param remotePortId
+	 */
+	public void createLocalConnectionAndBindToPortId(int portId, int remotePortId){
+		DTAEIState state = new DTAEIState(portId, remotePortId);
 		this.portIdToConnectionMapping.put(new Integer(portId), state);
 	}
 	
@@ -230,9 +241,15 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 					IPCException.PROBLEMS_SENDING_SDU + ". No active connection is associated to this portId.");
 		}
 		
+		//This connection is supporting a local flow
+		if (state.isLocal()){
+			this.apService.deliverTransfer(state.getRemotePortId(), sdu);
+			return;
+		}
+		
 		//Convert the SDU into a PDU and post it to an RMT queue (right now posting it to the socket)
 		byte[] pdu = PDUParser.generatePDU(state.getPreComputedPCI(), 
-				state.getNextSequenceToSend(), (byte)0x81, (byte)0x00, sdu);
+				state.getNextSequenceToSend(), 0x81, 0x00, sdu);
 		
 		try{
 			state.getSocket().getOutputStream().write(this.delimiter.getDelimitedSdu(pdu));
@@ -254,7 +271,7 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	 */
 	public void pduDelivered(byte[] pdu){
 		//Parse PCI, see if the PDU is for us
-		long destinationAddress = (pdu[2] & 0xFFL) << 8 | (pdu[1] & 0xFFL);
+		long destinationAddress = PDUParser.parseDestinationAddress(pdu);
 		if (destinationAddress != this.getMyAddress()){
 			//TODO the PDU must be relayed, but we don't support relaying yet
 			log.error("Received a PDU not addressed to this IPC Process, " +

@@ -30,10 +30,18 @@ public interface DataTransferAE extends IPCProcessComponent {
 	public void freeCEPIds(int portId);
 
 	/**
+	 * Initialize the state of a new local connection and bind it to the portId
+	 * @param portId
+	 * @param remotePortId
+	 */
+	public void createLocalConnectionAndBindToPortId(int portId, int remotePortId);
+	
+	/**
 	 * Initialize the state of a new connection, and bind it to the portId (all the SDUs delivered 
 	 * to the portId by an application will be sent through this connection)
 	 * @param flow the flow object, describing the service supported by this connection
 	 * @param socket The socket used to send the data
+	 * @param local true if this is a connection supporting a local flow, false otherways
 	 */
 	public void createConnectionAndBindToPortId(Flow flow, Socket socket);
 	

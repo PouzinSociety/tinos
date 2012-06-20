@@ -355,7 +355,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		clonedFlowService.setQoSSpecification(flowService.getQoSSpecification());
 		clonedFlowService.setPortId(flowService.getPortId());
 		flowAllocatorInstance.receivedLocalFlowRequest(clonedFlowService, objectName);
-		flowAllocatorInstances.put(new Integer(new Integer(portId)), flowAllocatorInstance);
+		flowAllocatorInstances.put(new Integer(portId), flowAllocatorInstance);
 	}
 	
 	/**
@@ -425,19 +425,6 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	public void receivedDeallocateLocalFlowRequest(int portId) throws IPCException{
 		FlowAllocatorInstance flowAllocatorInstance = getFlowAllocatorInstance(portId);
 		flowAllocatorInstance.receivedDeallocateLocalFlowRequest();
-	}
-	
-	/**
-	 * Sends an SDU through the flow identified by portId
-	 * This function is just for the RINA prototype over TCP. When DTP and DTCP are implemented
-	 * this operation will be removed from here.
-	 * @param portId
-	 * @param sdu
-	 * @throws IPCException
-	 */
-	public void submitTransfer(int portId, byte[] sdu) throws IPCException{
-		FlowAllocatorInstance flowAllocatorInstance = getFlowAllocatorInstance(portId);
-		flowAllocatorInstance.submitTransfer(sdu);
 	}
 	
 	/**

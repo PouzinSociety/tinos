@@ -18,11 +18,6 @@ public class PDU {
 	private byte[] rawPDU = null;
 	
 	/**
-	 * An identifier indicating the version of the protocol, seems prudent
-	 */
-	private byte version = 0x01;
-	
-	/**
 	 * A synonym for the application process name designating an IPC process 
 	 * with scope limited to the DIF and a binding to the source application process
 	 */
@@ -43,7 +38,7 @@ public class PDU {
 	/**
 	 * The field indicates the type of PDU.
 	 */
-	private byte pduType = 0;
+	private int pduType = 0;
 	
 	/**
 	 * This field indicates conditions that affect the handling of the PDU. Flags should only indicate 
@@ -51,7 +46,7 @@ public class PDU {
 	 * of the connection should be established during allocation or by the action of management. The 
 	 * interpretation of the flags depends on the PDU Type.
 	 */
-	private byte flags = 0;
+	private int flags = 0;
 	
 	/**
 	 * The PDU sequenceNumber
@@ -69,14 +64,6 @@ public class PDU {
 	
 	public PDU(){
 		userData = new ArrayList<byte[]>();
-	}
-
-	public byte getVersion() {
-		return version;
-	}
-
-	public void setVersion(byte version) {
-		this.version = version;
 	}
 
 	public long getSourceAddress() {
@@ -103,19 +90,19 @@ public class PDU {
 		this.connectionId = connectionId;
 	}
 
-	public byte getPduType() {
+	public int getPduType() {
 		return pduType;
 	}
 
-	public void setPduType(byte pduType) {
+	public void setPduType(int pduType) {
 		this.pduType = pduType;
 	}
 
-	public byte getFlags() {
+	public int getFlags() {
 		return flags;
 	}
 
-	public void setFlags(byte flags) {
+	public void setFlags(int flags) {
 		this.flags = flags;
 	}
 
@@ -158,7 +145,6 @@ public class PDU {
 	
 	public String toString(){
 		String result = "";
-		result = result + "Version: " +this.version + "\n";
 		result = result + "Destination address: " +this.destinationAddress + "\n";
 		result = result + "Source address: " +this.sourceAddress + "\n";
 		result = result + "Destination CEP id: " +this.connectionId.getDestinationCEPId() + "\n";

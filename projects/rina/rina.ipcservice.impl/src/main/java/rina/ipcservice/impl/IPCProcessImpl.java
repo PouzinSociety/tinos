@@ -102,7 +102,7 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * @param success
 	 */
 	public void submitAllocateResponse(int portId, boolean success, String reason) throws IPCException{
-		log.debug("Allocate request received, forwarding it to the Flow Allocator");
+		log.debug("Allocate response received, forwarding it to the Flow Allocator");
 		getFlowAllocator().submitAllocateResponse(portId, success, reason);
 	}
 
@@ -117,22 +117,6 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 
 	public void submitStatus(int arg0) {
 		// TODO Auto-generated method stub
-	}
-
-	/**
-	 * Send an SDU through the flow identified by portId
-	 * @param portId
-	 * @param sdu
-	 * @throws IPCException
-	 */
-	public void submitTransfer(int portId, byte[] sdu) throws IPCException{
-		getFlowAllocator().submitTransfer(portId, sdu);
-		
-		/*List<byte[]> sdus = new ArrayList<byte[]>();
-		sdus.add(sdu);
-		DataTransferAE dataTransferAE = (DataTransferAE) this.getIPCProcessComponent(DataTransferAE.class.getName());
-		DataTransferAEInstance dataTransferAEInstance = dataTransferAE.getDataTransferAEInstance(portId);
-		dataTransferAEInstance.sdusDelivered(sdus);*/
 	}
 
 	/**

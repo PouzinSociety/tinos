@@ -170,6 +170,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	public FlowAllocatorInstanceImpl(IPCProcess ipcProcess, FlowAllocator flowAllocator, int portId){
 		initialize(ipcProcess, flowAllocator, portId);
 		this.local = true;
+		this.dataTrasferAE = (DataTransferAE) ipcProcess.getIPCProcessComponent(BaseDataTransferAE.getComponentName());
 		log.debug("Created flow allocator instance to manage the flow identified by portId "+portId);
 	}
 	
@@ -388,9 +389,10 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	public void submitAllocateResponse(boolean success, String reason) throws IPCException{
 		CDAPMessage cdapMessage = null;
 		
-		//If the IPC process is local, just call the Flow Allocator directly
+		//If the IPC flow is between local applications
 		if (local){
-			this.flowAllocator.receivedLocalFlowResponse(remotePortId, portId, success, reason);
+			this.dataTrasferAE.createLocalConnectionAndBindToPortId(this.portId, this.remotePortId);
+			this.flowAllocator.receivedLocalFlowResponse(this.remotePortId, this.portId, success, reason);
 			if (success){
 				try{
 					this.ribDaemon.create(Flow.FLOW_RIB_OBJECT_CLASS, this.objectName, this);
@@ -401,6 +403,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			return;
 		}
 		
+		//If the flow is between a local and a remote application
 		if (success){
 			//1 Reserve CEP ids
 			int[] cepIds = this.dataTrasferAE.reserveCEPIds(flow.getConnectionIds().size(), portId);
@@ -586,6 +589,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		
 		if (result){
 			try{
+				this.dataTrasferAE.createLocalConnectionAndBindToPortId(this.portId, remotePortId);
 				this.remotePortId = remotePortId;
 				this.apService.deliverAllocateResponse(portId, 0, null);
 				this.ribDaemon.create(Flow.FLOW_RIB_OBJECT_CLASS, objectName, this);
@@ -595,22 +599,6 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		}else{
 			this.apService.deliverAllocateResponse(portId, -1, resultReason);
 		}
-	}
-	
-	/**
-	 * Delimits and sends an SDU through the flow managed by this flow allocator instance.
-	 * This function is just for the RINA prototype over TCP. When DTP and DTCP are implemented
-	 * this operation will be removed from here.
-	 * @param sdu
-	 * @throws IPCException
-	 */
-	public void submitTransfer(byte[] sdu) throws IPCException{
-		if (local){
-			this.apService.deliverTransfer(this.remotePortId, sdu);
-			return;
-		}
-		
-		this.dataTrasferAE.postSDU(this.portId, sdu);
 	}
 	
 	public void destroyFlowAllocatorInstance(String flowObjectName){

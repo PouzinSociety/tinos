@@ -44,4 +44,10 @@ public class FakeDataTransferAE extends BaseDataTransferAE{
 		return null;
 	}
 
+	@Override
+	public void createLocalConnectionAndBindToPortId(int arg0, int arg1) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

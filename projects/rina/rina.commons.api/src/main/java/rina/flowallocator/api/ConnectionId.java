@@ -10,7 +10,7 @@ public class ConnectionId {
 	 * A DIF-assigned identifier only known within the DIF that stands for a 
 	 * particular QoS hypercube.
 	 */
-	private byte qosId = 0;
+	private int qosId = 0;
 	
 	/**
 	 * An identifier unique within the DT-AEI of the source IPC Process that identifies 
@@ -24,11 +24,11 @@ public class ConnectionId {
 	 */
 	private long destinationCEPId = 0;
 
-	public byte getQosId() {
+	public int getQosId() {
 		return qosId;
 	}
 
-	public void setQosId(byte qosId) {
+	public void setQosId(int qosId) {
 		this.qosId = qosId;
 	}
 
