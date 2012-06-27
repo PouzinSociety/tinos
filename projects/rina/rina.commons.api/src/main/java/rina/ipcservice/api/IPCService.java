@@ -47,11 +47,11 @@ public interface IPCService {
 	 * Used by an application process to specify that it is available through this IPC process
 	 * @param applicationProcessNamingInfo
 	 */
-	public void register(ApplicationProcessNamingInfo applicationProcessNamingInfo);
+	public void register(ApplicationProcessNamingInfo applicationProcessNamingInfo) throws IPCException;
 	
 	/**
 	 * Used by an application process to specify that it is no longer available through this IPC process
 	 * @param applicationProcessNamingInfo
 	 */
-	public void unregister(ApplicationProcessNamingInfo applicationProcessNamingInfo);
+	public void unregister(ApplicationProcessNamingInfo applicationProcessNamingInfo) throws IPCException;
 }

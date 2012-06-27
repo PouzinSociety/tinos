@@ -42,6 +42,7 @@ public class IPCException extends Exception{
 	public static final int APPLICATION_ALREADY_REGISTERED_CODE = 30;
 	public static final int APPLICATION_ALREADY_UNREGISTERED_CODE = 31;
 	public static final int PROBLEMS_RESERVING_CEP_IDS_CODE = 32;
+	public static final int ERROR_CODE = 33;
 	
 	public static final String APPLICATION_NOT_SPECIFIED = "Application name not specified";
 	public static final String SOURCE_APPLICATION_NOT_SPECIFIED = "Source application name not specified";

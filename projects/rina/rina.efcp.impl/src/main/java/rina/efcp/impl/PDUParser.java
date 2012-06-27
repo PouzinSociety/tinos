@@ -78,9 +78,7 @@ public class PDUParser {
 		pdu[14] = aux[4];
 		
 		//Add user SDU
-		for(int i=0; i<sdu.length; i++){
-			pdu[i+15] = sdu[i];
-		}
+		System.arraycopy(sdu, 0, pdu, 15, sdu.length);
 		
 		return pdu;
 	}
@@ -107,9 +105,7 @@ public class PDUParser {
 				(encodedPDU[12] & 0xFFL) << 8 | (encodedPDU[11] & 0xFFL));
 		
 		byte[] sdu = new byte[encodedPDU.length - 15];
-		for(int i=0; i<sdu.length; i++){
-			sdu[i] = encodedPDU[i+15];
-		}
+		System.arraycopy(encodedPDU, 15, sdu, 0, sdu.length);
 		pdu.getUserData().add(sdu);
 		
 		return pdu;

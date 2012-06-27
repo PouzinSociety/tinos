@@ -207,7 +207,11 @@ public class APServiceImpl implements APService{
 			for(int i=0; i<difNames.size(); i++){
 				IPCService ipcService = (IPCService) ipcProcessFactory.getIPCProcessBelongingToDIF(difNames.get(i));
 				if (ipcService != null){
-					ipcService.unregister(apNamingInfo);
+					try{
+						ipcService.unregister(apNamingInfo);
+					}catch(IPCException ex){
+						log.warn("Error when unregistering application: "+ex.getMessage());
+					}
 				}
 			}
 			
@@ -253,7 +257,11 @@ public class APServiceImpl implements APService{
 				//TODO error message, one of the DIF names is not available in the system
 				//return?
 			}else{
-				ipcService.register(applicationRegistration.getApNamingInfo());
+				try{
+					ipcService.register(applicationRegistration.getApNamingInfo());
+				}catch(Exception ex){
+					//TODO handle well this exception
+				}
 			}
 		}
 
