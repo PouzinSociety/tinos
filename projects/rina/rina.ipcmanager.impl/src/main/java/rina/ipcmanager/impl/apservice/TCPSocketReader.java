@@ -68,11 +68,6 @@ public class TCPSocketReader extends BaseSocketReader{
 	 * or to establish a data flow ("client application")
 	 */
 	private ApplicationProcessNamingInfo apNamingInfo = null;
-	
-	/**
-	 * The data transfer AE
-	 */
-	private DataTransferAE dataTransferAE = null;
 
 	public TCPSocketReader(Socket socket, Delimiter delimiter, Encoder encoder, CDAPSessionManager cdapSessionManager, APServiceImpl apService){
 		super(socket, delimiter);
@@ -87,7 +82,6 @@ public class TCPSocketReader extends BaseSocketReader{
 	
 	public void setIPCService(IPCService ipcService){
 		this.ipcService = ipcService;
-		this.dataTransferAE = (DataTransferAE) ((IPCProcess)ipcService).getIPCProcessComponent(BaseDataTransferAE.getComponentName());
 	}
 	
 	/**
@@ -176,15 +170,8 @@ public class TCPSocketReader extends BaseSocketReader{
 			return;
 		}
 		
-		if (this.dataTransferAE == null){
-			log.error("Received a request to transfer data on portId "+portId+", but there is no flow allocated yet");
-			//There is no flow allocated yet, what to do?
-			//TODO a) ignore, b) send an error message c) send and error message and close the flow?
-			return;
-		}
-		
 		try {
-			this.dataTransferAE.postSDU(this.portId, sdu);
+			this.ipcService.submitTransfer(this.portId, sdu);
 		} catch (IPCException ex) {
 			ex.printStackTrace();
 			//TODO, what else to do?
@@ -204,7 +191,7 @@ public class TCPSocketReader extends BaseSocketReader{
 		
 		try{
 			ApplicationRegistration applicationRegistration = (ApplicationRegistration) encoder.decode(cdapMessage.getObjValue().getByteval(), ApplicationRegistration.class);
-			apService.processApplicationRegistrationRequest(applicationRegistration, cdapMessage, getSocket(), this);
+			apService.processApplicationRegistrationRequest(applicationRegistration, cdapMessage, getSocket());
 			apNamingInfo = applicationRegistration.getApNamingInfo();
 		}catch(Exception ex){
 			ex.printStackTrace();

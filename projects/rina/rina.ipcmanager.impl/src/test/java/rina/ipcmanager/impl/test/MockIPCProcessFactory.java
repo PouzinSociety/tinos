@@ -22,9 +22,9 @@ public class MockIPCProcessFactory implements IPCProcessFactory{
 	private EncoderFactory encoderFactory = null;
 	private DelimiterFactory delimiterFactory = null;
 	
-	public MockIPCProcessFactory(APService apService){
+	public MockIPCProcessFactory(){
 		ipcProcess = new MockIPCProcess();
-		ipcProcess.setAPService(apService);
+		ipcProcess.setAPService(null);
 	}
 
 	public IPCProcess createIPCProcess(String arg0, String arg1)

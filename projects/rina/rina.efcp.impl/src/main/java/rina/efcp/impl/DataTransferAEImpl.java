@@ -71,11 +71,6 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	private Delimiter delimiter = null;
 	
 	/**
-	 * The point of contact with the applications
-	 */
-	private APService apService = null;
-	
-	/**
 	 * The address of this IPC process
 	 */
 	private long myAddres = -1;
@@ -93,7 +88,6 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		super.setIPCProcess(ipcProcess);
 		this.ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		this.delimiter = (Delimiter) ipcProcess.getIPCProcessComponent(BaseDelimiter.getComponentName());
-		this.apService = ipcProcess.getAPService();
 		populateRIB(ipcProcess);
 		this.dataTransferConstants = ipcProcess.getDataTransferConstants();
 	}
@@ -185,11 +179,12 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	 * @param source true if this is the 'source' part of the connection, false if this 
 	 * is the 'destination' part of the connection
 	 * @param socket The socket used to send the data
-	 * @param local true if this is a connection supporting a local flow, false otherways
+	 * @param applicationCallback the callback to the application, used to deliver the data
 	 */
-	public synchronized void createConnectionAndBindToPortId(Flow flow, Socket socket){
+	public synchronized void createConnectionAndBindToPortId(Flow flow, Socket socket, APService applicationCallback){
 		DTAEIState state = new DTAEIState(flow, this.dataTransferConstants);
 		state.setSocket(socket);
+		state.setApplicationCallback(applicationCallback);
 		
 		int portId = 0;
 		if (flow.isSource()){
@@ -206,9 +201,11 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	 * Initialize the state of a new local connection and bind it to the portId
 	 * @param portId
 	 * @param remotePortId
+	 * @param applicationCallback the callback to the application, used to deliver the data
 	 */
-	public void createLocalConnectionAndBindToPortId(int portId, int remotePortId){
+	public void createLocalConnectionAndBindToPortId(int portId, int remotePortId, APService applicationCallback){
 		DTAEIState state = new DTAEIState(portId, remotePortId);
+		state.setApplicationCallback(applicationCallback);
 		this.portIdToConnectionMapping.put(new Integer(portId), state);
 	}
 	
@@ -243,7 +240,12 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		
 		//This connection is supporting a local flow
 		if (state.isLocal()){
-			this.apService.deliverTransfer(state.getRemotePortId(), sdu);
+			DTAEIState state2 = this.portIdToConnectionMapping.get(new Integer(state.getRemotePortId()));
+			if (state2 == null){
+				throw new IPCException(IPCException.PROBLEMS_SENDING_SDU_CODE, 
+						IPCException.PROBLEMS_SENDING_SDU + ". No active connection is associated to this portId.");
+			}
+			state2.getApplicationCallback().deliverTransfer(state.getRemotePortId(), sdu);
 			return;
 		}
 		
@@ -288,7 +290,7 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		}
 		
 		//Deliver the PDU to the portId
-		this.apService.deliverTransfer((int)state.getPortId(), decodedPDU.getUserData().get(0));
+		state.getApplicationCallback().deliverTransfer((int)state.getPortId(), decodedPDU.getUserData().get(0));
 		
 		//Update DTAEI state
 		synchronized(state){

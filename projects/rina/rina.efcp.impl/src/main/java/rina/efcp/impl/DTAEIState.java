@@ -5,6 +5,7 @@ import java.net.Socket;
 import rina.efcp.api.DataTransferConstants;
 import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.Flow;
+import rina.ipcservice.api.APService;
 
 /**
  * The data associated with a single active flow
@@ -17,6 +18,11 @@ public class DTAEIState {
 	 * Pointer to the connection state
 	 */
 	private Flow flow = null;
+	
+	/**
+	 * The callback to the local application
+	 */
+	private APService applicationCallback = null;
 	
 	/**
 	 * The reassembly queue, should go into Flow 
@@ -155,6 +161,14 @@ public class DTAEIState {
 		this.preComputedPCI = PDUParser.computePCI(this.destinationAddress, this.sourceAddress, this.connectionId);
 	}
 	
+	public APService getApplicationCallback() {
+		return applicationCallback;
+	}
+
+	public void setApplicationCallback(APService applicationCallback) {
+		this.applicationCallback = applicationCallback;
+	}
+
 	public boolean isLocal(){
 		return this.local;
 	}

@@ -5,11 +5,12 @@ import java.net.Socket;
 import rina.efcp.api.BaseDataTransferAE;
 import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.Flow;
+import rina.ipcservice.api.APService;
 
 public class FakeDataTransferAE extends BaseDataTransferAE{
 
 	@Override
-	public void createConnectionAndBindToPortId(Flow arg0, Socket socket) {
+	public void createConnectionAndBindToPortId(Flow arg0, Socket socket, APService applicationCallback) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -45,7 +46,7 @@ public class FakeDataTransferAE extends BaseDataTransferAE{
 	}
 
 	@Override
-	public void createLocalConnectionAndBindToPortId(int arg0, int arg1) {
+	public void createLocalConnectionAndBindToPortId(int arg0, int arg1, APService applicationCallback) {
 		// TODO Auto-generated method stub
 		
 	}

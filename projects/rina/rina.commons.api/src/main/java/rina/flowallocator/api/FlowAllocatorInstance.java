@@ -3,6 +3,7 @@ package rina.flowallocator.api;
 import java.net.Socket;
 
 import rina.cdap.api.message.CDAPMessage;
+import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 
@@ -42,10 +43,10 @@ public interface FlowAllocatorInstance{
 	/**
 	 * Called by the FA to forward an Allocate request to a FAI
 	 * @param request
-	 * @param portId the local port Id associated to this flow
+	 * @param applicationCallback the callback to invoke the application for allocateResponse and any other calls
 	 * @throws IPCException
 	 */
-	public void submitAllocateRequest(FlowService request) throws IPCException;
+	public void submitAllocateRequest(FlowService request, APService applicationCallback) throws IPCException;
 	
 	/**
 	 * Called by the Flow Allocator when an M_CREATE CDAP PDU with a Flow object 
@@ -67,9 +68,10 @@ public interface FlowAllocatorInstance{
 	 * If the response was negative, the FAI does any necessary housekeeping and terminates.
 	 * @param success
 	 * @param reason
+	 * @param application the callback to invoke the application for any call
 	 * @throws IPCException
 	 */
-	public void submitAllocateResponse(boolean success, String reason) throws IPCException;
+	public void submitAllocateResponse(boolean success, String reason, APService applicationCallback) throws IPCException;
 	
 	/**
 	 * When a deallocate primitive is invoked, it is passed to the FAI responsible for that port-id.  
@@ -86,6 +88,12 @@ public interface FlowAllocatorInstance{
 	 * deletes the binding between the Application and the local DTP-instance, and sends a Delete_Response indicating the result.
 	 */
 	public void deleteFlowRequestMessageReceived(CDAPMessage requestMessage, int underlyingPortId);
+	
+	/**
+	 * Set the application callback for this flow allocation
+	 * @param applicationCallback
+	 */
+	public void setApplicationCallback(APService applicationCallback);
 	
 	/* Deal with local flows (flows between applications from the same system) */
 	

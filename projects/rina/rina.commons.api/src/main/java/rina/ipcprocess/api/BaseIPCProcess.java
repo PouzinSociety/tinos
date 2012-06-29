@@ -11,7 +11,6 @@ import rina.enrollment.api.Neighbor;
 import rina.flowallocator.api.Flow;
 import rina.flowallocator.api.QoSCube;
 import rina.ipcmanager.api.IPCManager;
-import rina.ipcservice.api.APService;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
@@ -63,15 +62,6 @@ public abstract class BaseIPCProcess implements IPCProcess{
 	
 	public IPCManager getIPCManager(){
 		return this.ipcManager;
-	}
-	
-	/**
-	 * Get the class that handles the interaction with 
-	 * the applications in this system
-	 * @return
-	 */
-	public APService getAPService(){
-		return this.ipcManager.getAPService();
 	}
 	
 	public ApplicationProcessNamingInfo getApplicationProcessNamingInfo(){

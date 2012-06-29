@@ -7,6 +7,11 @@ import java.net.Socket;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.delimiting.api.DelimiterFactory;
+import rina.idd.api.InterDIFDirectory;
+import rina.ipcmanager.api.IPCManager;
+import rina.ipcprocess.api.IPCProcessFactory;
+
 /**
  * Listens to local connections from applications that want to use the RINA services.
  * In reality the calls will come from the API libraries (Native RINA or faux sockets).
@@ -18,11 +23,6 @@ public class APServiceTCPServer implements Runnable{
 private static final Log log = LogFactory.getLog(APServiceTCPServer.class);
 	
 	public static final int DEFAULT_PORT = 32771;
-	
-	/**
-	 * The AP Service
-	 */
-	private APServiceImpl apService = null;
 	
 	/**
 	 * Controls when the server will finish the execution
@@ -39,13 +39,36 @@ private static final Log log = LogFactory.getLog(APServiceTCPServer.class);
 	 */
 	private ServerSocket serverSocket = null;
 	
-	public APServiceTCPServer(APServiceImpl apService){
-		this(apService, DEFAULT_PORT);
+	/**
+	 * The IPC Manager
+	 */
+	private IPCManager ipcManager = null;
+	
+	/**
+	 * The IPC Process Factory
+	 */
+	private IPCProcessFactory ipcProcessFactory = null;
+	
+	/**
+	 * The Inter DIF Directory
+	 */
+	private InterDIFDirectory interDIFDirectory = null;
+	
+	public APServiceTCPServer(IPCManager ipcManager){
+		this(ipcManager, DEFAULT_PORT);
 	}
 	
-	public APServiceTCPServer(APServiceImpl apService, int port){
-		this.apService = apService;
+	public APServiceTCPServer(IPCManager ipcManager, int port){
+		this.ipcManager = ipcManager;
 		this.port = port;
+	}
+	
+	public void setInterDIFDirectory(InterDIFDirectory interDIFDirectory){
+		this.interDIFDirectory = interDIFDirectory;
+	}
+	
+	public void setIPCProcessFactory(IPCProcessFactory ipcProcessFactory){
+		this.ipcProcessFactory = ipcProcessFactory;
 	}
 	
 	public void setEnd(boolean end){
@@ -79,11 +102,21 @@ private static final Log log = LogFactory.getLog(APServiceTCPServer.class);
 						". Local port: "+socket.getLocalPort()+"; Remote port: "+socket.getPort());
 				
 				//Call the AP Service
-				apService.newConnectionAccepted(socket);
+				this.newConnectionAccepted(socket);
 			}
 		}catch(IOException e){
 			log.error(e.getMessage());
 		}
+	}
+	
+	private void newConnectionAccepted(Socket socket){
+		APServiceImpl apService = new APServiceImpl(this.ipcManager);
+		apService.setInterDIFDirectory(interDIFDirectory);
+		apService.setIPCProcessFactory(ipcProcessFactory);
+		TCPSocketReader socketReader = new TCPSocketReader(socket, ipcProcessFactory.getDelimiterFactory().createDelimiter(DelimiterFactory.DIF),
+				ipcProcessFactory.getEncoderFactory().createEncoderInstance(), ipcProcessFactory.getCDAPSessionManagerFactory().createCDAPSessionManager(), 
+				apService);
+		ipcManager.execute(socketReader);
 	}
 
 }

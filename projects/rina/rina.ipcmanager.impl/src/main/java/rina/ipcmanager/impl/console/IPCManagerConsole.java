@@ -42,7 +42,6 @@ public class IPCManagerConsole implements Runnable{
 		commands.put(DestroyIPCProcessCommand.ID, new DestroyIPCProcessCommand(ipcManagerImpl));
 		commands.put(DeallocateFlowCommand.ID, new DeallocateFlowCommand(ipcManagerImpl));
 		commands.put(CreateIPCProcessCommand.ID, new CreateIPCProcessCommand(ipcManagerImpl));
-		commands.put(AllocateFlowCommand.ID, new AllocateFlowCommand(ipcManagerImpl));
 		commands.put(WriteDataToFlowCommand.ID, new WriteDataToFlowCommand(ipcManagerImpl));
 	}
 	

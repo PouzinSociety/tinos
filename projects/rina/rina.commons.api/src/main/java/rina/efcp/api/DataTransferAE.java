@@ -5,6 +5,7 @@ import java.net.Socket;
 import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.Flow;
 import rina.ipcprocess.api.IPCProcessComponent;
+import rina.ipcservice.api.APService;
 import rina.ipcservice.api.IPCException;
 
 /**
@@ -33,8 +34,9 @@ public interface DataTransferAE extends IPCProcessComponent {
 	 * Initialize the state of a new local connection and bind it to the portId
 	 * @param portId
 	 * @param remotePortId
+	 * @param applicationCallback the callback to the application, used to deliver the data
 	 */
-	public void createLocalConnectionAndBindToPortId(int portId, int remotePortId);
+	public void createLocalConnectionAndBindToPortId(int portId, int remotePortId, APService applicationCallback);
 	
 	/**
 	 * Initialize the state of a new connection, and bind it to the portId (all the SDUs delivered 
@@ -42,8 +44,9 @@ public interface DataTransferAE extends IPCProcessComponent {
 	 * @param flow the flow object, describing the service supported by this connection
 	 * @param socket The socket used to send the data
 	 * @param local true if this is a connection supporting a local flow, false otherways
+	 * @param applicationCallback the callback to the application, used to deliver the data
 	 */
-	public void createConnectionAndBindToPortId(Flow flow, Socket socket);
+	public void createConnectionAndBindToPortId(Flow flow, Socket socket, APService applicationCallback);
 	
 	/**
 	 * Destroy the instance of the data transfer AE associated to this connection endpoint Id

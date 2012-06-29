@@ -61,11 +61,6 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	private FlowAllocator flowAllocator = null;
 	
 	/**
-	 * The point of contact with the applications
-	 */
-	private APService apService = null;
-	
-	/**
 	 * The portId associated to this Flow Allocator instance
 	 */
 	private int portId = 0;
@@ -150,6 +145,11 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 */
 	private DataTransferAE dataTrasferAE = null;
 	
+	/**
+	 * The callback to the local application
+	 */
+	private APService applicationCallback = null;
+	
 	public FlowAllocatorInstanceImpl(IPCProcess ipcProcess, FlowAllocator flowAllocator, CDAPSessionManager cdapSessionManager, int portId){
 		initialize(ipcProcess, flowAllocator, portId);
 		this.timer = new Timer();
@@ -177,7 +177,6 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	private void initialize(IPCProcess ipcProcess, FlowAllocator flowAllocator, int portId){
 		this.flowAllocator = flowAllocator;
 		this.ipcProcess = ipcProcess;
-		this.apService = ipcProcess.getAPService();
 		this.portId = portId;
 		this.ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		this.delimiter = (Delimiter) ipcProcess.getIPCProcessComponent(BaseDelimiter.getComponentName());
@@ -199,16 +198,25 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	public boolean isFinished(){
 		return finished;
 	}
+	
+	/**
+	 * Set the application callback for this flow allocation
+	 * @param applicationCallback
+	 */
+	public void setApplicationCallback(APService applicationCallback){
+		this.applicationCallback = applicationCallback;
+	}
 
 	/**
 	 * Generate the flow object, create the local DTP and optionally DTCP instances, generate a CDAP 
 	 * M_CREATE request with the flow object and send it to the appropriate IPC process (search the 
 	 * directory and the directory forwarding table if needed)
-	 * @param allocateRequest the allocate request
-	 * @param portId the local port id associated to this flow
+	 * @param flowService
+	 * @param applicationCallback the callback to invoke the application for allocateResponse and any other calls
 	 * @throws IPCException if there are not enough resources to fulfill the allocate request
 	 */
-	public void submitAllocateRequest(FlowService flowService) throws IPCException {
+	public void submitAllocateRequest(FlowService flowService, APService applicationCallback) throws IPCException {
+		this.applicationCallback = applicationCallback;
 		flow = newFlowRequestPolicy.generateFlowObject(flowService);
 		log.debug("Generated flow object: "+flow.toString());
 		ObjectValue objectValue = null;
@@ -353,7 +361,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		flowService.setDestinationAPNamingInfo(flow.getDestinationNamingInfo());
 		flowService.setQoSSpecification(flow.getQosParameters());
 		flowService.setPortId(this.portId);
-		apService.deliverAllocateRequest(flowService, (IPCService) ipcProcess);
+		applicationCallback.deliverAllocateRequest(flowService, (IPCService) ipcProcess);
 	}
 	
 	/**
@@ -368,10 +376,19 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 					IPCException.PROBLEMS_ALLOCATING_FLOW + "This Flow Allocator instance cannot deal with local flows.");
 		}
 		
+		//Check the directory
+		this.applicationCallback = flowAllocator.getDirectoryForwardingTable().
+				getLocalApplicationCallback(flowService.getDestinationAPNamingInfo());
+		if (this.applicationCallback == null){
+			throw new IPCException(IPCException.PROBLEMS_ALLOCATING_FLOW_CODE, 
+					IPCException.PROBLEMS_ALLOCATING_FLOW + "Could not find the callback class to the local application "
+					+ flowService.getDestinationAPNamingInfo().getEncodedString());
+		}
+		
 		this.remotePortId = flowService.getPortId();
 		this.objectName = objectName;
 		flowService.setPortId(portId);
-		apService.deliverAllocateRequest(flowService, (IPCService) ipcProcess);
+		this.applicationCallback.deliverAllocateRequest(flowService, (IPCService) ipcProcess);
 	}
 
 	/**
@@ -386,12 +403,13 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 * @param reason
 	 * @throws IPCException
 	 */
-	public void submitAllocateResponse(boolean success, String reason) throws IPCException{
+	public void submitAllocateResponse(boolean success, String reason, APService applicationCallback) throws IPCException{
 		CDAPMessage cdapMessage = null;
+		this.applicationCallback = applicationCallback;
 		
 		//If the IPC flow is between local applications
 		if (local){
-			this.dataTrasferAE.createLocalConnectionAndBindToPortId(this.portId, this.remotePortId);
+			this.dataTrasferAE.createLocalConnectionAndBindToPortId(this.portId, this.remotePortId, applicationCallback);
 			this.flowAllocator.receivedLocalFlowResponse(this.remotePortId, this.portId, success, reason);
 			if (success){
 				try{
@@ -427,7 +445,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			}
 			
 			//2 Create DTP and DTCP instances, and bind it to the port Id
-			this.dataTrasferAE.createConnectionAndBindToPortId(flow, socket);
+			this.dataTrasferAE.createConnectionAndBindToPortId(flow, socket, this.applicationCallback);
 			
 			//3 Create CDAP response message
 			try{
@@ -502,7 +520,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 */
 	public void deleteFlowRequestMessageReceived(CDAPMessage cdapMessage, int underlyingPortId){
 		//1 Notify application
-		this.apService.deliverDeallocate(portId);
+		this.applicationCallback.deliverDeallocate(portId);
 		
 		//2 HouseKeeping and remove state from RIB
 		destroyFlowAllocatorInstance(cdapMessage.getObjName());
@@ -514,7 +532,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 */
 	public void receivedDeallocateLocalFlowRequest() throws IPCException{
 		//1 Notify application
-		this.apService.deliverDeallocate(portId);
+		this.applicationCallback.deliverDeallocate(portId);
 		
 		//2 HouseKeeping and remove state from RIB
 		destroyFlowAllocatorInstance(this.objectName);
@@ -546,7 +564,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		if (cdapMessage.getResult() != 0){
 			log.debug("Unsuccessful create flow response message received for flow "+cdapMessage.getObjName());
 			destroyFlowAllocatorInstance(objectName);
-			this.apService.deliverAllocateResponse(portId, cdapMessage.getResult(), cdapMessage.getResultReason());
+			this.applicationCallback.deliverAllocateResponse(portId, cdapMessage.getResult(), cdapMessage.getResultReason());
 			return;
 		}
 
@@ -561,14 +579,14 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			}
 			
 			//5 Create an instance of DTP/DTCP and bind it to the port Id
-			this.dataTrasferAE.createConnectionAndBindToPortId(flow, socket);
+			this.dataTrasferAE.createConnectionAndBindToPortId(flow, socket, this.applicationCallback);
 			
 			//Create the Flow object in the RIB, start a socket reader and deliver the response to the application
 			log.debug("Successfull create flow message response received for flow "+cdapMessage.getObjName()+".\n "+this.flow.toString());
 			this.ribDaemon.create(Flow.FLOW_RIB_OBJECT_CLASS, objectName, this);
 			this.tcpSocketReader = new TCPSocketReader(socket, this.delimiter, this.dataTrasferAE);
 			this.ipcProcess.execute(tcpSocketReader);
-			this.apService.deliverAllocateResponse(portId, 0, null);
+			this.applicationCallback.deliverAllocateResponse(portId, 0, null);
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
@@ -589,15 +607,15 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		
 		if (result){
 			try{
-				this.dataTrasferAE.createLocalConnectionAndBindToPortId(this.portId, remotePortId);
+				this.dataTrasferAE.createLocalConnectionAndBindToPortId(this.portId, remotePortId, this.applicationCallback);
 				this.remotePortId = remotePortId;
-				this.apService.deliverAllocateResponse(portId, 0, null);
+				this.applicationCallback.deliverAllocateResponse(portId, 0, null);
 				this.ribDaemon.create(Flow.FLOW_RIB_OBJECT_CLASS, objectName, this);
 			}catch(Exception ex){
 				ex.printStackTrace();
 			}
 		}else{
-			this.apService.deliverAllocateResponse(portId, -1, resultReason);
+			this.applicationCallback.deliverAllocateResponse(portId, -1, resultReason);
 		}
 	}
 	

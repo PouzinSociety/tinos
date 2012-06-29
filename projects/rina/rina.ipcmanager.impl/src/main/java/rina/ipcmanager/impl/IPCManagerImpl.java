@@ -30,13 +30,11 @@ import rina.flowallocator.api.QoSCube;
 import rina.flowallocator.api.Flow;
 import rina.idd.api.InterDIFDirectoryFactory;
 import rina.ipcmanager.api.IPCManager;
-import rina.ipcmanager.impl.apservice.APServiceImpl;
+import rina.ipcmanager.impl.apservice.APServiceTCPServer;
 import rina.ipcmanager.impl.console.IPCManagerConsole;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
-import rina.ipcservice.api.APService;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
-import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCService;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
@@ -71,14 +69,15 @@ public class IPCManagerImpl implements IPCManager{
 	 */
 	private IPCProcessFactory ipcProcessFactory = null;
 	
-	private APServiceImpl apService = null;
+	private APServiceTCPServer apServiceTCPServer = null;
 	
 	public IPCManagerImpl(){
 		executorService = Executors.newCachedThreadPool();
 		initializeConfiguration();
 		console = new IPCManagerConsole(this);
-		apService = new APServiceImpl(this);
 		executorService.execute(console);
+		apServiceTCPServer = new APServiceTCPServer(this);
+		executorService.execute(apServiceTCPServer);
 		log.debug("IPC Manager started");
 	}
 	
@@ -143,19 +142,19 @@ public class IPCManagerImpl implements IPCManager{
 	}
 	
 	public void stop(){
-		apService.stop();
+		apServiceTCPServer.setEnd(true);
 		console.stop();
 		executorService.shutdownNow();
 	}
 	
 	public void setInterDIFDirectoryFactory(InterDIFDirectoryFactory iddFactory){
-		apService.setInterDIFDirectory(iddFactory.createIDD(this));
+		apServiceTCPServer.setInterDIFDirectory(iddFactory.createIDD(this));
 	}
 	
 	public void setIPCProcessFactory(IPCProcessFactory ipcProcessFactory){
 		this.ipcProcessFactory = ipcProcessFactory;
 		ipcProcessFactory.setIPCManager(this);
-		apService.setIPCProcessFactory(ipcProcessFactory);
+		apServiceTCPServer.setIPCProcessFactory(ipcProcessFactory);
 		createInitialProcesses();
 	}
 	
@@ -288,15 +287,6 @@ public class IPCManagerImpl implements IPCManager{
 		enrollmentTask.initiateEnrollment(neighbor);
 	}
 	
-	public void allocateFlow(String sourceAPName, String sourceAPInstance, String destAPName, String destAPInstance) throws Exception{
-		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(sourceAPName, sourceAPInstance);
-		IPCService ipcService = (IPCService) ipcProcess;
-		FlowService flowService = new FlowService();
-		flowService.setDestinationAPNamingInfo(new ApplicationProcessNamingInfo(destAPName, destAPInstance));
-		flowService.setSourceAPNamingInfo(new ApplicationProcessNamingInfo("console", "1"));
-		ipcService.submitAllocateRequest(flowService);
-	}
-	
 	public void writeDataToFlow(String sourceAPName, String sourceAPInstance, int portId, String data) throws Exception{
 		IPCProcess ipcProcess = ipcProcessFactory.getIPCProcess(sourceAPName, sourceAPInstance);
 		DataTransferAE dtae = (DataTransferAE) ipcProcess.getIPCProcessComponent(BaseDataTransferAE.getComponentName());
@@ -313,10 +303,6 @@ public class IPCManagerImpl implements IPCManager{
 			FlowAllocatorInstance arg1) {
 		// TODO Auto-generated method stub
 		
-	}
-
-	public APService getAPService() {
-		return apService;
 	}
 
 }
