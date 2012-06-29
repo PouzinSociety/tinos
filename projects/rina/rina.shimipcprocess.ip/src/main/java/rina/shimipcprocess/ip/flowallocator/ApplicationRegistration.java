@@ -1,10 +1,14 @@
-package rina.shimipcprocess.ip;
+package rina.shimipcprocess.ip.flowallocator;
 
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.APService;
+import rina.shimipcprocess.ip.TCPServer;
+import rina.shimipcprocess.ip.UDPServer;
 
 public class ApplicationRegistration {
 	
 	private ApplicationProcessNamingInfo apNamingInfo = null;
+	private APService applicationCallback = null;
 	private TCPServer tcpServer = null;
 	private UDPServer udpServer = null;
 	private int portNumber = 0;
@@ -17,6 +21,14 @@ public class ApplicationRegistration {
 		this.apNamingInfo = apNamingInfo;
 	}
 	
+	public APService getApplicationCallback() {
+		return applicationCallback;
+	}
+
+	public void setApplicationCallback(APService applicationCallback) {
+		this.applicationCallback = applicationCallback;
+	}
+
 	public TCPServer getTcpServer() {
 		return tcpServer;
 	}

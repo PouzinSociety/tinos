@@ -8,6 +8,10 @@ import java.net.Socket;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.APService;
+import rina.shimipcprocess.ip.flowallocator.FlowAllocatorImpl;
+
 /**
  * TCP server that listens for incoming connections on behalf of a certain application
  * @author eduardgrasa
@@ -39,19 +43,30 @@ public class TCPServer implements Runnable{
 	private String hostname = null;
 	
 	/**
-	 * The Shim IPC Process intance
+	 * The flow allocator
 	 */
-	private ShimIPCProcessForIPLayers ipcProcess = null;
+	private FlowAllocatorImpl flowAllocator = null;
 	
 	/**
 	 * The server socket that listens for incoming connections
 	 */
 	private ServerSocket serverSocket = null;
 	
-	public TCPServer(String hostname, int port, ShimIPCProcessForIPLayers ipcProcess){
+	/**
+	 * The application to call back when a new connection is accepted
+	 */
+	private APService applicationCallback = null;
+	
+	
+	private ApplicationProcessNamingInfo apNamingInfo= null;
+	
+	public TCPServer(String hostname, int port, APService applicationCallback, 
+			ApplicationProcessNamingInfo apNamingInfo, FlowAllocatorImpl flowAllocator){
 		this.hostname = hostname;
 		this.port = port;
-		this.ipcProcess = ipcProcess;
+		this.flowAllocator = flowAllocator;
+		this.applicationCallback = applicationCallback;
+		this.apNamingInfo = apNamingInfo;
 	}
 	
 	public void setEnd(boolean end){
@@ -84,6 +99,7 @@ public class TCPServer implements Runnable{
 				log.debug("Source port: "+socket.getPort());
 				log.debug("Destination IP address: "+socket.getLocalAddress().getHostAddress());
 				log.debug("Destination port: "+socket.getLocalPort());
+				this.flowAllocator.newConnectionAccepted(socket, this.applicationCallback, this.apNamingInfo);
 			}
 		}catch(IOException e){
 			log.error(e.getMessage());

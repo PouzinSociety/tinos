@@ -47,6 +47,8 @@ public class FlowServiceEncoderTest {
 		flowService4.setSourceAPNamingInfo(new ApplicationProcessNamingInfo("a", "1"));
 		flowService4.setDestinationAPNamingInfo(new ApplicationProcessNamingInfo("b", "1"));
 		qosSpec = new QualityOfServiceSpecification();
+		qosSpec.setName("reliable");
+		qosSpec.setQosCubeId(1);
 		qosSpec.setJitter(24);
 		qosSpec.setAverageSDUBandwidth(5400);
 		qosSpec.setPeakSDUBandwidthDuration(23);

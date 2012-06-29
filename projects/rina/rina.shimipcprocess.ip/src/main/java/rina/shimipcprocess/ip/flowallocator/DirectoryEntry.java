@@ -1,4 +1,4 @@
-package rina.shimipcprocess.ip;
+package rina.shimipcprocess.ip.flowallocator;
 
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 

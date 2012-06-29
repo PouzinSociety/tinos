@@ -118,6 +118,8 @@ public class GPBUtils {
 		}
 		
 		QualityOfServiceSpecification result = new QualityOfServiceSpecification();
+		result.setName(GPBUtils.getString(qosSpec_t.getName()));
+		result.setQosCubeId(qosSpec_t.getQosid());
 		result.setAverageBandwidth(qosSpec_t.getAverageBandwidth());
 		result.setAverageSDUBandwidth(qosSpec_t.getAverageSDUBandwidth());
 		result.setDelay(qosSpec_t.getDelay());
@@ -143,6 +145,8 @@ public class GPBUtils {
 			List<property_t> extraParameters = getQosSpecExtraParametersType(qualityOfServiceSpecification);
 			
 			return QoSSpecification.qosSpecification_t.newBuilder().
+				setName(GPBUtils.getGPBString(qualityOfServiceSpecification.getName())).
+				setQosid(qualityOfServiceSpecification.getQosCubeId()).
 				setAverageBandwidth(qualityOfServiceSpecification.getAverageBandwidth()).
 				setAverageSDUBandwidth(qualityOfServiceSpecification.getAverageSDUBandwidth()).
 				setDelay(qualityOfServiceSpecification.getDelay()).

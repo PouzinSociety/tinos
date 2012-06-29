@@ -35,78 +35,92 @@ public final class QoSSpecification {
       return rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.internal_static_rina_messages_qosSpecification_t_fieldAccessorTable;
     }
     
-    // optional uint64 averageBandwidth = 2;
-    public static final int AVERAGEBANDWIDTH_FIELD_NUMBER = 2;
+    // optional string name = 1;
+    public static final int NAME_FIELD_NUMBER = 1;
+    private boolean hasName;
+    private java.lang.String name_ = "";
+    public boolean hasName() { return hasName; }
+    public java.lang.String getName() { return name_; }
+    
+    // optional uint32 qosid = 2;
+    public static final int QOSID_FIELD_NUMBER = 2;
+    private boolean hasQosid;
+    private int qosid_ = 0;
+    public boolean hasQosid() { return hasQosid; }
+    public int getQosid() { return qosid_; }
+    
+    // optional uint64 averageBandwidth = 3;
+    public static final int AVERAGEBANDWIDTH_FIELD_NUMBER = 3;
     private boolean hasAverageBandwidth;
     private long averageBandwidth_ = 0L;
     public boolean hasAverageBandwidth() { return hasAverageBandwidth; }
     public long getAverageBandwidth() { return averageBandwidth_; }
     
-    // optional uint64 averageSDUBandwidth = 3;
-    public static final int AVERAGESDUBANDWIDTH_FIELD_NUMBER = 3;
+    // optional uint64 averageSDUBandwidth = 4;
+    public static final int AVERAGESDUBANDWIDTH_FIELD_NUMBER = 4;
     private boolean hasAverageSDUBandwidth;
     private long averageSDUBandwidth_ = 0L;
     public boolean hasAverageSDUBandwidth() { return hasAverageSDUBandwidth; }
     public long getAverageSDUBandwidth() { return averageSDUBandwidth_; }
     
-    // optional uint32 peakBandwidthDuration = 4;
-    public static final int PEAKBANDWIDTHDURATION_FIELD_NUMBER = 4;
+    // optional uint32 peakBandwidthDuration = 5;
+    public static final int PEAKBANDWIDTHDURATION_FIELD_NUMBER = 5;
     private boolean hasPeakBandwidthDuration;
     private int peakBandwidthDuration_ = 0;
     public boolean hasPeakBandwidthDuration() { return hasPeakBandwidthDuration; }
     public int getPeakBandwidthDuration() { return peakBandwidthDuration_; }
     
-    // optional uint32 peakSDUBandwidthDuration = 5;
-    public static final int PEAKSDUBANDWIDTHDURATION_FIELD_NUMBER = 5;
+    // optional uint32 peakSDUBandwidthDuration = 6;
+    public static final int PEAKSDUBANDWIDTHDURATION_FIELD_NUMBER = 6;
     private boolean hasPeakSDUBandwidthDuration;
     private int peakSDUBandwidthDuration_ = 0;
     public boolean hasPeakSDUBandwidthDuration() { return hasPeakSDUBandwidthDuration; }
     public int getPeakSDUBandwidthDuration() { return peakSDUBandwidthDuration_; }
     
-    // optional double undetectedBitErrorRate = 6;
-    public static final int UNDETECTEDBITERRORRATE_FIELD_NUMBER = 6;
+    // optional double undetectedBitErrorRate = 7;
+    public static final int UNDETECTEDBITERRORRATE_FIELD_NUMBER = 7;
     private boolean hasUndetectedBitErrorRate;
     private double undetectedBitErrorRate_ = 0D;
     public boolean hasUndetectedBitErrorRate() { return hasUndetectedBitErrorRate; }
     public double getUndetectedBitErrorRate() { return undetectedBitErrorRate_; }
     
-    // optional bool partialDelivery = 7;
-    public static final int PARTIALDELIVERY_FIELD_NUMBER = 7;
+    // optional bool partialDelivery = 8;
+    public static final int PARTIALDELIVERY_FIELD_NUMBER = 8;
     private boolean hasPartialDelivery;
     private boolean partialDelivery_ = false;
     public boolean hasPartialDelivery() { return hasPartialDelivery; }
     public boolean getPartialDelivery() { return partialDelivery_; }
     
-    // optional bool order = 8;
-    public static final int ORDER_FIELD_NUMBER = 8;
+    // optional bool order = 9;
+    public static final int ORDER_FIELD_NUMBER = 9;
     private boolean hasOrder;
     private boolean order_ = false;
     public boolean hasOrder() { return hasOrder; }
     public boolean getOrder() { return order_; }
     
-    // optional int32 maxAllowableGapSdu = 9;
-    public static final int MAXALLOWABLEGAPSDU_FIELD_NUMBER = 9;
+    // optional int32 maxAllowableGapSdu = 10;
+    public static final int MAXALLOWABLEGAPSDU_FIELD_NUMBER = 10;
     private boolean hasMaxAllowableGapSdu;
     private int maxAllowableGapSdu_ = 0;
     public boolean hasMaxAllowableGapSdu() { return hasMaxAllowableGapSdu; }
     public int getMaxAllowableGapSdu() { return maxAllowableGapSdu_; }
     
-    // optional uint32 delay = 10;
-    public static final int DELAY_FIELD_NUMBER = 10;
+    // optional uint32 delay = 11;
+    public static final int DELAY_FIELD_NUMBER = 11;
     private boolean hasDelay;
     private int delay_ = 0;
     public boolean hasDelay() { return hasDelay; }
     public int getDelay() { return delay_; }
     
-    // optional uint32 jitter = 11;
-    public static final int JITTER_FIELD_NUMBER = 11;
+    // optional uint32 jitter = 12;
+    public static final int JITTER_FIELD_NUMBER = 12;
     private boolean hasJitter;
     private int jitter_ = 0;
     public boolean hasJitter() { return hasJitter; }
     public int getJitter() { return jitter_; }
     
-    // repeated .rina.messages.property_t extraParameters = 12;
-    public static final int EXTRAPARAMETERS_FIELD_NUMBER = 12;
+    // repeated .rina.messages.property_t extraParameters = 13;
+    public static final int EXTRAPARAMETERS_FIELD_NUMBER = 13;
     private java.util.List<rina.encoding.impl.googleprotobuf.property.PropertyMessage.property_t> extraParameters_ =
       java.util.Collections.emptyList();
     public java.util.List<rina.encoding.impl.googleprotobuf.property.PropertyMessage.property_t> getExtraParametersList() {
@@ -129,38 +143,44 @@ public final class QoSSpecification {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
+      if (hasName()) {
+        output.writeString(1, getName());
+      }
+      if (hasQosid()) {
+        output.writeUInt32(2, getQosid());
+      }
       if (hasAverageBandwidth()) {
-        output.writeUInt64(2, getAverageBandwidth());
+        output.writeUInt64(3, getAverageBandwidth());
       }
       if (hasAverageSDUBandwidth()) {
-        output.writeUInt64(3, getAverageSDUBandwidth());
+        output.writeUInt64(4, getAverageSDUBandwidth());
       }
       if (hasPeakBandwidthDuration()) {
-        output.writeUInt32(4, getPeakBandwidthDuration());
+        output.writeUInt32(5, getPeakBandwidthDuration());
       }
       if (hasPeakSDUBandwidthDuration()) {
-        output.writeUInt32(5, getPeakSDUBandwidthDuration());
+        output.writeUInt32(6, getPeakSDUBandwidthDuration());
       }
       if (hasUndetectedBitErrorRate()) {
-        output.writeDouble(6, getUndetectedBitErrorRate());
+        output.writeDouble(7, getUndetectedBitErrorRate());
       }
       if (hasPartialDelivery()) {
-        output.writeBool(7, getPartialDelivery());
+        output.writeBool(8, getPartialDelivery());
       }
       if (hasOrder()) {
-        output.writeBool(8, getOrder());
+        output.writeBool(9, getOrder());
       }
       if (hasMaxAllowableGapSdu()) {
-        output.writeInt32(9, getMaxAllowableGapSdu());
+        output.writeInt32(10, getMaxAllowableGapSdu());
       }
       if (hasDelay()) {
-        output.writeUInt32(10, getDelay());
+        output.writeUInt32(11, getDelay());
       }
       if (hasJitter()) {
-        output.writeUInt32(11, getJitter());
+        output.writeUInt32(12, getJitter());
       }
       for (rina.encoding.impl.googleprotobuf.property.PropertyMessage.property_t element : getExtraParametersList()) {
-        output.writeMessage(12, element);
+        output.writeMessage(13, element);
       }
       getUnknownFields().writeTo(output);
     }
@@ -171,49 +191,57 @@ public final class QoSSpecification {
       if (size != -1) return size;
     
       size = 0;
+      if (hasName()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeStringSize(1, getName());
+      }
+      if (hasQosid()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(2, getQosid());
+      }
       if (hasAverageBandwidth()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt64Size(2, getAverageBandwidth());
+          .computeUInt64Size(3, getAverageBandwidth());
       }
       if (hasAverageSDUBandwidth()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt64Size(3, getAverageSDUBandwidth());
+          .computeUInt64Size(4, getAverageSDUBandwidth());
       }
       if (hasPeakBandwidthDuration()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(4, getPeakBandwidthDuration());
+          .computeUInt32Size(5, getPeakBandwidthDuration());
       }
       if (hasPeakSDUBandwidthDuration()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(5, getPeakSDUBandwidthDuration());
+          .computeUInt32Size(6, getPeakSDUBandwidthDuration());
       }
       if (hasUndetectedBitErrorRate()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(6, getUndetectedBitErrorRate());
+          .computeDoubleSize(7, getUndetectedBitErrorRate());
       }
       if (hasPartialDelivery()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(7, getPartialDelivery());
+          .computeBoolSize(8, getPartialDelivery());
       }
       if (hasOrder()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(8, getOrder());
+          .computeBoolSize(9, getOrder());
       }
       if (hasMaxAllowableGapSdu()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(9, getMaxAllowableGapSdu());
+          .computeInt32Size(10, getMaxAllowableGapSdu());
       }
       if (hasDelay()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(10, getDelay());
+          .computeUInt32Size(11, getDelay());
       }
       if (hasJitter()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(11, getJitter());
+          .computeUInt32Size(12, getJitter());
       }
       for (rina.encoding.impl.googleprotobuf.property.PropertyMessage.property_t element : getExtraParametersList()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(12, element);
+          .computeMessageSize(13, element);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -377,6 +405,12 @@ public final class QoSSpecification {
       
       public Builder mergeFrom(rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t other) {
         if (other == rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t.getDefaultInstance()) return this;
+        if (other.hasName()) {
+          setName(other.getName());
+        }
+        if (other.hasQosid()) {
+          setQosid(other.getQosid());
+        }
         if (other.hasAverageBandwidth()) {
           setAverageBandwidth(other.getAverageBandwidth());
         }
@@ -438,47 +472,55 @@ public final class QoSSpecification {
               }
               break;
             }
+            case 10: {
+              setName(input.readString());
+              break;
+            }
             case 16: {
-              setAverageBandwidth(input.readUInt64());
+              setQosid(input.readUInt32());
               break;
             }
             case 24: {
-              setAverageSDUBandwidth(input.readUInt64());
+              setAverageBandwidth(input.readUInt64());
               break;
             }
             case 32: {
-              setPeakBandwidthDuration(input.readUInt32());
+              setAverageSDUBandwidth(input.readUInt64());
               break;
             }
             case 40: {
+              setPeakBandwidthDuration(input.readUInt32());
+              break;
+            }
+            case 48: {
               setPeakSDUBandwidthDuration(input.readUInt32());
               break;
             }
-            case 49: {
+            case 57: {
               setUndetectedBitErrorRate(input.readDouble());
               break;
             }
-            case 56: {
+            case 64: {
               setPartialDelivery(input.readBool());
               break;
             }
-            case 64: {
+            case 72: {
               setOrder(input.readBool());
               break;
             }
-            case 72: {
+            case 80: {
               setMaxAllowableGapSdu(input.readInt32());
               break;
             }
-            case 80: {
+            case 88: {
               setDelay(input.readUInt32());
               break;
             }
-            case 88: {
+            case 96: {
               setJitter(input.readUInt32());
               break;
             }
-            case 98: {
+            case 106: {
               rina.encoding.impl.googleprotobuf.property.PropertyMessage.property_t.Builder subBuilder = rina.encoding.impl.googleprotobuf.property.PropertyMessage.property_t.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addExtraParameters(subBuilder.buildPartial());
@@ -489,7 +531,46 @@ public final class QoSSpecification {
       }
       
       
-      // optional uint64 averageBandwidth = 2;
+      // optional string name = 1;
+      public boolean hasName() {
+        return result.hasName();
+      }
+      public java.lang.String getName() {
+        return result.getName();
+      }
+      public Builder setName(java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasName = true;
+        result.name_ = value;
+        return this;
+      }
+      public Builder clearName() {
+        result.hasName = false;
+        result.name_ = getDefaultInstance().getName();
+        return this;
+      }
+      
+      // optional uint32 qosid = 2;
+      public boolean hasQosid() {
+        return result.hasQosid();
+      }
+      public int getQosid() {
+        return result.getQosid();
+      }
+      public Builder setQosid(int value) {
+        result.hasQosid = true;
+        result.qosid_ = value;
+        return this;
+      }
+      public Builder clearQosid() {
+        result.hasQosid = false;
+        result.qosid_ = 0;
+        return this;
+      }
+      
+      // optional uint64 averageBandwidth = 3;
       public boolean hasAverageBandwidth() {
         return result.hasAverageBandwidth();
       }
@@ -507,7 +588,7 @@ public final class QoSSpecification {
         return this;
       }
       
-      // optional uint64 averageSDUBandwidth = 3;
+      // optional uint64 averageSDUBandwidth = 4;
       public boolean hasAverageSDUBandwidth() {
         return result.hasAverageSDUBandwidth();
       }
@@ -525,7 +606,7 @@ public final class QoSSpecification {
         return this;
       }
       
-      // optional uint32 peakBandwidthDuration = 4;
+      // optional uint32 peakBandwidthDuration = 5;
       public boolean hasPeakBandwidthDuration() {
         return result.hasPeakBandwidthDuration();
       }
@@ -543,7 +624,7 @@ public final class QoSSpecification {
         return this;
       }
       
-      // optional uint32 peakSDUBandwidthDuration = 5;
+      // optional uint32 peakSDUBandwidthDuration = 6;
       public boolean hasPeakSDUBandwidthDuration() {
         return result.hasPeakSDUBandwidthDuration();
       }
@@ -561,7 +642,7 @@ public final class QoSSpecification {
         return this;
       }
       
-      // optional double undetectedBitErrorRate = 6;
+      // optional double undetectedBitErrorRate = 7;
       public boolean hasUndetectedBitErrorRate() {
         return result.hasUndetectedBitErrorRate();
       }
@@ -579,7 +660,7 @@ public final class QoSSpecification {
         return this;
       }
       
-      // optional bool partialDelivery = 7;
+      // optional bool partialDelivery = 8;
       public boolean hasPartialDelivery() {
         return result.hasPartialDelivery();
       }
@@ -597,7 +678,7 @@ public final class QoSSpecification {
         return this;
       }
       
-      // optional bool order = 8;
+      // optional bool order = 9;
       public boolean hasOrder() {
         return result.hasOrder();
       }
@@ -615,7 +696,7 @@ public final class QoSSpecification {
         return this;
       }
       
-      // optional int32 maxAllowableGapSdu = 9;
+      // optional int32 maxAllowableGapSdu = 10;
       public boolean hasMaxAllowableGapSdu() {
         return result.hasMaxAllowableGapSdu();
       }
@@ -633,7 +714,7 @@ public final class QoSSpecification {
         return this;
       }
       
-      // optional uint32 delay = 10;
+      // optional uint32 delay = 11;
       public boolean hasDelay() {
         return result.hasDelay();
       }
@@ -651,7 +732,7 @@ public final class QoSSpecification {
         return this;
       }
       
-      // optional uint32 jitter = 11;
+      // optional uint32 jitter = 12;
       public boolean hasJitter() {
         return result.hasJitter();
       }
@@ -669,7 +750,7 @@ public final class QoSSpecification {
         return this;
       }
       
-      // repeated .rina.messages.property_t extraParameters = 12;
+      // repeated .rina.messages.property_t extraParameters = 13;
       public java.util.List<rina.encoding.impl.googleprotobuf.property.PropertyMessage.property_t> getExtraParametersList() {
         return java.util.Collections.unmodifiableList(result.extraParameters_);
       }
@@ -748,16 +829,17 @@ public final class QoSSpecification {
     java.lang.String[] descriptorData = {
       "\n!protofiles/QoSSpecification.proto\022\rrin" +
       "a.messages\032 protofiles/PropertyMessage.p" +
-      "roto\"\303\002\n\022qosSpecification_t\022\030\n\020averageBa" +
-      "ndwidth\030\002 \001(\004\022\033\n\023averageSDUBandwidth\030\003 \001" +
-      "(\004\022\035\n\025peakBandwidthDuration\030\004 \001(\r\022 \n\030pea" +
-      "kSDUBandwidthDuration\030\005 \001(\r\022\036\n\026undetecte" +
-      "dBitErrorRate\030\006 \001(\001\022\027\n\017partialDelivery\030\007" +
-      " \001(\010\022\r\n\005order\030\010 \001(\010\022\032\n\022maxAllowableGapSd" +
-      "u\030\t \001(\005\022\r\n\005delay\030\n \001(\r\022\016\n\006jitter\030\013 \001(\r\0222" +
-      "\n\017extraParameters\030\014 \003(\0132\031.rina.messages.",
-      "property_tB4\n2rina.encoding.impl.googlep" +
-      "rotobuf.qosspecification"
+      "roto\"\340\002\n\022qosSpecification_t\022\014\n\004name\030\001 \001(" +
+      "\t\022\r\n\005qosid\030\002 \001(\r\022\030\n\020averageBandwidth\030\003 \001" +
+      "(\004\022\033\n\023averageSDUBandwidth\030\004 \001(\004\022\035\n\025peakB" +
+      "andwidthDuration\030\005 \001(\r\022 \n\030peakSDUBandwid" +
+      "thDuration\030\006 \001(\r\022\036\n\026undetectedBitErrorRa" +
+      "te\030\007 \001(\001\022\027\n\017partialDelivery\030\010 \001(\010\022\r\n\005ord" +
+      "er\030\t \001(\010\022\032\n\022maxAllowableGapSdu\030\n \001(\005\022\r\n\005" +
+      "delay\030\013 \001(\r\022\016\n\006jitter\030\014 \001(\r\0222\n\017extraPara",
+      "meters\030\r \003(\0132\031.rina.messages.property_tB" +
+      "4\n2rina.encoding.impl.googleprotobuf.qos" +
+      "specification"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -769,7 +851,7 @@ public final class QoSSpecification {
           internal_static_rina_messages_qosSpecification_t_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rina_messages_qosSpecification_t_descriptor,
-              new java.lang.String[] { "AverageBandwidth", "AverageSDUBandwidth", "PeakBandwidthDuration", "PeakSDUBandwidthDuration", "UndetectedBitErrorRate", "PartialDelivery", "Order", "MaxAllowableGapSdu", "Delay", "Jitter", "ExtraParameters", },
+              new java.lang.String[] { "Name", "Qosid", "AverageBandwidth", "AverageSDUBandwidth", "PeakBandwidthDuration", "PeakSDUBandwidthDuration", "UndetectedBitErrorRate", "PartialDelivery", "Order", "MaxAllowableGapSdu", "Delay", "Jitter", "ExtraParameters", },
               rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t.class,
               rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t.Builder.class);
           return null;

@@ -7,6 +7,8 @@ import java.net.InetAddress;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.shimipcprocess.ip.flowallocator.FlowAllocatorImpl;
+
 public class UDPServer implements Runnable{
 	private static final Log log = LogFactory.getLog(UDPServer.class);
 	
@@ -32,19 +34,19 @@ public class UDPServer implements Runnable{
 	private String hostname = null;
 	
 	/**
-	 * The Shim IPC Process intance
+	 * The flow allocator
 	 */
-	private ShimIPCProcessForIPLayers ipcProcess = null;
+	private FlowAllocatorImpl flowAllocator = null;
 	
 	/**
 	 * The server socket that listens for incoming connections
 	 */
 	private DatagramSocket serverSocket = null;
 	
-	public UDPServer(String hostname, int port, ShimIPCProcessForIPLayers ipcProcess){
+	public UDPServer(String hostname, int port, FlowAllocatorImpl flowAllocator){
 		this.hostname = hostname;
 		this.port = port;
-		this.ipcProcess = ipcProcess;
+		this.flowAllocator = flowAllocator;
 	}
 	
 	public void setEnd(boolean end){

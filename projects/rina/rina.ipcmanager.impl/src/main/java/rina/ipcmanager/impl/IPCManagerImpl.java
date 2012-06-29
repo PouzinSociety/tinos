@@ -4,7 +4,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -65,13 +67,14 @@ public class IPCManagerImpl implements IPCManager{
 	private ExecutorService executorService = null;
 	
 	/**
-	 * The IPC Process factory
+	 * The IPC Process factories
 	 */
-	private IPCProcessFactory ipcProcessFactory = null;
+	private Map<String, IPCProcessFactory> ipcProcessFactories = null;
 	
 	private APServiceTCPServer apServiceTCPServer = null;
 	
 	public IPCManagerImpl(){
+		this.ipcProcessFactories = new HashMap<String, IPCProcessFactory>();
 		executorService = Executors.newCachedThreadPool();
 		initializeConfiguration();
 		console = new IPCManagerConsole(this);
@@ -133,6 +136,38 @@ public class IPCManagerImpl implements IPCManager{
 	}
 	
 	/**
+	 * Called by Spring DM every time an IPC Process factory is registered
+	 * @param serviceInstance
+	 * @param serviceProperties
+	 */
+	public void ipcProcessFactoryAdded(IPCProcessFactory serviceInstance, Map serviceProperties){
+		if (serviceInstance != null && serviceProperties != null){
+			serviceInstance.setIPCManager(this);
+			ipcProcessFactories.put((String)serviceProperties.get("type"), serviceInstance);
+			log.debug("New IPC Process factory added for IPC Processes of type: "+serviceProperties.get("type"));
+		}
+	}
+	
+	/**
+	 * Called by Spring DM every time an IPC Process factory is unregistered
+	 * @param serviceInstance
+	 * @param serviceProperties
+	 */
+	public void ipcProcessFactoryRemoved(IPCProcessFactory serviceInstance, Map serviceProperties){
+		if (serviceInstance != null && serviceProperties != null){
+			ipcProcessFactories.remove((String)serviceProperties.get("type"));
+			log.debug("Existing IPC Process factory removed for IPC Processes of type: "+serviceProperties.get("type"));
+		}
+	}
+	
+	public void setIPCProcessFactory(IPCProcessFactory ipcProcessFactory){
+		this.ipcProcessFactory = ipcProcessFactory;
+		ipcProcessFactory.setIPCManager(this);
+		apServiceTCPServer.setIPCProcessFactory(ipcProcessFactory);
+		createInitialProcesses();
+	}
+	
+	/**
 	 * Executes a runnable in a thread. The IPCManager maintains a single thread pool 
 	 * for all the RINA prototype
 	 * @param runnable
@@ -149,13 +184,6 @@ public class IPCManagerImpl implements IPCManager{
 	
 	public void setInterDIFDirectoryFactory(InterDIFDirectoryFactory iddFactory){
 		apServiceTCPServer.setInterDIFDirectory(iddFactory.createIDD(this));
-	}
-	
-	public void setIPCProcessFactory(IPCProcessFactory ipcProcessFactory){
-		this.ipcProcessFactory = ipcProcessFactory;
-		ipcProcessFactory.setIPCManager(this);
-		apServiceTCPServer.setIPCProcessFactory(ipcProcessFactory);
-		createInitialProcesses();
 	}
 	
 	/**
