@@ -1,12 +1,11 @@
 package rina.flowallocator.impl;
 
+import java.io.DataOutputStream;
 import java.net.Socket;
 import java.util.Timer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import com.google.common.io.LittleEndianDataOutputStream;
 
 import rina.cdap.api.CDAPMessageHandler;
 import rina.cdap.api.CDAPSessionDescriptor;
@@ -302,7 +301,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			socket = new Socket(hostName, port);
 			log.debug("Socket connected!");
 			int tcpRendezVousId = new Long((this.ribDaemon.getIPCProcess().getAddress().longValue() << 16) + portId).intValue();
-			LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(socket.getOutputStream());
+			DataOutputStream stream = new DataOutputStream(socket.getOutputStream());
 			stream.writeInt(tcpRendezVousId);
 			stream.flush();
 			log.debug("Started a socket to the Flow Allocator at "+hostName+":"+port+". The local socket number is "+socket.getLocalPort());

@@ -19,6 +19,7 @@
 	<artifact type="bundle" name="rina.efcp.impl" version="[1,2)"/>
 	<artifact type="bundle" name="rina.flowallocator.impl" version="[1,2)"/>
 	<artifact type="bundle" name="rina.ipcservice.impl" version="[1, 2)"/>
+	<artifact type="bundle" name="rina.shimipcprocess.ip" version="[1,2)"/>
 	<artifact type="bundle" name="rina.idd.impl" version="[1, 2)"/>
 	<artifact type="bundle" name="rina.ipcmanager.impl" version="[1, 2)"/>
 </plan>

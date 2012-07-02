@@ -8,11 +8,9 @@
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
        
        <osgi:reference id="iddFactoryService" interface="rina.idd.api.InterDIFDirectoryFactory"/>
-       <osgi:reference-list interface="rina.ipcprocess.api.IPCProcessFactory"
-			availability="optional">
-			<osgi:reference-listener ref="ipcmanager"
-				bind-method="ipcProcessFactoryAdded" unbind-method="ipcProcessFactoryRemoved" />
-		</osgi:reference-list>
+       <osgi:list id="ipcProcessFactoryServiceList" interface="rina.ipcprocess.api.IPCProcessFactory" cardinality="0..N">
+			<osgi:listener ref="ipcmanager" bind-method="ipcProcessFactoryAdded" unbind-method="ipcProcessFactoryRemoved" />
+		</osgi:list>
        
        <!--  Export the IPCManager to the OSGi registry-->
     	<osgi:service id="ipcManagerService" ref="ipcmanager">

@@ -19,7 +19,7 @@ public class NewFlowRequestPolicyImpl implements NewFlowRequestPolicy{
 		flow.setSource(true);
 		List<ConnectionId> connectionIds = new ArrayList<ConnectionId>();
 		ConnectionId connectionId = new ConnectionId();
-		connectionId.setQosId(0x01);
+		connectionId.setQosId(0x02);
 		connectionIds.add(connectionId);
 		connectionId = new ConnectionId();
 		connectionId.setQosId((byte)1);

@@ -1,5 +1,6 @@
 package rina.flowallocator.impl;
 
+import java.io.DataInputStream;
 import java.net.Socket;
 import java.util.Iterator;
 import java.util.Map;
@@ -10,8 +11,6 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import com.google.common.io.LittleEndianDataInputStream;
 
 import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPSessionManager;
@@ -182,7 +181,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	public void newConnectionAccepted(Socket socket){
 		long tcpRendezvousId = -1;
 		try{
-			LittleEndianDataInputStream liStream = new LittleEndianDataInputStream(socket.getInputStream());
+			DataInputStream liStream = new DataInputStream(socket.getInputStream());
 			tcpRendezvousId = liStream.readInt();
 			log.debug("The TCP Rendez-vous Id is: "+tcpRendezvousId);
 			

@@ -19,7 +19,6 @@ import rina.idd.api.InterDIFDirectory;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcmanager.impl.apservice.FlowServiceState.Status;
 import rina.ipcprocess.api.IPCProcess;
-import rina.ipcprocess.api.IPCProcessFactory;
 import rina.ipcservice.api.APService;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.ApplicationRegistration;
@@ -34,11 +33,6 @@ import rina.ipcservice.api.IPCService;
  */
 public class APServiceImpl implements APService{
 	private static final Log log = LogFactory.getLog(APServiceImpl.class);
-	
-	/**
-	 * The IPC Process factory
-	 */
-	private IPCProcessFactory ipcProcessFactory = null;
 	
 	private IPCManager ipcManager = null;
 
@@ -56,17 +50,13 @@ public class APServiceImpl implements APService{
 	
 	public APServiceImpl(IPCManager ipcManager){
 		this.ipcManager = ipcManager;
+		cdapSessionManager = ipcManager.getCDAPSessionManagerFactory().createCDAPSessionManager();
+		encoder = ipcManager.getEncoderFactory().createEncoderInstance();
+		delimiter = ipcManager.getDelimiterFactory().createDelimiter(DelimiterFactory.DIF);
 	}
 	
 	public void setInterDIFDirectory(InterDIFDirectory interDIFDirectory){
 		this.interDIFDirectory = interDIFDirectory;
-	}
-	
-	public void setIPCProcessFactory(IPCProcessFactory ipcProcessFactory){
-		this.ipcProcessFactory = ipcProcessFactory;
-		cdapSessionManager = ipcProcessFactory.getCDAPSessionManagerFactory().createCDAPSessionManager();
-		encoder = ipcProcessFactory.getEncoderFactory().createEncoderInstance();
-		delimiter = ipcProcessFactory.getDelimiterFactory().createDelimiter(DelimiterFactory.DIF);
 	}
 	
 	public void setFlowServiceState(FlowServiceState flowServiceState){
@@ -94,7 +84,7 @@ public class APServiceImpl implements APService{
 		//TODO should ask the IDD, but we don't have one yet, and there can be a single DIF per system only
 		
 		//Look for the local IPC Process that is a member of difName
-		List<IPCProcess> ipcProcesses = ipcProcessFactory.listIPCProcesses();
+		List<IPCProcess> ipcProcesses = ipcManager.listIPCProcesses();
 		IPCService ipcService = null;
 		if (ipcProcesses == null || ipcProcesses.size() == 0){
 			CDAPMessage errorMessage = cdapMessage.getReplyMessage();
@@ -159,13 +149,13 @@ public class APServiceImpl implements APService{
 			List<String> difNames = null;
 			if (this.applicationRegistrationState.getApplicationRegistration().getDifNames() == null || 
 					this.applicationRegistrationState.getApplicationRegistration().getDifNames().size() == 0){
-				difNames = ipcProcessFactory.listDIFNames();
+				difNames = ipcManager.listDIFNames();
 			}else{
 				difNames = this.applicationRegistrationState.getApplicationRegistration().getDifNames();
 			}
 			
 			for(int i=0; i<difNames.size(); i++){
-				IPCService ipcService = (IPCService) ipcProcessFactory.getIPCProcessBelongingToDIF(difNames.get(i));
+				IPCService ipcService = (IPCService) ipcManager.getIPCProcessBelongingToDIF(difNames.get(i));
 				if (ipcService != null){
 					try{
 						ipcService.unregister(apNamingInfo);
@@ -200,14 +190,14 @@ public class APServiceImpl implements APService{
 		
 		List<String> difNames = null;
 		if (applicationRegistration.getDifNames() == null || applicationRegistration.getDifNames().size() == 0){
-			difNames = ipcProcessFactory.listDIFNames();
+			difNames = ipcManager.listDIFNames();
 		}else{
 			difNames = applicationRegistration.getDifNames();
 		}
 
 		//Register the application in the required DIFs
 		for(int i=0; i<difNames.size(); i++){
-			IPCService ipcService = (IPCService) ipcProcessFactory.getIPCProcessBelongingToDIF(difNames.get(i));
+			IPCService ipcService = (IPCService) ipcManager.getIPCProcessBelongingToDIF(difNames.get(i));
 			if (ipcService == null){
 				//TODO error message, one of the DIF names is not available in the system
 				//return?
@@ -262,15 +252,14 @@ public class APServiceImpl implements APService{
 			Socket socket = new Socket("localhost", this.applicationRegistrationState.getApplicationRegistration().getSocketNumber());
 			APServiceImpl apServiceImpl = new APServiceImpl(this.ipcManager);
 			apServiceImpl.setInterDIFDirectory(this.interDIFDirectory);
-			apServiceImpl.setIPCProcessFactory(this.ipcProcessFactory);
 			FlowServiceState flowServiceState = new FlowServiceState();
 			flowServiceState.setFlowService(flowService);
 			flowServiceState.setSocket(socket);
 			flowServiceState.setIpcService(ipcService);
 			flowServiceState.setStatus(Status.ALLOCATION_REQUESTED);
 			apServiceImpl.setFlowServiceState(flowServiceState);
-			TCPSocketReader socketReader = new TCPSocketReader(socket, ipcProcessFactory.getDelimiterFactory().createDelimiter(DelimiterFactory.DIF),
-					ipcProcessFactory.getEncoderFactory().createEncoderInstance(), ipcProcessFactory.getCDAPSessionManagerFactory().createCDAPSessionManager(), 
+			TCPSocketReader socketReader = new TCPSocketReader(socket, ipcManager.getDelimiterFactory().createDelimiter(DelimiterFactory.DIF),
+					ipcManager.getEncoderFactory().createEncoderInstance(), ipcManager.getCDAPSessionManagerFactory().createCDAPSessionManager(), 
 					apServiceImpl);
 			socketReader.setPortId(flowService.getPortId());
 			ipcManager.execute(socketReader);

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import rina.cdap.api.CDAPSessionManagerFactory;
+import rina.configuration.RINAConfiguration;
 import rina.delimiting.api.DelimiterFactory;
 import rina.efcp.api.DataTransferAEFactory;
 import rina.encoding.api.EncoderFactory;
@@ -124,8 +125,10 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	 * Creates a new IPC process
 	 * @param apName the application process name of this IPC process
 	 * @param apInstance the application process instance of this IPC process
+	 * @param parameters optional extra parameters
+	 * @param config the configuration
 	 */
-	public IPCProcess createIPCProcess(String apName, String apInstance) throws Exception{
+	public IPCProcess createIPCProcess(String apName, String apInstance, RINAConfiguration config) throws Exception{
 		if (ipcProcesses.get(apName+"-"+apInstance) != null){
 			throw new Exception("An IPC Process with this name/instance pair already exists in this system");
 		}

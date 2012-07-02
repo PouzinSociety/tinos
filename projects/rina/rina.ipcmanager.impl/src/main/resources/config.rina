@@ -10,22 +10,21 @@
     "neighborsEnrollerPeriodInMs" : 10000 
   },
   "ipcProcessesToCreate" : [ {
-  	"applicationProcessName" : "Nexus.i2CAT",
+    "type" : "normal",
+  	"applicationProcessName" : "Barcelona.i2CAT",
   	"applicationProcessInstance" : "1",
   	"difName" : "RINA-Demo.DIF",
   	"neighbors" : [ {
-  	  "applicationProcessName" : "Barcelona.i2CAT",
-  	  "applicationProcessInstance" : "1",
-  	  "address" : "64"
-  	}, {
   	  "applicationProcessName" : "Castefa.i2CAT",
   	  "applicationProcessInstance" : "1",
   	  "address" : "65"
-  	}, {
-  	  "applicationProcessName" : "Glories.i2CAT",
-  	  "applicationProcessInstance" : "1",
-  	  "address" : "66"
   	} ]
+  },{
+  	"type" : "shimip",
+    "applicationProcessName" : "Barcelona.i2CAT.PublicInternet",
+  	"applicationProcessInstance" : "1",
+  	"difName" : "PublicInternet.DIF",
+  	"hostname" : "84.88.40.70"
   } ],
   "difConfigurations" : [ {
     "difName" : "RINA-Demo.DIF",
@@ -68,6 +67,38 @@
       "maxAllowableGapSdu" : -1,
       "delay" : 0,
       "jitter" : 0
+    } ]
+  }, {
+    "difName" : "PublicInternet.DIF",
+    "expectedApplicationRegistrations" : [ {
+    	"applicationProcessName" : "skype", 
+    	"applicationProcessInstance" : "1", 
+    	"socketPortNumber" : 38000
+    }, {
+    	"applicationProcessName" : "firefox", 
+    	"applicationProcessInstance" : "1", 
+    	"socketPortNumber" : 38001
+    } ], 
+    "directory" : [ {
+    	"applicationProcessName" : "skype", 
+    	"applicationProcessInstance" : "1",
+    	"hostname" : "84.88.40.70", 
+    	"socketPortNumber" : 38000
+    }, {
+    	"applicationProcessName" : "firefox", 
+    	"applicationProcessInstance" : "1",
+    	"hostname" : "84.88.40.70", 
+    	"socketPortNumber" : 38001
+    }, {
+    	"applicationProcessName" : "safari", 
+    	"applicationProcessInstance" : "1",
+    	"hostname" : "84.88.40.71", 
+    	"socketPortNumber" : 38000
+    }, {
+    	"applicationProcessName" : "mail", 
+    	"applicationProcessInstance" : "1",
+    	"hostname" : "84.88.40.71", 
+    	"socketPortNumber" : 38001
     } ]
   } ],
   "knownIPCProcessConfigurations" : [ {

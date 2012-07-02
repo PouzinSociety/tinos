@@ -10,7 +10,6 @@ import org.apache.commons.logging.LogFactory;
 import rina.delimiting.api.DelimiterFactory;
 import rina.idd.api.InterDIFDirectory;
 import rina.ipcmanager.api.IPCManager;
-import rina.ipcprocess.api.IPCProcessFactory;
 
 /**
  * Listens to local connections from applications that want to use the RINA services.
@@ -45,11 +44,6 @@ private static final Log log = LogFactory.getLog(APServiceTCPServer.class);
 	private IPCManager ipcManager = null;
 	
 	/**
-	 * The IPC Process Factory
-	 */
-	private IPCProcessFactory ipcProcessFactory = null;
-	
-	/**
 	 * The Inter DIF Directory
 	 */
 	private InterDIFDirectory interDIFDirectory = null;
@@ -65,10 +59,6 @@ private static final Log log = LogFactory.getLog(APServiceTCPServer.class);
 	
 	public void setInterDIFDirectory(InterDIFDirectory interDIFDirectory){
 		this.interDIFDirectory = interDIFDirectory;
-	}
-	
-	public void setIPCProcessFactory(IPCProcessFactory ipcProcessFactory){
-		this.ipcProcessFactory = ipcProcessFactory;
 	}
 	
 	public void setEnd(boolean end){
@@ -112,9 +102,8 @@ private static final Log log = LogFactory.getLog(APServiceTCPServer.class);
 	private void newConnectionAccepted(Socket socket){
 		APServiceImpl apService = new APServiceImpl(this.ipcManager);
 		apService.setInterDIFDirectory(interDIFDirectory);
-		apService.setIPCProcessFactory(ipcProcessFactory);
-		TCPSocketReader socketReader = new TCPSocketReader(socket, ipcProcessFactory.getDelimiterFactory().createDelimiter(DelimiterFactory.DIF),
-				ipcProcessFactory.getEncoderFactory().createEncoderInstance(), ipcProcessFactory.getCDAPSessionManagerFactory().createCDAPSessionManager(), 
+		TCPSocketReader socketReader = new TCPSocketReader(socket, ipcManager.getDelimiterFactory().createDelimiter(DelimiterFactory.DIF),
+				ipcManager.getEncoderFactory().createEncoderInstance(), ipcManager.getCDAPSessionManagerFactory().createCDAPSessionManager(), 
 				apService);
 		ipcManager.execute(socketReader);
 	}

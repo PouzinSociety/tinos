@@ -1,6 +1,7 @@
 package rina.shimipcprocess.ip;
 
 import java.net.InetAddress;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +19,7 @@ import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
+import rina.shimipcprocess.ip.flowallocator.ApplicationRegistration;
 import rina.shimipcprocess.ip.flowallocator.DirectoryEntry;
 import rina.shimipcprocess.ip.flowallocator.FlowAllocatorImpl;
 import rina.shimipcprocess.ip.ribdaemon.RIBDaemonImpl;
@@ -56,7 +58,7 @@ public class ShimIPCProcessForIPLayers extends BaseIPCProcess implements IPCServ
 		this.hostName = hostName;
 		this.difName = difName;
 		this.addIPCProcessComponent(delimiter);
-		this.flowAllocator = new FlowAllocatorImpl(hostName);
+		this.flowAllocator = new FlowAllocatorImpl(hostName, delimiter);
 		this.addIPCProcessComponent(this.flowAllocator);
 		this.addIPCProcessComponent(new RIBDaemonImpl(this, flowAllocator));
 	}
@@ -94,7 +96,6 @@ public class ShimIPCProcessForIPLayers extends BaseIPCProcess implements IPCServ
 		return this.flowAllocator.getDirectory();
 	}
 
-	@Override
 	/**
 	 * Register an application to the shim IPC Process. It will cause the shim IPC Process to 
 	 * listen to a certain TCP and UDP port number.
@@ -105,7 +106,6 @@ public class ShimIPCProcessForIPLayers extends BaseIPCProcess implements IPCServ
 		this.flowAllocator.register(apNamingInfo, applicationCallback);
 	}
 	
-	@Override
 	/**
 	 * Unregisters a local application from this shim IPC Process. The shim will stop 
 	 * listening at TCP and UDP ports.
@@ -115,7 +115,6 @@ public class ShimIPCProcessForIPLayers extends BaseIPCProcess implements IPCServ
 		this.flowAllocator.unregister(apNamingInfo);
 	}
 
-	@Override
 	/**
 	 * Invoked by a local application to request a new flow to be allocated
 	 * @param flowService Specifies the allocation information request
@@ -125,41 +124,40 @@ public class ShimIPCProcessForIPLayers extends BaseIPCProcess implements IPCServ
 		return this.flowAllocator.submitAllocateRequest(flowService, applicationCallback);
 	}
 
-	@Override
 	public void submitAllocateResponse(int portId, boolean successs, String reason, APService applicationCallback) throws IPCException {
 		this.flowAllocator.submitAllocateResponse(portId, successs, reason, applicationCallback);
 	}
 
-	@Override
 	public void submitDeallocate(int portId) throws IPCException {
 		this.flowAllocator.submitDeallocate(portId);
 	}
 
-	@Override
 	public void submitStatus(int arg0) {
 	}
 
-	@Override
 	public void submitTransfer(int arg0, byte[] sdu) throws IPCException {
 		// TODO Auto-generated method stub
 		
 	}
 	
-	@Override
 	public void addIPCProcessComponent(IPCProcessComponent ipcProcessComponent) {
 	}
 
-	@Override
 	public void destroy() {
-		//TODO
+		Iterator<ApplicationRegistration> registrations = this.flowAllocator.getRegisteredApplications().values().iterator();
+		while(registrations.hasNext()){
+			try {
+				this.flowAllocator.unregister(registrations.next().getApNamingInfo());
+			} catch (IPCException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
-	@Override
 	public void execute(Runnable runnable) {
 		this.ipcManager.execute(runnable);
 	}
 
-	@Override
 	public Long getAddress() {
 		byte[] encodedAddress = null;
 		long result = 0L;
@@ -175,53 +173,43 @@ public class ShimIPCProcessForIPLayers extends BaseIPCProcess implements IPCServ
 		return new Long(result);
 	}
 
-	@Override
 	public List<Flow> getAllocatedFlows() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public String getApplicationProcessInstance() {
 		return this.apNamingInfo.getApplicationProcessInstance();
 	}
 
-	@Override
 	public String getApplicationProcessName() {
 		return this.apNamingInfo.getApplicationProcessName();
 	}
 
-	@Override
 	public ApplicationProcessNamingInfo getApplicationProcessNamingInfo() {
-		return this.getApplicationProcessNamingInfo();
+		return this.apNamingInfo;
 	}
 
-	@Override
 	public String getDIFName() {
 		return this.difName;
 	}
 
-	@Override
 	public DataTransferConstants getDataTransferConstants() {
 		return null;
 	}
 
-	@Override
 	public List<Neighbor> getNeighbors() {
 		return null;
 	}
 
-	@Override
 	public OperationalStatus getOperationalStatus() {
 		return OperationalStatus.STARTED;
 	}
 
-	@Override
 	public List<QoSCube> getQoSCubes() {
 		return this.flowAllocator.getQoSCubes();
 	}
 
-	@Override
 	public List<WhatevercastName> getWhatevercastNames() {
 		return null;
 	}

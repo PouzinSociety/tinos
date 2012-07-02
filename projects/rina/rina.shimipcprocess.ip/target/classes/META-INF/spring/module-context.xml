@@ -4,5 +4,7 @@
 			http://www.springframework.org/schema/beans
 			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-		<bean name="iddFactoryBean" class="rina.idd.impl.StaticInterDIFDirectoryFactory"/>	
+		<bean name="ipcProcessFactoryImpl" class="rina.shimipcprocess.ip.factory.ShimIPCProcessForIPLayersFactory">
+			<property name="delimiterFactory" ref="delimiterFactoryService" />
+		</bean>	
 </beans>

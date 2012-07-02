@@ -75,13 +75,13 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 */
 	private Timer timer = null;
 	
-	public FlowAllocatorImpl(String hostName){
+	public FlowAllocatorImpl(String hostName, Delimiter delimiter){
 		this.hostName = hostName;
 		this.expectedApplicationRegistrations = new ConcurrentHashMap<String, Integer>();
 		this.registeredApplications = new ConcurrentHashMap<String, ApplicationRegistration>();
 		this.directory = new ConcurrentHashMap<String, DirectoryEntry>();
 		this.flows = new ConcurrentHashMap<Integer, FlowState>();
-		this.delimiter = (Delimiter) this.getIPCProcess().getIPCProcessComponent(BaseDelimiter.getComponentName());
+		this.delimiter = delimiter;
 		this.timer = new Timer();
 		
 		//Create QoS cubes
@@ -105,6 +105,10 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	
 	public List<QoSCube> getQoSCubes(){
 		return this.getQoSCubes();
+	}
+	
+	public Map<String, ApplicationRegistration> getRegisteredApplications(){
+		return this.registeredApplications;
 	}
 	
 	/**
@@ -211,8 +215,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		apRegistration.getTcpServer().setEnd(true);
 		apRegistration.getUdpServer().setEnd(true);
 	}
-	
-	@Override
+
 	public int submitAllocateRequest(FlowService flowService, APService applicationCallback) throws IPCException {
 		//See if we have an entry for the destination application
 		DirectoryEntry directoryEntry = this.directory.get(flowService.getDestinationAPNamingInfo().getEncodedString());
@@ -347,7 +350,6 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		applicationCallback.deliverAllocateRequest(flowService, (IPCService) this.getIPCProcess());
 	}
 
-	@Override
 	public void submitAllocateResponse(int portId, boolean success, String reason, APService applicationCallback) throws IPCException {
 		FlowState flowState = null;
 		synchronized(this.flows){
@@ -379,7 +381,6 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		flowState.setState(State.ALLOCATED);
 	}
 
-	@Override
 	/**
 	 * Remove the flow state and deallocate 
 	 * the flow
@@ -426,39 +427,32 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 					IPCException.PROBLEMS_SENDING_SDU + ex.getMessage());
 		}
 	}
-	
-	@Override
+
 	public void createFlowRequestMessageReceived(CDAPMessage cdapMessage, int arg1) {
 		//Won't implement
 	}
 
-	@Override
 	public DirectoryForwardingTable getDirectoryForwardingTable() {
 		// Won't implement
 		return null;
 	}
-	
-	@Override
+
 	public void receivedLocalFlowResponse(int arg0, int arg1, boolean arg2, String arg3) throws IPCException {
 		//Won't implement
 	}
-	
-	@Override
+
 	public void receivedLocalFlowRequest(FlowService arg0, String arg1) throws IPCException {
 		//Won't implement
 	}
-	
-	@Override
+
 	public void removeFlowAllocatorInstance(int arg0) {
 		//Won't implement
 	}
-	
-	@Override
+
 	public void receivedDeallocateLocalFlowRequest(int arg0) throws IPCException {
 		//Won't implement
 	}
-	
-	@Override
+
 	public void newConnectionAccepted(Socket socket){
 		//Won't implement
 	}
