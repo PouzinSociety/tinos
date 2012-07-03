@@ -63,7 +63,7 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	/**
 	 * Contains the connection states indexed by CEP id
 	 */
-	private Map<ConnectionId, DTAEIState> connectionStatesByConnectionId = null;
+	private Map<Long, DTAEIState> connectionStatesByConnectionId = null;
 	
 	/**
 	 * The IPC Process delimiter
@@ -79,7 +79,7 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		this.reservedCEPIds = new ConcurrentHashMap<Integer, int[]>();
 		this.reservedCEPIdList = new ArrayList<Integer>();
 		this.portIdToConnectionMapping = new ConcurrentHashMap<Integer, DTAEIState>();
-		this.connectionStatesByConnectionId = new ConcurrentHashMap<ConnectionId, DTAEIState>();
+		this.connectionStatesByConnectionId = new ConcurrentHashMap<Long, DTAEIState>();
 		this.dataTransferConstants = new DataTransferConstants();
 	}
 	
@@ -193,7 +193,12 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 			portId = (int) flow.getDestinationPortId();
 		}
 		
-		this.connectionStatesByConnectionId.put(flow.getConnectionIds().get(flow.getCurrentConnectionIdIndex()), state);
+		ConnectionId connectionId = flow.getConnectionIds().get(flow.getCurrentConnectionIdIndex());
+		if (flow.isSource()){
+			this.connectionStatesByConnectionId.put(new Long(connectionId.getSourceCEPId()), state);
+		}else{
+			this.connectionStatesByConnectionId.put(new Long(connectionId.getDestinationCEPId()), state);
+		}
 		this.portIdToConnectionMapping.put(new Integer(portId), state);
 	}
 	
@@ -283,7 +288,7 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		
 		//Decode the PDU and look for associated state
 		PDU decodedPDU = PDUParser.parsePDU(pdu);
-		DTAEIState state = this.connectionStatesByConnectionId.get(decodedPDU.getConnectionId());
+		DTAEIState state = this.connectionStatesByConnectionId.get(new Long(decodedPDU.getConnectionId().getDestinationCEPId()));
 		if (state == null){
 			log.error("Received a PDU with an unrecognized Connection ID: "+decodedPDU.getConnectionId());
 			return;

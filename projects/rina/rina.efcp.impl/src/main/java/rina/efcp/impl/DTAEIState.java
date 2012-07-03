@@ -158,7 +158,8 @@ public class DTAEIState {
 		this.maxFlowSDUSize = dataTransferConstants.getMaxSDUSize();
 		this.maxFlowPDUSize = dataTransferConstants.getMaxPDUSize();
 		this.connectionId = flow.getConnectionIds().get(flow.getCurrentConnectionIdIndex());
-		this.preComputedPCI = PDUParser.computePCI(this.destinationAddress, this.sourceAddress, this.connectionId);
+		this.preComputedPCI = PDUParser.computePCI(this.destinationAddress, 
+				this.sourceAddress, this.connectionId, flow.isSource());
 	}
 	
 	public APService getApplicationCallback() {

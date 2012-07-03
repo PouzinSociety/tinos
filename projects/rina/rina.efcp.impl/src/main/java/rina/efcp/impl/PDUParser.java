@@ -14,7 +14,7 @@ public class PDUParser {
 	/**
 	 * Encode the fields that are always the same using Little Endian byte order
 	 */
-	public static byte[] computePCI(long destinationAddress, long sourceAddress, ConnectionId connectionId){
+	public static byte[] computePCI(long destinationAddress, long sourceAddress, ConnectionId connectionId, boolean source){
 		byte[] aux = null;
 		byte[] preComputedPCI = new byte[15];
 		//Encode destination address
@@ -26,11 +26,19 @@ public class PDUParser {
 		preComputedPCI[2] = aux[7];
 		preComputedPCI[3] = aux[6];
 		//Encode destination CEP-id
-		aux = Longs.toByteArray(connectionId.getDestinationCEPId());
+		if (source){
+			aux = Longs.toByteArray(connectionId.getDestinationCEPId());
+		}else{
+			aux = Longs.toByteArray(connectionId.getSourceCEPId());
+		}
 		preComputedPCI[4] = aux[7];
 		preComputedPCI[5] = aux[6];
 		//Encode source CEP-id
-		aux = Longs.toByteArray(connectionId.getSourceCEPId());
+		if (source){
+			aux = Longs.toByteArray(connectionId.getSourceCEPId());
+		}else{
+			aux = Longs.toByteArray(connectionId.getDestinationCEPId());
+		}
 		preComputedPCI[6] = aux[7];
 		preComputedPCI[7] = aux[6];
 		//Encode QoS-id
