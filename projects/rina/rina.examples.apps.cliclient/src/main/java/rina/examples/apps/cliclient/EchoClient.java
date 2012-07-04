@@ -11,7 +11,7 @@ import rina.ipcservice.api.IPCException;
 
 public class EchoClient implements SDUListener{
 	
-	public static final String ECHO_SERVER_APPLICATION_PROCESS_NAME = "rina.examples.apps.echoServer";
+	public static final String ECHO_SERVER_APPLICATION_PROCESS_NAME = "rina.examples.apps.echoserver";
 	public static final String APPLICATION_PROCESS_NAME = "rina.examples.apps.cliClient";
 	
 	private Scanner scanner = null;
@@ -31,8 +31,8 @@ public class EchoClient implements SDUListener{
 	public void run(){
 		System.out.println("Requesting a flow to the "+ECHO_SERVER_APPLICATION_PROCESS_NAME+" application...");
 		try{
-			flow = new Flow(new ApplicationProcessNamingInfo(APPLICATION_PROCESS_NAME, null), 
-					new ApplicationProcessNamingInfo(ECHO_SERVER_APPLICATION_PROCESS_NAME, null), null, this);
+			flow = new Flow(new ApplicationProcessNamingInfo(APPLICATION_PROCESS_NAME, "1"), 
+					new ApplicationProcessNamingInfo(ECHO_SERVER_APPLICATION_PROCESS_NAME, "1"), null, this);
 			System.out.println("Flow allocated! The portId assigned to the flow is "+flow.getPortId());
 		}catch(IPCException ex){
 			System.out.println("Problems allocating flow: ");

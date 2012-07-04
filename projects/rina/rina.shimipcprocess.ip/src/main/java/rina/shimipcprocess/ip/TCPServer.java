@@ -88,6 +88,7 @@ public class TCPServer implements Runnable{
 	
 	public void run() {
 		try{
+			log.debug("Starting a new TCP server socket");
 			InetAddress inetAddress = InetAddress.getByName(hostname);
 			serverSocket = new ServerSocket(port, 0, inetAddress);
 			listening = true;

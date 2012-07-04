@@ -9,13 +9,16 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.cdap.api.message.CDAPMessage;
-import rina.delimiting.api.BaseDelimiter;
 import rina.delimiting.api.Delimiter;
 import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.QoSCube;
+import rina.ipcmanager.api.IPCManager;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
@@ -28,6 +31,8 @@ import rina.shimipcprocess.ip.UDPSocketReader;
 import rina.shimipcprocess.ip.flowallocator.FlowState.State;
 
 public class FlowAllocatorImpl extends BaseFlowAllocator{
+	
+	private static final Log log = LogFactory.getLog(FlowAllocatorImpl.class);
 	
 	public static final String SOCKET_NUMBER_ALREADY_RESERVED_FOR_ANOTHER_APPLICATION = "This socket number is already reserved by another application.";
 	public static final String COULD_NOT_FIND_SOCKET_NUMBER_FOR_APPLICATION = "Could not find a socket number for this application.";
@@ -75,7 +80,12 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 */
 	private Timer timer = null;
 	
-	public FlowAllocatorImpl(String hostName, Delimiter delimiter){
+	/**
+	 * The IPCManager
+	 */
+	private IPCManager ipcManager = null;
+	
+	public FlowAllocatorImpl(String hostName, Delimiter delimiter, IPCManager ipcManager){
 		this.hostName = hostName;
 		this.expectedApplicationRegistrations = new ConcurrentHashMap<String, Integer>();
 		this.registeredApplications = new ConcurrentHashMap<String, ApplicationRegistration>();
@@ -83,28 +93,29 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		this.flows = new ConcurrentHashMap<Integer, FlowState>();
 		this.delimiter = delimiter;
 		this.timer = new Timer();
+		this.ipcManager = ipcManager;
 		
 		//Create QoS cubes
 		this.qosCubes = new ArrayList<QoSCube>();
 		QoSCube qosCube = new QoSCube();
 		qosCube.setQosId(1);
+		qosCube.setName("unreliable");
+		qosCube.setOrder(false);
+		qosCube.setPartialDelivery(true);
+		qosCube.setUndetectedBitErrorRate(new Double("1.0E-9"));
+		this.qosCubes.add(qosCube);
+	    qosCube = new QoSCube();
+		qosCube.setQosId(2);
 		qosCube.setName("reliable");
 		qosCube.setMaxAllowableGapSdu(0);
 		qosCube.setOrder(true);
 		qosCube.setPartialDelivery(false);
 		qosCube.setUndetectedBitErrorRate(new Double("1.0E-9"));
 		this.qosCubes.add(qosCube);
-		qosCube = new QoSCube();
-		qosCube.setQosId(2);
-		qosCube.setName("unreliable");
-		qosCube.setOrder(false);
-		qosCube.setPartialDelivery(true);
-		qosCube.setUndetectedBitErrorRate(new Double("1.0E-9"));
-		this.qosCubes.add(qosCube);
 	}
 	
 	public List<QoSCube> getQoSCubes(){
-		return this.getQoSCubes();
+		return this.qosCubes;
 	}
 	
 	public Map<String, ApplicationRegistration> getRegisteredApplications(){
@@ -130,6 +141,10 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	
 	public Map<String, Integer> getExpectedApplicationRegistrations(){
 		return this.expectedApplicationRegistrations;
+	}
+	
+	public Map<Integer, FlowState> getFlows(){
+		return this.flows;
 	}
 	
 	/**
@@ -179,10 +194,12 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 					apNamingInfo.getEncodedString());
 		}
 		
+		log.debug("Application "+apNamingInfo.getEncodedString()+" is assigned socket port number "+socketNumber.intValue());
 		TCPServer tcpServer = new TCPServer(this.hostName, socketNumber.intValue(), applicationCallback, apNamingInfo, this);
-		this.getIPCProcess().execute(tcpServer);
+		this.ipcManager.execute(tcpServer);
 		UDPServer udpServer = new UDPServer(this.hostName, socketNumber.intValue(), this);
-		this.getIPCProcess().execute(udpServer);
+		this.ipcManager.execute(udpServer);
+		log.debug("Started TCP and UDP servers");
 		
 		ApplicationRegistration apRegistration = new ApplicationRegistration();
 		apRegistration.setApNamingInfo(apNamingInfo);

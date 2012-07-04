@@ -72,7 +72,7 @@ public class ShimIPCProcessForIPLayersFactory implements IPCProcessFactory{
 		
 		if (this.ipcManager != null && this.delimiterFactory != null){
 			ipcProcess = new ShimIPCProcessForIPLayers(apNamingInfo, ipcProcessToCreate.getHostname(), ipcProcessToCreate.getDifName(), 
-					delimiterFactory.createDelimiter(DelimiterFactory.DIF));
+					delimiterFactory.createDelimiter(DelimiterFactory.DIF), this.ipcManager);
 			ipcProcess.setIPCManager(this.ipcManager);
 			
 			DIFConfiguration shimIPDIFconfiguration = (DIFConfiguration) config.getDIFConfiguration(ipcProcessToCreate.getDifName());

@@ -78,9 +78,19 @@ public class DTAEIState {
 	private String closedWindowQueue = null;
 	
 	/**
-	 * The id of this connection
+	 * The source Connection Endpoint ID
 	 */
-	private ConnectionId connectionId = null;
+	private long sourceCEPid = 0L;
+	
+	/**
+	 * The destination Connection Endpoint ID
+	 */
+	private long destinationCEPid = 0L;
+	
+	/**
+	 * The QoS id
+	 */
+	private int qosid = 0;
 	
 	/**
 	 * The initial sequence number for the PDUs of this flow. It is 
@@ -145,21 +155,26 @@ public class DTAEIState {
 	 */
 	public DTAEIState(Flow flow, DataTransferConstants dataTransferConstants){
 		this.flow = flow;
+		ConnectionId connectionId = flow.getConnectionIds().get(flow.getCurrentConnectionIdIndex());
+		this.qosid = connectionId.getQosId(); 
 		if (flow.isSource()){
 			this.sourceAddress = flow.getSourceAddress();
 			this.destinationAddress = flow.getDestinationAddress();
 			this.portId = flow.getSourcePortId();
+			this.sourceCEPid = connectionId.getSourceCEPId();
+			this.destinationCEPid = connectionId.getDestinationCEPId();
 		}else{
 			this.sourceAddress = flow.getDestinationAddress();
 			this.destinationAddress = flow.getSourceAddress();
 			this.portId = flow.getDestinationPortId();
+			this.sourceCEPid = connectionId.getDestinationCEPId();
+			this.destinationCEPid = connectionId.getSourceCEPId();
 		}
 		this.reasemblyQeueue = new ReassemblyQueue();
 		this.maxFlowSDUSize = dataTransferConstants.getMaxSDUSize();
 		this.maxFlowPDUSize = dataTransferConstants.getMaxPDUSize();
-		this.connectionId = flow.getConnectionIds().get(flow.getCurrentConnectionIdIndex());
 		this.preComputedPCI = PDUParser.computePCI(this.destinationAddress, 
-				this.sourceAddress, this.connectionId, flow.isSource());
+				this.sourceAddress, this.sourceCEPid, this.destinationCEPid, this.qosid);
 	}
 	
 	public APService getApplicationCallback() {
@@ -168,6 +183,26 @@ public class DTAEIState {
 
 	public void setApplicationCallback(APService applicationCallback) {
 		this.applicationCallback = applicationCallback;
+	}
+	
+	public long getSourceAddress(){
+		return this.sourceAddress;
+	}
+	
+	public long getDestinationAddress(){
+		return this.destinationAddress;
+	}
+	
+	public long getSourceCEPid(){
+		return this.sourceCEPid;
+	}
+	
+	public long getDestinationCEPid(){
+		return this.destinationCEPid;
+	}
+	
+	public int getQoSId(){
+		return this.qosid;
 	}
 
 	public boolean isLocal(){
@@ -216,10 +251,6 @@ public class DTAEIState {
 
 	public void setNextSequenceToSend(long nextSequenceToSend) {
 		this.nextSequenceToSend = nextSequenceToSend;
-	}
-
-	public ConnectionId getConnectionId(){
-		return this.connectionId;
 	}
 
 	public ReassemblyQueue getReasemblyQeueue() {

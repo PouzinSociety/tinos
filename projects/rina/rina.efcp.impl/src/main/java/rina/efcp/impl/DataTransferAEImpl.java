@@ -258,6 +258,10 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		byte[] pdu = PDUParser.generatePDU(state.getPreComputedPCI(), 
 				state.getNextSequenceToSend(), 0x81, 0x00, sdu);
 		
+		log.debug("Encoded PDU: \n" + "Destination @: " + state.getDestinationAddress() + " CEPid: "+state.getSourceCEPid() + 
+				" Source @: "+state.getSourceAddress() + " CEPid: "+state.getSourceCEPid() + "\n QoSid: "
+				+ state.getQoSId() + " PDU type: 129 Flags: 00 Sequence Number: " +state.getNextSequenceToSend()); 
+		log.debug("Sending PDU " + printBytes(pdu)+"\n");
 		try{
 			state.getSocket().getOutputStream().write(this.delimiter.getDelimitedSdu(pdu));
 		}catch(IOException ex){
@@ -277,6 +281,8 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	 * @param pdu
 	 */
 	public void pduDelivered(byte[] pdu){
+		log.debug("Received pdu: "+printBytes(pdu) + "\n");
+		
 		//Parse PCI, see if the PDU is for us
 		long destinationAddress = PDUParser.parseDestinationAddress(pdu);
 		if (destinationAddress != this.getMyAddress()){
@@ -288,6 +294,7 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		
 		//Decode the PDU and look for associated state
 		PDU decodedPDU = PDUParser.parsePDU(pdu);
+		log.debug("Decoded pdu:\n"+decodedPDU.toString()+"\n");
 		DTAEIState state = this.connectionStatesByConnectionId.get(new Long(decodedPDU.getConnectionId().getDestinationCEPId()));
 		if (state == null){
 			log.error("Received a PDU with an unrecognized Connection ID: "+decodedPDU.getConnectionId());
@@ -301,5 +308,14 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		synchronized(state){
 			state.incrementLastSequenceDelivered();
 		}
+	}
+	
+	private String printBytes(byte[] pdu){
+		String result = "";
+		for(int i=0; i<pdu.length; i++){
+			result = result + String.format("%02X ", pdu[i]);
+		}
+		
+		return result;
 	}
 }

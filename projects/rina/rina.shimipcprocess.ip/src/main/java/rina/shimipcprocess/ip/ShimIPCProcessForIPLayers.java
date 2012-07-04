@@ -19,6 +19,7 @@ import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
+import rina.ribdaemon.api.RIBDaemon;
 import rina.shimipcprocess.ip.flowallocator.ApplicationRegistration;
 import rina.shimipcprocess.ip.flowallocator.DirectoryEntry;
 import rina.shimipcprocess.ip.flowallocator.FlowAllocatorImpl;
@@ -52,19 +53,32 @@ public class ShimIPCProcessForIPLayers extends BaseIPCProcess implements IPCServ
 	 */
 	private FlowAllocatorImpl flowAllocator = null;
 	
-	public ShimIPCProcessForIPLayers(ApplicationProcessNamingInfo apNamingInfo, String hostName, String difName, Delimiter delimiter){
+	/**
+	 * The RIB Daemon
+	 */
+	private RIBDaemon ribDaemon = null;
+	
+	public ShimIPCProcessForIPLayers(ApplicationProcessNamingInfo apNamingInfo, String hostName, String difName, Delimiter delimiter, IPCManager ipcManager){
 		super();
 		this.apNamingInfo = apNamingInfo;
 		this.hostName = hostName;
 		this.difName = difName;
 		this.addIPCProcessComponent(delimiter);
-		this.flowAllocator = new FlowAllocatorImpl(hostName, delimiter);
+		this.flowAllocator = new FlowAllocatorImpl(hostName, delimiter, ipcManager);
 		this.addIPCProcessComponent(this.flowAllocator);
-		this.addIPCProcessComponent(new RIBDaemonImpl(this, flowAllocator));
+		this.flowAllocator.setIPCProcess(this);
+		this.ribDaemon = new RIBDaemonImpl(this, flowAllocator);
+		this.addIPCProcessComponent(ribDaemon);
+		this.ribDaemon.setIPCProcess(this);
 	}
 	
 	public String getHostname(){
 		return this.hostName;
+	}
+	
+	@Override
+	public IPCProcessComponent getIPCProcessComponent(String componentName){
+		return this.ribDaemon;
 	}
 	
 	/**

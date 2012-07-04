@@ -45,6 +45,7 @@ public class PrintRIBCommand extends ConsoleCommand{
 			}
 			return result;
 		}catch(Exception ex){
+			ex.printStackTrace();
 			return "Problems printing the RIB of the IPC Process. " +ex.getMessage();
 		}
 	}

@@ -72,6 +72,7 @@ public class UDPServer implements Runnable{
 	
 	public void run() {
 		try{
+			log.info("Starting a new UDP server socket");
 			InetAddress inetAddress = InetAddress.getByName(hostname);
 			serverSocket = new DatagramSocket(port, inetAddress);
 			byte[] receiveData = new byte[8192];

@@ -160,7 +160,8 @@ public class APServiceImpl implements APService{
 					try{
 						ipcService.unregister(apNamingInfo);
 					}catch(IPCException ex){
-						log.warn("Error when unregistering application: "+ex.getMessage());
+						ex.printStackTrace();
+						log.warn("Error when unregistering application from DIF " + difNames.get(i) + ". "+ex.getMessage());
 					}
 				}
 			}

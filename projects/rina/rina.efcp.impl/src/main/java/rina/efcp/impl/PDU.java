@@ -143,16 +143,13 @@ public class PDU {
 		return this.getSequenceNumber() == pdu.getSequenceNumber();
 	}
 	
+	@Override
 	public String toString(){
 		String result = "";
-		result = result + "Destination address: " +this.destinationAddress + "\n";
-		result = result + "Source address: " +this.sourceAddress + "\n";
-		result = result + "Destination CEP id: " +this.connectionId.getDestinationCEPId() + "\n";
-		result = result + "Source CEP id: " +this.connectionId.getSourceCEPId() + "\n";
-		result = result + "QoS id: " +this.connectionId.getQosId() + "\n";
-		result = result + "PDU type: " +this.getPduType() + "\n";
-		result = result + "Flags: " +this.flags + "\n";
-		result = result + "Sequence number: " +this.sequenceNumber;
+		result = result + "Destination @: " +this.destinationAddress + " CEPid: " + this.connectionId.getDestinationCEPId() + 
+			" Source @: " +this.sourceAddress + " CEPid: " +this.connectionId.getSourceCEPId() + "\n" + 
+			" QoSid: " +this.connectionId.getQosId() + " PDU type: " +this.getPduType() + 
+			" Flags: " +this.flags + " Sequence number: " +this.sequenceNumber;
 		
 		return result;
 	}
