@@ -81,13 +81,17 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		
 		Iterator<Entry<Integer, FlowState>> iterator3 = this.flowAllocator.getFlows().entrySet().iterator();
 		Entry<Integer, FlowState> currentEntry3 = null;
+		boolean reliable = false;
 		while(iterator3.hasNext()){
 			currentEntry3 = iterator3.next();
+			if (currentEntry3.getValue().getSocket() != null){
+				reliable = true;
+			}
 			ribObject = new SimpleRIBObject(ipcProcess, "flow", 
 					"/dif/resourceallocation/flowallocator/flows/"+currentEntry3.getKey(), 
 					"Source application: "+currentEntry3.getValue().getFlowService().getSourceAPNamingInfo().getEncodedString() + 
 					"\nDestination application:  "+currentEntry3.getValue().getFlowService().getDestinationAPNamingInfo().getEncodedString() + 
-					"\nPort Id: "+currentEntry3.getValue().getPortId());
+					"\nPort Id: "+currentEntry3.getValue().getPortId()+ " State: "+currentEntry3.getValue().getState() + " Reliable: "+reliable);
 			result.add(ribObject);
 		}
 		

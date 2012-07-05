@@ -96,27 +96,30 @@ public class APServiceImpl implements APService{
 			ipcService = (IPCService) ipcProcesses.get(0);
 		}
 		
-		//Once we have the IPCService, invoke allocate request
-		try{
-			int portId = ipcService.submitAllocateRequest(flowService, this);
-			tcpSocketReader.setPortId(portId);
-		}catch(IPCException ex){
-			ex.printStackTrace();
-			CDAPMessage errorMessage = cdapMessage.getReplyMessage();
-			errorMessage.setResult(1);
-			errorMessage.setResultReason(ex.getMessage());
-			sendErrorMessageAndCloseSocket(errorMessage, socket);
-			return;
-		}
-		
-		//Store the state of the requested flow service
 		this.flowServiceState = new FlowServiceState();
-		flowServiceState.setFlowService(flowService);
-		flowServiceState.setSocket(socket);
-		flowServiceState.setIpcService(ipcService);
-		flowServiceState.setCdapMessage(cdapMessage);
-		flowServiceState.setTcpSocketReader(tcpSocketReader);
-		flowServiceState.setStatus(Status.ALLOCATION_REQUESTED);
+		
+		synchronized(this.flowServiceState){
+			//Once we have the IPCService, invoke allocate request
+			try{
+				int portId = ipcService.submitAllocateRequest(flowService, this);
+				tcpSocketReader.setPortId(portId);
+			}catch(IPCException ex){
+				ex.printStackTrace();
+				CDAPMessage errorMessage = cdapMessage.getReplyMessage();
+				errorMessage.setResult(1);
+				errorMessage.setResultReason(ex.getMessage());
+				sendErrorMessageAndCloseSocket(errorMessage, socket);
+				return;
+			}
+
+			//Store the state of the requested flow service
+			flowServiceState.setFlowService(flowService);
+			flowServiceState.setSocket(socket);
+			flowServiceState.setIpcService(ipcService);
+			flowServiceState.setCdapMessage(cdapMessage);
+			flowServiceState.setTcpSocketReader(tcpSocketReader);
+			flowServiceState.setStatus(Status.ALLOCATION_REQUESTED);
+		}
 	}
 	
 	/**
@@ -249,7 +252,6 @@ public class APServiceImpl implements APService{
 		
 		//Connect to the destination application process
 		try{
-			log.debug("Creating a socket to the RINA Library in the local application");
 			Socket socket = new Socket("localhost", this.applicationRegistrationState.getApplicationRegistration().getSocketNumber());
 			APServiceImpl apServiceImpl = new APServiceImpl(this.ipcManager);
 			apServiceImpl.setInterDIFDirectory(this.interDIFDirectory);
@@ -271,7 +273,6 @@ public class APServiceImpl implements APService{
 			CDAPMessage cdapMessage = CDAPMessage.
 				getCreateObjectRequestMessage(null, null, FlowService.OBJECT_CLASS, 0, FlowService.OBJECT_NAME, objectValue, 0);
 			sendMessage(cdapMessage, socket);
-			log.debug("Stored the state of the flow "+flowService.getPortId());
 		}catch(Exception ex){
 			ex.printStackTrace();
 			return ex.getMessage();
@@ -326,40 +327,42 @@ public class APServiceImpl implements APService{
 	 * @param result errorCode if result > 0, ok otherwise
 	 * @param resultReason null if no error, error description otherwise
 	 */
-	public synchronized void deliverAllocateResponse(int portId, int result, String resultReason){
+	public void deliverAllocateResponse(int portId, int result, String resultReason){
 		if (this.flowServiceState == null){
 			log.warn("Received an allocate response for portid " + portId + ", but didn't have any pending allocation request identified by this portId");
 			return;
 		}
 		
-		if (!this.flowServiceState.getStatus().equals(FlowServiceState.Status.ALLOCATION_REQUESTED)){
-			//TODO, what to do?
-			return;
-		}
-		
-		switch(result){
-		case 0:
-			try{
-				flowServiceState.setStatus(Status.ALLOCATED);
-				flowServiceState.getTcpSocketReader().setIPCService(flowServiceState.getIpcService());
-				byte[] encodedValue = encoder.encode(flowServiceState.getFlowService());
-				ObjectValue objectValue = new ObjectValue();
-				objectValue.setByteval(encodedValue);
-				CDAPMessage confirmationMessage = flowServiceState.getCdapMessage().getReplyMessage();
-				confirmationMessage.setObjValue(objectValue);
-				confirmationMessage.setResult(result);
-				confirmationMessage.setResultReason(resultReason);
-				sendMessage(confirmationMessage, flowServiceState.getSocket());
-			}catch(Exception ex){
-				ex.printStackTrace();
-				//TODO what to do?
+		synchronized(this.flowServiceState){
+			if (!this.flowServiceState.getStatus().equals(FlowServiceState.Status.ALLOCATION_REQUESTED)){
+				//TODO, what to do?
+				return;
 			}
-			break;
-		default:
-			CDAPMessage errorMessage = flowServiceState.getCdapMessage().getReplyMessage();
-			errorMessage.setResult(result);
-			errorMessage.setResultReason(resultReason);
-			sendErrorMessageAndCloseSocket(errorMessage, flowServiceState.getSocket());
+
+			switch(result){
+			case 0:
+				try{
+					flowServiceState.setStatus(Status.ALLOCATED);
+					flowServiceState.getTcpSocketReader().setIPCService(flowServiceState.getIpcService());
+					byte[] encodedValue = encoder.encode(flowServiceState.getFlowService());
+					ObjectValue objectValue = new ObjectValue();
+					objectValue.setByteval(encodedValue);
+					CDAPMessage confirmationMessage = flowServiceState.getCdapMessage().getReplyMessage();
+					confirmationMessage.setObjValue(objectValue);
+					confirmationMessage.setResult(result);
+					confirmationMessage.setResultReason(resultReason);
+					sendMessage(confirmationMessage, flowServiceState.getSocket());
+				}catch(Exception ex){
+					ex.printStackTrace();
+					//TODO what to do?
+				}
+				break;
+			default:
+				CDAPMessage errorMessage = flowServiceState.getCdapMessage().getReplyMessage();
+				errorMessage.setResult(result);
+				errorMessage.setResultReason(resultReason);
+				sendErrorMessageAndCloseSocket(errorMessage, flowServiceState.getSocket());
+			}
 		}
 	}
 	
@@ -395,7 +398,7 @@ public class APServiceImpl implements APService{
 	 */
 	public synchronized void deliverDeallocate(int portId) {
 		if (this.flowServiceState == null){
-			log.warn("Received a deallocate response for portid " + portId + ", but didn't have any pending deallocation request identified by this portId");
+			log.warn("Received a deallocate for portid " + portId + ", but didn't find the state associated to this portId");
 			return;
 		}
 

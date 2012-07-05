@@ -64,7 +64,7 @@ public class ShimIPCProcessForIPLayers extends BaseIPCProcess implements IPCServ
 		this.hostName = hostName;
 		this.difName = difName;
 		this.addIPCProcessComponent(delimiter);
-		this.flowAllocator = new FlowAllocatorImpl(hostName, delimiter, ipcManager);
+		this.flowAllocator = new FlowAllocatorImpl(hostName, delimiter, ipcManager, this);
 		this.addIPCProcessComponent(this.flowAllocator);
 		this.flowAllocator.setIPCProcess(this);
 		this.ribDaemon = new RIBDaemonImpl(this, flowAllocator);
@@ -149,9 +149,8 @@ public class ShimIPCProcessForIPLayers extends BaseIPCProcess implements IPCServ
 	public void submitStatus(int arg0) {
 	}
 
-	public void submitTransfer(int arg0, byte[] sdu) throws IPCException {
-		// TODO Auto-generated method stub
-		
+	public void submitTransfer(int portId, byte[] sdu) throws IPCException {
+		this.flowAllocator.submitTransfer(portId, sdu);
 	}
 	
 	public void addIPCProcessComponent(IPCProcessComponent ipcProcessComponent) {

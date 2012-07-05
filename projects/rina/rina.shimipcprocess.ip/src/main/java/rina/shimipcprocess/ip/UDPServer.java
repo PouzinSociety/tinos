@@ -7,6 +7,8 @@ import java.net.InetAddress;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.APService;
 import rina.shimipcprocess.ip.flowallocator.FlowAllocatorImpl;
 
 public class UDPServer implements Runnable{
@@ -43,10 +45,20 @@ public class UDPServer implements Runnable{
 	 */
 	private DatagramSocket serverSocket = null;
 	
-	public UDPServer(String hostname, int port, FlowAllocatorImpl flowAllocator){
+	/**
+	 * The application to call back when a new connection is accepted
+	 */
+	private APService applicationCallback = null;
+	
+	private ApplicationProcessNamingInfo apNamingInfo= null;
+	
+	public UDPServer(String hostname, int port, FlowAllocatorImpl flowAllocator, 
+			APService applicationCallback, ApplicationProcessNamingInfo apNamingInfo){
 		this.hostname = hostname;
 		this.port = port;
 		this.flowAllocator = flowAllocator;
+		this.applicationCallback = applicationCallback;
+		this.apNamingInfo = apNamingInfo;
 	}
 	
 	public void setEnd(boolean end){
@@ -82,10 +94,8 @@ public class UDPServer implements Runnable{
 			while(!end){
 				receivedPacket = new DatagramPacket(receiveData, receiveData.length);
 				serverSocket.receive(receivedPacket);
-				log.debug("Received a UDP packet!");
-				log.debug("Source address: "+receivedPacket.getAddress().getHostName());
-				log.debug("Source port: "+receivedPacket.getPort());
-				log.debug("Length: "+receivedPacket.getLength());
+				this.flowAllocator.datagramReceived(receivedPacket, port, applicationCallback, 
+						apNamingInfo, serverSocket);
 			}
 		}catch(Exception  e){
 			log.error(e.getMessage());

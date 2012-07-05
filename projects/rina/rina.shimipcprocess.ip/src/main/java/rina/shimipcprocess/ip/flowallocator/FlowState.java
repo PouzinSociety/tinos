@@ -5,6 +5,7 @@ import java.net.Socket;
 
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
+import rina.shimipcprocess.ip.BlockinqQueueReader;
 
 /**
  * Captures the state of a flow
@@ -21,6 +22,8 @@ public class FlowState {
 	private State state = State.NULL;
 	private Socket socket = null;
 	private DatagramSocket datagramSocket = null;
+	private String blockingQueueId = null;
+	private BlockinqQueueReader blockingQueueReader = null;
 	
 	public FlowService getFlowService() {
 		return flowService;
@@ -68,5 +71,21 @@ public class FlowState {
 
 	public void setDatagramSocket(DatagramSocket datagramSocket) {
 		this.datagramSocket = datagramSocket;
+	}
+
+	public String getBlockingQueueId() {
+		return blockingQueueId;
+	}
+
+	public void setBlockingQueueId(String blockingQueueId) {
+		this.blockingQueueId = blockingQueueId;
+	}
+
+	public BlockinqQueueReader getBlockingQueueReader() {
+		return blockingQueueReader;
+	}
+
+	public void setBlockingQueueReader(BlockinqQueueReader blockingQueueReader) {
+		this.blockingQueueReader = blockingQueueReader;
 	}
 }

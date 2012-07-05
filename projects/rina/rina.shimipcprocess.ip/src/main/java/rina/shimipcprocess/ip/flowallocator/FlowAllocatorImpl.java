@@ -1,5 +1,6 @@
 package rina.shimipcprocess.ip.flowallocator;
 
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -7,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
@@ -19,11 +22,14 @@ import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.QoSCube;
 import rina.ipcmanager.api.IPCManager;
+import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
 import rina.ipcservice.api.QualityOfServiceSpecification;
+import rina.shimipcprocess.ip.BlockinqQueueReader;
+import rina.shimipcprocess.ip.ShimIPCProcessForIPLayers;
 import rina.shimipcprocess.ip.TCPServer;
 import rina.shimipcprocess.ip.TCPSocketReader;
 import rina.shimipcprocess.ip.UDPServer;
@@ -38,6 +44,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	public static final String COULD_NOT_FIND_SOCKET_NUMBER_FOR_APPLICATION = "Could not find a socket number for this application.";
 	public static final String APPLICATION_ALREADY_REGISTERED = "Application already registered.";
 	public static final String APPLICATION_NOT_REGISTERED = "The application was not registered.";
+	public static final int MAX_PACKETS_IN_UNRELIABLE_QUEUE = 1000;
 	
 	/**
 	 * The expected application registrations (map app name to socket number)
@@ -59,6 +66,12 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * allocation in process
 	 */
 	private Map<Integer, FlowState> flows = null;
+	
+	/**
+	 * The unreliable flow queues, used to demultiplex 
+	 * the different unreliable incoming flows to an application
+	 */
+	private Map<String, BlockingQueue<byte[]>> unreliableFlowQueues = null;
 	
 	/**
 	 * The list of QoS cubes
@@ -85,15 +98,22 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 */
 	private IPCManager ipcManager = null;
 	
-	public FlowAllocatorImpl(String hostName, Delimiter delimiter, IPCManager ipcManager){
+	/**
+	 * The IPC Process
+	 */
+	private IPCProcess ipcProcess = null;
+	
+	public FlowAllocatorImpl(String hostName, Delimiter delimiter, IPCManager ipcManager, ShimIPCProcessForIPLayers ipcProcess){
 		this.hostName = hostName;
 		this.expectedApplicationRegistrations = new ConcurrentHashMap<String, Integer>();
 		this.registeredApplications = new ConcurrentHashMap<String, ApplicationRegistration>();
 		this.directory = new ConcurrentHashMap<String, DirectoryEntry>();
 		this.flows = new ConcurrentHashMap<Integer, FlowState>();
+		this.unreliableFlowQueues = new ConcurrentHashMap<String, BlockingQueue<byte[]>>();
 		this.delimiter = delimiter;
 		this.timer = new Timer();
 		this.ipcManager = ipcManager;
+		this.ipcProcess = ipcProcess;
 		
 		//Create QoS cubes
 		this.qosCubes = new ArrayList<QoSCube>();
@@ -197,7 +217,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		log.debug("Application "+apNamingInfo.getEncodedString()+" is assigned socket port number "+socketNumber.intValue());
 		TCPServer tcpServer = new TCPServer(this.hostName, socketNumber.intValue(), applicationCallback, apNamingInfo, this);
 		this.ipcManager.execute(tcpServer);
-		UDPServer udpServer = new UDPServer(this.hostName, socketNumber.intValue(), this);
+		UDPServer udpServer = new UDPServer(this.hostName, socketNumber.intValue(), this, applicationCallback, apNamingInfo);
 		this.ipcManager.execute(udpServer);
 		log.debug("Started TCP and UDP servers");
 		
@@ -234,6 +254,8 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	}
 
 	public int submitAllocateRequest(FlowService flowService, APService applicationCallback) throws IPCException {
+		log.debug("Requested new flow with the following characteristics:\n" + flowService.toString());
+		
 		//See if we have an entry for the destination application
 		DirectoryEntry directoryEntry = this.directory.get(flowService.getDestinationAPNamingInfo().getEncodedString());
 		if (directoryEntry == null){
@@ -241,11 +263,12 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 					IPCException.COULD_NOT_FIND_ENTRY_IN_DIRECTORY_FORWARDING_TABLE + 
 					". Application: "+flowService.getDestinationAPNamingInfo().getEncodedString());
 		}
+		log.debug("Destination application available at "+directoryEntry.getHostname()+" port "+directoryEntry.getPortNumber());
 		
 		//Check the QoS requested for the flow
 		boolean reliable = false;
 		if (flowService.getQoSSpecification() != null && 
-				(flowService.getQoSSpecification().getQosCubeId() == 1)){
+				(flowService.getQoSSpecification().getQosCubeId() == 2)){
 			reliable = true;
 		}
 		
@@ -263,6 +286,8 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			this.flows.put(new Integer(portId), flowState);
 		}
 		
+		log.debug("Assigned portId "+portId+" to the flow allocation");
+		flowService.setPortId(portId);
 		flowState.setFlowService(flowService);
 		flowState.setApplicationCallback(applicationCallback);
 		flowState.setPortId(portId);
@@ -272,8 +297,8 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 				flowState.setSocket(socket);
 
 				TCPSocketReader reader = new TCPSocketReader(socket, delimiter, applicationCallback, portId, this);
-				AllocateResponseTimerTask timerTask = new AllocateResponseTimerTask(applicationCallback, 
-						this.getIPCProcess(), reader, null, portId);
+				this.ipcManager.execute(reader);
+				AllocateResponseTimerTask timerTask = new AllocateResponseTimerTask(applicationCallback, portId);
 				timer.schedule(timerTask, 20);
 			}else{
 				DatagramSocket datagramSocket = new DatagramSocket(0, InetAddress.getByName(hostName));
@@ -281,8 +306,8 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 				flowState.setDatagramSocket(datagramSocket);
 				
 				UDPSocketReader reader = new UDPSocketReader(datagramSocket, applicationCallback, portId, this);
-				AllocateResponseTimerTask timerTask = new AllocateResponseTimerTask(applicationCallback, 
-						this.getIPCProcess(), null, reader, portId);
+				AllocateResponseTimerTask timerTask = new AllocateResponseTimerTask(applicationCallback, portId);
+				this.ipcManager.execute(reader);
 				timer.schedule(timerTask, 20);
 			}
 		}catch(Exception ex){
@@ -301,6 +326,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * Invoked by the TCP or UDP socket readers when they detect that a socket has been closed
 	 */
 	public void socketClosed(int portId){
+		log.debug("The socket associated to the flow "+portId+" is closed");
 		FlowState flowState = null;
 		
 		synchronized(this.flows){
@@ -309,6 +335,11 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		
 		if (flowState != null){
 			flowState.getApplicationCallback().deliverDeallocate(portId);
+			if (flowState.getBlockingQueueId() != null){
+				synchronized(this.unreliableFlowQueues){
+					this.unreliableFlowQueues.remove(flowState.getBlockingQueueId());
+				}
+			}
 		}
 	}
 	
@@ -350,24 +381,110 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			this.flows.put(new Integer(portId), flowState);
 		}
 		
+		log.debug("Got new flow request, assigned temporary portId: "+portId);
 		FlowService flowService = new FlowService();
 		QualityOfServiceSpecification qoSSpec = new QualityOfServiceSpecification();
 		qoSSpec.setName("reliable");
-		qoSSpec.setQosCubeId(1);
+		qoSSpec.setQosCubeId(2);
 		flowService.setQoSSpecification(qoSSpec);
 		flowService.setSourceAPNamingInfo(new ApplicationProcessNamingInfo(
 				socket.getInetAddress().getHostName(), ""+socket.getPort()));
 		flowService.setDestinationAPNamingInfo(apNamingInfo);
+		flowService.setPortId(portId);
 		flowState.setFlowService(flowService);
 		flowState.setSocket(socket);
 		flowState.setPortId(portId);
 		flowState.setApplicationCallback(applicationCallback);
 		flowState.setState(State.ALLOCATION_REQUESTED);
 		
-		applicationCallback.deliverAllocateRequest(flowService, (IPCService) this.getIPCProcess());
+		log.debug("Delivering the allocate request to local application: "+apNamingInfo.getEncodedString());
+		applicationCallback.deliverAllocateRequest(flowService, (IPCService) this.ipcProcess);
+	}
+	
+	/**
+	 * Called by the UDP server when a datagram has been received
+	 * @param datagram
+	 * @param localSocketNumber
+	 * @param applicationCallback
+	 * @param apNamingInfo
+	 * @param datagramSocket
+	 */
+	public void datagramReceived(DatagramPacket datagram, int localSocketNumber, APService applicationCallback, 
+			ApplicationProcessNamingInfo apNamingInfo, DatagramSocket datagramSocket){
+		String queueId = datagram.getAddress().getHostAddress()+"-"+datagram.getPort()+"-"+localSocketNumber;
+		
+		//Check if there's a queue for this id
+		BlockingQueue<byte[]> queue = this.unreliableFlowQueues.get(queueId);
+		if (queue != null){
+			try{
+				byte[] sdu = new byte[datagram.getLength()];
+				System.arraycopy(datagram.getData(), 
+						datagram.getOffset(), sdu, 0, datagram.getLength());
+				queue.put(sdu);
+			}catch(Exception ex){
+				log.error(ex.getMessage());
+			}
+			
+			return;
+		}
+		
+		//There's no queue, a new flow is being requested
+		FlowState flowState = null;
+		int portId = 0;
+		synchronized(this.flows){
+			flowState = new FlowState();
+			portId = generatePortId();
+			//Not enough portIds, cannot accept the request
+			if (portId == -1){
+				try{
+					log.warn("Ignoring flow since there are not enough portIds available");
+					return;
+				}catch(Exception ex){
+				}
+			}
+			this.flows.put(new Integer(portId), flowState);
+		}
+		
+		log.debug("Got new flow request, assigned temporary portId: "+portId);
+		FlowService flowService = new FlowService();
+		QualityOfServiceSpecification qoSSpec = new QualityOfServiceSpecification();
+		qoSSpec.setName("unreliable");
+		qoSSpec.setQosCubeId(1);
+		flowService.setQoSSpecification(qoSSpec);
+		flowService.setSourceAPNamingInfo(new ApplicationProcessNamingInfo(
+				datagram.getAddress().getHostAddress(), ""+datagram.getPort()));
+		flowService.setDestinationAPNamingInfo(apNamingInfo);
+		flowService.setPortId(portId);
+		flowState.setFlowService(flowService);
+		flowState.setDatagramSocket(datagramSocket);
+		flowState.setPortId(portId);
+		flowState.setApplicationCallback(applicationCallback);
+		flowState.setState(State.ALLOCATION_REQUESTED);
+		
+		//Create the new queue
+		queue = new ArrayBlockingQueue<byte[]>(MAX_PACKETS_IN_UNRELIABLE_QUEUE);
+		synchronized(this.unreliableFlowQueues){
+			this.unreliableFlowQueues.put(queueId, queue);
+		}
+		flowState.setBlockingQueueId(queueId);
+		
+		//Store the first packet at the queue
+		try{
+			byte[] sdu = new byte[datagram.getLength()];
+			System.arraycopy(datagram.getData(), 
+					datagram.getOffset(), sdu, 0, datagram.getLength());
+			queue.put(sdu);
+		}catch(Exception ex){
+			log.error(ex.getMessage());
+		}
+		
+		//Call the local application
+		log.debug("Delivering the allocate request to local application: "+apNamingInfo.getEncodedString());
+		applicationCallback.deliverAllocateRequest(flowService, (IPCService) this.ipcProcess);
 	}
 
 	public void submitAllocateResponse(int portId, boolean success, String reason, APService applicationCallback) throws IPCException {
+		log.debug("Local application invoked allocateResponse for the flow at portId "+portId);
 		FlowState flowState = null;
 		synchronized(this.flows){
 			flowState = this.flows.get(new Integer(portId));
@@ -379,23 +496,33 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		}
 		
 		if (!success){
+			log.debug("The flow allocation has been denied because: "+reason);
 			this.submitDeallocate(portId);
 			return;
 		}
 		
+		log.debug("Flow allocation accepted");
 		if (flowState.getSocket() != null){
-			TCPSocketReader reader = new TCPSocketReader(flowState.getSocket(), delimiter, applicationCallback, portId, this);
-			AllocateResponseTimerTask timerTask = new AllocateResponseTimerTask(applicationCallback, 
-					this.getIPCProcess(), reader, null, portId);
-			timer.schedule(timerTask, 20);
+			submitAllocateResponseForReliableFlow(flowState.getSocket(), applicationCallback, portId);
 		}else{
-			UDPSocketReader reader = new UDPSocketReader(flowState.getDatagramSocket(), applicationCallback, portId, this);
-			AllocateResponseTimerTask timerTask = new AllocateResponseTimerTask(applicationCallback, 
-					this.getIPCProcess(), null, reader, portId);
-			timer.schedule(timerTask, 20);
+			submitAllocateResponseForUnreliableFlow(flowState, applicationCallback, portId);
 		}
 		
+		flowState.setApplicationCallback(applicationCallback);
 		flowState.setState(State.ALLOCATED);
+	}
+	
+	private void submitAllocateResponseForReliableFlow(Socket socket, APService applicationCallback, int portId){
+		TCPSocketReader reader = new TCPSocketReader(socket, delimiter, applicationCallback, portId, this);
+		this.ipcManager.execute(reader);
+	}
+	
+	private void submitAllocateResponseForUnreliableFlow(FlowState flowState, APService applicationCallback, int portId){
+		BlockinqQueueReader reader = new BlockinqQueueReader(
+				this.unreliableFlowQueues.get(flowState.getBlockingQueueId()), 
+				applicationCallback, portId, this);
+		this.ipcManager.execute(reader);
+		flowState.setBlockingQueueReader(reader);
 	}
 
 	/**
@@ -413,6 +540,11 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			try{
 				if (flowState.getSocket() != null){
 					flowState.getSocket().close();
+				}else if (flowState.getBlockingQueueReader() != null){
+					flowState.getBlockingQueueReader().stop();
+					synchronized(this.unreliableFlowQueues){
+						this.unreliableFlowQueues.remove(flowState.getBlockingQueueId());
+					}
 				}else if (flowState.getDatagramSocket() != null){
 					flowState.getDatagramSocket().close();
 				}
@@ -423,6 +555,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	
 	public void submitTransfer(int portId, byte[] sdu) throws IPCException {
 		FlowState flowState = null;
+		DatagramPacket datagramPacket = null;
 		
 		synchronized(this.flows){
 			flowState = this.flows.get(new Integer(portId));
@@ -435,9 +568,19 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		
 		try{
 			if (flowState.getSocket() != null){
-				flowState.getSocket().getOutputStream().write(sdu);
-			}else if (flowState.getDatagramSocket() != null){
-				//TODO flowState.getDatagramSocket().send()
+				flowState.getSocket().getOutputStream().write(delimiter.getDelimitedSdu(sdu));
+			}else if (flowState.getBlockingQueueReader() != null){
+				//Reusing the UDP server socket
+				datagramPacket = new DatagramPacket(sdu, sdu.length);
+				datagramPacket.setAddress(InetAddress.getByName(
+						flowState.getFlowService().getSourceAPNamingInfo().getApplicationProcessName()));
+				datagramPacket.setPort(Integer.parseInt(
+						flowState.getFlowService().getSourceAPNamingInfo().getApplicationProcessInstance()));
+				flowState.getDatagramSocket().send(datagramPacket);
+			}else{
+				//Dedicated and already connected UDP socket
+				datagramPacket = new DatagramPacket(sdu, sdu.length);
+				flowState.getDatagramSocket().send(datagramPacket);
 			}
 		}catch(Exception ex){
 			throw new IPCException(IPCException.PROBLEMS_SENDING_SDU_CODE, 

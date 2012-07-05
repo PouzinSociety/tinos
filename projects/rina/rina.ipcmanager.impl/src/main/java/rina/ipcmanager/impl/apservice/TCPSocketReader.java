@@ -5,17 +5,14 @@ import java.net.Socket;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.delimiting.api.BaseSocketReader;
 import rina.delimiting.api.Delimiter;
-import rina.efcp.api.BaseDataTransferAE;
-import rina.efcp.api.DataTransferAE;
 import rina.encoding.api.Encoder;
-import rina.applicationprocess.api.ApplicationProcessNamingInfo;
-import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.ApplicationRegistration;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
@@ -169,7 +166,7 @@ public class TCPSocketReader extends BaseSocketReader{
 			//TODO, send error message and close socket?
 			return;
 		}
-		
+
 		try {
 			this.ipcService.submitTransfer(this.portId, sdu);
 		} catch (IPCException ex) {

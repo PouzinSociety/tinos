@@ -181,6 +181,12 @@ public class QualityOfServiceSpecification {
 	
 	public String toString(){
 		String result = "Quality of service required:\n";
+		if (this.getQosCubeId() != -1){
+			result = result + "QoS cube id: " + this.getQosCubeId() + "\n";
+		}
+		if (this.getName() != null){
+			result = result + "Name: " + this.getName() + "²n";
+		}
 		if (averageBandwidth != 0){
 			result = result + "Average bandwidth: "+ averageBandwidth + " bytes/second \n";
 		}

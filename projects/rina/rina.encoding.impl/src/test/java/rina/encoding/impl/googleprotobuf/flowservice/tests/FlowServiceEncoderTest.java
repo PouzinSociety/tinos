@@ -48,7 +48,7 @@ public class FlowServiceEncoderTest {
 		flowService4.setDestinationAPNamingInfo(new ApplicationProcessNamingInfo("b", "1"));
 		qosSpec = new QualityOfServiceSpecification();
 		qosSpec.setName("reliable");
-		qosSpec.setQosCubeId(1);
+		qosSpec.setQosCubeId(2);
 		qosSpec.setJitter(24);
 		qosSpec.setAverageSDUBandwidth(5400);
 		qosSpec.setPeakSDUBandwidthDuration(23);
@@ -103,6 +103,7 @@ public class FlowServiceEncoderTest {
 		Assert.assertEquals(flowService4.getPortId(), recoveredRequest.getPortId());
 		Assert.assertEquals(flowService4.getDestinationAPNamingInfo(), recoveredRequest.getDestinationAPNamingInfo());
 		Assert.assertEquals(flowService4.getQoSSpecification().getAverageSDUBandwidth(), recoveredRequest.getQoSSpecification().getAverageSDUBandwidth());
+		Assert.assertEquals(2, recoveredRequest.getQoSSpecification().getQosCubeId());
 	}
 
 }

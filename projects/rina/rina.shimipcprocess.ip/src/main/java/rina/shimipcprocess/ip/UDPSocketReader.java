@@ -29,6 +29,7 @@ public class UDPSocketReader implements Runnable{
 	public void run(){
 		byte[] receiveData = new byte[8192];
 		DatagramPacket datagramPacket = null;
+		byte[] sdu = null;
 		CloseUDPSocketTimerTask timerTask = new CloseUDPSocketTimerTask(datagramSocket);
 		this.timer.schedule(timerTask, TIMER_PERIOD_IN_MILISECONDS);
 		
@@ -37,7 +38,7 @@ public class UDPSocketReader implements Runnable{
 				datagramPacket = new DatagramPacket(receiveData, receiveData.length);
 				datagramSocket.receive(datagramPacket);
 				if (datagramPacket.getLength() > 0){
-					byte[] sdu = new byte[datagramPacket.getLength()];
+					sdu = new byte[datagramPacket.getLength()];
 					System.arraycopy(datagramPacket.getData(), 
 							datagramPacket.getOffset(), sdu, 0, datagramPacket.getLength());
 					this.applicationCallback.deliverTransfer(portId, sdu);

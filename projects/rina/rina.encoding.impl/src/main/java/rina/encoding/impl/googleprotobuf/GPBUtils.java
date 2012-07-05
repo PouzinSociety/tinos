@@ -141,7 +141,6 @@ public class GPBUtils {
 	
 	public static qosSpecification_t getQoSSpecificationT(QualityOfServiceSpecification qualityOfServiceSpecification){
 		if (qualityOfServiceSpecification != null){
-			
 			List<property_t> extraParameters = getQosSpecExtraParametersType(qualityOfServiceSpecification);
 			
 			return QoSSpecification.qosSpecification_t.newBuilder().
