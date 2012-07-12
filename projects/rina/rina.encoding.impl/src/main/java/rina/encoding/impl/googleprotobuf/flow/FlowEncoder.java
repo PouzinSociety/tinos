@@ -9,6 +9,7 @@ import rina.encoding.impl.googleprotobuf.flow.FlowMessage.connectionId_t;
 import rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t;
 import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.Flow;
+import rina.flowallocator.api.Flow.State;
 
 /**
  * Serializes, unserializes Flow objects using the GPB encoding
@@ -44,7 +45,7 @@ public class FlowEncoder extends BaseEncoder{
 		flow.setSourceAddress(gpbFlow.getSourceAddress());
 		flow.setSourceNamingInfo(GPBUtils.getApplicationProcessNamingInfo(gpbFlow.getSourceNamingInfo()));
 		flow.setSourcePortId(gpbFlow.getSourcePortId());
-		flow.setState(gpbFlow.getState());
+		flow.setState(getFlowState(gpbFlow.getState()));
 		flow.setHopCount(gpbFlow.getHopCount());
 		
 		return flow;
@@ -58,6 +59,25 @@ public class FlowEncoder extends BaseEncoder{
 		}
 		
 		return result;
+	}
+	
+	private State getFlowState(int state){
+		switch(state){
+		case 0:
+			return State.NULL;
+		case 1:
+			return State.ALLOCATION_IN_PROGRESS;
+		case 2:
+			return State.ALLOCATED;
+		case 3:
+			return State.LAST_SDU_SENT;
+		case 4:
+			return State.LAST_SDU_DELIVERED;
+		case 5:
+			return State.DEALLOCATED;
+		default:
+			return State.NULL;
+		}
 	}
 	
 	private ConnectionId getConnectionId(connectionId_t connectionId){
@@ -97,11 +117,30 @@ public class FlowEncoder extends BaseEncoder{
 			setSourceAddress(flow.getSourceAddress()).
 			setSourceNamingInfo(GPBUtils.getApplicationProcessNamingInfoT(flow.getSourceNamingInfo())).
 			setSourcePortId(flow.getSourcePortId()).
-			setState(flow.getState()).
+			setState(getGPBState(flow.getState())).
 			setHopCount(flow.getHopCount()).
 			build();
 
 		return gpbFlow.toByteArray();
+	}
+	
+	private int getGPBState(State state){
+		switch(state){
+		case NULL:
+			return 0;
+		case ALLOCATION_IN_PROGRESS:
+			return 1;
+		case ALLOCATED:
+			return 2;
+		case LAST_SDU_SENT:
+			return 3;
+		case LAST_SDU_DELIVERED:
+			return 4;
+		case DEALLOCATED:
+			return 5;
+		default:
+			return 0;
+		}
 	}
 	
 	private List<connectionId_t> getConnectionIdTypes(List<ConnectionId> connectionIds){

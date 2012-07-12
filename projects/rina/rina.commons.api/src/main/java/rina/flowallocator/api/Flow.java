@@ -25,6 +25,8 @@ public class Flow {
 	public static final String FLOW_SET_RIB_OBJECT_CLASS = "flow set";
 	
 	public static final String FLOW_RIB_OBJECT_CLASS = "flow";
+	
+	public enum State {NULL, ALLOCATION_IN_PROGRESS, ALLOCATED, LAST_SDU_SENT, LAST_SDU_DELIVERED, DEALLOCATED};
 
 	/**
 	 * The application that requested the flow
@@ -71,7 +73,7 @@ public class Flow {
 	/**
 	 * The status of this flow
 	 */
-	private int state = 0x00;
+	private State state = State.NULL;
 	
 	/**
 	 * The list of parameters from the AllocateRequest that generated this flow
@@ -195,11 +197,11 @@ public class Flow {
 		this.currentConnectionIdIndex = currentConnectionIdIndex;
 	}
 
-	public int getState() {
+	public State getState() {
 		return state;
 	}
 
-	public void setState(int state) {
+	public void setState(State state) {
 		this.state = state;
 	}
 
@@ -261,6 +263,7 @@ public class Flow {
 
 	public String toString(){
 		String result = "";
+		result = result + "State: "+this.getState() + "\n";
 		result = result + "Is this IPC Process the source of the flow? " + this.isSource() + "\n";
 		result = result + "Max create flow retries: " + this.getMaxCreateFlowRetries() + "\n";
 		result = result + "Hop count: " + this.getHopCount() + "\n";

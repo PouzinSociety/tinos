@@ -75,6 +75,15 @@ public class DIFDelimiterTest {
 		Assert.assertArrayEquals(sdu2, recoveredSdus.get(1));
 	}
 	
+	@Test
+	public void testReadZeroLengthSDU(){
+		byte[] toRead = new byte[4];
+		toRead[0] = 0;
+		int result = delimiter.readVarint32(toRead, 1);
+		System.out.println("\n"+result);
+		Assert.assertEquals(0, result);
+	}
+	
 	
 	private void printArray(byte[] array){
 		for(int i=0; i<array.length; i++){

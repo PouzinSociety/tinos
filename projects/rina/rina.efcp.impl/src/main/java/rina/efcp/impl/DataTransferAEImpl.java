@@ -277,6 +277,27 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	}
 	
 	/**
+	 * Sends a delimited 0 length SDU
+	 * @param portId
+	 * @throws IPCException
+	 */
+	public void post0LengthSDU(int portId) throws IPCException{
+		DTAEIState state = this.portIdToConnectionMapping.get(new Integer(portId));
+		if  (state == null || state.isLocal()){
+			throw new IPCException(IPCException.PROBLEMS_SENDING_SDU_CODE, 
+					IPCException.PROBLEMS_SENDING_SDU + ". No active connection is associated to this portId, or the connection is local.");
+		}
+		
+		try{
+			state.getSocket().getOutputStream().write(0);
+		}catch(IOException ex){
+			log.error(ex);
+			throw new IPCException(IPCException.PROBLEMS_SENDING_SDU_CODE, 
+					IPCException.PROBLEMS_SENDING_SDU + ex.getMessage());
+		}
+	}
+	
+	/**
 	 * A PDU has been delivered through an N-1 port
 	 * @param pdu
 	 */

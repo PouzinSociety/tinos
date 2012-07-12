@@ -1,6 +1,5 @@
 package rina.shimipcprocess.ip;
 
-import java.util.Timer;
 import java.util.concurrent.BlockingQueue;
 
 import org.apache.commons.logging.Log;
@@ -11,14 +10,12 @@ import rina.shimipcprocess.ip.flowallocator.FlowAllocatorImpl;
 
 public class BlockinqQueueReader implements Runnable{
 	
-	public static final int TIMER_PERIOD_IN_MILISECONDS = 24*3600*1000;
 	private static final Log log = LogFactory.getLog(BlockinqQueueReader.class);
 
 	private APService applicationCallback = null;
 	private int portId = -1;
 	private FlowAllocatorImpl flowAllocator = null;
 	private BlockingQueue<byte[]> blockingQueue = null;
-	private Timer timer = null;
 	private boolean end = false;
 	
 	public BlockinqQueueReader(BlockingQueue<byte[]> blockingQueue, APService applicationCallback, int portId, FlowAllocatorImpl flowAllocator) {
@@ -26,7 +23,6 @@ public class BlockinqQueueReader implements Runnable{
 		this.applicationCallback = applicationCallback;
 		this.portId = portId;
 		this.flowAllocator = flowAllocator;
-		this.timer = new Timer();
 	}
 	
 	public void stop(){
@@ -40,8 +36,6 @@ public class BlockinqQueueReader implements Runnable{
 	
 	public void run(){
 		byte[] sdu = null;
-		StopBlockingQueueReaderTimerTask timerTask = new StopBlockingQueueReaderTimerTask(this);
-		this.timer.schedule(timerTask, TIMER_PERIOD_IN_MILISECONDS);
 		
 		log.debug("Started blocking queue reader");
 		while(true){
@@ -51,9 +45,6 @@ public class BlockinqQueueReader implements Runnable{
 					break;
 				}
 				this.applicationCallback.deliverTransfer(this.portId, sdu);
-				timerTask.cancel();
-				timerTask = new StopBlockingQueueReaderTimerTask(this);
-				this.timer.schedule(timerTask, TIMER_PERIOD_IN_MILISECONDS);
 			}catch(Exception ex){
 				//TODO what to do?
 			}

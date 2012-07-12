@@ -95,6 +95,11 @@ public interface FlowAllocatorInstance{
 	 */
 	public void setApplicationCallback(APService applicationCallback);
 	
+	/**
+	 * The last SDU for this flow has been received
+	 */
+	public abstract void lastSDUReceived();
+	
 	/* Deal with local flows (flows between applications from the same system) */
 	
 	/**

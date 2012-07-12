@@ -63,6 +63,13 @@ public interface DataTransferAE extends IPCProcessComponent {
 	public void postSDU(int portID, byte[] sdu) throws IPCException;
 	
 	/**
+	 * Sends a delimited 0 length SDU
+	 * @param portId
+	 * @throws IPCException
+	 */
+	public void post0LengthSDU(int portId) throws IPCException;
+	
+	/**
 	 * A PDU has been delivered through an N-1 port
 	 * @param pdu
 	 */

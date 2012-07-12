@@ -2,8 +2,8 @@ package rina.flowallocator.impl.tcp;
 
 import java.net.Socket;
 
-import rina.delimiting.api.BaseSocketReader;
 import rina.delimiting.api.Delimiter;
+import rina.delimiting.api.ZeroLengthSDUBaseSocketReader;
 import rina.efcp.api.DataTransferAE;
 import rina.flowallocator.api.FlowAllocatorInstance;
 
@@ -14,7 +14,7 @@ import rina.flowallocator.api.FlowAllocatorInstance;
  * @author eduardgrasa
  *
  */
-public class TCPSocketReader extends BaseSocketReader{
+public class TCPSocketReader extends ZeroLengthSDUBaseSocketReader{
 	
 	/**
 	 * A reference to the Flow Allocator instance that owns this flow
@@ -26,9 +26,11 @@ public class TCPSocketReader extends BaseSocketReader{
 	 */
 	private DataTransferAE dataTransferAE = null;
 	
-	public TCPSocketReader(Socket socket, Delimiter delimiter, DataTransferAE dataTransferAE){
+	public TCPSocketReader(Socket socket, Delimiter delimiter, DataTransferAE dataTransferAE, 
+			FlowAllocatorInstance flowAllocatorInstance){
 		super(socket, delimiter);
 		this.dataTransferAE = dataTransferAE;
+		this.flowAllocatorInstance = flowAllocatorInstance;
 	}
 
 	@Override
@@ -38,6 +40,11 @@ public class TCPSocketReader extends BaseSocketReader{
 
 	@Override
 	public void socketDisconnected() {
-		flowAllocatorInstance.socketClosed();
+		this.flowAllocatorInstance.socketClosed();
+	}
+
+	@Override
+	public void process0LengthSDU() {
+		this.flowAllocatorInstance.lastSDUReceived();
 	}
 }
