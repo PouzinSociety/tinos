@@ -16,6 +16,7 @@ import rina.applibrary.api.FlowAcceptor;
 import rina.applibrary.api.FlowImpl;
 import rina.applibrary.api.FlowListener;
 import rina.applibrary.api.SocketFactory;
+import rina.applibrary.api.FlowImpl.State;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
@@ -131,6 +132,12 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 	 */
 	public void register(ApplicationProcessNamingInfo applicationProcess, List<String> difNames, 
 			FlowAcceptor flowAcceptor, FlowListener flowListener) throws IPCException{
+		if (state != State.UNREGISTERED){
+			IPCException ipcException = new IPCException(IPCException.APPLICATION_ALREADY_REGISTERED);
+			ipcException.setErrorCode(IPCException.APPLICATION_ALREADY_REGISTERED_CODE);
+			throw ipcException;
+		}
+		
 		this.flowListener = flowListener;
 		if (this.flowListener == null){
 			this.acceptedFlowsQueue = new LinkedBlockingQueue<FlowImpl>();
@@ -251,49 +258,28 @@ public class DefaultApplicationRegistrationImpl implements ApplicationRegistrati
 	 * @throws IPCException
 	 */
 	public void unregister() throws IPCException{
-		CDAPMessage cdapMessage = null;
-		byte[] message = null;
-		
-		try{
-			//1 Construct the CDAP Message, encode it, delimit it and send it through the socket
-			cdapMessage = CDAPMessage.getStopObjectRequestMessage(null, null, null, null, 0, null, 0);
-			message = cdapSessionManager.encodeCDAPMessage(cdapMessage);
-			socket.getOutputStream().write(delimiter.getDelimitedSdu(message));
-			
-			//2 Block and wait (maximum deadline) for the answer
-			message = registrationQueue.poll(MAX_WAITTIME_IN_SECONDS, TimeUnit.SECONDS);
-			if (message == null){
-				throw new IPCException("Didn't receive the reply from the local RINA software before "+MAX_WAITTIME_IN_SECONDS+" seconds.");
-			}
-			
-			//3 Decode the CDAP Message and see if registration was successful
-			cdapMessage = cdapSessionManager.decodeCDAPMessage(message);
-			if (cdapMessage.getOpCode() != Opcode.M_STOP_R){
-				throw new IPCException("Got a CDAP message with the wrong opcode: "+cdapMessage.getOpCode());
-			}
-			if (cdapMessage.getResult() != 0){
-				throw new IPCException("Got a negative response from the local RINA software: "+cdapMessage.getResultReason());
-			}
-			
-			//4 Unregistration successful, stop serverSocket, socket and execution service
-			if (!socket.isClosed()){
-				try{
-					socket.close();
-				}catch(Exception ex){
-				}
-			}
-			flowRequestsServer.setEnd(true);
-			this.state = State.UNREGISTERED;
-		}catch(Exception ex){
-			IPCException ipcException = new IPCException(IPCException.PROBLEMS_ACCEPTING_FLOW + " " + ex.getMessage());
-			ipcException.setErrorCode(IPCException.PROBLEMS_ACCEPTING_FLOW_CODE);
+		if (state != State.REGISTERED){
+			IPCException ipcException = new IPCException(IPCException.APPLICATION_ALREADY_UNREGISTERED);
+			ipcException.setErrorCode(IPCException.APPLICATION_ALREADY_UNREGISTERED_CODE);
 			throw ipcException;
 		}
+		
+		//Stop serverSocket, socket and execution service
+		try{
+			socket.close();
+		}catch(Exception ex){
+		}
+		flowRequestsServer.setEnd(true);
+		this.state = State.UNREGISTERED;
 	}
 	
 	public void registrationSocketClosed(){
 		log.info("Registration socket closed, application "+this.registeredApp.getEncodedString()+" is no longer registered");
 		if (this.state == State.REGISTERED){
+			try{
+				socket.close();
+			}catch(Exception ex){
+			}
 			flowRequestsServer.setEnd(true);
 			this.state = State.UNREGISTERED;
 		}

@@ -8,6 +8,7 @@
 	<artifact type="bundle" name="jackson-annotations" version="2.0.0"/>
 	<artifact type="bundle" name="jackson-databind" version="2.0.0"/>
 	<artifact type="bundle" name="com.google.protobuf" version="2.3.0"/>
+	<artifact type="bundle" name="com.google.guava" version="12.0"/>
 	<artifact type="bundle" name="rina.commons.api" version="[1, 2)"/>
 	<artifact type="bundle" name="rina.cdap.impl" version="[1, 2)"/>
 	<artifact type="bundle" name="rina.delimiting.impl" version="[1, 2)"/>
@@ -18,6 +19,7 @@
 	<artifact type="bundle" name="rina.efcp.impl" version="[1,2)"/>
 	<artifact type="bundle" name="rina.flowallocator.impl" version="[1,2)"/>
 	<artifact type="bundle" name="rina.ipcservice.impl" version="[1, 2)"/>
+	<artifact type="bundle" name="rina.shimipcprocess.ip" version="[1,2)"/>
 	<artifact type="bundle" name="rina.idd.impl" version="[1, 2)"/>
 	<artifact type="bundle" name="rina.ipcmanager.impl" version="[1, 2)"/>
 </plan>

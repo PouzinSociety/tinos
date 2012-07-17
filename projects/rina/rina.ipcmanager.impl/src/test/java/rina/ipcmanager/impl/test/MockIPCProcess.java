@@ -48,13 +48,13 @@ public class MockIPCProcess extends BaseIPCProcess implements IPCService{
 		// TODO Auto-generated method stub
 	}
 
-	public void register(ApplicationProcessNamingInfo apNamingInfo) {
+	public void register(ApplicationProcessNamingInfo apNamingInfo, APService applicationCallback) {
 		Assert.assertEquals(apNamingInfo.getApplicationProcessName(), "A");
 		Assert.assertEquals(apNamingInfo.getApplicationProcessInstance(), "1");
 		System.out.println("Registered application "+apNamingInfo.toString());
 	}
 
-	public int submitAllocateRequest(FlowService flowService) throws IPCException {
+	public int submitAllocateRequest(FlowService flowService, APService applicationCallback) throws IPCException {
 		Assert.assertEquals(flowService.getDestinationAPNamingInfo().getApplicationProcessName(), "B");
 		Assert.assertEquals(flowService.getDestinationAPNamingInfo().getApplicationProcessInstance(), "1");
 		Assert.assertEquals(flowService.getSourceAPNamingInfo().getApplicationProcessName(), "A");
@@ -69,7 +69,7 @@ public class MockIPCProcess extends BaseIPCProcess implements IPCService{
 		return this.flowService.getPortId();
 	}
 
-	public void submitAllocateResponse(int portId, boolean result, String reason) throws IPCException {
+	public void submitAllocateResponse(int portId, boolean result, String reason, APService applicationCallback) throws IPCException {
 		System.out.println("Allocate response called!!");
 		Assert.assertEquals(portId, 24);
 		Assert.assertEquals(result, true);

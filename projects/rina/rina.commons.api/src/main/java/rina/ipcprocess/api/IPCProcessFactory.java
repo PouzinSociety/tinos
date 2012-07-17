@@ -3,6 +3,7 @@ package rina.ipcprocess.api;
 import java.util.List;
 
 import rina.cdap.api.CDAPSessionManagerFactory;
+import rina.configuration.RINAConfiguration;
 import rina.delimiting.api.DelimiterFactory;
 import rina.encoding.api.EncoderFactory;
 import rina.ipcmanager.api.IPCManager;
@@ -14,12 +15,15 @@ import rina.ipcmanager.api.IPCManager;
  */
 public interface IPCProcessFactory {
 	
+	public static final String NORMAL = "normal";
+	public static final String SHIMIP = "shimip";
+	
 	/**
 	 * Creates a new IPC process
 	 * @param applicationProcessName the application process name of this IPC process
 	 * @param applicationProcessInstance the application process instance of this IPC process
 	 */
-	public IPCProcess createIPCProcess(String applicationProcessName, String applicationProcessInstance) throws Exception;
+	public IPCProcess createIPCProcess(String applicationProcessName, String applicationProcessInstance, RINAConfiguration config) throws Exception;
 	
 	/**
 	 * Destroys an existing IPC process

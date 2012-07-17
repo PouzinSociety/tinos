@@ -20,6 +20,8 @@
 		<dependency org="com.fasterxml.jackson.core" name="jackson-core" rev="2.0.0"/>
 		<dependency org="com.fasterxml.jackson.core" name="jackson-annotations" rev="2.0.0"/>
 		<dependency org="com.fasterxml.jackson.core" name="jackson-databind" rev="2.0.0"/>
+<!-- Google Guava Library, support for litle endian and unsigned data types -->
+		<dependency org="com.google.guava" name="guava" rev="12.0" />
 <!-- RINA Commons API -->
 		<dependency org="org.pouzinsociety.rina" name="rina.commons.api" rev="1.0.0"  conf="compile->runtime" />
 <!-- Logging -->

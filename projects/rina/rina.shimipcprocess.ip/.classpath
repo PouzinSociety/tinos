@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" path="src/main/resources"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="com.springsource.server.ide.jdt.core.MANIFEST_CLASSPATH_CONTAINER"/>
+	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/tinos/tinos/repository/downloaded/org.apache.commons/com.springsource.org.apache.commons.logging/1.1.1/com.springsource.org.apache.commons.logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="/Users/eduardgrasa/Development/projectes/rinaprototype/repository/integration-repo/org.pouzinsociety.rina/rina.commons.api/1.0.0/rina.commons.api-1.0.0.jar"/>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>

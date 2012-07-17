@@ -1,5 +1,7 @@
 package rina.enrollment.api;
 
+import com.google.common.primitives.UnsignedLongs;
+
 import rina.ribdaemon.api.RIBObjectNames;
 
 /**
@@ -123,7 +125,7 @@ public class Neighbor {
 	public String toString(){
 		String result = "Application Process Name: " + this.applicationProcessName + "\n";
 		result = result + "Application Process Instance: " + this.applicationProcessInstance + "\n";
-		result = result + "Address: " + this.address + "\n";
+		result = result + "Address: " + UnsignedLongs.toString(this.address) + "\n";
 		result = result + "Enrolled: " + this.enrolled + "\n";
 		result = result + "Underlying portId: " + this.underlyingPortId + "\n";
 		result = result + "Average RTT: " + this.averageRTTInMs + " ms \n";

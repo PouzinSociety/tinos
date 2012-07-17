@@ -4,15 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import rina.encoding.api.BaseEncoder;
-import rina.flowallocator.api.ConnectionId;
-import rina.flowallocator.api.Flow;
-import rina.applicationprocess.api.ApplicationProcessNamingInfo;
-import rina.ipcservice.api.QualityOfServiceSpecification;
 import rina.encoding.impl.googleprotobuf.GPBUtils;
-import rina.encoding.impl.googleprotobuf.apnaminginfo.ApplicationProcessNamingInfoMessage;
-import rina.encoding.impl.googleprotobuf.apnaminginfo.ApplicationProcessNamingInfoMessage.applicationProcessNamingInfo_t;
 import rina.encoding.impl.googleprotobuf.flow.FlowMessage.connectionId_t;
 import rina.encoding.impl.googleprotobuf.qosspecification.QoSSpecification.qosSpecification_t;
+import rina.flowallocator.api.ConnectionId;
+import rina.flowallocator.api.Flow;
+import rina.flowallocator.api.Flow.State;
 
 /**
  * Serializes, unserializes Flow objects using the GPB encoding
@@ -28,44 +25,30 @@ public class FlowEncoder extends BaseEncoder{
 		
 		FlowMessage.Flow gpbFlow = FlowMessage.Flow.parseFrom(serializedObject);
 		
-		byte[] accessControl = GPBUtils.getByteArray(gpbFlow.getAccessControl());
-		ApplicationProcessNamingInfo destinationAPName = getApplicationProcessNamingInfo(gpbFlow.getDestinationNamingInfo());
-		List<ConnectionId> flowIds = getConnectionIds(gpbFlow.getConnectionIdsList());
-		QualityOfServiceSpecification qosParameters = GPBUtils.getQualityOfServiceSpecification(gpbFlow.getQosParameters());
-		ApplicationProcessNamingInfo sourceAPName = getApplicationProcessNamingInfo(gpbFlow.getSourceNamingInfo());
-		byte[] status = GPBUtils.getByteArray(gpbFlow.getState());
-		
 		Flow flow = new Flow();
-		flow.setAccessControl(accessControl);
+		flow.setAccessControl(GPBUtils.getByteArray(gpbFlow.getAccessControl()));
 		flow.setCreateFlowRetries(gpbFlow.getCreateFlowRetries());
-		flow.setCurrentFlowId(gpbFlow.getCurrentConnectionId());
+		flow.setCurrentConnectionIdIndex(gpbFlow.getCurrentConnectionIdIndex());
 		flow.setDestinationAddress(gpbFlow.getDestinationAddress());
-		flow.setDestinationNamingInfo(destinationAPName);
+		flow.setDestinationNamingInfo(GPBUtils.getApplicationProcessNamingInfo(gpbFlow.getDestinationNamingInfo()));
 		flow.setDestinationPortId(gpbFlow.getDestinationPortId());
-		flow.setFlowIds(flowIds);
+		flow.setConnectionIds(getConnectionIds(gpbFlow.getConnectionIdsList()));
 		flow.setHopCount(gpbFlow.getHopCount());
 		flow.setMaxCreateFlowRetries(gpbFlow.getMaxCreateFlowRetries());
-		flow.setPolicies(gpbFlow.getPoliciesList());
-		flow.setQosParameters(qosParameters);
-		flow.setSourceAddress(gpbFlow.getSourceAddress());
-		flow.setSourceNamingInfo(sourceAPName);
-		flow.setSourcePortId(gpbFlow.getSourcePortId());
-		if (status != null){
-			flow.setStatus(status[0]);
+		flow.setCreateFlowRetries(gpbFlow.getCreateFlowRetries());
+		flow.setPolicies(GPBUtils.getProperties(gpbFlow.getPoliciesList()));
+		flow.setPolicyParameters(GPBUtils.getProperties(gpbFlow.getPolicyParemetersList()));
+		qosSpecification_t qosParams = gpbFlow.getQosParameters();
+		if (!qosParams.equals(qosSpecification_t.getDefaultInstance())){
+			flow.setQosParameters(GPBUtils.getQualityOfServiceSpecification(qosParams));
 		}
+		flow.setSourceAddress(gpbFlow.getSourceAddress());
+		flow.setSourceNamingInfo(GPBUtils.getApplicationProcessNamingInfo(gpbFlow.getSourceNamingInfo()));
+		flow.setSourcePortId(gpbFlow.getSourcePortId());
+		flow.setState(getFlowState(gpbFlow.getState()));
+		flow.setHopCount(gpbFlow.getHopCount());
 		
 		return flow;
-	}
-
-	private ApplicationProcessNamingInfo getApplicationProcessNamingInfo(applicationProcessNamingInfo_t apNamingInfo) {
-		String apName = GPBUtils.getString(apNamingInfo.getApplicationProcessName());
-		String apInstance = GPBUtils.getString(apNamingInfo.getApplicationProcessInstance());
-		String aeName = GPBUtils.getString(apNamingInfo.getApplicationEntityName());
-		String aeInstance = GPBUtils.getString(apNamingInfo.getApplicationEntityInstance());
-		
-		ApplicationProcessNamingInfo result = new ApplicationProcessNamingInfo(
-				apName, apInstance, aeName, aeInstance);
-		return result;
 	}
 
 	private List<ConnectionId> getConnectionIds(List<connectionId_t> connectionIdsList) {
@@ -76,6 +59,25 @@ public class FlowEncoder extends BaseEncoder{
 		}
 		
 		return result;
+	}
+	
+	private State getFlowState(int state){
+		switch(state){
+		case 0:
+			return State.NULL;
+		case 1:
+			return State.ALLOCATION_IN_PROGRESS;
+		case 2:
+			return State.ALLOCATED;
+		case 3:
+			return State.LAST_SDU_SENT;
+		case 4:
+			return State.LAST_SDU_DELIVERED;
+		case 5:
+			return State.DEALLOCATED;
+		default:
+			return State.NULL;
+		}
 	}
 	
 	private ConnectionId getConnectionId(connectionId_t connectionId){
@@ -94,71 +96,51 @@ public class FlowEncoder extends BaseEncoder{
 		}
 		
 		Flow flow = (Flow) object;
-		
-		List<connectionId_t> connectionIds = getConnectionIdTypes(flow.getFlowIds());
 		qosSpecification_t qosSpecificationT = GPBUtils.getQoSSpecificationT(flow.getQosParameters());
-		List<String> flowPolicies = flow.getPolicies();
-		if (flowPolicies == null){
-			flowPolicies = new ArrayList<String>();
+		if (qosSpecificationT == null){
+			qosSpecificationT = qosSpecification_t.getDefaultInstance();
 		}
 		
-		FlowMessage.Flow gpbFlow = null;
-		
-		if (qosSpecificationT != null){
-			gpbFlow = FlowMessage.Flow.newBuilder().
+		FlowMessage.Flow gpbFlow = FlowMessage.Flow.newBuilder().
 			setAccessControl(GPBUtils.getByteString(flow.getAccessControl())).
 			setCreateFlowRetries(flow.getCreateFlowRetries()).
-			setCurrentConnectionId(flow.getCurrentFlowId()).
-			addAllConnectionIds(connectionIds).
+			setCurrentConnectionIdIndex(flow.getCurrentConnectionIdIndex()).
+			addAllConnectionIds(getConnectionIdTypes(flow.getConnectionIds())).
 			setDestinationAddress(flow.getDestinationAddress()).
-			setDestinationNamingInfo(getApplicationProcessNamingInfoT(flow.getDestinationNamingInfo())).
+			setDestinationNamingInfo(GPBUtils.getApplicationProcessNamingInfoT(flow.getDestinationNamingInfo())).
 			setDestinationPortId(flow.getDestinationPortId()).
 			setHopCount(flow.getHopCount()).
-			addAllPolicies(flowPolicies).
+			addAllPolicies(GPBUtils.getProperties(flow.getPolicies())).
+			addAllPolicyParemeters(GPBUtils.getProperties(flow.getPolicyParameters())).
 			setQosParameters(qosSpecificationT).
 			setMaxCreateFlowRetries(flow.getMaxCreateFlowRetries()).
 			setSourceAddress(flow.getSourceAddress()).
-			setSourceNamingInfo(getApplicationProcessNamingInfoT(flow.getSourceNamingInfo())).
+			setSourceNamingInfo(GPBUtils.getApplicationProcessNamingInfoT(flow.getSourceNamingInfo())).
 			setSourcePortId(flow.getSourcePortId()).
-			setState(GPBUtils.getByteString(new byte[]{flow.getStatus()})).
-			build();
-		}else{
-			gpbFlow = FlowMessage.Flow.newBuilder().
-			setAccessControl(GPBUtils.getByteString(flow.getAccessControl())).
-			setCreateFlowRetries(flow.getCreateFlowRetries()).
-			setCurrentConnectionId(flow.getCurrentFlowId()).
-			addAllConnectionIds(connectionIds).
-			setDestinationAddress(flow.getDestinationAddress()).
-			setDestinationNamingInfo(getApplicationProcessNamingInfoT(flow.getDestinationNamingInfo())).
-			setDestinationPortId(flow.getDestinationPortId()).
+			setState(getGPBState(flow.getState())).
 			setHopCount(flow.getHopCount()).
-			addAllPolicies(flowPolicies).
-			setMaxCreateFlowRetries(flow.getMaxCreateFlowRetries()).
-			setSourceAddress(flow.getSourceAddress()).
-			setSourceNamingInfo(getApplicationProcessNamingInfoT(flow.getSourceNamingInfo())).
-			setSourcePortId(flow.getSourcePortId()).
-			setState(GPBUtils.getByteString(new byte[]{flow.getStatus()})).
 			build();
-		}
 
 		return gpbFlow.toByteArray();
 	}
 	
-	private applicationProcessNamingInfo_t getApplicationProcessNamingInfoT(ApplicationProcessNamingInfo apNamingInfo){
-		applicationProcessNamingInfo_t result = null;
-		if (apNamingInfo != null){
-			String apName = GPBUtils.getGPBString(apNamingInfo.getApplicationProcessName());
-			String apInstance = GPBUtils.getGPBString(apNamingInfo.getApplicationProcessInstance());
-			String aeName = GPBUtils.getGPBString(apNamingInfo.getApplicationEntityName());
-			String aeInstance = GPBUtils.getGPBString(apNamingInfo.getApplicationEntityInstance());
-			result = ApplicationProcessNamingInfoMessage.applicationProcessNamingInfo_t.newBuilder().
-			setApplicationProcessName(apName).
-			setApplicationProcessInstance(apInstance).
-			setApplicationEntityName(aeName).
-			setApplicationEntityInstance(aeInstance).
-			build();
+	private int getGPBState(State state){
+		switch(state){
+		case NULL:
+			return 0;
+		case ALLOCATION_IN_PROGRESS:
+			return 1;
+		case ALLOCATED:
+			return 2;
+		case LAST_SDU_SENT:
+			return 3;
+		case LAST_SDU_DELIVERED:
+			return 4;
+		case DEALLOCATED:
+			return 5;
+		default:
+			return 0;
 		}
-		return result;
 	}
 	
 	private List<connectionId_t> getConnectionIdTypes(List<ConnectionId> connectionIds){
@@ -175,11 +157,17 @@ public class FlowEncoder extends BaseEncoder{
 		return result;
 	}
 	
+	
+	
 	private connectionId_t getConnectionIdType(ConnectionId connectionId){
+		if (connectionId == null){
+			return null;
+		}
+		
 		connectionId_t result = FlowMessage.connectionId_t.newBuilder().
-									setDestinationCEPId(connectionId.getDestinationCEPId()).
+									setDestinationCEPId((int)connectionId.getDestinationCEPId()).
 									setQosId(connectionId.getQosId()).
-									setSourceCEPId(connectionId.getSourceCEPId()).
+									setSourceCEPId((int)connectionId.getSourceCEPId()).
 									build();
 		
 		return result;

@@ -1,7 +1,5 @@
 package rina.ipcmanager.impl.console;
 
-import java.util.List;
-
 import rina.ipcmanager.impl.IPCManagerImpl;
 
 /**
@@ -24,17 +22,7 @@ public class ListIPCProcessesCommand extends ConsoleCommand{
 			return "Wrong number of parameters. Usage: "+USAGE;
 		}
 
-		List<String> processes = this.getIPCManagerImpl().listIPCProcessesInformation();
-		String modifier = "are";
-		if (processes.size() == 1){
-			modifier = "is";
-		}
-		String response = "There "+modifier+" currently "+processes.size()+" IPC proceses running in your system.\n";
-		for(int i=0; i<processes.size(); i++){
-			response = response + processes.get(i);
-		}
-
-		return response;
+		return this.getIPCManagerImpl().listIPCProcessesInformation();
 	}
 
 }

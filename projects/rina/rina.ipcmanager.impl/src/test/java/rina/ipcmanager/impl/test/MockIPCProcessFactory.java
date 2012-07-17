@@ -6,6 +6,7 @@ import java.util.List;
 import rina.cdap.api.CDAPSessionManagerFactory;
 import rina.cdap.impl.CDAPSessionManagerFactoryImpl;
 import rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory;
+import rina.configuration.RINAConfiguration;
 import rina.delimiting.api.DelimiterFactory;
 import rina.delimiting.impl.DelimiterFactoryImpl;
 import rina.encoding.api.EncoderFactory;
@@ -22,13 +23,14 @@ public class MockIPCProcessFactory implements IPCProcessFactory{
 	private EncoderFactory encoderFactory = null;
 	private DelimiterFactory delimiterFactory = null;
 	
-	public MockIPCProcessFactory(APService apService){
+	public MockIPCProcessFactory(){
 		ipcProcess = new MockIPCProcess();
-		ipcProcess.setAPService(apService);
+		ipcProcess.setAPService(null);
 	}
-
-	public IPCProcess createIPCProcess(String arg0, String arg1)
-			throws Exception {
+	
+	@Override
+	public IPCProcess createIPCProcess(String arg0, String arg1,
+			RINAConfiguration config) throws Exception {
 		return ipcProcess;
 	}
 

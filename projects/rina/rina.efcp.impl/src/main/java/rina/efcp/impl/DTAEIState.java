@@ -1,8 +1,11 @@
 package rina.efcp.impl;
 
+import java.net.Socket;
+
 import rina.efcp.api.DataTransferConstants;
-import rina.flowallocator.api.Connection;
-import rina.utils.types.Unsigned;
+import rina.flowallocator.api.ConnectionId;
+import rina.flowallocator.api.Flow;
+import rina.ipcservice.api.APService;
 
 /**
  * The data associated with a single active flow
@@ -14,10 +17,15 @@ public class DTAEIState {
 	/**
 	 * Pointer to the connection state
 	 */
-	private Connection connection = null;
+	private Flow flow = null;
 	
 	/**
-	 * The reassembly queue, should go into connection 
+	 * The callback to the local application
+	 */
+	private APService applicationCallback = null;
+	
+	/**
+	 * The reassembly queue, should go into Flow 
 	 * but I'll leave it here for now (if not PDU has to 
 	 * got to the flow allocator API)
 	 */
@@ -26,7 +34,7 @@ public class DTAEIState {
 	/**
 	 * The maximum length of an SDU for this flow, in bytes
 	 */
-	private int maxFlowSDU = 0;
+	private int maxFlowSDUSize = 0;
 	
 	/**
 	 * The maximum length of a PDU for this flow, in bytes
@@ -34,16 +42,10 @@ public class DTAEIState {
 	private int maxFlowPDUSize = 0;
 	
 	/**
-	 * The initial sequence number for the PDUs of this flow. It is 
-	 * always 0.
-	 */
-	private Unsigned initialSequenceNumber = null;
-	
-	/**
 	 * After this sequence number, EFCP will ask the FAI to create another 
 	 * connection for this flow, so that sequence numbers do not repeat
 	 */
-	private Unsigned sequenceNumberRollOverThreshold = null;
+	private long sequenceNumberRollOverThreshold = Long.MAX_VALUE;
 	
 	/**
 	 * The state
@@ -56,21 +58,10 @@ public class DTAEIState {
 	//private DTCPStateVector dtcpStateVector = null;
 	
 	/**
-	 * The sequence number of the PDU received in order, if applicable
-	 */
-	private Unsigned lastSequenceDelivered = null;
-	
-	/**
-	 * The value of the next sequence number to be assigned to a 
-	 * PDU being sent on this connection
-	 */
-	private Unsigned nextSequenceToSend = null;
-	
-	/**
 	 * The highest sequence number that the remote application is currently 
 	 * willing to accept on this connection.
 	 */
-	private Unsigned rightWindowEdge = null;
+	private long rightWindowEdge = 0L;
 	
 	/**
 	 * The queue of PDUs that have been handed off to the RMT but not yet acknowledged.
@@ -86,24 +77,180 @@ public class DTAEIState {
 	 */
 	private String closedWindowQueue = null;
 	
-	public DTAEIState(Connection connection, DataTransferConstants dataTransferConstants){
-		this.connection = connection;
+	/**
+	 * The source Connection Endpoint ID
+	 */
+	private long sourceCEPid = 0L;
+	
+	/**
+	 * The destination Connection Endpoint ID
+	 */
+	private long destinationCEPid = 0L;
+	
+	/**
+	 * The QoS id
+	 */
+	private int qosid = 0;
+	
+	/**
+	 * The initial sequence number for the PDUs of this flow. It is 
+	 * always 0.
+	 */
+	private long initialSequenceNumber = 0L;
+	
+	/**
+	 * The sequence number of the PDU received in order, if applicable
+	 */
+	private long lastSequenceDelivered = 0L;
+	
+	/**
+	 * The value of the next sequence number to be assigned to a 
+	 * PDU being sent on this connection
+	 */
+	private long nextSequenceToSend = 0L;
+	
+	/**
+	 * The precomputed PCI, an optimization for the PDU Generator
+	 */
+	private byte[] preComputedPCI = null;
+	
+	private long sourceAddress = 0;
+	private long destinationAddress = 0;
+	
+	/**
+	 * The socket used to transmit the PDU
+	 */
+	private Socket socket = null;
+	
+	/**
+	 * The portId associated to the flow in this IPC Process
+	 */
+	private long portId = 0;
+	
+	/**
+	 * True if this is a local connection;
+	 */
+	private boolean local = false;
+	
+	/**
+	 * In case this is a connection supporting a local flow, this
+	 * is the remote port Id
+	 */
+	private int remotePortId = 0;
+	
+	/**
+	 * The constructor used for connections supporting local flows
+	 * @param remotePortId
+	 */
+	public DTAEIState(int portId, int remotePortId){
+		this.local = true;
+		this.portId = portId;
+		this.remotePortId = remotePortId;
+	}
+	
+	/**
+	 * The constructor used for connections supporting remote flows
+	 * @param flow
+	 * @param dataTransferConstants
+	 */
+	public DTAEIState(Flow flow, DataTransferConstants dataTransferConstants){
+		this.flow = flow;
+		ConnectionId connectionId = flow.getConnectionIds().get(flow.getCurrentConnectionIdIndex());
+		this.qosid = connectionId.getQosId(); 
+		if (flow.isSource()){
+			this.sourceAddress = flow.getSourceAddress();
+			this.destinationAddress = flow.getDestinationAddress();
+			this.portId = flow.getSourcePortId();
+			this.sourceCEPid = connectionId.getSourceCEPId();
+			this.destinationCEPid = connectionId.getDestinationCEPId();
+		}else{
+			this.sourceAddress = flow.getDestinationAddress();
+			this.destinationAddress = flow.getSourceAddress();
+			this.portId = flow.getDestinationPortId();
+			this.sourceCEPid = connectionId.getDestinationCEPId();
+			this.destinationCEPid = connectionId.getSourceCEPId();
+		}
 		this.reasemblyQeueue = new ReassemblyQueue();
-		this.sequenceNumberRollOverThreshold = new Unsigned(dataTransferConstants.getSequenceNumberLength());
-		this.sequenceNumberRollOverThreshold.setMaxValue();	
-		this.initialSequenceNumber = new Unsigned(dataTransferConstants.getSequenceNumberLength(), 0x00);
-		this.lastSequenceDelivered = new Unsigned(dataTransferConstants.getSequenceNumberLength(), 0x00);
-		this.nextSequenceToSend = new Unsigned(dataTransferConstants.getSequenceNumberLength(), 0x01);
-		this.maxFlowSDU = dataTransferConstants.getMaxSDUSize();
+		this.maxFlowSDUSize = dataTransferConstants.getMaxSDUSize();
 		this.maxFlowPDUSize = dataTransferConstants.getMaxPDUSize();
+		this.preComputedPCI = PDUParser.computePCI(this.destinationAddress, 
+				this.sourceAddress, this.sourceCEPid, this.destinationCEPid, this.qosid);
+	}
+	
+	public APService getApplicationCallback() {
+		return applicationCallback;
 	}
 
-	public Connection getConnection() {
-		return connection;
+	public void setApplicationCallback(APService applicationCallback) {
+		this.applicationCallback = applicationCallback;
+	}
+	
+	public long getSourceAddress(){
+		return this.sourceAddress;
+	}
+	
+	public long getDestinationAddress(){
+		return this.destinationAddress;
+	}
+	
+	public long getSourceCEPid(){
+		return this.sourceCEPid;
+	}
+	
+	public long getDestinationCEPid(){
+		return this.destinationCEPid;
+	}
+	
+	public int getQoSId(){
+		return this.qosid;
 	}
 
-	public void setConnection(Connection connection) {
-		this.connection = connection;
+	public boolean isLocal(){
+		return this.local;
+	}
+	
+	public int getRemotePortId(){
+		return this.remotePortId;
+	}
+	
+	public byte[] getPreComputedPCI(){
+		return this.preComputedPCI;
+	}
+	
+	public long getPortId(){
+		return this.portId;
+	}
+
+	public Socket getSocket() {
+		return socket;
+	}
+
+	public void setSocket(Socket socket) {
+		this.socket = socket;
+	}
+
+	public Flow getFlow() {
+		return flow;
+	}
+	
+	public long getInitialSequenceNumber() {
+		return initialSequenceNumber;
+	}
+
+	public void setInitialSequenceNumber(long initialSequenceNumber) {
+		this.initialSequenceNumber = initialSequenceNumber;
+	}
+
+	public void setLastSequenceDelivered(long lastSequenceDelivered) {
+		this.lastSequenceDelivered = lastSequenceDelivered;
+	}
+	
+	public void incrementLastSequenceDelivered(){
+		this.lastSequenceDelivered++;
+	}
+
+	public void setNextSequenceToSend(long nextSequenceToSend) {
+		this.nextSequenceToSend = nextSequenceToSend;
 	}
 
 	public ReassemblyQueue getReasemblyQeueue() {
@@ -114,12 +261,12 @@ public class DTAEIState {
 		this.reasemblyQeueue = reasemblyQeueue;
 	}
 
-	public int getMaxFlowSDU() {
-		return maxFlowSDU;
+	public int getMaxFlowSDUSize() {
+		return this.maxFlowSDUSize;
 	}
 
-	public void setMaxFlowSDU(int maxFlowSDU) {
-		this.maxFlowSDU = maxFlowSDU;
+	public void setMaxFlowSDUSize(int maxFlowSDUSize) {
+		this.maxFlowSDUSize = maxFlowSDUSize;
 	}
 
 	public int getMaxFlowPDUSize() {
@@ -130,19 +277,11 @@ public class DTAEIState {
 		this.maxFlowPDUSize = maxFlowPDUSize;
 	}
 
-	public Unsigned getInitialSequenceNumber() {
-		return initialSequenceNumber;
-	}
-
-	public void setInitialSequenceNumber(Unsigned initialSequenceNumber) {
-		this.initialSequenceNumber = initialSequenceNumber;
-	}
-
-	public Unsigned getSequenceNumberRollOverThreshold() {
+	public long getSequenceNumberRollOverThreshold() {
 		return sequenceNumberRollOverThreshold;
 	}
 
-	public void setSequenceNumberRollOverThreshold(Unsigned sequenceNumberRollOverThreshold) {
+	public void setSequenceNumberRollOverThreshold(long sequenceNumberRollOverThreshold) {
 		this.sequenceNumberRollOverThreshold = sequenceNumberRollOverThreshold;
 	}
 
@@ -154,27 +293,23 @@ public class DTAEIState {
 		this.state = state;
 	}
 
-	public Unsigned getLastSequenceDelivered() {
-		return lastSequenceDelivered;
+	public long getLastSequenceDelivered() {
+		return this.lastSequenceDelivered;
 	}
 
-	public void setLastSequenceDelivered(Unsigned lastSequenceDelivered) {
-		this.lastSequenceDelivered = lastSequenceDelivered;
+	public long getNextSequenceToSend() {
+		return this.nextSequenceToSend;
+	}
+	
+	public void incrementNextSequenceToSend(){
+		this.nextSequenceToSend++;
 	}
 
-	public Unsigned getNextSequenceToSend() {
-		return nextSequenceToSend;
-	}
-
-	public void setNextSequenceToSend(Unsigned nextSequenceToSend) {
-		this.nextSequenceToSend = nextSequenceToSend;
-	}
-
-	public Unsigned getRightWindowEdge() {
+	public long getRightWindowEdge() {
 		return rightWindowEdge;
 	}
 
-	public void setRightWindowEdge(Unsigned rightWindowEdge) {
+	public void setRightWindowEdge(long rightWindowEdge) {
 		this.rightWindowEdge = rightWindowEdge;
 	}
 

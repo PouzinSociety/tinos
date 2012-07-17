@@ -1,5 +1,6 @@
 package rina.flowallocator.impl;
 
+import java.io.DataInputStream;
 import java.net.Socket;
 import java.util.Iterator;
 import java.util.Map;
@@ -29,13 +30,13 @@ import rina.flowallocator.impl.tcp.TCPServer;
 import rina.flowallocator.impl.timertasks.ExpiredFlowAllocationAttemptTimerTask;
 import rina.flowallocator.impl.validation.AllocateRequestValidator;
 import rina.ipcprocess.api.IPCProcess;
+import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
-import rina.utils.types.Unsigned;
 
 /** 
  * Implements the Flow Allocator
@@ -178,19 +179,10 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * @param socket
 	 */
 	public void newConnectionAccepted(Socket socket){
-		byte[] buffer = new byte[4];
 		long tcpRendezvousId = -1;
 		try{
-			//1 Read the TCP Rendez vous ID from the socket
-			//It will be the first 4 bytes
-			int dataRead = socket.getInputStream().read(buffer);
-			if (dataRead <1){
-				//TODO fix this
-				throw new Exception();
-			}
-			Unsigned unsigned = new Unsigned(4);
-			unsigned.setValue(buffer);
-			tcpRendezvousId = unsigned.getValue();
+			DataInputStream liStream = new DataInputStream(socket.getInputStream());
+			tcpRendezvousId = liStream.readInt();
 			log.debug("The TCP Rendez-vous Id is: "+tcpRendezvousId);
 			
 			//2 Put the socket in the pending sockets map and see if the M_CREATE message
@@ -301,9 +293,17 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		if (address == myAddress){
 			//There is an entry and the address is this IPC Process, create a FAI, extract the Flow object from the CDAP message and
 			//call the FAI
+			APService applicationCallback = directoryForwardingTable.getLocalApplicationCallback(flow.getDestinationNamingInfo());
+			if (applicationCallback == null){
+				log.error("Ignoring the flow request because I could not find the callback for application " 
+						+ flow.getDestinationNamingInfo().toString());
+				return;
+			}
+			
 			portId = generatePortId();
 			log.debug("The destination application process is reachable through me. Assigning the local portId "+portId+" to the flow allocation.");
 			FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), this, cdapSessionManager, portId);
+			flowAllocatorInstance.setApplicationCallback(applicationCallback);
 			flowAllocatorInstance.createFlowRequestMessageReceived(flow, cdapMessage, underlyingPortId);
 			flowAllocatorInstances.put(new Integer(new Integer(portId)), flowAllocatorInstance);
 			
@@ -363,7 +363,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		clonedFlowService.setQoSSpecification(flowService.getQoSSpecification());
 		clonedFlowService.setPortId(flowService.getPortId());
 		flowAllocatorInstance.receivedLocalFlowRequest(clonedFlowService, objectName);
-		flowAllocatorInstances.put(new Integer(new Integer(portId)), flowAllocatorInstance);
+		flowAllocatorInstances.put(new Integer(portId), flowAllocatorInstance);
 	}
 	
 	/**
@@ -384,17 +384,17 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	
 	/**
 	 * Validate the request, create a Flow Allocator Instance and forward it the request for further processing
-	 * @param allocateRequest
-	 * @param applicationProcess
+	 * @param flowService
+	 * @param applicationCallback the callback to invoke the application for allocateResponse and any other calls
 	 * @throws IPCException
 	 */
-	public int submitAllocateRequest(FlowService flowService) throws IPCException{
+	public int submitAllocateRequest(FlowService flowService, APService applicationCallback) throws IPCException{
 		log.debug("Local application invoked allocate request: "+flowService.toString());
 		allocateRequestValidator.validateAllocateRequest(flowService);
 		int portId = generatePortId();
 		flowService.setPortId(portId);
 		FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), this, cdapSessionManager, portId);
-		flowAllocatorInstance.submitAllocateRequest(flowService);
+		flowAllocatorInstance.submitAllocateRequest(flowService, applicationCallback);
 		flowAllocatorInstances.put(new Integer(portId), flowAllocatorInstance);
 		return portId;
 	}
@@ -405,11 +405,13 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * active flow allocator instances
 	 * @param portId
 	 * @param success
+	 * @param reason
+	 * @param applicationCallback
 	 */
-	public void submitAllocateResponse(int portId, boolean success, String reason) throws IPCException{
+	public void submitAllocateResponse(int portId, boolean success, String reason, APService applicationCallback) throws IPCException{
 		log.debug("Local application invoked allocate response for portId "+portId+" with result "+success);
 		FlowAllocatorInstance flowAllocatorInstance = getFlowAllocatorInstance(portId);
-		flowAllocatorInstance.submitAllocateResponse(success, reason);
+		flowAllocatorInstance.submitAllocateResponse(success, reason, applicationCallback);
 		if (!success){
 			flowAllocatorInstances.remove(portId);
 		}
@@ -433,19 +435,6 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	public void receivedDeallocateLocalFlowRequest(int portId) throws IPCException{
 		FlowAllocatorInstance flowAllocatorInstance = getFlowAllocatorInstance(portId);
 		flowAllocatorInstance.receivedDeallocateLocalFlowRequest();
-	}
-	
-	/**
-	 * Sends an SDU through the flow identified by portId
-	 * This function is just for the RINA prototype over TCP. When DTP and DTCP are implemented
-	 * this operation will be removed from here.
-	 * @param portId
-	 * @param sdu
-	 * @throws IPCException
-	 */
-	public void submitTransfer(int portId, byte[] sdu) throws IPCException{
-		FlowAllocatorInstance flowAllocatorInstance = getFlowAllocatorInstance(portId);
-		flowAllocatorInstance.submitTransfer(sdu);
 	}
 	
 	/**

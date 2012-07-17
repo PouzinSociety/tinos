@@ -24,6 +24,9 @@
      	<osgi:interfaces>
  			<value>rina.ipcprocess.api.IPCProcessFactory</value>
  		</osgi:interfaces>
+ 		<osgi:service-properties>
+			<entry key="type" value="normal"/>
+ 		</osgi:service-properties>
     </osgi:service>
 
 </beans>

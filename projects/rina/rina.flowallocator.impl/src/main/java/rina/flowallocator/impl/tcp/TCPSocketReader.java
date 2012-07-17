@@ -2,10 +2,10 @@ package rina.flowallocator.impl.tcp;
 
 import java.net.Socket;
 
-import rina.delimiting.api.BaseSocketReader;
 import rina.delimiting.api.Delimiter;
+import rina.delimiting.api.ZeroLengthSDUBaseSocketReader;
+import rina.efcp.api.DataTransferAE;
 import rina.flowallocator.api.FlowAllocatorInstance;
-import rina.ipcservice.api.APService;
 
 /**
  * Continuously reads data from a socket. When an amount of data has been received
@@ -14,7 +14,7 @@ import rina.ipcservice.api.APService;
  * @author eduardgrasa
  *
  */
-public class TCPSocketReader extends BaseSocketReader{
+public class TCPSocketReader extends ZeroLengthSDUBaseSocketReader{
 	
 	/**
 	 * A reference to the Flow Allocator instance that owns this flow
@@ -24,26 +24,27 @@ public class TCPSocketReader extends BaseSocketReader{
 	/**
 	 * The class that interacts with the local application
 	 */
-	private APService apService = null;
+	private DataTransferAE dataTransferAE = null;
 	
-	/**
-	 * The portId associated to this flow
-	 */
-	private int portId = 0;
-	
-	public TCPSocketReader(Socket socket, Delimiter delimiter, APService apService, int portId){
+	public TCPSocketReader(Socket socket, Delimiter delimiter, DataTransferAE dataTransferAE, 
+			FlowAllocatorInstance flowAllocatorInstance){
 		super(socket, delimiter);
-		this.apService = apService;
-		this.portId = portId;
+		this.dataTransferAE = dataTransferAE;
+		this.flowAllocatorInstance = flowAllocatorInstance;
 	}
 
 	@Override
-	public void processPDU(byte[] sdu) {
-		apService.deliverTransfer(portId, sdu);
+	public void processPDU(byte[] pdu) {
+		this.dataTransferAE.pduDelivered(pdu);
 	}
 
 	@Override
 	public void socketDisconnected() {
-		flowAllocatorInstance.socketClosed();
+		this.flowAllocatorInstance.socketClosed();
+	}
+
+	@Override
+	public void process0LengthSDU() {
+		this.flowAllocatorInstance.lastSDUReceived();
 	}
 }

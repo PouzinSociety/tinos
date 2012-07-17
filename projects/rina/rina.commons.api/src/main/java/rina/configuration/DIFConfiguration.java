@@ -27,15 +27,28 @@ public class DIFConfiguration {
 	 * The QoS cubes available in the DIF
 	 */
 	private List<QoSCube> qosCubes = null;
+	
+	/** Only for shim IP DIFs **/
+	private List<ExpectedApplicationRegistration> expectedApplicationRegistrations = null;
+	private List<DirectoryEntry> directory = null;
 
-	public String getDifName() {
-		return difName;
+	public List<ExpectedApplicationRegistration> getExpectedApplicationRegistrations() {
+		return expectedApplicationRegistrations;
 	}
 
-	public void setDifName(String difName) {
-		this.difName = difName;
+	public void setExpectedApplicationRegistrations(
+			List<ExpectedApplicationRegistration> expectedApplicationRegistrations) {
+		this.expectedApplicationRegistrations = expectedApplicationRegistrations;
 	}
 
+	public List<DirectoryEntry> getDirectory() {
+		return directory;
+	}
+
+	public void setDirectory(List<DirectoryEntry> directory) {
+		this.directory = directory;
+	}
+	
 	public DataTransferConstants getDataTransferConstants() {
 		return dataTransferConstants;
 	}
@@ -52,7 +65,7 @@ public class DIFConfiguration {
 		this.qosCubes = qosCubes;
 	}
 	
-	public static DIFConfiguration getDefaultDIFConfiguration(){
+	public static DIFConfiguration getDefaultNormalDIFConfiguration(){
 		DIFConfiguration result = new DIFConfiguration();
 		result.setDifName("RINA-Demo.DIF");
 		result.setDataTransferConstants(DataTransferConstants.getDefaultInstance());
@@ -62,5 +75,13 @@ public class DIFConfiguration {
 		result.setQosCubes(qosCubes);
 		
 		return result;
+	}
+
+	public String getDifName() {
+		return difName;
+	}
+
+	public void setDifName(String difName) {
+		this.difName = difName;
 	}
 }

@@ -1,9 +1,14 @@
 package rina.ipcmanager.api;
 
+import java.util.List;
+
+import rina.cdap.api.CDAPSessionManagerFactory;
+import rina.delimiting.api.DelimiterFactory;
+import rina.encoding.api.EncoderFactory;
 import rina.flowallocator.api.Flow;
 import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.idd.api.InterDIFDirectoryFactory;
-import rina.ipcservice.api.APService;
+import rina.ipcprocess.api.IPCProcess;
 
 /**
  * The IPC Manager is the component of a DAF that manages the local IPC resources. In its current implementation it 
@@ -29,16 +34,17 @@ public interface IPCManager {
 	public void setInterDIFDirectoryFactory(InterDIFDirectoryFactory idd);
 	
 	/**
-	 * Get the service to interact with the applications having registered or requested a service 
-	 * @return
-	 */
-	public APService getAPService();
-	
-	/**
 	 * Executes a runnable in a thread. The IPCManager maintains a single thread pool 
 	 * for all the RINA prototype
 	 * @param runnable
 	 */
 	public void execute(Runnable runnable);
-
+	
+	public CDAPSessionManagerFactory getCDAPSessionManagerFactory();
+	public DelimiterFactory getDelimiterFactory();
+	public EncoderFactory getEncoderFactory();
+	
+	public List<IPCProcess> listIPCProcesses();
+	public List<String> listDIFNames();
+	public IPCProcess getIPCProcessBelongingToDIF(String difName);
 }
