@@ -19,7 +19,7 @@ import rina.ipcservice.api.IPCException;
  */
 public class EchoServer implements FlowListener{
 	
-	public static final String APPLICATION_PROCESS_NAME = "rina.examples.apps.echoServer";
+	public static final String APPLICATION_PROCESS_NAME = "rina.examples.apps.echoserver";
 	
 	private static final Log log = LogFactory.getLog(EchoServer.class);
 	
@@ -37,6 +37,7 @@ public class EchoServer implements FlowListener{
 	public void start() throws IPCException{
 		ApplicationProcessNamingInfo applicationProcess = new ApplicationProcessNamingInfo();
 		applicationProcess.setApplicationProcessName(APPLICATION_PROCESS_NAME);
+		applicationProcess.setApplicationEntityInstance("1");
 		registration = new ApplicationRegistration(applicationProcess, this);
 		log.info("Echo Server registered! Now waiting for incoming flows");
 	}

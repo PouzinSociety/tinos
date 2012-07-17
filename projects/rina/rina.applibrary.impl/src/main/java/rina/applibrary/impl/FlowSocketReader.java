@@ -11,6 +11,7 @@ import rina.applibrary.api.SDUListener;
 import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
+import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.delimiting.api.BaseSocketReader;
 import rina.delimiting.api.Delimiter;
 
@@ -22,11 +23,13 @@ import rina.delimiting.api.Delimiter;
 public class FlowSocketReader extends BaseSocketReader{
 
 	private static final Log log = LogFactory.getLog(FlowSocketReader.class);
+	public enum State {WAITING_ALLOCATION_CONFIRMATION, ALLOCATED};
 	
 	private CDAPSessionManager cdapSessionManager = null;
 	private BlockingQueue<CDAPMessage> blockingQueue = null;
 	private SDUListener sduListener = null;
 	private FlowImpl flowImpl = null;
+	private State state = State.WAITING_ALLOCATION_CONFIRMATION;
 	
 	public FlowSocketReader(Socket socket, Delimiter delimiter, CDAPSessionManager cdapSessionManager, BlockingQueue<CDAPMessage> blockingQueue, 
 			FlowImpl flowImpl){
@@ -46,44 +49,37 @@ public class FlowSocketReader extends BaseSocketReader{
 	
 	@Override
 	public void processPDU(byte[] pdu) {
-		CDAPMessage cdapMessage = null;
-
-		try{
-			cdapMessage = cdapSessionManager.decodeCDAPMessage(pdu);
-			log.debug(cdapMessage.toString());
-
-			switch(cdapMessage.getOpCode()){
-			case M_CREATE_R:
-				try{
-					blockingQueue.put(cdapMessage);
-				}catch(InterruptedException ex){
-					log.error(ex);
-				}
-				break;
-			case M_DELETE:
-				flowImpl.deallocateReceived(cdapMessage);
-				break;
-			case M_DELETE_R:
-				try{
-					blockingQueue.put(cdapMessage);
-				}catch(InterruptedException ex){
-					log.error(ex);
-				}
-				break;
-			case M_WRITE:
-				if (cdapMessage.getObjValue() != null){
-					sduListener.sduDelivered(cdapMessage.getObjValue().getByteval());
+		
+		switch(this.state){
+		case WAITING_ALLOCATION_CONFIRMATION:
+			CDAPMessage cdapMessage = null;
+			try{
+				cdapMessage = cdapSessionManager.decodeCDAPMessage(pdu);
+				log.debug(cdapMessage.toString());
+				if (cdapMessage.getOpCode() == Opcode.M_CREATE_R){
+					try{
+						blockingQueue.put(cdapMessage);
+						setAllocated();
+					}catch(InterruptedException ex){
+						log.error(ex);
+					}
 				}else{
-					log.error("Received CDAP M_WRITE message with null objectvalue.");
+					log.error("Received CDAP Message with wrong opcode, expected M_CREATE_R, got: "
+							+cdapMessage.toString());
 				}
-				break;
-			default:
-				log.error("Received wrong CDAP message.");
+			}catch(CDAPException ex){
+				ex.printStackTrace();
+				log.error("Could not parse received CDAP message.");
 			}
-		}catch(CDAPException ex){
-			ex.printStackTrace();
-			log.error("Could not parse received CDAP message.");
+			break;
+		case ALLOCATED:
+			sduListener.sduDelivered(pdu);
+			break;
 		}
+	}
+	
+	public void setAllocated(){
+		this.state = State.ALLOCATED;
 	}
 
 	@Override

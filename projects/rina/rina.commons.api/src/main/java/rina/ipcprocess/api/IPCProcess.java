@@ -9,7 +9,6 @@ import rina.enrollment.api.Neighbor;
 import rina.flowallocator.api.Flow;
 import rina.flowallocator.api.QoSCube;
 import rina.ipcmanager.api.IPCManager;
-import rina.ipcservice.api.APService;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 /**
@@ -48,13 +47,6 @@ public interface IPCProcess{
 	 * @return
 	 */
 	public IPCManager getIPCManager();
-	
-	/**
-	 * Get the class that handles the interaction with 
-	 * the applications in this system
-	 * @return
-	 */
-	public APService getAPService();
 	
 	/**
 	 * Lifecicle event, invoked to tell the IPC process it is about to be destroyed.

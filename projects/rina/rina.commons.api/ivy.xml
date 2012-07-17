@@ -18,6 +18,8 @@
 	<dependencies>
 <!-- Logging -->
 		<dependency org="org.apache.commons" name="com.springsource.org.apache.commons.logging" rev="${org.apache.commons.logging}" />
+<!-- Google Guava Library, support for litle endian and unsigned data types -->
+		<dependency org="com.google.guava" name="guava" rev="12.0" />
 <!-- Tests -->
 		<dependency org="org.antlr" name="com.springsource.antlr" rev="${org.antlr}" conf="test->runtime" />
 		<dependency org="org.junit" name="com.springsource.org.junit" rev="${org.junit}" conf="test->runtime" />

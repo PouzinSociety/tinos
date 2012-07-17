@@ -111,11 +111,6 @@ public class DefaultFlowImpl implements FlowImpl{
 	private CDAPSessionManager cdapSessionManager = null;
 	private Encoder encoder = null;
 	
-	/* Variables to write SDUs. They are declared here and initialized once since it is more efficient
-	 * and 'write' can potentially be called many times */
-	private ObjectValue writeObjectValue = null;
-	private CDAPMessage writeCDAPMessage = null;
-	
 	public DefaultFlowImpl(){
 		this.flowQueue = new LinkedBlockingQueue<CDAPMessage>();
 		this.socketFactory = new StandardSocketFactory();
@@ -245,14 +240,7 @@ public class DefaultFlowImpl implements FlowImpl{
 		}
 		
 		try{
-			if (this.writeObjectValue == null){
-				this.writeObjectValue = new ObjectValue();
-			}
-			if (this.writeCDAPMessage == null){
-				this.writeCDAPMessage = CDAPMessage.getWriteObjectRequestMessage(null, null, null, 0, writeObjectValue, null, 0);
-			}
-			this.writeCDAPMessage.getObjValue().setByteval(sdu);
-			this.socket.getOutputStream().write(delimiter.getDelimitedSdu(cdapSessionManager.encodeCDAPMessage(writeCDAPMessage)));
+			this.socket.getOutputStream().write(delimiter.getDelimitedSdu(sdu));
 		}catch(Exception ex){
 			IPCException ipcException = new IPCException(IPCException.PROBLEMS_WRITING_TO_FLOW + ex.getMessage());
 			ipcException.setErrorCode(IPCException.PROBLEMS_WRITING_TO_FLOW_CODE);
@@ -272,12 +260,7 @@ public class DefaultFlowImpl implements FlowImpl{
 		}
 		
 		try{
-			//1 Create M_DELETE message, encode it and send it through socket
-			CDAPMessage cdapMessage = CDAPMessage.getDeleteObjectRequestMessage(null, null, null, 0, null, null, 0);
-			byte[] encodedMessage = cdapSessionManager.encodeCDAPMessage(cdapMessage);
-			socket.getOutputStream().write(delimiter.getDelimitedSdu(encodedMessage));
-			
-			//2 Close the socket and return
+			//1 Close the socket and return
 			try{
 				if (socket != null && !socket.isClosed()){
 					socket.close();
@@ -296,32 +279,6 @@ public class DefaultFlowImpl implements FlowImpl{
 	}
 	
 	/**
-	 * Invoked by the thread reading the socket when a deallocate request is 
-	 * received
-	 * @param cdapMessage
-	 */
-	public void deallocateReceived(CDAPMessage cdapMessage){
-		if (state != State.ALLOCATED){
-			return;
-		}
-		
-		try{
-			if (socket != null && !socket.isClosed()){
-				socket.close();
-			}
-		}catch(Exception ex){
-			ex.printStackTrace();
-		}
-		
-		socket = null;
-		flowSocketReader = null;
-		setState(State.DEALLOCATED);
-		if (flowListener != null){
-			flowListener.flowDeallocated(this.flow);
-		}
-	}
-	
-	/**
 	 * Invoked when the socketReader detects that the socket 
 	 * has been closed
 	 */
@@ -332,6 +289,10 @@ public class DefaultFlowImpl implements FlowImpl{
 			setState(State.DEALLOCATED);
 			if (flowListener != null){
 				flowListener.flowDeallocated(this.flow);
+			}
+			try{
+				socket.close();
+			}catch(Exception ex){
 			}
 		}
 	}
@@ -364,6 +325,7 @@ public class DefaultFlowImpl implements FlowImpl{
 		this.socket = socket;
 		initializeRINAInfrastructure();
 		flowSocketReader = new FlowSocketReader(socket, delimiter, cdapSessionManager, flowQueue, this);
+		flowSocketReader.setAllocated();
 		RINAFactory.execute(flowSocketReader);
 		setState(State.ALLOCATED);
 	}

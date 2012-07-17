@@ -142,7 +142,4 @@ public class FakeIPCProcess extends BaseIPCProcess{
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-	
-
 }

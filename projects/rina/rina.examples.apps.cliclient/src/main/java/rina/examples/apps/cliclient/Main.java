@@ -19,7 +19,19 @@ public class Main {
 			int option = scanner.nextInt();
 			switch (option){
 			case 1:
-				EchoClient echoClient = new EchoClient();
+				System.out.println("Available QoS ids to connect to the server: ");
+				System.out.println("1. Unreliable");
+				System.out.println("2. Reliable");
+				System.out.println();
+				System.out.println("Type '1' or '2' followed by the 'Enter' key.");
+				System.out.println();
+				System.out.print("Selected qosId: ");
+				option = scanner.nextInt();
+				if (option <1 && option >2){
+					System.out.println("Invalid option");
+					break;
+				}
+				EchoClient echoClient = new EchoClient(option);
 				echoClient.run();
 				break;
 			default:

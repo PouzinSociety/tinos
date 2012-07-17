@@ -12,6 +12,16 @@ import java.util.Map;
 public class QualityOfServiceSpecification {
 	
 	/**
+	 * The name of the qos cube, if known
+	 */
+	private String name = null;
+	
+	/**
+	 * The id of the requested QoS cube, if known
+	 */
+	private int qosCubeId = -1;
+	
+	/**
 	 * Average bandwidth in bytes/s, a value of 0 indicates 'don't care'
 	 */
 	private long averageBandwidth = 0;
@@ -68,6 +78,22 @@ public class QualityOfServiceSpecification {
 	 * Used to add extra parameters
 	 */
 	private Map<String, String> extendedPrameters = new Hashtable<String, String>();
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public int getQosCubeId() {
+		return qosCubeId;
+	}
+
+	public void setQosCubeId(int qosCubeId) {
+		this.qosCubeId = qosCubeId;
+	}
 
 	public Map<String, String> getExtendedPrameters() {
 		return extendedPrameters;
@@ -155,6 +181,12 @@ public class QualityOfServiceSpecification {
 	
 	public String toString(){
 		String result = "Quality of service required:\n";
+		if (this.getQosCubeId() != -1){
+			result = result + "QoS cube id: " + this.getQosCubeId() + "\n";
+		}
+		if (this.getName() != null){
+			result = result + "Name: " + this.getName() + "²n";
+		}
 		if (averageBandwidth != 0){
 			result = result + "Average bandwidth: "+ averageBandwidth + " bytes/second \n";
 		}

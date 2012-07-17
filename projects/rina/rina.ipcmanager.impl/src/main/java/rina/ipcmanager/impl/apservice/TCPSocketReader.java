@@ -5,13 +5,14 @@ import java.net.Socket;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.cdap.api.CDAPException;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
+import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.delimiting.api.BaseSocketReader;
 import rina.delimiting.api.Delimiter;
 import rina.encoding.api.Encoder;
-import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.ApplicationRegistration;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
@@ -34,12 +35,19 @@ import rina.ipcservice.api.IPCService;
 public class TCPSocketReader extends BaseSocketReader{
 	
 	private static final Log log = LogFactory.getLog(TCPSocketReader.class);
+	
+	public enum State {NULL, APPLICATION_REGISTRATION, FLOW};
 
 	private CDAPSessionManager cdapSessionManager = null;
 	
 	private Encoder encoder = null;
 	
 	private APServiceImpl apService = null;
+	
+	/**
+	 * The state of this socket reader
+	 */
+	private State state = State.NULL;
 	
 	/**
 	 * The local IPC process the data has to be sent to
@@ -79,47 +87,40 @@ public class TCPSocketReader extends BaseSocketReader{
 	 * @param pdu
 	 */
 	public void processPDU(byte[] pdu){
-		CDAPMessage cdapMessage = null;
-
-		try{
-			cdapMessage = cdapSessionManager.decodeCDAPMessage(pdu);
-			//log.info(cdapMessage.toString());
-
-			switch(cdapMessage.getOpCode()){
-			case M_CREATE:
-				handleMCreateReceived(cdapMessage);
-				break;
-			case M_CREATE_R:
-				handleMCreateResponseReceived(cdapMessage);
-				break;
-			case M_DELETE:
-				handleMDeleteReceived(cdapMessage);
-				break;
-			case M_WRITE:
-				handleMWriteReceived(cdapMessage);
-				break;
-			case M_START:
-				handleMStartReceived(cdapMessage);
-				break;
-			case M_STOP:
-				handleMStopReceived(cdapMessage);
-				break;
-			default:
-				log.warn("Received unexpected CDAP message, ignoring it.\n"+cdapMessage.toString());
-			}
-		}catch(CDAPException ex){
-			ex.printStackTrace();
+		switch(this.state){
+		case NULL:
 			try{
-				CDAPMessage errorMessage = CDAPMessage.getReleaseConnectionResponseMessage(null, 1, "Could not parse CDAP message. " + ex.getMessage() , 1);
-				apService.sendErrorMessageAndCloseSocket(errorMessage, getSocket());
-			}catch(Exception ex1){
-				ex1.printStackTrace();
+				CDAPMessage cdapMessage = null;
+				cdapMessage = cdapSessionManager.decodeCDAPMessage(pdu);
+				if (cdapMessage.getOpCode() == Opcode.M_CREATE){
+					handleMCreateReceived(cdapMessage);
+					this.state = State.FLOW;
+				}else if (cdapMessage.getOpCode() == Opcode.M_CREATE_R){
+					handleMCreateResponseReceived(cdapMessage);
+					this.state = State.FLOW;
+				}else if (cdapMessage.getOpCode() == Opcode.M_START){
+					handleMStartReceived(cdapMessage);
+					this.state = State.APPLICATION_REGISTRATION;
+				}else{
+					log.warn("Received unexpected CDAP message, ignoring it.\n"+cdapMessage.toString());
+				}
+			}catch(CDAPException ex){
+				ex.printStackTrace();
 				try{
-					getSocket().close();
-				}catch(Exception ex2){
-					ex2.printStackTrace();
+					CDAPMessage errorMessage = CDAPMessage.getReleaseConnectionResponseMessage(null, 1, "Could not parse CDAP message. " + ex.getMessage() , 1);
+					apService.sendErrorMessageAndCloseSocket(errorMessage, getSocket());
+				}catch(Exception ex1){
+					ex1.printStackTrace();
+					try{
+						getSocket().close();
+					}catch(Exception ex2){
+						ex2.printStackTrace();
+					}
 				}
 			}
+			break;
+		case FLOW:
+			handleMWriteReceived(pdu);
 		}
 	}
 	
@@ -159,41 +160,19 @@ public class TCPSocketReader extends BaseSocketReader{
 	 * We have an SDU to deliver. Call the IPC Process and send the data
 	 * @param cdapMessage
 	 */
-	private void handleMWriteReceived(CDAPMessage cdapMessage){
+	private void handleMWriteReceived(byte[] sdu){
 		if (apNamingInfo != null){
 			//This socket can only be used to modify the application registration information
 			//TODO, send error message and close socket?
 			return;
 		}
-		
-		if (ipcService == null){
-			log.error("Received a request to transfer data on portId "+portId+", but there is no flow allocated yet");
-			//There is no flow allocated yet, what to do?
-			//TODO a) ignore, b) send an error message c) send and error message and close the flow?
-			return;
-		}
-		
-		byte[] sdu = cdapMessage.getObjValue().getByteval();
+
 		try {
-			ipcService.submitTransfer(portId, sdu);
+			this.ipcService.submitTransfer(this.portId, sdu);
 		} catch (IPCException ex) {
 			ex.printStackTrace();
 			//TODO, what else to do?
 		}
-	}
-	
-	/**
-	 * Decode the flow service object and call the APService class to initiate the allocation of a new flow
-	 * @param cdapMessage
-	 */
-	private void handleMDeleteReceived(CDAPMessage cdapMessage){
-		if (apNamingInfo != null){
-			//This socket can only be used to modify the application registration information
-			//TODO, send error message and close socket?
-			return;
-		}
-		
-		apService.processDeallocate(cdapMessage, portId, getSocket());
 	}
 	
 	/**
@@ -209,7 +188,7 @@ public class TCPSocketReader extends BaseSocketReader{
 		
 		try{
 			ApplicationRegistration applicationRegistration = (ApplicationRegistration) encoder.decode(cdapMessage.getObjValue().getByteval(), ApplicationRegistration.class);
-			apService.processApplicationRegistrationRequest(applicationRegistration, cdapMessage, getSocket(), this);
+			apService.processApplicationRegistrationRequest(applicationRegistration, cdapMessage, getSocket());
 			apNamingInfo = applicationRegistration.getApNamingInfo();
 		}catch(Exception ex){
 			ex.printStackTrace();
@@ -227,16 +206,6 @@ public class TCPSocketReader extends BaseSocketReader{
 				}
 			}
 		}
-	}
-	
-	private void handleMStopReceived(CDAPMessage cdapMessage){
-		if (ipcService != null){
-			//This socket can only be used for data transfer
-			//TODO send error message and close socket?
-			return;
-		}
-		
-		apService.processApplicationUnregistration(apNamingInfo, cdapMessage, getSocket());
 	}
 	
 	/**

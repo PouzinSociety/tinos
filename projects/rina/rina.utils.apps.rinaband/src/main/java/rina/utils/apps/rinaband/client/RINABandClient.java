@@ -13,6 +13,7 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
 import rina.cdap.impl.CDAPSessionManagerImpl;
 import rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory;
+import rina.ipcservice.api.IPCException;
 import rina.utils.apps.rinaband.StatisticsInformation;
 import rina.utils.apps.rinaband.TestInformation;
 import rina.utils.apps.rinaband.protobuf.RINABandStatisticsMessageEncoder;
@@ -180,13 +181,30 @@ public class RINABandClient implements SDUListener{
 			Flow flow = null;
 			TestWorker testWorker = null;
 			long before = 0;
+			int retries = 0;
 			for(int i=0; i<this.testInformation.getNumberOfFlows(); i++){
 				try{
 					testWorker = new TestWorker(this.testInformation, this);
 					before = System.currentTimeMillis();
-					flow =  new Flow(this.clientApNamingInfo, this.dataApNamingInfo, null, testWorker);
-					testWorker.setFlow(flow, System.currentTimeMillis() - before);
-					this.testWorkers.add(testWorker);
+					retries = 0;
+					
+					//Retry flow allocation for up to 3 times in case the RINABand data AE registration update had not 
+					//reached the directory of the IPC process running in the local system
+					while(retries < 3){
+						try{
+							flow =  new Flow(this.clientApNamingInfo, this.dataApNamingInfo, null, testWorker);
+							testWorker.setFlow(flow, System.currentTimeMillis() - before);
+							this.testWorkers.add(testWorker);
+							break;
+						}catch(IPCException ex){
+							if (ex.getMessage().indexOf("Could not find an entry in the directory forwarding table") != 0){
+								System.out.println("Flow request failed, trying again");
+								retries++;
+							}else{
+								break;
+							}
+						}
+					}
 				}catch(Exception ex){
 					System.out.println("Flow setup failed");
 					ex.printStackTrace();

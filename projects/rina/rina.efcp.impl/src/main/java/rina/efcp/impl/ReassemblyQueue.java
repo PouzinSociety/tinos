@@ -28,7 +28,7 @@ public class ReassemblyQueue {
 		
 		int index=0;
 		for(index=0; index<queue.size(); index++){
-			if (queue.get(index).getSequenceNumber().getValue()>pdu.getSequenceNumber().getValue()){
+			if (queue.get(index).getSequenceNumber()>pdu.getSequenceNumber()){
 				break;
 			}
 		}
