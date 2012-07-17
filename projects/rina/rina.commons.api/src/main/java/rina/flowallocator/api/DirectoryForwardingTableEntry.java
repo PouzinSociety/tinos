@@ -1,6 +1,7 @@
 package rina.flowallocator.api;
 
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.APService;
 
 /**
  * An entry of the directory forwarding table
@@ -22,6 +23,12 @@ public class DirectoryForwardingTableEntry {
 	 * A timestamp for this entry
 	 */
 	private long timestamp = 0L;
+	
+	/**
+	 * If the application is registered in this IPC Process, this
+	 * is the callback to contact it
+	 */
+	private APService localApplicationCallback = null;
 	
 	public DirectoryForwardingTableEntry(){
 	}
@@ -56,6 +63,14 @@ public class DirectoryForwardingTableEntry {
 		this.timestamp = timestamp;
 	}
 	
+	public APService getLocalApplicationCallback() {
+		return localApplicationCallback;
+	}
+
+	public void setLocalApplicationCallback(APService localApplicationCallback) {
+		this.localApplicationCallback = localApplicationCallback;
+	}
+
 	/**
 	 * Returns a key identifying this entry
 	 * @return

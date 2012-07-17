@@ -3,12 +3,15 @@ package rina.ipcservice.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.efcp.api.BaseDataTransferAE;
+import rina.efcp.api.DataTransferAE;
 import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.DirectoryForwardingTableEntry;
 import rina.flowallocator.api.FlowAllocator;
 import rina.ipcprocess.api.BaseIPCProcess;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
@@ -42,6 +45,11 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	 * The Flow Allocator
 	 */
 	private FlowAllocator flowAllocator = null;
+	
+	/**
+	 * The Data Transfer AE
+	 */
+	private DataTransferAE dataTransferAE = null;
 
 	public IPCProcessImpl(String applicationProcessName, String applicationProcessInstance, RIBDaemon ribDaemon){
 		this.ribDaemon = ribDaemon;
@@ -84,26 +92,36 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 		
 		return this.flowAllocator;
 	}
+	
+	private DataTransferAE getDataTransferAE(){
+		if (this.dataTransferAE == null){
+			this.dataTransferAE = (DataTransferAE) this.getIPCProcessComponent(BaseDataTransferAE.getComponentName());
+		}
+		
+		return this.dataTransferAE;
+	}
 
 	/**
 	 * Forward the allocate request to the Flow Allocator. Before, choose an available portId
-	 * @param allocateRequest
-	 * @param applicationProcess
+	 * @param flowService
+	 * @param application the callback to invoke the application for allocateResponse and any other calls
 	 * @throws IPCException
 	 */
-	public int submitAllocateRequest(FlowService flowService) throws IPCException{
+	public int submitAllocateRequest(FlowService flowService, APService applicationCallback) throws IPCException{
 		log.debug("Allocate request received, forwarding it to the Flow Allocator");
-		return getFlowAllocator().submitAllocateRequest(flowService);
+		return getFlowAllocator().submitAllocateRequest(flowService, applicationCallback);
 	}
 
 	/**
 	 * Forward the allocate response to the Flow Allocator.
 	 * @param portId
 	 * @param success
+	 * @param reason
+	 * @param applicationCallback the callback to invoke the application
 	 */
-	public void submitAllocateResponse(int portId, boolean success, String reason) throws IPCException{
-		log.debug("Allocate request received, forwarding it to the Flow Allocator");
-		getFlowAllocator().submitAllocateResponse(portId, success, reason);
+	public void submitAllocateResponse(int portId, boolean success, String reason, APService applicationCallback) throws IPCException{
+		log.debug("Allocate response received, forwarding it to the Flow Allocator");
+		getFlowAllocator().submitAllocateResponse(portId, success, reason, applicationCallback);
 	}
 
 	/**
@@ -114,25 +132,19 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 		log.debug("Deallocate request received, forwarding it to the Flow Allocator");
 		getFlowAllocator().submitDeallocate(portId);
 	}
-
-	public void submitStatus(int arg0) {
-		// TODO Auto-generated method stub
-	}
-
+	
 	/**
-	 * Send an SDU through the flow identified by portId
+	 * Write an SDU to the portId
 	 * @param portId
 	 * @param sdu
 	 * @throws IPCException
 	 */
 	public void submitTransfer(int portId, byte[] sdu) throws IPCException{
-		getFlowAllocator().submitTransfer(portId, sdu);
-		
-		/*List<byte[]> sdus = new ArrayList<byte[]>();
-		sdus.add(sdu);
-		DataTransferAE dataTransferAE = (DataTransferAE) this.getIPCProcessComponent(DataTransferAE.class.getName());
-		DataTransferAEInstance dataTransferAEInstance = dataTransferAE.getDataTransferAEInstance(portId);
-		dataTransferAEInstance.sdusDelivered(sdus);*/
+		getDataTransferAE().postSDU(portId, sdu);
+	}
+
+	public void submitStatus(int arg0) {
+		// TODO Auto-generated method stub
 	}
 
 	/**
@@ -151,15 +163,18 @@ public class IPCProcessImpl extends BaseIPCProcess implements IPCService{
 	}
 
 	/**
-	 * An application process says it is available through this DIF
+	 * An application process says it is available through this IPC Process
+	 * @param apNamingInfo the naming information of the registered application process
+	 * @param applicationCallback the callback to invoke the application for allocateResponse and any other calls
 	 */
-	public void register(ApplicationProcessNamingInfo apNamingInfo) {
+	public void register(ApplicationProcessNamingInfo apNamingInfo, APService applicationCallback) {
 		RIBDaemon ribDaemon = (RIBDaemon) this.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		try{
 			DirectoryForwardingTableEntry entry = new DirectoryForwardingTableEntry();
 			entry.setAddress(this.getAddress().longValue());
 			entry.setApNamingInfo(apNamingInfo);
 			entry.setTimestamp(System.nanoTime()/1000L);
+			entry.setLocalApplicationCallback(applicationCallback);
 			
 			NotificationPolicy notificationPolicy = new NotificationPolicy(new int[0]);
 			ribDaemon.create(DirectoryForwardingTable.DIRECTORY_FORWARDING_TABLE_ENTRY_RIB_OBJECT_CLASS, 

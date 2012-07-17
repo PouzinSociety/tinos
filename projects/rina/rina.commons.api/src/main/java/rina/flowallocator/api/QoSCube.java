@@ -3,6 +3,9 @@ package rina.flowallocator.api;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.primitives.UnsignedInts;
+import com.google.common.primitives.UnsignedLongs;
+
 import rina.ribdaemon.api.RIBObjectNames;
 
 /**
@@ -220,10 +223,10 @@ public class QoSCube {
 		String result = "";
 		result = result + "QoS id: " + this.getQosId() +  "\n";
 		result = result + "Name: " + this.getName() + "\n";
-		result = result + "Average bandwidth: " + this.getAverageBandwidth() +  "\n";
-		result = result + "Average SDU bandwidth: " + this.getAverageSDUBandwidth() +  "\n";
-		result = result + "Peak bandwidth duration: " + this.getPeakBandwidthDuration() +  "\n";
-		result = result + "Peak SDU bandwidth duration: " + this.getPeakSDUBandwidthDuration() +  "\n";
+		result = result + "Average bandwidth: " + UnsignedLongs.toString(this.getAverageBandwidth()) +  "\n";
+		result = result + "Average SDU bandwidth: " + UnsignedLongs.toString(this.getAverageSDUBandwidth()) +  "\n";
+		result = result + "Peak bandwidth duration: " + UnsignedInts.toString(this.getPeakBandwidthDuration()) +  "\n";
+		result = result + "Peak SDU bandwidth duration: " + UnsignedInts.toString(this.getPeakSDUBandwidthDuration()) +  "\n";
 		result = result + "Undetected bit error rate: " + this.getUndetectedBitErrorRate()+  "\n";
 		result = result + "Partial Delivery: " + this.isPartialDelivery() +  "\n";
 		result = result + "Order: " + this.isOrder() +  "\n";

@@ -1,6 +1,7 @@
 package rina.configuration;
 
 import java.util.List;
+import java.util.Map;
 
 import rina.enrollment.api.Neighbor;
 
@@ -11,11 +12,26 @@ import rina.enrollment.api.Neighbor;
  */
 public class IPCProcessToCreate {
 	
+	private String type = null;
 	private String applicationProcessName = null;
 	private String applicationProcessInstance = null;
 	private String difName = null;
 	private List<Neighbor> neighbors = null;
+	private String hostname = null;
+	Map<String, String> parameters = null;
 	
+	public String getType() {
+		return type;
+	}
+	public void setType(String type) {
+		this.type = type;
+	}
+	public String getHostname() {
+		return hostname;
+	}
+	public void setHostname(String hostname) {
+		this.hostname = hostname;
+	}
 	public String getApplicationProcessName() {
 		return applicationProcessName;
 	}
@@ -39,5 +55,11 @@ public class IPCProcessToCreate {
 	}
 	public void setNeighbors(List<Neighbor> neighbors) {
 		this.neighbors = neighbors;
+	}
+	public Map<String, String> getParameters() {
+		return parameters;
+	}
+	public void setParameters(Map<String, String> parameters) {
+		this.parameters = parameters;
 	}
 }

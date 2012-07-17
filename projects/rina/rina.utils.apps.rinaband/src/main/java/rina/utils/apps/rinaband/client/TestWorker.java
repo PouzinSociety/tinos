@@ -138,6 +138,9 @@ public class TestWorker implements Runnable, SDUListener{
 		
 		long currentTime = System.currentTimeMillis();
 		long totalTimeInMilis = (currentTime - this.timeOfFirstSDUSent);
+		if (totalTimeInMilis == 0){
+			totalTimeInMilis ++;
+		}
 		this.rinaBandClient.setLastSDUSent(currentTime);
 		synchronized(lock){
 			this.statistics.setSentSDUsPerSecond(1000L*this.testInformation.getNumberOfSDUs()/totalTimeInMilis);

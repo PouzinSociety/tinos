@@ -28,7 +28,7 @@ public class IPCProcessFactoryImplTest {
 	
 	@Test
 	public void testFactory() throws Exception{
-		IPCProcess ipcProcess = factory.createIPCProcess("test1", "1");
+		IPCProcess ipcProcess = factory.createIPCProcess("test1", "1", null);
 		Assert.assertNotNull(ipcProcess);
 		
 		ipcProcess = factory.getIPCProcess("test2", "1");
@@ -41,10 +41,10 @@ public class IPCProcessFactoryImplTest {
 		ipcProcess = factory.getIPCProcess("test1", "1");
 		Assert.assertNull(ipcProcess);
 		
-		ipcProcess = factory.createIPCProcess("test1", "1");
+		ipcProcess = factory.createIPCProcess("test1", "1", null);
 		Assert.assertNotNull(ipcProcess);
 		
-		ipcProcess = factory.createIPCProcess("test2", "1");
+		ipcProcess = factory.createIPCProcess("test2", "1", null);
 		Assert.assertNotNull(ipcProcess);
 		
 		Assert.assertEquals(2, factory.listIPCProcesses().size());

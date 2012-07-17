@@ -2,6 +2,8 @@ package rina.encoding.impl.googleprotobuf.flow.tests;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,21 +37,27 @@ public class FlowEncoderTest {
 		flow = new Flow();
 		flow.setAccessControl(new byte[]{0x01, 0x02, 0x03, 0x04});
 		flow.setCreateFlowRetries(2);
-		flow.setCurrentFlowId(0);
+		flow.setMaxCreateFlowRetries(3);
 		flow.setDestinationAddress(1);
 		flow.setDestinationNamingInfo(new ApplicationProcessNamingInfo("b", null));
 		flow.setDestinationPortId(430);
 		flow.setHopCount(3);
-		List<ConnectionId> flowIds = new ArrayList<ConnectionId>();
+		List<ConnectionId> connectionIds = new ArrayList<ConnectionId>();
 		ConnectionId connectionId = new ConnectionId();
 		connectionId.setDestinationCEPId(43);
 		connectionId.setSourceCEPId(55);
-		connectionId.setQosId(1);
-		flowIds.add(connectionId);
-		flow.setFlowIds(flowIds);
+		connectionId.setQosId((byte)1);
+		connectionIds.add(connectionId);
+		flow.setConnectionIds(connectionIds);
+		flow.setCurrentConnectionIdIndex(0);
 		flow.setSourceAddress(2);
 		flow.setSourceNamingInfo(new ApplicationProcessNamingInfo("a", null));
 		flow.setSourcePortId(3327);
+		Map<String, String> policies = new ConcurrentHashMap<String, String>();
+		policies.put("policyname1", "policyvalue1");
+		policies.put("policyname2", "policyvalue2");
+		flow.setPolicies(policies);
+		flow.setPolicyParameters(policies);
 		
 		flow2 = new Flow();
 		flow2.setSourceAddress(1);
@@ -74,17 +82,18 @@ public class FlowEncoderTest {
 		Flow recoveredFlow = (Flow) flowSerializer.decode(serializedFlow, Flow.class);
 		Assert.assertArrayEquals(flow.getAccessControl(), recoveredFlow.getAccessControl());
 		Assert.assertEquals(flow.getCreateFlowRetries(), recoveredFlow.getCreateFlowRetries());
-		Assert.assertEquals(flow.getCurrentFlowId(), recoveredFlow.getCurrentFlowId());
+		Assert.assertEquals(flow.getCurrentConnectionIdIndex(), recoveredFlow.getCurrentConnectionIdIndex());
 		Assert.assertEquals(flow.getDestinationAddress(), recoveredFlow.getDestinationAddress());
 		Assert.assertEquals(flow.getDestinationNamingInfo(), recoveredFlow.getDestinationNamingInfo());
 		Assert.assertEquals(flow.getDestinationPortId(), recoveredFlow.getDestinationPortId());
 		Assert.assertEquals(flow.getHopCount(), recoveredFlow.getHopCount());
-		Assert.assertEquals(flow.getFlowIds().get(0).getDestinationCEPId(), recoveredFlow.getFlowIds().get(0).getDestinationCEPId());
-		Assert.assertEquals(flow.getFlowIds().get(0).getSourceCEPId(), recoveredFlow.getFlowIds().get(0).getSourceCEPId());
-		Assert.assertEquals(flow.getFlowIds().get(0).getQosId(), recoveredFlow.getFlowIds().get(0).getQosId());
+		Assert.assertEquals(flow.getConnectionIds().get(0).getDestinationCEPId(), recoveredFlow.getConnectionIds().get(0).getDestinationCEPId());
+		Assert.assertEquals(flow.getConnectionIds().get(0).getSourceCEPId(), recoveredFlow.getConnectionIds().get(0).getSourceCEPId());
+		Assert.assertEquals(flow.getConnectionIds().get(0).getQosId(), recoveredFlow.getConnectionIds().get(0).getQosId());
 		Assert.assertEquals(flow.getSourceAddress(), recoveredFlow.getSourceAddress());
 		Assert.assertEquals(flow.getSourceNamingInfo(), recoveredFlow.getSourceNamingInfo());
 		Assert.assertEquals(flow.getSourcePortId(), recoveredFlow.getSourcePortId());
+		Assert.assertEquals(flow.getPolicies().get("policyname1"), recoveredFlow.getPolicies().get("policyname1"));
 		
 		serializedFlow = flowSerializer.encode(flow2);
 		for(int i=0; i<serializedFlow.length; i++){

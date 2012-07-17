@@ -69,11 +69,9 @@ public class TestController implements SDUListener, FlowListener{
 	 */
 	private long epochTimeFirstSDUReceived = 0;
 	private long epochTimeLastSDUReceived = 0;
-	private int completedSends = 0;
 	
 	private long epochTimeFirstSDUSent = 0;
 	private long epochTimeLastSDUSent = 0;
-	private int completedReceives = 0;
 	
 	public TestController(ApplicationProcessNamingInfo dataApNamingInfo, Flow flow,
 			CDAPSessionManager cdapSessionManager){
@@ -179,26 +177,11 @@ public class TestController implements SDUListener, FlowListener{
 		printMessage("Started test execution");
 	}
 	
-	private void handleStopMessageReceived(CDAPMessage cdapMessage){
+	private synchronized void handleStopMessageReceived(CDAPMessage cdapMessage){
 		if (this.state != State.EXECUTING){
 			printMessage("Received STOP Test message while not in EXECUTING state." + 
 			" Ignoring it.");
 			return;
-		}
-		
-		int counter = 0;
-		while (this.epochTimeLastSDUReceived == 0 || this.epochTimeLastSDUSent == 0){
-			if (counter >=10){
-				break;
-			}
-			
-			try{
-				printMessage("Waiting for the last SDU sent/received value");
-				Thread.sleep(100);
-				counter ++;
-			}catch(Exception ex){
-				ex.printStackTrace();
-			}
 		}
 		
 		//1 Write statistics as response and print the stats
@@ -271,32 +254,22 @@ public class TestController implements SDUListener, FlowListener{
 	}
 	
 	public synchronized void setLastSDUSent(long epochTime){
-		this.completedSends++;
-		if (this.completedSends == this.testInformation.getNumberOfFlows()){
-			this.epochTimeLastSDUSent = epochTime;
-			printMessage("Set last SDU sent time: "+epochTime);
-		}
+		this.epochTimeLastSDUSent = epochTime;
 	}
 	
 	public synchronized void setLastSDUReceived(long epochTime){
-		this.completedReceives++;
-		if (this.completedReceives == this.testInformation.getNumberOfFlows()){
-			this.epochTimeLastSDUReceived = epochTime;
-			printMessage("Set last SDU received time: "+epochTime);
-		}
+		this.epochTimeLastSDUReceived = epochTime;
 	}
 	
 	public synchronized void setFirstSDUSent(long epochTime){
 		if (this.epochTimeFirstSDUSent == 0){
 			this.epochTimeFirstSDUSent = epochTime;
-			printMessage("Set first SDU sent time: "+epochTime);
 		}
 	}
 	
 	public synchronized void setFirstSDUReveived(long epochTime){
 		if (this.epochTimeFirstSDUReceived == 0){
 			this.epochTimeFirstSDUReceived = epochTime;
-			printMessage("Set first SDU received time: "+epochTime);
 		}
 	}
 

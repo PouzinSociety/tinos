@@ -2,7 +2,6 @@ package rina.applibrary.api;
 
 import java.net.Socket;
 
-import rina.cdap.api.message.CDAPMessage;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.QualityOfServiceSpecification;
@@ -44,7 +43,6 @@ public interface FlowImpl {
 	
 	/**
 	 * Causes the flow to be terminated. All the resources associated to it will be deallocated 
-	 * @throws IPCException
 	 */
 	public void deallocate() throws IPCException;
 	
@@ -55,13 +53,6 @@ public interface FlowImpl {
 	 * @throws IPCException if the FlowImpl object socket was already created
 	 */
 	public void setSocket(Socket socket) throws IPCException;
-	
-	/**
-	 * Invoked by the thread reading the socket when a deallocate request is 
-	 * received
-	 * @param cdapMessage
-	 */
-	public void deallocateReceived(CDAPMessage cdapMessage);
 	
 	/**
 	 * Invoked when the socketReader detects that the socket 

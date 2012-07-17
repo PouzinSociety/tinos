@@ -5,6 +5,7 @@ import java.net.Socket;
 import rina.cdap.api.message.CDAPMessage;
 import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.DirectoryForwardingTable;
+import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 
@@ -48,12 +49,12 @@ public class MockFlowAllocator extends BaseFlowAllocator{
 		
 	}
 
-	public int submitAllocateRequest(FlowService arg0) throws IPCException {
+	public int submitAllocateRequest(FlowService arg0, APService apService) throws IPCException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
-	public void submitAllocateResponse(int arg0, boolean arg1, String arg2)
+	public void submitAllocateResponse(int arg0, boolean arg1, String arg2, APService applicationCallback)
 			throws IPCException {
 		// TODO Auto-generated method stub
 		

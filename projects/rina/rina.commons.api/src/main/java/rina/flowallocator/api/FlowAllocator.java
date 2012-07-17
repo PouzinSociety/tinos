@@ -4,6 +4,7 @@ import java.net.Socket;
 
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcessComponent;
+import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 
@@ -33,15 +34,17 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * @throws IPCException if the request is not well formed or there are not enough resources
 	 * to honour the request
 	 */
-	public int submitAllocateRequest(FlowService allocateRequest) throws IPCException;
+	public int submitAllocateRequest(FlowService allocateRequest, APService application) throws IPCException;
 	
 	/**
 	 * Forward the allocate response to the Flow Allocator Instance.
 	 * @param portId the portId associated to the allocate response
 	 * @param success successful or unsucessful allocate request
+	 * @param reason
+	 * @param application the callback to invoke the application for any call
 	 * @throws IPCException
 	 */
-	public void submitAllocateResponse(int portId, boolean success, String reason) throws IPCException;
+	public void submitAllocateResponse(int portId, boolean success, String reason, APService applicationCallback) throws IPCException;
 	
 	/**
 	 * Forward the deallocate request to the Flow Allocator Instance.
@@ -100,16 +103,4 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * @throws IPCException
 	 */
 	public void receivedDeallocateLocalFlowRequest(int portId) throws IPCException;
-	
-	/* Temporary, just for the RINA over TCP prototype */
-	
-	/**
-	 * Sends an SDU through the flow identified by portId
-	 * This function is just for the RINA prototype over TCP. When DTP and DTCP are implemented
-	 * this operation will be removed from here.
-	 * @param portId
-	 * @param sdu
-	 * @throws IPCException
-	 */
-	public void submitTransfer(int portId, byte[] sdu) throws IPCException;
 }

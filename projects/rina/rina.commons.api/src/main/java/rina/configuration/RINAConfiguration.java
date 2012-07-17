@@ -178,6 +178,20 @@ public class RINAConfiguration {
 		return null;
 	}
 	
+	public IPCProcessToCreate getIPCProcessToCreate(String apName, String apInstance){
+		IPCProcessToCreate result = null;
+		
+		for(int i=0; i<this.getIpcProcessesToCreate().size(); i++){
+			result = this.getIpcProcessesToCreate().get(i);
+			if (result.getApplicationProcessName().equals(apName) && 
+					result.getApplicationProcessInstance().equals(apInstance)){
+				return result;
+			}
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Get the RMT port number of the IPC Process whose address is "address"
 	 * @param address
