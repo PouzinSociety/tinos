@@ -27,13 +27,7 @@ public class MockDataTransferAE extends BaseDataTransferAE{
 		// TODO Auto-generated method stub
 		
 	}
-
-	@Override
-	public void postSDU(int arg0, byte[] arg1) {
-		// TODO Auto-generated method stub
-		
-	}
-
+	
 	@Override
 	public int[] reserveCEPIds(int arg0, int arg1) {
 		// TODO Auto-generated method stub

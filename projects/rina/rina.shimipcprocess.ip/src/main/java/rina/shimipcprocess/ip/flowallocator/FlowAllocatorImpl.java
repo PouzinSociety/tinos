@@ -16,6 +16,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
+import rina.aux.BlockingQueueSet;
 import rina.cdap.api.message.CDAPMessage;
 import rina.delimiting.api.Delimiter;
 import rina.flowallocator.api.BaseFlowAllocator;
@@ -45,6 +46,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	public static final String APPLICATION_ALREADY_REGISTERED = "Application already registered.";
 	public static final String APPLICATION_NOT_REGISTERED = "The application was not registered.";
 	public static final int MAX_PACKETS_IN_UNRELIABLE_QUEUE = 1000;
+	public static final int INCOMING_FLOW_QUEUE_CAPACITY = 100;
 	
 	/**
 	 * The expected application registrations (map app name to socket number)
@@ -103,6 +105,17 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 */
 	private IPCProcess ipcProcess = null;
 	
+	/**
+	 * The runnable that reads the incoming flow queues and 
+	 * dispatches the SDUs following a certain QoS cryteria
+	 */
+	private IncomingFlowQueuesReader incomingFlowQueuesReader = null;
+	
+	/**
+	 * The incoming flow queues
+	 */
+	private BlockingQueueSet incomingFlowQueues = null;
+	
 	public FlowAllocatorImpl(String hostName, Delimiter delimiter, IPCManager ipcManager, ShimIPCProcessForIPLayers ipcProcess){
 		this.hostName = hostName;
 		this.expectedApplicationRegistrations = new ConcurrentHashMap<String, Integer>();
@@ -114,6 +127,9 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		this.timer = new Timer();
 		this.ipcManager = ipcManager;
 		this.ipcProcess = ipcProcess;
+		this.incomingFlowQueues = ipcProcess.getIncomingFlowQueues();
+		this.incomingFlowQueuesReader = new IncomingFlowQueuesReader(this.incomingFlowQueues, flows, delimiter);
+		this.ipcManager.execute(incomingFlowQueuesReader);
 		
 		//Create QoS cubes
 		this.qosCubes = new ArrayList<QoSCube>();
@@ -132,6 +148,11 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		qosCube.setPartialDelivery(false);
 		qosCube.setUndetectedBitErrorRate(new Double("1.0E-9"));
 		this.qosCubes.add(qosCube);
+	}
+	
+	public void stop(){
+		super.stop();
+		this.incomingFlowQueuesReader.stop();
 	}
 	
 	public List<QoSCube> getQoSCubes(){
@@ -319,6 +340,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		}
 		
 		flowState.setState(State.ALLOCATED);
+		this.incomingFlowQueues.addDataQueue(new Integer(portId), new ArrayBlockingQueue<byte[]>(INCOMING_FLOW_QUEUE_CAPACITY));
 		return portId;
 	}
 	
@@ -330,7 +352,9 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		FlowState flowState = null;
 		
 		synchronized(this.flows){
-			flowState = this.flows.remove(new Integer(portId));
+			Integer iPortId = new Integer(portId);
+			flowState = this.flows.remove(iPortId);
+			this.incomingFlowQueues.removeDataQueue(iPortId);
 		}
 		
 		if (flowState != null){
@@ -510,6 +534,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		
 		flowState.setApplicationCallback(applicationCallback);
 		flowState.setState(State.ALLOCATED);
+		this.incomingFlowQueues.addDataQueue(new Integer(portId), new ArrayBlockingQueue<byte[]>(INCOMING_FLOW_QUEUE_CAPACITY));
 	}
 	
 	private void submitAllocateResponseForReliableFlow(Socket socket, APService applicationCallback, int portId){
@@ -533,7 +558,9 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		FlowState flowState = null;
 		
 		synchronized(this.flows){
-			flowState = this.flows.remove(new Integer(portId));
+			Integer iPortId = new Integer(portId);
+			flowState = this.flows.remove(iPortId);
+			this.incomingFlowQueues.removeDataQueue(iPortId);
 		}
 		
 		if (flowState != null){
@@ -550,41 +577,6 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 				}
 			}catch(Exception ex){
 			}
-		}
-	}
-	
-	public void submitTransfer(int portId, byte[] sdu) throws IPCException {
-		FlowState flowState = null;
-		DatagramPacket datagramPacket = null;
-		
-		synchronized(this.flows){
-			flowState = this.flows.get(new Integer(portId));
-		}
-		
-		if (flowState == null){
-			throw new IPCException(IPCException.PROBLEMS_SENDING_SDU_CODE, 
-					IPCException.PROBLEMS_SENDING_SDU + ". Could not find state associated to portId "+portId);
-		}
-		
-		try{
-			if (flowState.getSocket() != null){
-				flowState.getSocket().getOutputStream().write(delimiter.getDelimitedSdu(sdu));
-			}else if (flowState.getBlockingQueueReader() != null){
-				//Reusing the UDP server socket
-				datagramPacket = new DatagramPacket(sdu, sdu.length);
-				datagramPacket.setAddress(InetAddress.getByName(
-						flowState.getFlowService().getSourceAPNamingInfo().getApplicationProcessName()));
-				datagramPacket.setPort(Integer.parseInt(
-						flowState.getFlowService().getSourceAPNamingInfo().getApplicationProcessInstance()));
-				flowState.getDatagramSocket().send(datagramPacket);
-			}else{
-				//Dedicated and already connected UDP socket
-				datagramPacket = new DatagramPacket(sdu, sdu.length);
-				flowState.getDatagramSocket().send(datagramPacket);
-			}
-		}catch(Exception ex){
-			throw new IPCException(IPCException.PROBLEMS_SENDING_SDU_CODE, 
-					IPCException.PROBLEMS_SENDING_SDU + ex.getMessage());
 		}
 	}
 

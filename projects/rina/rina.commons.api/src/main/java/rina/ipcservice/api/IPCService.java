@@ -1,12 +1,17 @@
 package rina.ipcservice.api;
 
+import java.util.concurrent.BlockingQueue;
+
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
+import rina.aux.BlockingQueueSet;
 
 /** 
  * Implements the IPC API for the part of the requested application
  */
 
 public interface IPCService {
+	
+	public enum FlowState {BLOCKED, AVAILABLE};
 	
 	/**
 	 * This primitive is invoked by an Application Process to request the allocation of 
@@ -28,19 +33,37 @@ public interface IPCService {
 	public void submitDeallocate(int portId) throws IPCException;
 	
 	/**
-	 * Write an SDU to the portId
+	 * Write an SDU to the flow identified by portId. This 
+	 * operation will block if the flow is not available for transmitting
+	 * (because the queue is full).
 	 * @param portId
 	 * @param sdu
-	 * @throws IPCException
+	 * @throws IPCException if the flow doesn't exist
 	 */
 	public void submitTransfer(int portId, byte[] sdu) throws IPCException;
 	
 	/**
-	 * This primitive is invoked at any time by the Application any time it wishes to 
-	 * obtain a status on the flow.
-	 * @param port_id
+	 * Returns true if an SDU can be posted to the Flow identified by portId, 
+	 * false if the flow is blocked (because the queue is full).
+	 * @param portId
+	 * @return
+	 * @throws IPCException if no flow identified by portId exists
 	 */
-	public void submitStatus(int port_id);
+	public boolean isFlowAvailableForTransfer(int portId) throws IPCException;
+	
+	/**
+	 * Returns the incoming flow queue related to the portId
+	 * @param portId
+	 * @return
+	 * @throws IPCException
+	 */
+	public BlockingQueue<byte[]> getIncomingFlowQueue(int portId) throws IPCException;
+	
+	/**
+	 * Returns the incoming flow queues as a blocking queue set
+	 * @return
+	 */
+	public BlockingQueueSet getIncomingFlowQueues();
 	
 	/**
 	 * This primitive is invoked by the requested Application Process to respond to an allocation 

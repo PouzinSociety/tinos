@@ -55,14 +55,6 @@ public interface DataTransferAE extends IPCProcessComponent {
 	public void deleteConnection(ConnectionId connectionId);
 	
 	/**
-	 * Post an SDU to the portId (will be sent through the connection identified by portId)
-	 * @param portID
-	 * @param sdu
-	 * @throws IPCException
-	 */
-	public void postSDU(int portID, byte[] sdu) throws IPCException;
-	
-	/**
 	 * Sends a delimited 0 length SDU
 	 * @param portId
 	 * @throws IPCException

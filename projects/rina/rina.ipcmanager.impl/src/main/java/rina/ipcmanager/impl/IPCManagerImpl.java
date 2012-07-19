@@ -25,8 +25,6 @@ import rina.configuration.IPCProcessToCreate;
 import rina.configuration.KnownIPCProcessConfiguration;
 import rina.configuration.RINAConfiguration;
 import rina.delimiting.api.DelimiterFactory;
-import rina.efcp.api.BaseDataTransferAE;
-import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.DataTransferConstants;
 import rina.encoding.api.EncoderFactory;
 import rina.enrollment.api.BaseEnrollmentTask;
@@ -360,9 +358,8 @@ public class IPCManagerImpl implements IPCManager{
 	}
 	
 	public void writeDataToFlow(String sourceAPName, String sourceAPInstance, int portId, String data) throws Exception{
-		IPCProcess ipcProcess = getIPCProcess(sourceAPName, sourceAPInstance);
-		DataTransferAE dtae = (DataTransferAE) ipcProcess.getIPCProcessComponent(BaseDataTransferAE.getComponentName());
-		dtae.postSDU(portId, data.getBytes());
+		IPCService ipcService = (IPCService) getIPCProcess(sourceAPName, sourceAPInstance);
+		ipcService.submitTransfer(portId, data.getBytes());
 	}
 	
 	public void deallocateFlow(String sourceAPName, String sourceAPInstance, int portId) throws Exception{

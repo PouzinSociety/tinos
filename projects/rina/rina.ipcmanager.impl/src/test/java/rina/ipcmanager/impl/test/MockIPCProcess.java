@@ -1,6 +1,7 @@
 package rina.ipcmanager.impl.test;
 
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -119,5 +120,18 @@ public class MockIPCProcess extends BaseIPCProcess implements IPCService{
 	public String getApplicationProcessName() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public BlockingQueue<byte[]> getIncomingFlowQueue(int arg0)
+			throws IPCException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean isFlowAvailableForTransfer(int arg0) throws IPCException {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

@@ -1,12 +1,10 @@
 package rina.encoding.impl.googleprotobuf.flow.tests;
 
-import java.util.List;
-
-import rina.cdap.api.CDAPSessionDescriptor;
-import rina.cdap.api.message.CDAPMessage;
-import rina.ipcmanager.api.IPCManager;
+import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcprocess.api.BaseIPCProcess;
-import rina.ribdaemon.api.RIBDaemonException;
+import rina.ipcservice.api.APService;
+import rina.ipcservice.api.FlowService;
+import rina.ipcservice.api.IPCException;
 
 public class FakeIPCProcess extends BaseIPCProcess{
 	
@@ -14,132 +12,51 @@ public class FakeIPCProcess extends BaseIPCProcess{
 		this.addIPCProcessComponent(new FakeDataTransferAE());
 	}
 
-	public void deliverDeallocateRequestToApplicationProcess(int arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void deliverSDUsToApplicationProcess(List<byte[]> arg0, int arg1) {
-		// TODO Auto-generated method stub
-		
-	}
-
+	@Override
 	public void destroy() {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void cancelRead(CDAPMessage arg0, CDAPSessionDescriptor arg1)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void cancelRead(String arg0, String arg1, long arg2, Object arg3)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void create(CDAPMessage arg0, CDAPSessionDescriptor arg1)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void create(String arg0, String arg1, long arg2, Object arg3)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void delete(CDAPMessage arg0, CDAPSessionDescriptor arg1)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void delete(String arg0, String arg1, long arg2, Object arg3)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void read(CDAPMessage arg0, CDAPSessionDescriptor arg1)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public Object read(String arg0, String arg1, long arg2)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void start(CDAPMessage arg0, CDAPSessionDescriptor arg1)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void start(String arg0, String arg1, long arg2, Object arg3)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void stop(CDAPMessage arg0, CDAPSessionDescriptor arg1)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void stop(String arg0, String arg1, long arg2, Object arg3)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void write(CDAPMessage arg0, CDAPSessionDescriptor arg1)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void write(String arg0, String arg1, long arg2, Object arg3)
-			throws RIBDaemonException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public IPCManager getIPCManager() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void setIPCManager(IPCManager arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public Long getAddress() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+	@Override
 	public void execute(Runnable arg0) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public String getApplicationProcessInstance() {
+	@Override
+	public void register(ApplicationProcessNamingInfo arg0, APService arg1)
+			throws IPCException {
 		// TODO Auto-generated method stub
-		return null;
+		
 	}
 
-	public String getApplicationProcessName() {
+	@Override
+	public int submitAllocateRequest(FlowService arg0, APService arg1)
+			throws IPCException {
 		// TODO Auto-generated method stub
-		return null;
+		return 0;
 	}
+
+	@Override
+	public void submitAllocateResponse(int arg0, boolean arg1, String arg2,
+			APService arg3) throws IPCException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void submitDeallocate(int arg0) throws IPCException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void unregister(ApplicationProcessNamingInfo arg0)
+			throws IPCException {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	
 }

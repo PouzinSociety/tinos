@@ -20,6 +20,7 @@ import rina.flowallocator.api.Flow;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.IPCException;
+import rina.ipcservice.api.IPCService;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
@@ -75,6 +76,12 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	 */
 	private long myAddres = -1;
 	
+	/**
+	 * The thread that will read and process SDUs from incoming flows
+	 * (incoming from this IPC Process point of view)
+	 */
+	private IncomingFlowQueuesReader incomingFlowQueuesReader = null;
+	
 	public DataTransferAEImpl(){
 		this.reservedCEPIds = new ConcurrentHashMap<Integer, int[]>();
 		this.reservedCEPIdList = new ArrayList<Integer>();
@@ -90,6 +97,15 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		this.delimiter = (Delimiter) ipcProcess.getIPCProcessComponent(BaseDelimiter.getComponentName());
 		populateRIB(ipcProcess);
 		this.dataTransferConstants = ipcProcess.getDataTransferConstants();
+		this.incomingFlowQueuesReader = new IncomingFlowQueuesReader(((IPCService)ipcProcess).getIncomingFlowQueues(), 
+				portIdToConnectionMapping, delimiter);
+		ipcProcess.getIPCManager().execute(this.incomingFlowQueuesReader);
+	}
+	
+	@Override
+	public void stop(){
+		super.stop();
+		this.incomingFlowQueuesReader.stop();
 	}
 	
 	private void populateRIB(IPCProcess ipcProcess){
@@ -230,51 +246,7 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		
 		return this.myAddres;
 	}
-	
-	/**
-	 * Post an SDU to the portId (will be sent through the connection identified by portId)
-	 * @param portID
-	 * @param sdu
-	 */
-	public void postSDU(int portId, byte[] sdu) throws IPCException{
-		DTAEIState state = this.portIdToConnectionMapping.get(new Integer(portId));
-		if  (state == null){
-			throw new IPCException(IPCException.PROBLEMS_SENDING_SDU_CODE, 
-					IPCException.PROBLEMS_SENDING_SDU + ". No active connection is associated to this portId.");
-		}
-		
-		//This connection is supporting a local flow
-		if (state.isLocal()){
-			DTAEIState state2 = this.portIdToConnectionMapping.get(new Integer(state.getRemotePortId()));
-			if (state2 == null){
-				throw new IPCException(IPCException.PROBLEMS_SENDING_SDU_CODE, 
-						IPCException.PROBLEMS_SENDING_SDU + ". No active connection is associated to this portId.");
-			}
-			state2.getApplicationCallback().deliverTransfer(state.getRemotePortId(), sdu);
-			return;
-		}
-		
-		//Convert the SDU into a PDU and post it to an RMT queue (right now posting it to the socket)
-		byte[] pdu = PDUParser.generatePDU(state.getPreComputedPCI(), 
-				state.getNextSequenceToSend(), 0x81, 0x00, sdu);
-		
-		log.debug("Encoded PDU: \n" + "Destination @: " + state.getDestinationAddress() + " CEPid: "+state.getSourceCEPid() + 
-				" Source @: "+state.getSourceAddress() + " CEPid: "+state.getSourceCEPid() + "\n QoSid: "
-				+ state.getQoSId() + " PDU type: 129 Flags: 00 Sequence Number: " +state.getNextSequenceToSend()); 
-		log.debug("Sending PDU " + printBytes(pdu)+"\n");
-		try{
-			state.getSocket().getOutputStream().write(this.delimiter.getDelimitedSdu(pdu));
-		}catch(IOException ex){
-			log.error(ex);
-			throw new IPCException(IPCException.PROBLEMS_SENDING_SDU_CODE, 
-					IPCException.PROBLEMS_SENDING_SDU + ex.getMessage());
-		}
-		
-		//Update DTAEI state
-		synchronized(state){
-			state.incrementNextSequenceToSend();
-		}
-	}
+
 	
 	/**
 	 * Sends a delimited 0 length SDU
@@ -302,7 +274,7 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	 * @param pdu
 	 */
 	public void pduDelivered(byte[] pdu){
-		log.debug("Received pdu: "+printBytes(pdu) + "\n");
+		//log.debug("Received pdu: "+printBytes(pdu) + "\n");
 		
 		//Parse PCI, see if the PDU is for us
 		long destinationAddress = PDUParser.parseDestinationAddress(pdu);
@@ -315,7 +287,7 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		
 		//Decode the PDU and look for associated state
 		PDU decodedPDU = PDUParser.parsePDU(pdu);
-		log.debug("Decoded pdu:\n"+decodedPDU.toString()+"\n");
+		//log.debug("Decoded pdu:\n"+decodedPDU.toString()+"\n");
 		DTAEIState state = this.connectionStatesByConnectionId.get(new Long(decodedPDU.getConnectionId().getDestinationCEPId()));
 		if (state == null){
 			log.error("Received a PDU with an unrecognized Connection ID: "+decodedPDU.getConnectionId());

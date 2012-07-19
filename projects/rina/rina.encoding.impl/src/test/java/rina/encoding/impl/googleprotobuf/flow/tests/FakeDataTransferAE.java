@@ -35,12 +35,6 @@ public class FakeDataTransferAE extends BaseDataTransferAE{
 	}
 
 	@Override
-	public void postSDU(int arg0, byte[] arg1) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public int[] reserveCEPIds(int arg0, int arg1) {
 		// TODO Auto-generated method stub
 		return null;
