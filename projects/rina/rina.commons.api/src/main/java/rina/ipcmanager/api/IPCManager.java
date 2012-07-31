@@ -40,6 +40,18 @@ public interface IPCManager {
 	 */
 	public void execute(Runnable runnable);
 	
+	/**
+	 * Get a portId available for its use
+	 * @return
+	 */
+	public int getAvailablePortId();
+	
+	/**
+	 * Mark a portId as available to be reused
+	 * @param portId
+	 */
+	public void freePortId(int portId);
+	
 	public CDAPSessionManagerFactory getCDAPSessionManagerFactory();
 	public DelimiterFactory getDelimiterFactory();
 	public EncoderFactory getEncoderFactory();

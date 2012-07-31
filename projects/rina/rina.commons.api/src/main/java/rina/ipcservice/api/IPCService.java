@@ -65,6 +65,13 @@ public interface IPCService {
 	 */
 	public BlockingQueueSet getIncomingFlowQueues();
 	
+	
+	/**
+	 * Returns the outgoing flow queues as a blocking queue set
+	 * @return
+	 */
+	public BlockingQueueSet getOutgoingFlowQueues();
+	
 	/**
 	 * This primitive is invoked by the requested Application Process to respond to an allocation 
 	 * request from IPC. 

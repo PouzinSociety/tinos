@@ -53,7 +53,5 @@ public class MockIPCProcess extends BaseIPCProcess{
 		// TODO Auto-generated method stub
 		
 	}
-
 	
-
 }

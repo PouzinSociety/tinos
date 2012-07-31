@@ -12,6 +12,7 @@ import rina.enrollment.api.Neighbor;
 import rina.flowallocator.api.Flow;
 import rina.flowallocator.api.QoSCube;
 import rina.ipcmanager.api.IPCManager;
+import rina.ipcservice.api.APService;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
@@ -34,14 +35,21 @@ public abstract class BaseIPCProcess implements IPCProcess, IPCService{
 	private IPCManager ipcManager = null;
 	
 	/**
-	 * The queues that contain the incoming each SDUs 
+	 * The queues that contain the incoming SDUs 
 	 * for the different flows, indexed by portId
 	 */
 	private BlockingQueueSet incomingFlowQueues = null;
 	
+	/**
+	 * The queues that contain the ougtoing SDUs for the 
+	 * different flows, indexed by portId
+	 */
+	private BlockingQueueSet outgoingFlowQueues = null;
+	
 	public BaseIPCProcess(){
 		ipcProcessComponents = new ConcurrentHashMap<String, IPCProcessComponent>();
 		this.incomingFlowQueues = new BlockingQueueSet();
+		this.outgoingFlowQueues = new BlockingQueueSet();
 	}
 	
 	public Map<String, IPCProcessComponent> getIPCProcessComponents(){
@@ -69,6 +77,10 @@ public abstract class BaseIPCProcess implements IPCProcess, IPCService{
 	
 	public BlockingQueueSet getIncomingFlowQueues(){
 		return this.incomingFlowQueues;
+	}
+	
+	public BlockingQueueSet getOutgoingFlowQueues(){
+		return this.outgoingFlowQueues;
 	}
 	
 	/**

@@ -1,6 +1,5 @@
 package rina.efcp.impl;
 
-import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +18,6 @@ import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.Flow;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.APService;
-import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
@@ -245,28 +243,6 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		}
 		
 		return this.myAddres;
-	}
-
-	
-	/**
-	 * Sends a delimited 0 length SDU
-	 * @param portId
-	 * @throws IPCException
-	 */
-	public void post0LengthSDU(int portId) throws IPCException{
-		DTAEIState state = this.portIdToConnectionMapping.get(new Integer(portId));
-		if  (state == null || state.isLocal()){
-			throw new IPCException(IPCException.PROBLEMS_SENDING_SDU_CODE, 
-					IPCException.PROBLEMS_SENDING_SDU + ". No active connection is associated to this portId, or the connection is local.");
-		}
-		
-		try{
-			state.getSocket().getOutputStream().write(0);
-		}catch(IOException ex){
-			log.error(ex);
-			throw new IPCException(IPCException.PROBLEMS_SENDING_SDU_CODE, 
-					IPCException.PROBLEMS_SENDING_SDU + ex.getMessage());
-		}
 	}
 	
 	/**

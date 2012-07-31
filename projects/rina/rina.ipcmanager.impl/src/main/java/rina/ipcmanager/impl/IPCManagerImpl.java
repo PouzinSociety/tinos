@@ -76,6 +76,11 @@ public class IPCManagerImpl implements IPCManager{
 	
 	private APServiceTCPServer apServiceTCPServer = null;
 	
+	/**
+	 * The list that contains the portIds that are currently in use
+	 */
+	private List<Integer> portIdsInUse = null;
+	
 	public IPCManagerImpl(){
 		this.ipcProcessFactories = new HashMap<String, IPCProcessFactory>();
 		executorService = Executors.newCachedThreadPool();
@@ -84,6 +89,7 @@ public class IPCManagerImpl implements IPCManager{
 		executorService.execute(console);
 		apServiceTCPServer = new APServiceTCPServer(this);
 		executorService.execute(apServiceTCPServer);
+		this.portIdsInUse = new ArrayList<Integer>();
 		log.debug("IPC Manager started");
 	}
 	
@@ -297,6 +303,39 @@ public class IPCManagerImpl implements IPCManager{
 		}
 		
 		throw new Exception("Could not find IPC Process with AP name: "+apName+" and AP instance: "+apInstance);
+	}
+	
+	/**
+	 * Get a portId available for its use
+	 * @return a positive portId if there's one available, 
+	 * -1 if no free portIds are found
+	 */
+	public int getAvailablePortId(){
+		Integer candidate = null;
+		
+		synchronized(this.portIdsInUse){
+			for(int i=1; i<Integer.MAX_VALUE; i++){
+				candidate = new Integer(i);
+				if (this.portIdsInUse.contains(candidate)){
+					continue;
+				}
+
+				this.portIdsInUse.add(candidate);
+				return i;
+			}
+
+			return -1;
+		}
+	}
+	
+	/**
+	 * Mark a portId as available to be reused
+	 * @param portId
+	 */
+	public void freePortId(int portId){
+		synchronized(this.portIdsInUse){
+			this.portIdsInUse.remove(new Integer(portId));
+		}
 	}
 	
 	public String listIPCProcessesInformation(){

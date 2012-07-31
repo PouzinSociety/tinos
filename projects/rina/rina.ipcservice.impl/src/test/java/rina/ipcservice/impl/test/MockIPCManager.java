@@ -71,4 +71,16 @@ public class MockIPCManager implements IPCManager{
 		return null;
 	}
 
+	@Override
+	public void freePortId(int arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public int getAvailablePortId() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 }

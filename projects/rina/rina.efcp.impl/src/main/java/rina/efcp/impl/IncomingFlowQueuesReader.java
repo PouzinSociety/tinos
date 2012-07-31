@@ -2,6 +2,7 @@ package rina.efcp.impl;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,6 +59,7 @@ public class IncomingFlowQueuesReader implements Runnable{
 	public void run() {
 		Integer portId = null;
 		byte[] sdu = null;
+		BlockingQueue<byte[]> dataQueue = null;
 		
 		while(!end){
 			try{
@@ -65,8 +67,14 @@ public class IncomingFlowQueuesReader implements Runnable{
 				if (portId.intValue() < 0){
 					break;
 				}
-				sdu = this.incomingFlowQueues.getDataQueue(portId).poll();
-				this.processSDU(sdu, portIdToConnectionMapping.get(portId));
+				dataQueue = this.incomingFlowQueues.getDataQueue(portId);
+				if (dataQueue != null){
+					sdu = dataQueue.poll();
+					this.processSDU(sdu, portIdToConnectionMapping.get(portId));
+					log.debug("SDUs waiting in the queue of portId "+portId+": "+dataQueue.size());
+				}else{
+					log.debug("Could not find data queue for flow "+portId);
+				}
 			}catch(Exception ex){
 				log.error("Problems reading the identity of the next queue to read. ", ex);
 			}
@@ -88,6 +96,16 @@ public class IncomingFlowQueuesReader implements Runnable{
 			}
 			state2.getApplicationCallback().deliverTransfer(state.getRemotePortId(), sdu);
 			return;
+		}
+		
+		//The last SDU has been written
+		if (sdu.length == 0){
+			try{
+				state.getSocket().getOutputStream().write(0);
+			}catch(IOException ex){
+				log.error(ex);
+				return;
+			}
 		}
 		
 		//Convert the SDU into a PDU and post it to an RMT queue (right now posting it to the socket)
