@@ -1,22 +1,26 @@
 package rina.shimipcprocess.ip;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
-import rina.ipcservice.api.APService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import rina.ipcmanager.api.IPCManager;
 import rina.shimipcprocess.ip.flowallocator.FlowAllocatorImpl;
 
 public class UDPSocketReader implements Runnable{
 
-	private APService applicationCallback = null;
+	private static final Log log = LogFactory.getLog(UDPSocketReader.class);
+
+	private IPCManager ipcManager = null;
 	private int portId = -1;
 	private FlowAllocatorImpl flowAllocator = null;
 	private DatagramSocket datagramSocket = null;
 	
-	public UDPSocketReader(DatagramSocket datagramSocket, APService applicationCallback, int portId, FlowAllocatorImpl flowAllocator) {
+	public UDPSocketReader(DatagramSocket datagramSocket, IPCManager ipcManager, int portId, FlowAllocatorImpl flowAllocator) {
 		this.datagramSocket = datagramSocket;
-		this.applicationCallback = applicationCallback;
+		this.ipcManager = ipcManager;
 		this.portId = portId;
 		this.flowAllocator = flowAllocator;
 	}
@@ -34,10 +38,10 @@ public class UDPSocketReader implements Runnable{
 					sdu = new byte[datagramPacket.getLength()];
 					System.arraycopy(datagramPacket.getData(), 
 							datagramPacket.getOffset(), sdu, 0, datagramPacket.getLength());
-					this.applicationCallback.deliverTransfer(portId, sdu);
+					this.ipcManager.getOutgoingFlowQueue(this.portId).writeDataToQueue(sdu);
 				}
-			}catch(IOException ex){
-				//TODO what to do?
+			}catch(Exception ex){
+				log.error(ex);
 			}
 		}
 		

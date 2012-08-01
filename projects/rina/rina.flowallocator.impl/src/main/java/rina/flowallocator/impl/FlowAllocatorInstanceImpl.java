@@ -3,12 +3,10 @@ package rina.flowallocator.impl;
 import java.io.DataOutputStream;
 import java.net.Socket;
 import java.util.Timer;
-import java.util.concurrent.ArrayBlockingQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.aux.BlockingQueueSet;
 import rina.cdap.api.CDAPMessageHandler;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
@@ -33,6 +31,7 @@ import rina.flowallocator.impl.timertasks.DeleteEFCPStateTimerTask;
 import rina.flowallocator.impl.timertasks.LastSDUReceivedTimerTask;
 import rina.flowallocator.impl.timertasks.LastSDUSentTimerTask;
 import rina.flowallocator.impl.timertasks.SocketClosedTimerTask;
+import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
@@ -167,14 +166,9 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	private LastSDUReceivedTimerTask lastSDUReceivedTimerTask = null;
 	
 	/**
-	 * The set of queues containing the SDUs from the incoming flows
+	 * The IPC Manager
 	 */
-	private BlockingQueueSet incomingFlowQueues = null;
-	
-	/**
-	 * The set of queues containing the SDUs from the outgoing flows
-	 */
-	private BlockingQueueSet outgoingFlowQueues = null;
+	private IPCManager ipcManager = null;
 	
 	public FlowAllocatorInstanceImpl(IPCProcess ipcProcess, FlowAllocator flowAllocator, CDAPSessionManager cdapSessionManager, int portId){
 		initialize(ipcProcess, flowAllocator, portId);
@@ -184,8 +178,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		this.newFlowRequestPolicy = new NewFlowRequestPolicyImpl();
 		this.allocateLock = new Object();
 		this.dataTrasferAE = (DataTransferAE) ipcProcess.getIPCProcessComponent(BaseDataTransferAE.getComponentName());
-		this.incomingFlowQueues = ((IPCService)ipcProcess).getIncomingFlowQueues();
-		this.outgoingFlowQueues = ((IPCService)ipcProcess).getOutgoingFlowQueues();
+		this.ipcManager = ipcProcess.getIPCManager();
 		log.debug("Created flow allocator instance to manage the flow identified by portId "+portId);
 	}
 	
@@ -444,8 +437,8 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			if (success){
 				try{
 					this.ribDaemon.create(Flow.FLOW_RIB_OBJECT_CLASS, this.objectName, this);
-					this.incomingFlowQueues.addDataQueue(
-							new Integer(this.portId), new ArrayBlockingQueue<byte[]>(10));
+					this.ipcManager.addFlowQueues(portId, 10);
+					this.dataTrasferAE.subscribeToFlow(portId);
 				}catch(Exception ex){
 					ex.printStackTrace();
 				}
@@ -483,8 +476,8 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			this.flow.setState(State.ALLOCATED);
 			
 			//4 Add the flow queue
-			this.incomingFlowQueues.addDataQueue(
-					new Integer(this.portId), new ArrayBlockingQueue<byte[]>(10));
+			this.ipcManager.addFlowQueues(portId, 10);
+			this.dataTrasferAE.subscribeToFlow(portId);
 			
 			//5 Create CDAP response message
 			try{
@@ -533,7 +526,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		}else{
 			try{
 				//1 Send 0-byte SDU to indicate that all the data has already been sent
-				this.incomingFlowQueues.writeDataToQueue(new Integer(portId), new byte[0]);
+				this.ipcManager.getIncomingFlowQueue(portId).writeDataToQueue(new byte[0]);
 
 				//2 Update flow state
 				this.flow.setState(State.LAST_SDU_SENT);
@@ -639,9 +632,9 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			//5 Create an instance of DTP/DTCP and bind it to the port Id
 			this.dataTrasferAE.createConnectionAndBindToPortId(flow, socket, this.applicationCallback);
 			
-			//6 Create the incoming data queue
-			this.incomingFlowQueues.addDataQueue(
-					new Integer(this.portId), new ArrayBlockingQueue<byte[]>(10));
+			//6 Create the incoming and outgoing data queues
+			this.ipcManager.addFlowQueues(portId, 10);
+			this.dataTrasferAE.subscribeToFlow(portId);
 			
 			//7 Create the Flow object in the RIB, start a socket reader and deliver the response to the application
 			log.debug("Successfull create flow message response received for flow "+cdapMessage.getObjName()+".\n "+this.flow.toString());
@@ -673,8 +666,8 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 				this.remotePortId = remotePortId;
 				this.applicationCallback.deliverAllocateResponse(portId, 0, null);
 				this.ribDaemon.create(Flow.FLOW_RIB_OBJECT_CLASS, objectName, this);
-				this.incomingFlowQueues.addDataQueue(
-						new Integer(this.portId), new ArrayBlockingQueue<byte[]>(10));
+				this.ipcManager.addFlowQueues(portId, 10);
+				this.dataTrasferAE.subscribeToFlow(portId);
 			}catch(Exception ex){
 				ex.printStackTrace();
 			}
@@ -704,7 +697,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		
 		//3 Cleanup the remaining state (FAI and EFCP) after 2 MPL
 		DeleteEFCPStateTimerTask deleteEFCPStateTimerTask = new DeleteEFCPStateTimerTask(this.timer, 
-				this.flowAllocator, this.incomingFlowQueues, this.portId, this.flow, this.dataTrasferAE);
+				this.flowAllocator, this.ipcManager, this.portId, this.flow, this.dataTrasferAE);
 		timer.schedule(deleteEFCPStateTimerTask, 2*MAXIMUM_PACKET_LIFETIME_IN_MS);
 	}
 

@@ -3,12 +3,15 @@ package rina.shimipcprocess.ip.flowallocator;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.aux.BlockingQueueSet;
+import rina.aux.QueueSubscriptor;
 import rina.delimiting.api.Delimiter;
+import rina.ipcmanager.api.IPCManager;
 
 /**
  * Reads the incoming flow queues, gets SDUs from them, 
@@ -16,19 +19,24 @@ import rina.delimiting.api.Delimiter;
  * @author eduardgrasa
  *
  */
-public class IncomingFlowQueuesReader implements Runnable{
+public class IncomingFlowQueuesReader implements QueueSubscriptor, Runnable{
 	
 	private static final Log log = LogFactory.getLog(IncomingFlowQueuesReader.class);
 	
 	/**
 	 * The queues from incoming flows
 	 */
-	private BlockingQueueSet incomingFlowQueues = null;
+	private BlockingQueue<Integer> queuesReadyToBeRead = null;
 	
 	/**
 	 * The flow state, including the socket to write to
 	 */
 	private Map<Integer, FlowState> flows = null;
+	
+	/**
+	 * The IPCManager
+	 */
+	private IPCManager ipcManager = null;
 	
 	/**
 	 * The Delimiter instance
@@ -37,9 +45,10 @@ public class IncomingFlowQueuesReader implements Runnable{
 	
 	private boolean end = false;
 	
-	public IncomingFlowQueuesReader(BlockingQueueSet incomingFlowQueues, 
+	public IncomingFlowQueuesReader(IPCManager ipcManager, 
 			Map<Integer, FlowState> flows, Delimiter delimiter){
-		this.incomingFlowQueues = incomingFlowQueues;
+		this.ipcManager = ipcManager;
+		this.queuesReadyToBeRead = new LinkedBlockingQueue<Integer>();
 		this.flows = flows;
 		this.delimiter = delimiter;
 	}
@@ -47,7 +56,7 @@ public class IncomingFlowQueuesReader implements Runnable{
 	public void stop(){
 		this.end = true;
 		try{
-			this.incomingFlowQueues.getDataReadyQueue().put(new Integer(-1));
+			this.queuesReadyToBeRead.put(new Integer(-1));
 		}catch(Exception ex){
 			log.error(ex);
 		}
@@ -62,11 +71,11 @@ public class IncomingFlowQueuesReader implements Runnable{
 		
 		while(!end){
 			try{
-				portId = this.incomingFlowQueues.select();
+				portId = this.queuesReadyToBeRead.take();
 				if (portId < 0){
 					break;
 				}
-				sdu = this.incomingFlowQueues.getDataQueue(portId).poll();
+				sdu = this.ipcManager.getIncomingFlowQueue(portId.intValue()).take();
 				this.processSDU(sdu, flows.get(portId));
 			}catch(Exception ex){
 				log.error("Problems reading the identity of the next queue to read. ", ex);
@@ -100,6 +109,14 @@ public class IncomingFlowQueuesReader implements Runnable{
 			}
 		}catch(Exception ex){
 			log.error("Error processing SDU. ", ex);
+		}
+	}
+
+	public void queueReadyToBeRead(int queueId) {
+		try {
+			this.queuesReadyToBeRead.put(new Integer(queueId));
+		} catch (InterruptedException e) {
+			log.error(e);
 		}
 	}
 

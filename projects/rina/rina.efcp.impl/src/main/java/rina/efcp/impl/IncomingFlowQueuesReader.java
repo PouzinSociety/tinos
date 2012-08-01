@@ -3,12 +3,15 @@ package rina.efcp.impl;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.aux.BlockingQueueSet;
+import rina.aux.QueueSubscriptor;
 import rina.delimiting.api.Delimiter;
+import rina.ipcmanager.api.IPCManager;
+import rina.ipcservice.api.IPCException;
 
 /**
  * Reads the incoming flow queues, gets SDUs from them, 
@@ -16,14 +19,19 @@ import rina.delimiting.api.Delimiter;
  * @author eduardgrasa
  *
  */
-public class IncomingFlowQueuesReader implements Runnable{
+public class IncomingFlowQueuesReader implements Runnable, QueueSubscriptor{
 	
 	private static final Log log = LogFactory.getLog(IncomingFlowQueuesReader.class);
 	
 	/**
+	 * The IPC Manager
+	 */
+	private IPCManager ipcManager = null;
+	
+	/**
 	 * The queues from incoming flows
 	 */
-	private BlockingQueueSet incomingFlowQueues = null;
+	private BlockingQueue<Integer> queuesReadyToBeRead = null;
 	
 	/**
 	 * The mappings of portId to connection
@@ -37,9 +45,10 @@ public class IncomingFlowQueuesReader implements Runnable{
 	
 	private boolean end = false;
 	
-	public IncomingFlowQueuesReader(BlockingQueueSet incomingFlowQueues, 
+	public IncomingFlowQueuesReader(IPCManager ipcManager, 
 			Map<Integer, DTAEIState> portIdToConnectionMapping, Delimiter delimiter){
-		this.incomingFlowQueues = incomingFlowQueues;
+		this.ipcManager = ipcManager;
+		this.queuesReadyToBeRead = new LinkedBlockingQueue<Integer>();
 		this.portIdToConnectionMapping = portIdToConnectionMapping;
 		this.delimiter = delimiter;
 	}
@@ -47,7 +56,7 @@ public class IncomingFlowQueuesReader implements Runnable{
 	public void stop(){
 		this.end = true;
 		try{
-			this.incomingFlowQueues.getDataReadyQueue().put(new Integer(-1));
+			this.queuesReadyToBeRead.put(new Integer(-1));
 		}catch(Exception ex){
 			log.error(ex);
 		}
@@ -59,22 +68,15 @@ public class IncomingFlowQueuesReader implements Runnable{
 	public void run() {
 		Integer portId = null;
 		byte[] sdu = null;
-		BlockingQueue<byte[]> dataQueue = null;
 		
 		while(!end){
 			try{
-				portId = this.incomingFlowQueues.select();
+				portId = this.queuesReadyToBeRead.take().intValue();
 				if (portId.intValue() < 0){
 					break;
 				}
-				dataQueue = this.incomingFlowQueues.getDataQueue(portId);
-				if (dataQueue != null){
-					sdu = dataQueue.poll();
-					this.processSDU(sdu, portIdToConnectionMapping.get(portId));
-					log.debug("SDUs waiting in the queue of portId "+portId+": "+dataQueue.size());
-				}else{
-					log.debug("Could not find data queue for flow "+portId);
-				}
+				sdu = this.ipcManager.getIncomingFlowQueue(portId).take();
+				this.processSDU(sdu, portIdToConnectionMapping.get(portId));
 			}catch(Exception ex){
 				log.error("Problems reading the identity of the next queue to read. ", ex);
 			}
@@ -94,7 +96,13 @@ public class IncomingFlowQueuesReader implements Runnable{
 				log.error("Error processing SDU: Could not find state associated to local flow "+state.getRemotePortId());
 				return;
 			}
-			state2.getApplicationCallback().deliverTransfer(state.getRemotePortId(), sdu);
+			
+			try{
+				this.ipcManager.getOutgoingFlowQueue(state.getRemotePortId()).writeDataToQueue(sdu);
+			}catch(IPCException ex){
+				log.error(ex);
+			}
+			
 			return;
 		}
 		
@@ -136,6 +144,14 @@ public class IncomingFlowQueuesReader implements Runnable{
 		}
 		
 		return result;
+	}
+
+	public void queueReadyToBeRead(int queueId) {
+		try {
+			this.queuesReadyToBeRead.put(new Integer(queueId));
+		} catch (InterruptedException e) {
+			log.error(e);
+		}
 	}
 
 }

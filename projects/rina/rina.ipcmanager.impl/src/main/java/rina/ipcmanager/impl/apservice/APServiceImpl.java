@@ -48,8 +48,11 @@ public class APServiceImpl implements APService{
 	
 	private ApplicationRegistrationState applicationRegistrationState = null;
 	
-	public APServiceImpl(IPCManager ipcManager){
+	private SDUDeliveryService sduDeliveryService = null;
+	
+	public APServiceImpl(IPCManager ipcManager, SDUDeliveryService sduDeliveryService){
 		this.ipcManager = ipcManager;
+		this.sduDeliveryService = sduDeliveryService;
 		cdapSessionManager = ipcManager.getCDAPSessionManagerFactory().createCDAPSessionManager();
 		encoder = ipcManager.getEncoderFactory().createEncoderInstance();
 		delimiter = ipcManager.getDelimiterFactory().createDelimiter(DelimiterFactory.DIF);
@@ -143,6 +146,8 @@ public class APServiceImpl implements APService{
 				ex.printStackTrace();
 				//TODO, what to do?
 			}
+			
+			this.sduDeliveryService.removeSocketToPortIdMapping(portId);
 		}else{
 
 			if (this.applicationRegistrationState == null){
@@ -253,7 +258,7 @@ public class APServiceImpl implements APService{
 		//Connect to the destination application process
 		try{
 			Socket socket = new Socket("localhost", this.applicationRegistrationState.getApplicationRegistration().getSocketNumber());
-			APServiceImpl apServiceImpl = new APServiceImpl(this.ipcManager);
+			APServiceImpl apServiceImpl = new APServiceImpl(this.ipcManager, this.sduDeliveryService);
 			apServiceImpl.setInterDIFDirectory(this.interDIFDirectory);
 			FlowServiceState flowServiceState = new FlowServiceState();
 			flowServiceState.setFlowService(flowService);
@@ -301,6 +306,8 @@ public class APServiceImpl implements APService{
 				flowServiceState.getIpcService().submitAllocateResponse(portId, true, null, this);
 				flowServiceState.setStatus(Status.ALLOCATED);
 				socketReader.setIPCService(flowServiceState.getIpcService());
+				sduDeliveryService.addSocketToPortIdMapping(flowServiceState.getSocket(), portId);
+				ipcManager.getOutgoingFlowQueue(portId).subscribeToQueue(sduDeliveryService);
 			}catch(Exception ex){
 				ex.printStackTrace();
 				//TODO what to do?
@@ -344,6 +351,8 @@ public class APServiceImpl implements APService{
 				try{
 					flowServiceState.setStatus(Status.ALLOCATED);
 					flowServiceState.getTcpSocketReader().setIPCService(flowServiceState.getIpcService());
+					sduDeliveryService.addSocketToPortIdMapping(flowServiceState.getSocket(), portId);
+					ipcManager.getOutgoingFlowQueue(portId).subscribeToQueue(sduDeliveryService);
 					byte[] encodedValue = encoder.encode(flowServiceState.getFlowService());
 					ObjectValue objectValue = new ObjectValue();
 					objectValue.setByteval(encodedValue);
@@ -363,32 +372,6 @@ public class APServiceImpl implements APService{
 				errorMessage.setResultReason(resultReason);
 				sendErrorMessageAndCloseSocket(errorMessage, flowServiceState.getSocket());
 			}
-		}
-	}
-	
-	/**
-	 * Invoked when in the Transfer state to deliver an SDU on this portId. It will encapsulate 
-	 * the SDU in a CDAP M_READ_R message and send it to the application library through the 
-	 * socket associated to this portId.
-	 * @param port_id
-	 * @param sdu
-	 */
-	public void deliverTransfer(int portId, byte[] sdu){
-		if (this.flowServiceState == null){
-			log.warn("Received data from portid " + portId + ", but didn't have any allocated flow on this port");
-			return;
-		}
-		
-		if (!this.flowServiceState.getStatus().equals(FlowServiceState.Status.ALLOCATED)){
-			//TODO, what to do?
-			return;
-		}
-		
-		try{
-			this.flowServiceState.getSocket().getOutputStream().write(delimiter.getDelimitedSdu(sdu));
-		}catch(Exception ex){
-			ex.printStackTrace();
-			//TODO, what to do?
 		}
 	}
 	

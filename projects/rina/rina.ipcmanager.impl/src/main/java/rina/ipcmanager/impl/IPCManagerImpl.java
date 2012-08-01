@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -36,10 +37,13 @@ import rina.flowallocator.api.Flow;
 import rina.idd.api.InterDIFDirectoryFactory;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcmanager.impl.apservice.APServiceTCPServer;
+import rina.ipcmanager.impl.apservice.SDUDeliveryService;
 import rina.ipcmanager.impl.console.IPCManagerConsole;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
+import rina.aux.BlockingQueueWithSubscriptor;
+import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
@@ -81,15 +85,36 @@ public class IPCManagerImpl implements IPCManager{
 	 */
 	private List<Integer> portIdsInUse = null;
 	
+	/**
+	 * The incoming flow queues of all the IPC Processes in this instantiation 
+	 * of the RINA software
+	 */
+	private Map<Integer, BlockingQueueWithSubscriptor> incomingFlowQueues = null;
+	
+	/**
+	 * The outgoing flow queues of all the IPC Processes in this instantiation 
+	 * of the RINA software
+	 */
+	private Map<Integer, BlockingQueueWithSubscriptor> outgoingFlowQueues = null;
+	
+	/**
+	 * the SDU Delivery Service
+	 */
+	private SDUDeliveryService sduDeliveryService = null;
+	
 	public IPCManagerImpl(){
 		this.ipcProcessFactories = new HashMap<String, IPCProcessFactory>();
 		executorService = Executors.newCachedThreadPool();
 		initializeConfiguration();
 		console = new IPCManagerConsole(this);
 		executorService.execute(console);
-		apServiceTCPServer = new APServiceTCPServer(this);
+		sduDeliveryService = new SDUDeliveryService(this);
+		executorService.execute(sduDeliveryService);
+		apServiceTCPServer = new APServiceTCPServer(this, sduDeliveryService);
 		executorService.execute(apServiceTCPServer);
 		this.portIdsInUse = new ArrayList<Integer>();
+		this.incomingFlowQueues = new ConcurrentHashMap<Integer, BlockingQueueWithSubscriptor>();
+		this.outgoingFlowQueues = new ConcurrentHashMap<Integer, BlockingQueueWithSubscriptor>();
 		log.debug("IPC Manager started");
 	}
 	
@@ -336,6 +361,63 @@ public class IPCManagerImpl implements IPCManager{
 		synchronized(this.portIdsInUse){
 			this.portIdsInUse.remove(new Integer(portId));
 		}
+	}
+	
+	/**
+	 * Add an incoming and outgoing flow queues to support the flow identified by portId
+	 * @param portId
+	 * @throws IPCException if the portId is already in use
+	 */
+	public void addFlowQueues(int portId, int capacity) throws IPCException{
+		Integer queueId = new Integer(portId);
+		if (this.incomingFlowQueues.get(queueId) != null || 
+				this.outgoingFlowQueues.get(queueId) != null){
+			throw new IPCException(IPCException.PROBLEMS_ALLOCATING_FLOW_CODE, 
+					IPCException.PROBLEMS_ALLOCATING_FLOW + ". There are existing queues supporting this portId");
+		}
+		
+		this.incomingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor(portId, capacity));
+		this.outgoingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor(portId, capacity));
+	}
+	
+	/**
+	 * Remove the incoming and outgoing flow queues that support the flow identified by portId
+	 * @param portId
+	 */
+	public void removeFlowQueues(int portId){
+		Integer queueId = new Integer(portId);
+		this.incomingFlowQueues.remove(queueId);
+		this.outgoingFlowQueues.remove(queueId);
+	}
+	
+	/**
+	 * Get the incoming queue that supports the flow identified by portId
+	 * @param portId
+	 * @return
+	 * @throws IPCException if there is no incoming queue associated to portId
+	 */
+	public BlockingQueueWithSubscriptor getIncomingFlowQueue(int portId) throws IPCException{
+		BlockingQueueWithSubscriptor result = this.incomingFlowQueues.get(new Integer(portId));
+		if (result == null){
+			throw new IPCException(IPCException.ERROR_CODE, "Could not find the incoming flow queue associated to portId "+portId);
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Get the outgoing queue that supports the flow identified by portId
+	 * @param portId
+	 * @return
+	 * @throws IPCException if there is no outgoing queue associated to portId
+	 */
+	public BlockingQueueWithSubscriptor getOutgoingFlowQueue(int portId) throws IPCException{
+		BlockingQueueWithSubscriptor result = this.outgoingFlowQueues.get(new Integer(portId));
+		if (result == null){
+			throw new IPCException(IPCException.ERROR_CODE, "Could not find the outgoing flow queue associated to portId "+portId);
+		}
+		
+		return result;
 	}
 	
 	public String listIPCProcessesInformation(){

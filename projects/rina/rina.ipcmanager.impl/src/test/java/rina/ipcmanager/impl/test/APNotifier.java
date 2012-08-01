@@ -23,7 +23,7 @@ public class APNotifier implements Runnable{
 			apService.deliverAllocateResponse(flowService.getPortId(), 0, null);
 			break;
 		case DELIVER_TRANSFER:
-			apService.deliverTransfer(flowService.getPortId(), "In Hertford, Hereford, and Hampshire, hurricanes hardly ever happen".getBytes());
+			//apService.deliverTransfer(flowService.getPortId(), "In Hertford, Hereford, and Hampshire, hurricanes hardly ever happen".getBytes());
 			break;
 		default:
 			

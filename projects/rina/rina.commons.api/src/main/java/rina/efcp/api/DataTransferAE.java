@@ -59,4 +59,10 @@ public interface DataTransferAE extends IPCProcessComponent {
 	 * @param pdu
 	 */
 	public void pduDelivered(byte[] pdu);
+	
+	/**
+	 * Subscribe to the incoming flow queue identified by portId
+	 * @param portId the id of the incoming flow queue
+	 */
+	public void subscribeToFlow(int portId) throws IPCException;
 }

@@ -16,7 +16,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
-import rina.aux.BlockingQueueSet;
 import rina.cdap.api.message.CDAPMessage;
 import rina.delimiting.api.Delimiter;
 import rina.flowallocator.api.BaseFlowAllocator;
@@ -111,11 +110,6 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 */
 	private IncomingFlowQueuesReader incomingFlowQueuesReader = null;
 	
-	/**
-	 * The incoming flow queues
-	 */
-	private BlockingQueueSet incomingFlowQueues = null;
-	
 	public FlowAllocatorImpl(String hostName, Delimiter delimiter, IPCManager ipcManager, ShimIPCProcessForIPLayers ipcProcess){
 		this.hostName = hostName;
 		this.expectedApplicationRegistrations = new ConcurrentHashMap<String, Integer>();
@@ -127,8 +121,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		this.timer = new Timer();
 		this.ipcManager = ipcManager;
 		this.ipcProcess = ipcProcess;
-		this.incomingFlowQueues = ipcProcess.getIncomingFlowQueues();
-		this.incomingFlowQueuesReader = new IncomingFlowQueuesReader(this.incomingFlowQueues, flows, delimiter);
+		this.incomingFlowQueuesReader = new IncomingFlowQueuesReader(ipcManager, flows, delimiter);
 		this.ipcManager.execute(incomingFlowQueuesReader);
 		
 		//Create QoS cubes
@@ -317,7 +310,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 				Socket socket = new Socket(directoryEntry.getHostname(), directoryEntry.getPortNumber());
 				flowState.setSocket(socket);
 
-				TCPSocketReader reader = new TCPSocketReader(socket, delimiter, applicationCallback, portId, this);
+				TCPSocketReader reader = new TCPSocketReader(socket, delimiter, ipcManager, portId, this);
 				this.ipcManager.execute(reader);
 				AllocateResponseTimerTask timerTask = new AllocateResponseTimerTask(applicationCallback, portId);
 				timer.schedule(timerTask, 20);
@@ -326,7 +319,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 				datagramSocket.connect(InetAddress.getByName(directoryEntry.getHostname()), directoryEntry.getPortNumber());
 				flowState.setDatagramSocket(datagramSocket);
 				
-				UDPSocketReader reader = new UDPSocketReader(datagramSocket, applicationCallback, portId, this);
+				UDPSocketReader reader = new UDPSocketReader(datagramSocket, ipcManager, portId, this);
 				AllocateResponseTimerTask timerTask = new AllocateResponseTimerTask(applicationCallback, portId);
 				this.ipcManager.execute(reader);
 				timer.schedule(timerTask, 20);
@@ -340,7 +333,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		}
 		
 		flowState.setState(State.ALLOCATED);
-		this.incomingFlowQueues.addDataQueue(new Integer(portId), new ArrayBlockingQueue<byte[]>(INCOMING_FLOW_QUEUE_CAPACITY));
+		this.ipcManager.addFlowQueues(portId, INCOMING_FLOW_QUEUE_CAPACITY);
 		return portId;
 	}
 	
@@ -354,7 +347,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		synchronized(this.flows){
 			Integer iPortId = new Integer(portId);
 			flowState = this.flows.remove(iPortId);
-			this.incomingFlowQueues.removeDataQueue(iPortId);
+			this.ipcManager.removeFlowQueues(portId);
 		}
 		
 		if (flowState != null){
@@ -534,18 +527,19 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		
 		flowState.setApplicationCallback(applicationCallback);
 		flowState.setState(State.ALLOCATED);
-		this.incomingFlowQueues.addDataQueue(new Integer(portId), new ArrayBlockingQueue<byte[]>(INCOMING_FLOW_QUEUE_CAPACITY));
+		this.ipcManager.addFlowQueues(portId, INCOMING_FLOW_QUEUE_CAPACITY);
+		this.ipcManager.getIncomingFlowQueue(portId).subscribeToQueue(this.incomingFlowQueuesReader);
 	}
 	
 	private void submitAllocateResponseForReliableFlow(Socket socket, APService applicationCallback, int portId){
-		TCPSocketReader reader = new TCPSocketReader(socket, delimiter, applicationCallback, portId, this);
+		TCPSocketReader reader = new TCPSocketReader(socket, delimiter, ipcManager, portId, this);
 		this.ipcManager.execute(reader);
 	}
 	
 	private void submitAllocateResponseForUnreliableFlow(FlowState flowState, APService applicationCallback, int portId){
 		BlockinqQueueReader reader = new BlockinqQueueReader(
 				this.unreliableFlowQueues.get(flowState.getBlockingQueueId()), 
-				applicationCallback, portId, this);
+				ipcManager, portId, this);
 		this.ipcManager.execute(reader);
 		flowState.setBlockingQueueReader(reader);
 	}
@@ -560,7 +554,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		synchronized(this.flows){
 			Integer iPortId = new Integer(portId);
 			flowState = this.flows.remove(iPortId);
-			this.incomingFlowQueues.removeDataQueue(iPortId);
+			this.ipcManager.removeFlowQueues(portId);
 		}
 		
 		if (flowState != null){

@@ -16,9 +16,10 @@ import rina.efcp.api.DataTransferConstants;
 import rina.efcp.impl.ribobjects.DataTransferConstantsRIBObject;
 import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.Flow;
+import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.APService;
-import rina.ipcservice.api.IPCService;
+import rina.ipcservice.api.IPCException;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
@@ -80,6 +81,11 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	 */
 	private IncomingFlowQueuesReader incomingFlowQueuesReader = null;
 	
+	/**
+	 * The IPC Manager
+	 */
+	private IPCManager ipcManager = null;
+	
 	public DataTransferAEImpl(){
 		this.reservedCEPIds = new ConcurrentHashMap<Integer, int[]>();
 		this.reservedCEPIdList = new ArrayList<Integer>();
@@ -95,15 +101,24 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		this.delimiter = (Delimiter) ipcProcess.getIPCProcessComponent(BaseDelimiter.getComponentName());
 		populateRIB(ipcProcess);
 		this.dataTransferConstants = ipcProcess.getDataTransferConstants();
-		this.incomingFlowQueuesReader = new IncomingFlowQueuesReader(((IPCService)ipcProcess).getIncomingFlowQueues(), 
+		this.incomingFlowQueuesReader = new IncomingFlowQueuesReader(ipcProcess.getIPCManager(), 
 				portIdToConnectionMapping, delimiter);
-		ipcProcess.getIPCManager().execute(this.incomingFlowQueuesReader);
+		this.ipcManager = ipcProcess.getIPCManager();
+		ipcManager.execute(this.incomingFlowQueuesReader);
 	}
 	
 	@Override
 	public void stop(){
 		super.stop();
 		this.incomingFlowQueuesReader.stop();
+	}
+	
+	/**
+	 * Subscribe to the incoming flow queue identified by portId
+	 * @param portId the id of the incoming flow queue
+	 */
+	public void subscribeToFlow(int portId) throws IPCException{
+		this.ipcManager.getIncomingFlowQueue(portId).subscribeToQueue(this.incomingFlowQueuesReader);
 	}
 	
 	private void populateRIB(IPCProcess ipcProcess){
@@ -271,7 +286,11 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		}
 		
 		//Deliver the PDU to the portId
-		state.getApplicationCallback().deliverTransfer((int)state.getPortId(), decodedPDU.getUserData().get(0));
+		try{
+			this.ipcManager.getOutgoingFlowQueue((int)state.getPortId()).writeDataToQueue(decodedPDU.getUserData().get(0));
+		}catch(Exception ex){
+			log.error(ex);
+		}
 		
 		//Update DTAEI state
 		synchronized(state){

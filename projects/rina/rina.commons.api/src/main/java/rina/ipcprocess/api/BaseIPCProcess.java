@@ -3,7 +3,6 @@ package rina.ipcprocess.api;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
 import rina.applicationprocess.api.WhatevercastName;
@@ -12,11 +11,9 @@ import rina.enrollment.api.Neighbor;
 import rina.flowallocator.api.Flow;
 import rina.flowallocator.api.QoSCube;
 import rina.ipcmanager.api.IPCManager;
-import rina.ipcservice.api.APService;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
-import rina.aux.BlockingQueueSet;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBObject;
@@ -34,22 +31,8 @@ public abstract class BaseIPCProcess implements IPCProcess, IPCService{
 	
 	private IPCManager ipcManager = null;
 	
-	/**
-	 * The queues that contain the incoming SDUs 
-	 * for the different flows, indexed by portId
-	 */
-	private BlockingQueueSet incomingFlowQueues = null;
-	
-	/**
-	 * The queues that contain the ougtoing SDUs for the 
-	 * different flows, indexed by portId
-	 */
-	private BlockingQueueSet outgoingFlowQueues = null;
-	
 	public BaseIPCProcess(){
 		ipcProcessComponents = new ConcurrentHashMap<String, IPCProcessComponent>();
-		this.incomingFlowQueues = new BlockingQueueSet();
-		this.outgoingFlowQueues = new BlockingQueueSet();
 	}
 	
 	public Map<String, IPCProcessComponent> getIPCProcessComponents(){
@@ -75,14 +58,6 @@ public abstract class BaseIPCProcess implements IPCProcess, IPCService{
 		this.ipcProcessComponents = ipcProcessComponents;
 	}
 	
-	public BlockingQueueSet getIncomingFlowQueues(){
-		return this.incomingFlowQueues;
-	}
-	
-	public BlockingQueueSet getOutgoingFlowQueues(){
-		return this.outgoingFlowQueues;
-	}
-	
 	/**
 	 * Write an SDU to the portId
 	 * @param portId
@@ -90,29 +65,7 @@ public abstract class BaseIPCProcess implements IPCProcess, IPCService{
 	 * @throws IPCException
 	 */
 	public void submitTransfer(int portId, byte[] sdu) throws IPCException{
-		this.incomingFlowQueues.writeDataToQueue(new Integer(portId), sdu);
-	}
-	
-	/**
-	 * Returns true if an SDU can be posted to the Flow identified by portId, 
-	 * false if the flow is blocked (because the queue is full).
-	 * @param portId
-	 * @return
-	 * @throws IPCException if no flow identified by portId exists
-	 */
-	public boolean isFlowAvailableForTransfer(int portId) throws IPCException{
-		BlockingQueue<byte[]> incomingFlowQueue = this.getIncomingFlowQueue(portId);
-		return incomingFlowQueue.remainingCapacity() > 0;
-	}
-	
-	public BlockingQueue<byte[]> getIncomingFlowQueue(int portId) throws IPCException{
-		BlockingQueue<byte[]> incomingFlowQueue = this.incomingFlowQueues.getDataQueue(new Integer(portId));
-		if (incomingFlowQueue == null){
-			throw new IPCException(IPCException.PORTID_NOT_IN_TRANSFER_STATE_CODE, 
-					IPCException.PORTID_NOT_IN_TRANSFER_STATE + ". Unknown portId: "+portId);
-		}
-		
-		return incomingFlowQueue;
+		this.ipcManager.getIncomingFlowQueue(portId).writeDataToQueue(sdu);
 	}
 	
 	public void setIPCManager(IPCManager ipcManager){

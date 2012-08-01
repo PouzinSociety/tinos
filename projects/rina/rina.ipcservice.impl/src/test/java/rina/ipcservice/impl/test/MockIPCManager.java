@@ -2,6 +2,7 @@ package rina.ipcservice.impl.test;
 
 import java.util.List;
 
+import rina.aux.BlockingQueueWithSubscriptor;
 import rina.cdap.api.CDAPSessionManagerFactory;
 import rina.delimiting.api.DelimiterFactory;
 import rina.encoding.api.EncoderFactory;
@@ -11,6 +12,7 @@ import rina.idd.api.InterDIFDirectoryFactory;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.APService;
+import rina.ipcservice.api.IPCException;
 
 public class MockIPCManager implements IPCManager{
 
@@ -81,6 +83,32 @@ public class MockIPCManager implements IPCManager{
 	public int getAvailablePortId() {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	@Override
+	public void addFlowQueues(int arg0, int arg1) throws IPCException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public BlockingQueueWithSubscriptor getIncomingFlowQueue(int arg0)
+			throws IPCException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public BlockingQueueWithSubscriptor getOutgoingFlowQueue(int arg0)
+			throws IPCException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void removeFlowQueues(int arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

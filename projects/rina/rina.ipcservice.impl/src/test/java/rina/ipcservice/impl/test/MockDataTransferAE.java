@@ -6,6 +6,7 @@ import rina.efcp.api.BaseDataTransferAE;
 import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.Flow;
 import rina.ipcservice.api.APService;
+import rina.ipcservice.api.IPCException;
 
 public class MockDataTransferAE extends BaseDataTransferAE{
 
@@ -41,6 +42,12 @@ public class MockDataTransferAE extends BaseDataTransferAE{
 
 	@Override
 	public void createLocalConnectionAndBindToPortId(int arg0, int arg1, APService arg2) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void subscribeToFlow(int arg0) throws IPCException {
 		// TODO Auto-generated method stub
 		
 	}

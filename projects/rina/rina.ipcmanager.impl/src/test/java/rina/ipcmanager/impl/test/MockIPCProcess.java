@@ -121,17 +121,4 @@ public class MockIPCProcess extends BaseIPCProcess implements IPCService{
 		// TODO Auto-generated method stub
 		return null;
 	}
-
-	@Override
-	public BlockingQueue<byte[]> getIncomingFlowQueue(int arg0)
-			throws IPCException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean isFlowAvailableForTransfer(int arg0) throws IPCException {
-		// TODO Auto-generated method stub
-		return false;
-	}
 }
