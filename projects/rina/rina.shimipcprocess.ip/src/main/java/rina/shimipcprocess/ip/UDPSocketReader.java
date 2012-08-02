@@ -42,6 +42,9 @@ public class UDPSocketReader implements Runnable{
 				}
 			}catch(Exception ex){
 				log.error(ex);
+				if (datagramSocket.isClosed()){
+					break;
+				}
 			}
 		}
 		

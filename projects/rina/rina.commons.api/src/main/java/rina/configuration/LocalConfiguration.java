@@ -56,6 +56,11 @@ public class LocalConfiguration {
 	 * initiate the enrollment.
 	 */
 	private int neighborsEnrollerPeriodInMs = 10000;
+	
+	/**
+	 * The length of Flow queues
+	 */
+	private int lengthOfFlowQueues = 10;
 
 	public int getConsolePort() {
 		return consolePort;
@@ -127,5 +132,13 @@ public class LocalConfiguration {
 
 	public void setNeighborsEnrollerPeriodInMs(int neighborsEnrollerPeriodInMs) {
 		this.neighborsEnrollerPeriodInMs = neighborsEnrollerPeriodInMs;
+	}
+
+	public int getLengthOfFlowQueues() {
+		return lengthOfFlowQueues;
+	}
+
+	public void setLengthOfFlowQueues(int lengthOfFlowQueues) {
+		this.lengthOfFlowQueues = lengthOfFlowQueues;
 	}
 }

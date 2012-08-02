@@ -17,6 +17,7 @@ import org.apache.commons.logging.LogFactory;
 
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.cdap.api.message.CDAPMessage;
+import rina.configuration.RINAConfiguration;
 import rina.delimiting.api.Delimiter;
 import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.DirectoryForwardingTable;
@@ -45,7 +46,6 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	public static final String APPLICATION_ALREADY_REGISTERED = "Application already registered.";
 	public static final String APPLICATION_NOT_REGISTERED = "The application was not registered.";
 	public static final int MAX_PACKETS_IN_UNRELIABLE_QUEUE = 1000;
-	public static final int INCOMING_FLOW_QUEUE_CAPACITY = 100;
 	
 	/**
 	 * The expected application registrations (map app name to socket number)
@@ -333,7 +333,8 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		}
 		
 		flowState.setState(State.ALLOCATED);
-		this.ipcManager.addFlowQueues(portId, INCOMING_FLOW_QUEUE_CAPACITY);
+		this.ipcManager.addFlowQueues(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
+		this.ipcManager.getIncomingFlowQueue(portId).subscribeToQueue(this.incomingFlowQueuesReader);
 		return portId;
 	}
 	
@@ -527,7 +528,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		
 		flowState.setApplicationCallback(applicationCallback);
 		flowState.setState(State.ALLOCATED);
-		this.ipcManager.addFlowQueues(portId, INCOMING_FLOW_QUEUE_CAPACITY);
+		this.ipcManager.addFlowQueues(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
 		this.ipcManager.getIncomingFlowQueue(portId).subscribeToQueue(this.incomingFlowQueuesReader);
 	}
 	

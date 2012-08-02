@@ -437,7 +437,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			if (success){
 				try{
 					this.ribDaemon.create(Flow.FLOW_RIB_OBJECT_CLASS, this.objectName, this);
-					this.ipcManager.addFlowQueues(portId, 10);
+					this.ipcManager.addFlowQueues(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
 					this.dataTrasferAE.subscribeToFlow(portId);
 				}catch(Exception ex){
 					ex.printStackTrace();
@@ -476,7 +476,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			this.flow.setState(State.ALLOCATED);
 			
 			//4 Add the flow queue
-			this.ipcManager.addFlowQueues(portId, 10);
+			this.ipcManager.addFlowQueues(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
 			this.dataTrasferAE.subscribeToFlow(portId);
 			
 			//5 Create CDAP response message
@@ -633,7 +633,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			this.dataTrasferAE.createConnectionAndBindToPortId(flow, socket, this.applicationCallback);
 			
 			//6 Create the incoming and outgoing data queues
-			this.ipcManager.addFlowQueues(portId, 10);
+			this.ipcManager.addFlowQueues(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
 			this.dataTrasferAE.subscribeToFlow(portId);
 			
 			//7 Create the Flow object in the RIB, start a socket reader and deliver the response to the application
@@ -666,7 +666,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 				this.remotePortId = remotePortId;
 				this.applicationCallback.deliverAllocateResponse(portId, 0, null);
 				this.ribDaemon.create(Flow.FLOW_RIB_OBJECT_CLASS, objectName, this);
-				this.ipcManager.addFlowQueues(portId, 10);
+				this.ipcManager.addFlowQueues(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
 				this.dataTrasferAE.subscribeToFlow(portId);
 			}catch(Exception ex){
 				ex.printStackTrace();
