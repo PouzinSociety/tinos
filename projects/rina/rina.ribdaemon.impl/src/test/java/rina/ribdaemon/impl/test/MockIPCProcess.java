@@ -7,6 +7,10 @@ import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 
 public class MockIPCProcess extends BaseIPCProcess{
+	
+	public MockIPCProcess(){
+		super(IPCProcessType.FAKE);
+	}
 
 	@Override
 	public void destroy() {

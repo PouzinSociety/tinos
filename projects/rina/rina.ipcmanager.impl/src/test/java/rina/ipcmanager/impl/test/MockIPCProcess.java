@@ -1,7 +1,6 @@
 package rina.ipcmanager.impl.test;
 
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -26,6 +25,7 @@ public class MockIPCProcess extends BaseIPCProcess implements IPCService{
 	private ExecutorService executorService = null;
 	
 	public MockIPCProcess(){
+		super(IPCProcessType.FAKE);
 		executorService = Executors.newFixedThreadPool(2);
 	}
 	

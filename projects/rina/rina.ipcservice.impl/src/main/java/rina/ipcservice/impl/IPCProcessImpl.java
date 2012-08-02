@@ -44,7 +44,7 @@ public class IPCProcessImpl extends BaseIPCProcess{
 	private FlowAllocator flowAllocator = null;
 
 	public IPCProcessImpl(String applicationProcessName, String applicationProcessInstance, RIBDaemon ribDaemon){
-		super();
+		super(IPCProcessType.NORMAL);
 		this.ribDaemon = ribDaemon;
 		populateRIB(applicationProcessName, applicationProcessInstance);
 	}

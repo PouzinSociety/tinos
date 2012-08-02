@@ -58,7 +58,7 @@ public class ShimIPCProcessForIPLayers extends BaseIPCProcess implements IPCServ
 	private RIBDaemon ribDaemon = null;
 	
 	public ShimIPCProcessForIPLayers(ApplicationProcessNamingInfo apNamingInfo, String hostName, String difName, Delimiter delimiter, IPCManager ipcManager){
-		super();
+		super(IPCProcessType.SHIM_IP);
 		this.apNamingInfo = apNamingInfo;
 		this.hostName = hostName;
 		this.difName = difName;

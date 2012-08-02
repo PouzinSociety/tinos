@@ -31,8 +31,19 @@ public abstract class BaseIPCProcess implements IPCProcess, IPCService{
 	
 	private IPCManager ipcManager = null;
 	
-	public BaseIPCProcess(){
+	private IPCProcessType ipcProcessType = null;
+	
+	public BaseIPCProcess(IPCProcessType ipcProcessType){
+		this.ipcProcessType = ipcProcessType;
 		ipcProcessComponents = new ConcurrentHashMap<String, IPCProcessComponent>();
+	}
+	
+	/**
+	 * Return the type of the IPC Process
+	 * @return
+	 */
+	public IPCProcessType getType(){
+		return this.ipcProcessType;
 	}
 	
 	public Map<String, IPCProcessComponent> getIPCProcessComponents(){

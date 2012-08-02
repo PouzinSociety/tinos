@@ -11,6 +11,7 @@ import rina.ipcservice.api.IPCException;
 public class FakeIPCProcess extends BaseIPCProcess {
 	
 	public FakeIPCProcess(){
+		super(IPCProcessType.FAKE);
 		this.addIPCProcessComponent(new FakeRIBDaemon());
 		DelimiterFactory delimiterFactory = new DelimiterFactoryImpl();
 		this.addIPCProcessComponent(delimiterFactory.createDelimiter(DelimiterFactory.DIF));
