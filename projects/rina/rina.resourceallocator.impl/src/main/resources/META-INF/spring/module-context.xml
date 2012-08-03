@@ -4,5 +4,5 @@
 			http://www.springframework.org/schema/beans
 			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-	<bean name="flowAllocatorFactoryBean" class="rina.flowallocator.impl.FlowAllocatorFactoryImpl"/>
+	<bean name="resourceAllocatorFactoryBean" class="rina.resourceallocator.impl.ResourceAllocatorFactoryImpl"/>
 </beans>

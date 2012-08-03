@@ -1,6 +1,9 @@
-package rina.resourceallocator.api;
+package rina.resourceallocator.impl;
 
-import rina.ipcprocess.api.IPCProcessComponent;
+import rina.ipcprocess.api.IPCProcess;
+import rina.resourceallocator.api.BaseResourceAllocator;
+import rina.resourceallocator.api.NMinus1FlowManager;
+import rina.resourceallocator.impl.flowmanager.NMinus1FlowManagerImpl;
 
 /**
  * The Resource Allocator (RA) is the core of management in the IPC Process. 
@@ -22,12 +25,21 @@ import rina.ipcprocess.api.IPCProcessComponent;
  * @author eduardgrasa
  *
  */
-public interface ResourceAllocator extends IPCProcessComponent{
+public class ResourceAllocatorImpl extends BaseResourceAllocator{
+	
+	private NMinus1FlowManagerImpl nMinus1FlowManager = null;
 
-	/**
-	 * Returns the N-1 Flow Manager of this IPC Process
-	 * @return
-	 */
-	public NMinus1FlowManager getNMinus1FlowManager();
+	public ResourceAllocatorImpl(){
+		nMinus1FlowManager = new NMinus1FlowManagerImpl();
+	}
+	
+	public NMinus1FlowManager getNMinus1FlowManager() {
+		return this.nMinus1FlowManager;
+	}
+	
+	public void setIPCProcess(IPCProcess ipcProcess){
+		super.setIPCProcess(ipcProcess);
+		this.nMinus1FlowManager.setIPCProcess(ipcProcess);
+	}
 
 }

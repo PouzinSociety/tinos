@@ -6,10 +6,16 @@ import java.util.TimerTask;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.events.api.events.NMinusOneFlowAllocatedEvent;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCService;
 import rina.resourceallocator.impl.flowmanager.FlowServiceState.Status;
+import rina.resourceallocator.impl.ribobjects.NMinus1FlowRIBObject;
+import rina.resourceallocator.impl.ribobjects.NMinus1FlowSetRIBObject;
+import rina.ribdaemon.api.RIBDaemon;
+import rina.ribdaemon.api.RIBDaemonException;
+import rina.ribdaemon.api.RIBObjectNames;
 
 public class DeliverAllocateResponseTimerTask extends TimerTask{
 
@@ -19,13 +25,15 @@ public class DeliverAllocateResponseTimerTask extends TimerTask{
 	private FlowService flowService = null;
 	private Map<Integer, FlowServiceState> flowServiceStates = null;
 	private APService apService = null;
+	private RIBDaemon ribDaemon = null;
 	
 	public DeliverAllocateResponseTimerTask(IPCService ipcService, FlowService flowService, Map<Integer, 
-			FlowServiceState> flowServiceStates, APService apService){
+			FlowServiceState> flowServiceStates, APService apService, RIBDaemon ribDaemon){
 		this.ipcService = ipcService;
 		this.flowService = flowService;
 		this.flowServiceStates = flowServiceStates;
 		this.apService = apService;
+		this.ribDaemon = ribDaemon;
 	}
 	
 	@Override
@@ -38,7 +46,17 @@ public class DeliverAllocateResponseTimerTask extends TimerTask{
 			flowServiceState.setStatus(Status.ALLOCATED);
 			this.flowServiceStates.put(new Integer(flowService.getPortId()), flowServiceState);
 			
-			//TODO Notify about the event
+			try{
+				this.ribDaemon.create(NMinus1FlowRIBObject.N_MINUS_ONE_FLOW_RIB_OBJECT_CLASS, 
+						NMinus1FlowSetRIBObject.N_MINUS_ONE_FLOW_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + flowService.getPortId(), 
+						flowService);
+			}catch(RIBDaemonException ex){
+				log.warn("Error creting N Minus One Flow RIB Object", ex);
+			}
+			
+			//Notify about the event
+			NMinusOneFlowAllocatedEvent event = new NMinusOneFlowAllocatedEvent(flowService.getPortId(), flowService);
+			this.ribDaemon.deliverEvent(event);
 		}catch(Exception ex){
 			log.error("Problems submiting allocate response for N-1 flow identified by portId "+flowService.getPortId()+". "+ex);
 		}

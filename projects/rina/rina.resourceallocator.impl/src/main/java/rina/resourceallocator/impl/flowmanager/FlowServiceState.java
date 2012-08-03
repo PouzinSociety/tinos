@@ -1,6 +1,5 @@
 package rina.resourceallocator.impl.flowmanager;
 
-import rina.cdap.api.message.CDAPMessage;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCService;
 

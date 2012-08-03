@@ -8,10 +8,10 @@
        http://www.springframework.org/schema/beans   
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-	<!--  Export the flowAllocatorFactory to the OSGi registry-->
-    <osgi:service id="flowAllocatorFactory" ref="flowAllocatorFactoryBean">
+	<!--  Export the resourceAllocatorFactory to the OSGi registry-->
+    <osgi:service id="resourceAllocatorFactory" ref="resourceAllocatorFactoryBean">
      	<osgi:interfaces>
- 			<value>rina.flowallocator.api.FlowAllocatorFactory</value>
+ 			<value>rina.resourceallocator.api.ResourceAllocatorFactory</value>
  		</osgi:interfaces>
     </osgi:service>
 </beans>           

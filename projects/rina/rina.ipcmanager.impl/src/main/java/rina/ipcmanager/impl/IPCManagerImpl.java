@@ -45,6 +45,8 @@ import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.aux.BlockingQueueWithSubscriptor;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
+import rina.resourceallocator.api.BaseResourceAllocator;
+import rina.resourceallocator.api.ResourceAllocator;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBObject;
@@ -232,7 +234,7 @@ public class IPCManagerImpl implements IPCManager{
 			try{
 				this.createIPCProcess(currentProcess.getType(), currentProcess.getApplicationProcessName(), 
 						currentProcess.getApplicationProcessInstance(), currentProcess.getDifName(), 
-						rinaConfiguration, currentProcess.getNeighbors());
+						rinaConfiguration, currentProcess.getNeighbors(), currentProcess.getDifsToRegisterAt());
 			}catch(Exception ex){
 				log.error(ex);
 			}
@@ -240,7 +242,7 @@ public class IPCManagerImpl implements IPCManager{
 	}
 
 	public void createIPCProcess(String type, String apName, String apInstance, String difName, 
-			RINAConfiguration config, List<Neighbor> neighbors) throws Exception{
+			RINAConfiguration config, List<Neighbor> neighbors, List<String> difsToRegisterAt) throws Exception{
 		IPCProcessFactory ipcProcessFactory = this.ipcProcessFactories.get(type);
 		if (ipcProcessFactory == null){
 			throw new Exception("Unsupported IPC Process type: "+type);
@@ -295,6 +297,17 @@ public class IPCManagerImpl implements IPCManager{
 
 				RMT rmt = (RMT) ipcProcess.getIPCProcessComponent(BaseRMT.getComponentName());
 				rmt.startListening();
+			}
+			
+			if (difsToRegisterAt != null){
+				ResourceAllocator resourceAllocator = (ResourceAllocator) ipcProcess.getIPCProcessComponent(BaseResourceAllocator.getComponentName());
+				for(int i=0; i<difsToRegisterAt.size(); i++){
+					try{
+						resourceAllocator.getNMinus1FlowManager().registerIPCProcess(difsToRegisterAt.get(i));
+					}catch(IPCException ex){
+						log.error("Error registering IPC Process "+apName+" "+apInstance+" to N-1 DIF "+difsToRegisterAt);
+					}
+				}
 			}
 		}
 	}

@@ -1,7 +1,5 @@
 package rina.resourceallocator.api;
 
-import java.util.List;
-
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 
@@ -29,8 +27,8 @@ public interface NMinus1FlowManager {
 	
 	/**
 	 * Register the IPC Process to one or more N-1 DIFs
-	 * @param difNames The list of N-1 DIFs where this IPC Process will register
+	 * @param difName The N-1 DIF where this IPC Process will register
 	 * @throws IPCException
 	 */
-	public void registerIPCProcess(List<String> difNames) throws IPCException;
+	public void registerIPCProcess(String difName) throws IPCException;
 }

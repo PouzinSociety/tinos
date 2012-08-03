@@ -11,22 +11,23 @@
     "lengthOfFlowQueues" : 10 
   },
   "ipcProcessesToCreate" : [ {
-    "type" : "normal",
-  	"applicationProcessName" : "Barcelona.i2CAT",
-  	"applicationProcessInstance" : "1",
-  	"difName" : "RINA-Demo.DIF",
-  	"neighbors" : [ {
-  	  "applicationProcessName" : "Castefa.i2CAT",
-  	  "applicationProcessInstance" : "1",
-  	  "address" : "65"
-  	} ]
-  },{
-  	"type" : "shimip",
-    "applicationProcessName" : "Barcelona.i2CAT.PublicInternet",
-  	"applicationProcessInstance" : "1",
-  	"difName" : "PublicInternet.DIF",
-  	"hostname" : "84.88.40.70"
-  } ],
+  		"type" : "shimip",
+    	"applicationProcessName" : "Barcelona.i2CAT.PublicInternet",
+  		"applicationProcessInstance" : "1",
+  		"difName" : "PublicInternet.DIF",
+  		"hostname" : "84.88.40.70"
+    }, {
+    	"type" : "normal",
+  		"applicationProcessName" : "Barcelona.i2CAT",
+  		"applicationProcessInstance" : "1",
+  		"difName" : "RINA-Demo.DIF",
+  		"neighbors" : [ {
+  		  "applicationProcessName" : "Castefa.i2CAT",
+  	 	  "applicationProcessInstance" : "1",
+  	  	"address" : "65"
+  	    } ],
+  		"difsToRegisterAt" : ["PublicInternet.DIF"]
+   }],
   "difConfigurations" : [ {
     "difName" : "RINA-Demo.DIF",
     "dataTransferConstants" : {
@@ -72,26 +73,26 @@
   }, {
     "difName" : "PublicInternet.DIF",
     "expectedApplicationRegistrations" : [ {
-    	"applicationProcessName" : "skype", 
+    	"applicationProcessName" : "Barcelona.i2CAT", 
     	"applicationProcessInstance" : "1", 
     	"socketPortNumber" : 38000
     }, {
-    	"applicationProcessName" : "firefox", 
+    	"applicationProcessName" : "rina.examples.apps.echoserver", 
     	"applicationProcessInstance" : "1", 
     	"socketPortNumber" : 38001
     } ], 
     "directory" : [ {
-    	"applicationProcessName" : "skype", 
+    	"applicationProcessName" : "Barcelona.i2CAT", 
     	"applicationProcessInstance" : "1",
     	"hostname" : "84.88.40.70", 
     	"socketPortNumber" : 38000
     }, {
-    	"applicationProcessName" : "firefox", 
+    	"applicationProcessName" : "rina.examples.apps.echoserver", 
     	"applicationProcessInstance" : "1",
     	"hostname" : "84.88.40.70", 
     	"socketPortNumber" : 38001
     }, {
-    	"applicationProcessName" : "safari", 
+    	"applicationProcessName" : "Castefa.i2CAT", 
     	"applicationProcessInstance" : "1",
     	"hostname" : "84.88.40.71", 
     	"socketPortNumber" : 38000
@@ -117,13 +118,13 @@
   }, {
     "apName" : "Barcelona.i2CAT",
     "address" : 64,
-    "hostName" : "84.88.41.36",
+    "hostName" : "84.88.40.70",
     "rmtPortNumber" : 32769,
     "flowAllocatorPortNumber" : 32770
   }, {
     "apName" : "Castefa.i2CAT",
     "address" : 65,
-    "hostName" : "84.88.40.23",
+    "hostName" : "84.88.40.71",
     "rmtPortNumber" : 32769,
     "flowAllocatorPortNumber" : 32770
   }, {

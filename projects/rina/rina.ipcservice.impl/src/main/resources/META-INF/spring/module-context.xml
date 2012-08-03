@@ -14,6 +14,7 @@
 		<property name="enrollmentTaskFactory" ref="enrollmentTaskFactoryService" />
 		<property name="dataTransferAEFactory" ref="dataTransferAEFactoryService" />
 		<property name="flowAllocatorFactory" ref="flowAllocatorFactoryService" />
+		<property name="resourceAllocatorFactory" ref="resourceAllocatorFactoryService" />
 	</bean>
 
 </beans>

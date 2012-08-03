@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,10 +32,16 @@ import rina.enrollment.impl.statemachines.EnrollerStateMachine;
 import rina.events.api.Event;
 import rina.events.api.EventListener;
 import rina.events.api.events.ConnectivityToNeighborLostEvent;
+import rina.events.api.events.NMinusOneFlowAllocatedEvent;
+import rina.events.api.events.NMinusOneFlowAllocationFailedEvent;
 import rina.events.api.events.NMinusOneFlowDeallocatedEvent;
 import rina.ipcprocess.api.IPCProcess;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
+import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
+import rina.ipcservice.api.QualityOfServiceSpecification;
+import rina.resourceallocator.api.BaseResourceAllocator;
+import rina.resourceallocator.api.ResourceAllocator;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
@@ -69,18 +76,22 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 	private NeighborsEnroller neighborsEnroller = null;
 	
 	private RIBDaemon ribDaemon = null;
+	private ResourceAllocator resourceAllocator = null;
 	private RMT rmt = null;
 	private CDAPSessionManager cdapSessionManager = null;
+	private Map<Integer, Neighbor> portIdsPendingToBeAllocated = null;
 
 	public EnrollmentTaskImpl(){
-		enrollmentStateMachines = new Hashtable<String, BaseEnrollmentStateMachine>();
-		timeout = RINAConfiguration.getInstance().getLocalConfiguration().getEnrollmentTimeoutInMs();
+		this.enrollmentStateMachines = new Hashtable<String, BaseEnrollmentStateMachine>();
+		this.timeout = RINAConfiguration.getInstance().getLocalConfiguration().getEnrollmentTimeoutInMs();
+		this.portIdsPendingToBeAllocated = new ConcurrentHashMap<Integer, Neighbor>();
 	}
 	
 	@Override
 	public void setIPCProcess(IPCProcess ipcProcess){
 		super.setIPCProcess(ipcProcess);
-		this.ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());;
+		this.ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+		this.resourceAllocator = (ResourceAllocator) getIPCProcess().getIPCProcessComponent(BaseResourceAllocator.getComponentName());
 		this.rmt = (RMT) getIPCProcess().getIPCProcessComponent(BaseRMT.getComponentName());
 		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 		populateRIB(ipcProcess);
@@ -112,6 +123,8 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 	
 	private void subscribeToEvents(){
 		this.ribDaemon.subscribeToEvent(Event.N_MINUS_1_FLOW_DEALLOCATED, this);
+		this.ribDaemon.subscribeToEvent(Event.N_MINUS_1_FLOW_ALLOCATED, this);
+		this.ribDaemon.subscribeToEvent(Event.N_MINUS_1_FLOW_ALLOCATION_FAILED, this);
 	}
 	
 	public RIBDaemon getRIBDaemon(){
@@ -240,12 +253,10 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 	 */
 	public void initiateEnrollment(Neighbor candidate){
 		ApplicationProcessNamingInfo candidateNamingInfo = null;
-		EnrolleeStateMachine enrollmentStateMachine = null;
-		int portId = 0;
 		
 		//1 Check that we're not already enrolled to the IPC Process
 		candidateNamingInfo = new ApplicationProcessNamingInfo(candidate.getApplicationProcessName(), 
-					candidate.getApplicationProcessInstance(), BaseEnrollmentStateMachine.DEFAULT_ENROLLMENT, null);
+					candidate.getApplicationProcessInstance());
 		
 		if (this.isEnrolledTo(candidateNamingInfo.getApplicationProcessName())){
 			String message = "Already enrolled to IPC Process "+candidateNamingInfo.getEncodedString();
@@ -253,31 +264,17 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 			return;
 		}
 		
+		//Allocate a new reliable N-1 Flow to the destination IPC Process
+		FlowService flowService = new FlowService();
+		flowService.setDestinationAPNamingInfo(candidateNamingInfo);
+		flowService.setSourceAPNamingInfo(this.getIPCProcess().getApplicationProcessNamingInfo());
+		QualityOfServiceSpecification qosSpec = new QualityOfServiceSpecification();
+		qosSpec.setQosCubeId(2);
+		flowService.setQoSSpecification(qosSpec);
+		this.resourceAllocator.getNMinus1FlowManager().allocateNMinus1Flow(flowService);
 		
-		//2 Tell the RMT to allocate a new flow to the IPC process  (will return a port Id)
-		try{
-			portId = rmt.allocateFlow(candidateNamingInfo.getApplicationProcessName(), null);
-		}catch(Exception ex){
-			log.error(ex);
-			//This should never happen, log the error to fix it.
-			return;
-		}
-		
-		//3 Tell the enrollment task to create a new Enrollment state machine
-		try{
-			enrollmentStateMachine = (EnrolleeStateMachine) this.createEnrollmentStateMachine(candidateNamingInfo, portId, true);
-		}catch(Exception ex){
-			//Should never happen, fix it!
-			log.error(ex);
-			return;
-		}
-		
-		//5 Tell the enrollment state machine to initiate the enrollment (will require an M_CONNECT message and a port Id)
-		try{
-			enrollmentStateMachine.initiateEnrollment(candidate, portId);
-		}catch(IPCException ex){
-			log.error(ex);
-		}
+		//Store state of pending flows
+		this.portIdsPendingToBeAllocated.put(new Integer(flowService.getPortId()), candidate);
 	}
 
 	/**
@@ -287,7 +284,6 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 	 */
 	public void connect(CDAPMessage cdapMessage, CDAPSessionDescriptor cdapSessionDescriptor) {
 		log.debug("Received M_CONNECT cdapMessage from portId "+cdapSessionDescriptor.getPortId());
-		cdapSessionDescriptor.setDestAEName(cdapSessionDescriptor.getSrcAEName());
 		
 		//1 Find out if the sender is really connecting to us
 		if(!cdapMessage.getDestApName().equals(this.getIPCProcess().getApplicationProcessName())){
@@ -412,6 +408,13 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 		if (event.getId().equals(Event.N_MINUS_1_FLOW_DEALLOCATED)){
 			NMinusOneFlowDeallocatedEvent flowEvent = (NMinusOneFlowDeallocatedEvent) event;
 			this.nMinusOneFlowDeallocated(flowEvent.getCDAPSessionDescriptor());
+		}else if (event.getId().equals(Event.N_MINUS_1_FLOW_ALLOCATED)){
+			NMinusOneFlowAllocatedEvent flowEvent = (NMinusOneFlowAllocatedEvent) event;
+			this.nMinusOneFlowAllocated(flowEvent.getPortId());
+		}else if (event.getId().equals(Event.N_MINUS_1_FLOW_ALLOCATION_FAILED)){
+			NMinusOneFlowAllocationFailedEvent flowEvent = (NMinusOneFlowAllocationFailedEvent) event;
+			this.nMinusOneFlowAllocationFailed(flowEvent.getPortId(), 
+					flowEvent.getFlowService(), flowEvent.getResultReason());
 		}
 	}
 	
@@ -454,6 +457,65 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 				return;
 			}
 		}
+	}
+	
+	/**
+	 * Called when a new N-1 flow has been allocated
+	 * @param portId
+	 */
+	private void nMinusOneFlowAllocated(int portId){
+		Neighbor neighbor = this.portIdsPendingToBeAllocated.remove(new Integer(portId));
+		if (neighbor == null){
+			return;
+		}
+		
+		EnrolleeStateMachine enrollmentStateMachine = null;
+		
+		//2 Tell the RMT to allocate a new flow to the IPC process  (will return a port Id)
+		try{
+			portId = rmt.allocateFlow(neighbor.getApplicationProcessName(), null);
+		}catch(Exception ex){
+			log.error(ex);
+			//This should never happen, log the error to fix it.
+			return;
+		}
+		
+		//3 Tell the enrollment task to create a new Enrollment state machine
+		try{
+			enrollmentStateMachine = (EnrolleeStateMachine) this.createEnrollmentStateMachine(
+					new ApplicationProcessNamingInfo(neighbor.getApplicationProcessName(), 
+							neighbor.getApplicationProcessInstance()), portId, true);
+		}catch(Exception ex){
+			//Should never happen, fix it!
+			log.error(ex);
+			return;
+		}
+		
+		//5 Tell the enrollment state machine to initiate the enrollment (will require an M_CONNECT message and a port Id)
+		try{
+			enrollmentStateMachine.initiateEnrollment(neighbor, portId);
+		}catch(IPCException ex){
+			log.error(ex);
+		}
+	}
+	
+	/**
+	 * Called when a new N-1 flow allocation has failed
+	 * @param portId
+	 * @param flowService
+	 * @param resultReason
+	 */
+	private void nMinusOneFlowAllocationFailed(int portId, FlowService flowService, String resultReason){
+		Neighbor neighbor = this.portIdsPendingToBeAllocated.remove(new Integer(portId));
+		if (neighbor == null){
+			return;
+		}
+		
+		log.warn("The allocation of management flow identified by portId "+portId
+				+" with the following charachteristics "+flowService.toString()
+				+" has failed. Reason: "+resultReason);
+		
+		//TODO inform the one that triggered the enrollment?
 	}
 	
 	/**
