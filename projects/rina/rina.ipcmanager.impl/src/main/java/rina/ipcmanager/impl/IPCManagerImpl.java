@@ -294,9 +294,6 @@ public class IPCManagerImpl implements IPCManager{
 
 				ribDaemon.start(RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_CLASS, 
 						RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME);
-
-				RMT rmt = (RMT) ipcProcess.getIPCProcessComponent(BaseRMT.getComponentName());
-				rmt.startListening();
 			}
 			
 			if (difsToRegisterAt != null){

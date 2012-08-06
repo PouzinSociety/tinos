@@ -108,7 +108,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 * The runnable that reads the incoming flow queues and 
 	 * dispatches the SDUs following a certain QoS cryteria
 	 */
-	private IncomingFlowQueuesReader incomingFlowQueuesReader = null;
+	private OutgoingFlowQueuesReader incomingFlowQueuesReader = null;
 	
 	public FlowAllocatorImpl(String hostName, Delimiter delimiter, IPCManager ipcManager, ShimIPCProcessForIPLayers ipcProcess){
 		this.hostName = hostName;
@@ -121,7 +121,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		this.timer = new Timer();
 		this.ipcManager = ipcManager;
 		this.ipcProcess = ipcProcess;
-		this.incomingFlowQueuesReader = new IncomingFlowQueuesReader(ipcManager, flows, delimiter);
+		this.incomingFlowQueuesReader = new OutgoingFlowQueuesReader(ipcManager, flows, delimiter);
 		this.ipcManager.execute(incomingFlowQueuesReader);
 		
 		//Create QoS cubes
@@ -291,7 +291,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		
 		synchronized(this.flows){
 			flowState = new FlowState();
-			portId = generatePortId();
+			portId = this.ipcManager.getAvailablePortId();
 			if (portId == -1){
 				throw new IPCException(IPCException.PROBLEMS_ALLOCATING_FLOW_CODE, 
 						IPCException.PROBLEMS_ALLOCATING_FLOW + 
@@ -334,7 +334,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		
 		flowState.setState(State.ALLOCATED);
 		this.ipcManager.addFlowQueues(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
-		this.ipcManager.getIncomingFlowQueue(portId).subscribeToQueue(this.incomingFlowQueuesReader);
+		this.ipcManager.getOutgoingFlowQueue(portId).subscribeToQueue(this.incomingFlowQueuesReader);
 		return portId;
 	}
 	
@@ -349,6 +349,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			Integer iPortId = new Integer(portId);
 			flowState = this.flows.remove(iPortId);
 			this.ipcManager.removeFlowQueues(portId);
+			this.ipcManager.freePortId(portId);
 		}
 		
 		if (flowState != null){
@@ -359,19 +360,6 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 				}
 			}
 		}
-	}
-	
-	private int generatePortId(){
-		int i=1;
-		while (i<Integer.MAX_VALUE){
-			if (this.flows.get(new Integer(i)) == null){
-				return i;
-			}
-
-			i++;
-		}
-
-		return -1;
 	}
 	
 	/**
@@ -387,7 +375,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		
 		synchronized(this.flows){
 			flowState = new FlowState();
-			portId = generatePortId();
+			portId = this.ipcManager.getAvailablePortId();
 			//Not enough portIds, cannot accept the request
 			if (portId == -1){
 				try{
@@ -451,7 +439,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		int portId = 0;
 		synchronized(this.flows){
 			flowState = new FlowState();
-			portId = generatePortId();
+			portId = this.ipcManager.getAvailablePortId();
 			//Not enough portIds, cannot accept the request
 			if (portId == -1){
 				try{
@@ -529,7 +517,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		flowState.setApplicationCallback(applicationCallback);
 		flowState.setState(State.ALLOCATED);
 		this.ipcManager.addFlowQueues(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
-		this.ipcManager.getIncomingFlowQueue(portId).subscribeToQueue(this.incomingFlowQueuesReader);
+		this.ipcManager.getOutgoingFlowQueue(portId).subscribeToQueue(this.incomingFlowQueuesReader);
 	}
 	
 	private void submitAllocateResponseForReliableFlow(Socket socket, APService applicationCallback, int portId){
@@ -556,6 +544,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			Integer iPortId = new Integer(portId);
 			flowState = this.flows.remove(iPortId);
 			this.ipcManager.removeFlowQueues(portId);
+			this.ipcManager.freePortId(portId);
 		}
 		
 		if (flowState != null){

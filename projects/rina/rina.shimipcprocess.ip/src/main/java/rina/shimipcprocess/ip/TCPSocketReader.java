@@ -28,7 +28,7 @@ public class TCPSocketReader extends BaseSocketReader{
 	@Override
 	public void processPDU(byte[] sdu) {
 		try {
-			this.ipcManager.getOutgoingFlowQueue(this.portId).writeDataToQueue(sdu);
+			this.ipcManager.getIncomingFlowQueue(this.portId).writeDataToQueue(sdu);
 		} catch (IPCException e) {
 			log.error(e);
 		}

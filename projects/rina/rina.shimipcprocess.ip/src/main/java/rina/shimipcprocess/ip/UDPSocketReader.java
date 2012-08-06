@@ -38,7 +38,7 @@ public class UDPSocketReader implements Runnable{
 					sdu = new byte[datagramPacket.getLength()];
 					System.arraycopy(datagramPacket.getData(), 
 							datagramPacket.getOffset(), sdu, 0, datagramPacket.getLength());
-					this.ipcManager.getOutgoingFlowQueue(this.portId).writeDataToQueue(sdu);
+					this.ipcManager.getIncomingFlowQueue(this.portId).writeDataToQueue(sdu);
 				}
 			}catch(Exception ex){
 				log.error(ex);

@@ -76,7 +76,7 @@ public abstract class BaseIPCProcess implements IPCProcess, IPCService{
 	 * @throws IPCException
 	 */
 	public void submitTransfer(int portId, byte[] sdu) throws IPCException{
-		this.ipcManager.getIncomingFlowQueue(portId).writeDataToQueue(sdu);
+		this.ipcManager.getOutgoingFlowQueue(portId).writeDataToQueue(sdu);
 	}
 	
 	public void setIPCManager(IPCManager ipcManager){

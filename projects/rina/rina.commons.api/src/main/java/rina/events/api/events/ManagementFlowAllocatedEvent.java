@@ -9,13 +9,13 @@ import rina.events.api.Event;
  * @author eduardgrasa
  *
  */
-public class NMinusOneFlowDeallocatedEvent extends BaseEvent{
+public class ManagementFlowAllocatedEvent extends BaseEvent{
 
-	/** The portId of the deallocated flow **/
+	/** The portId of the allocated flow **/
 	private int portId = 0;
 	
-	public NMinusOneFlowDeallocatedEvent(int portId) {
-		super(Event.N_MINUS_1_FLOW_DEALLOCATED);
+	public ManagementFlowAllocatedEvent(int portId) {
+		super(Event.MANAGEMENT_FLOW_ALLOCATED);
 		this.portId = portId;
 	}
 

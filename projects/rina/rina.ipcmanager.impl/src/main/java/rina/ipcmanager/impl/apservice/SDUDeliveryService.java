@@ -75,7 +75,7 @@ public class SDUDeliveryService implements QueueSubscriptor, Runnable {
 		while(true){
 			try{
 				portId = this.queuesReadyToBeRead.take().intValue();
-				sdu = this.ipcManager.getOutgoingFlowQueue(portId).take();
+				sdu = this.ipcManager.getIncomingFlowQueue(portId).take();
 				socket = this.portIdToSocketMappings.get(new Integer(portId));
 				
 				if (socket == null){

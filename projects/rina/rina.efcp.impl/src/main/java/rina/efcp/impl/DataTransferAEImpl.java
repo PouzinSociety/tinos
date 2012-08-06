@@ -76,10 +76,10 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	private long myAddres = -1;
 	
 	/**
-	 * The thread that will read and process SDUs from incoming flows
+	 * The thread that will read and process SDUs from outgoing flows
 	 * (incoming from this IPC Process point of view)
 	 */
-	private IncomingFlowQueuesReader incomingFlowQueuesReader = null;
+	private OutgoingFlowQueuesReader outgoingFlowQueuesReader = null;
 	
 	/**
 	 * The IPC Manager
@@ -101,16 +101,16 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		this.delimiter = (Delimiter) ipcProcess.getIPCProcessComponent(BaseDelimiter.getComponentName());
 		populateRIB(ipcProcess);
 		this.dataTransferConstants = ipcProcess.getDataTransferConstants();
-		this.incomingFlowQueuesReader = new IncomingFlowQueuesReader(ipcProcess.getIPCManager(), 
+		this.outgoingFlowQueuesReader = new OutgoingFlowQueuesReader(ipcProcess.getIPCManager(), 
 				portIdToConnectionMapping, delimiter);
 		this.ipcManager = ipcProcess.getIPCManager();
-		ipcManager.execute(this.incomingFlowQueuesReader);
+		ipcManager.execute(this.outgoingFlowQueuesReader);
 	}
 	
 	@Override
 	public void stop(){
 		super.stop();
-		this.incomingFlowQueuesReader.stop();
+		this.outgoingFlowQueuesReader.stop();
 	}
 	
 	/**
@@ -118,7 +118,7 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	 * @param portId the id of the incoming flow queue
 	 */
 	public void subscribeToFlow(int portId) throws IPCException{
-		this.ipcManager.getIncomingFlowQueue(portId).subscribeToQueue(this.incomingFlowQueuesReader);
+		this.ipcManager.getOutgoingFlowQueue(portId).subscribeToQueue(this.outgoingFlowQueuesReader);
 	}
 	
 	private void populateRIB(IPCProcess ipcProcess){
@@ -287,7 +287,7 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		
 		//Deliver the PDU to the portId
 		try{
-			this.ipcManager.getOutgoingFlowQueue((int)state.getPortId()).writeDataToQueue(decodedPDU.getUserData().get(0));
+			this.ipcManager.getIncomingFlowQueue((int)state.getPortId()).writeDataToQueue(decodedPDU.getUserData().get(0));
 		}catch(Exception ex){
 			log.error(ex);
 		}

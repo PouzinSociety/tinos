@@ -44,7 +44,7 @@ public class BlockinqQueueReader implements Runnable{
 				if (end){
 					break;
 				}
-				this.ipcManager.getOutgoingFlowQueue(this.portId).writeDataToQueue(sdu);
+				this.ipcManager.getIncomingFlowQueue(this.portId).writeDataToQueue(sdu);
 			}catch(Exception ex){
 				log.error(ex);
 			}

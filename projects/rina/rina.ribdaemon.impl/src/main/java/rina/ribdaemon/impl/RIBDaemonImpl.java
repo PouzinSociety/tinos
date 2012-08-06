@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,6 +27,7 @@ import rina.enrollment.api.EnrollmentTask;
 import rina.events.api.Event;
 import rina.events.api.EventListener;
 import rina.events.api.events.NMinusOneFlowDeallocatedEvent;
+import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.NotificationPolicy;
@@ -33,8 +36,6 @@ import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
 import rina.ribdaemon.api.UpdateStrategy;
 import rina.ribdaemon.impl.rib.RIB;
-import rina.rmt.api.BaseRMT;
-import rina.rmt.api.RMT;
 
 /**
  * RIBDaemon that stores the objects in memory
@@ -61,33 +62,75 @@ public class RIBDaemonImpl extends BaseRIBDaemon implements EventListener{
 	 * CDAP Session manager has been updated before receiving the response message **/
 	private Object atomicSendLock = null;
 	
+	/**
+	 * The IPC Manager
+	 */
+	private IPCManager ipcManager = null;
+	
+	/**
+	 * The queue of incoming management SDUs
+	 */
+	private BlockingQueue<IncomingManagementSDU> incomingManagementSDUs = null;
+	
+	/**
+	 * The class that will execute in a separate thread and process incoming 
+	 * management SDUs
+	 */
+	private IncomingManagementSDUsReader incomingManagementSDUsReader = null;
+	
 	public RIBDaemonImpl(){
 		rib = new RIB();
 		messageHandlersWaitingForReply = new ConcurrentHashMap<String, CDAPMessageHandler>();
 		atomicSendLock = new Object();
+		this.incomingManagementSDUs = new LinkedBlockingQueue<IncomingManagementSDU>();
 	}
 	
 	@Override
 	public void setIPCProcess(IPCProcess ipcProcess){
 		super.setIPCProcess(ipcProcess);
+		this.ipcManager = ipcProcess.getIPCManager();
 		this.encoder = (Encoder) getIPCProcess().getIPCProcessComponent(BaseEncoder.getComponentName());
 		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 		subscribeToEvents();
+		
+		this.incomingManagementSDUsReader = new IncomingManagementSDUsReader(incomingManagementSDUs, this);
+		this.ipcManager.execute(this.incomingManagementSDUsReader);
 	}
 	
 	private void subscribeToEvents(){
 		this.subscribeToEvent(Event.N_MINUS_1_FLOW_DEALLOCATED, this);
 	}
+	
+	@Override
+	public void stop(){
+		this.incomingManagementSDUsReader.stop();
+	}
+	
+	/**
+	 * A new management SDU has been delivered, the RIB Daemon will process it
+	 * @param managementSDU
+	 * @param portId
+	 */
+	public void managementSDUDelivered(byte[] managementSDU, int portId){
+		IncomingManagementSDU incomingManagementSDU = new IncomingManagementSDU();
+		incomingManagementSDU.setManagementSDU(managementSDU);
+		incomingManagementSDU.setPortId(portId);
+		try {
+			this.incomingManagementSDUs.put(incomingManagementSDU);
+		} catch (InterruptedException ex) {
+			log.error("Problems adding incoming management SDU to queue", ex);
+		}
+	}
 
 	/**
-	 * Invoked by the RMT when it detects a CDAP message. The RIB Daemon has to process the CDAP message and, 
+	 * The RIB Daemon has to process the CDAP message and, 
 	 * if valid, it will either pass it to interested subscribers and/or write to storage and/or modify other 
 	 * tasks data structures. It may be the case that the CDAP message is not addressed to an application 
 	 * entity within this IPC process, then the RMT may decide to rely the message to the right destination 
 	 * (after consulting an adequate forwarding table).
 	 * @param cdapMessage
 	 */
-	public void cdapMessageDelivered(byte[] encodedCDAPMessage, int portId){
+	protected void cdapMessageDelivered(byte[] encodedCDAPMessage, int portId){
 		CDAPMessage cdapMessage = null;
 		CDAPSessionDescriptor cdapSessionDescriptor = null;
 
@@ -329,7 +372,6 @@ public class RIBDaemonImpl extends BaseRIBDaemon implements EventListener{
 	 */
 	public void sendMessage(CDAPMessage cdapMessage, int portId, CDAPMessageHandler cdapMessageHandler) throws RIBDaemonException{
 		byte[] serializedCDAPMessageToBeSend = null;
-		RMT rmt = (RMT) this.getIPCProcess().getIPCProcessComponent(BaseRMT.getComponentName());
 		
 		if (cdapMessage.getInvokeID() != 0 && !cdapMessage.getOpCode().equals(Opcode.M_CONNECT) 
 				&& !cdapMessage.getOpCode().equals(Opcode.M_RELEASE) 
@@ -349,7 +391,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon implements EventListener{
 		synchronized(atomicSendLock){
 			try{
 				serializedCDAPMessageToBeSend = cdapSessionManager.encodeNextMessageToBeSent(cdapMessage, portId);
-				rmt.sendCDAPMessage(portId, serializedCDAPMessageToBeSend);
+				this.ipcManager.getOutgoingFlowQueue(portId).writeDataToQueue(serializedCDAPMessageToBeSend);
 				cdapSessionManager.messageSent(cdapMessage, portId);
 				String destination = cdapSessionManager.getCDAPSession(portId).getSessionDescriptor().getDestApName();
 				log.debug("Sent CDAP Message to "+destination+" through underlying portId "+portId+": "+ cdapMessage.toString());

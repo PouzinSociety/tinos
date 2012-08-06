@@ -19,9 +19,9 @@ import rina.ipcmanager.api.IPCManager;
  * @author eduardgrasa
  *
  */
-public class IncomingFlowQueuesReader implements QueueSubscriptor, Runnable{
+public class OutgoingFlowQueuesReader implements QueueSubscriptor, Runnable{
 	
-	private static final Log log = LogFactory.getLog(IncomingFlowQueuesReader.class);
+	private static final Log log = LogFactory.getLog(OutgoingFlowQueuesReader.class);
 	
 	/**
 	 * The queues from incoming flows
@@ -45,7 +45,7 @@ public class IncomingFlowQueuesReader implements QueueSubscriptor, Runnable{
 	
 	private boolean end = false;
 	
-	public IncomingFlowQueuesReader(IPCManager ipcManager, 
+	public OutgoingFlowQueuesReader(IPCManager ipcManager, 
 			Map<Integer, FlowState> flows, Delimiter delimiter){
 		this.ipcManager = ipcManager;
 		this.queuesReadyToBeRead = new LinkedBlockingQueue<Integer>();
@@ -75,7 +75,7 @@ public class IncomingFlowQueuesReader implements QueueSubscriptor, Runnable{
 				if (portId < 0){
 					break;
 				}
-				sdu = this.ipcManager.getIncomingFlowQueue(portId.intValue()).take();
+				sdu = this.ipcManager.getOutgoingFlowQueue(portId.intValue()).take();
 				this.processSDU(sdu, flows.get(portId));
 			}catch(Exception ex){
 				log.error("Problems reading the identity of the next queue to read. ", ex);

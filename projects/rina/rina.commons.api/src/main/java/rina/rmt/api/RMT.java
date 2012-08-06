@@ -1,7 +1,6 @@
 package rina.rmt.api;
 
 import rina.ipcprocess.api.IPCProcessComponent;
-import rina.ipcservice.api.QualityOfServiceSpecification;
 
 /**
  * Specifies the interface of the Relaying and Multiplexing task. Mediates the access to one or more (N-1) DIFs 
@@ -17,45 +16,4 @@ public interface RMT extends IPCProcessComponent{
 	 * @param pdu
 	 */
 	public void sendEFCPPDU(byte[] pdu);
-	
-	/**
-	 * Send a CDAP message to the IPC process address identified by the 'address' parameter. 
-	 * This operation is invoked by the management tasks of the IPC process, usually to 
-	 * send CDAP messages to the nearest neighbors. The RMT will lookup the 'address' 
-	 * parameter in the forwarding table, and send the capMessage using the management flow 
-	 * that was established when this IPC process joined the DIF.
-	 * @param portId
-	 * @param cdapMessage
-	 * @throws exception if the message cannot be sent through the flow identified by portId
-	 */
-	public void sendCDAPMessage(int portId, byte[] cdapMessage) throws Exception;
-	
-	/**
-	 * Cause the RMT to allocate a new flow through an N-1 DIF or the underlying
-	 * physical media
-	 * @param apNamingInfo the destination application process process name 
-	 * @param qosparams the quality of service requested by the flow
-	 * @return int the portId allocated to the flow
-	 * @throws Exception if there was an issue allocating the flow
-	 */
-	public int allocateFlow(String ipcProcessName, QualityOfServiceSpecification qosparams) throws Exception;
-	
-	/**
-	 * Cause the RMT to deallocate a flow through an N-1 DIF or the underlying physical media
-	 * @param portId the identifier of the flow
-	 * @throws Exception if the flow is not allocated or there are problems deallocating the flow
-	 */
-	public void deallocateFlow(int portId) throws Exception;
-	
-	/**
-	 * Returns the IP address of the IPC process identified by the tuple ipcProcessName, ipcProcessInstance
-	 * @param ipcProcessName
-	 * @return
-	 */
-	public String getIPAddressFromApplicationNamingInformation(String ipcProcessName);
-	
-	/**
-	 * Start listening for connections from remote IPC Processes
-	 */
-	public void startListening();
 }

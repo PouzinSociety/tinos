@@ -12,6 +12,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.cdap.api.BaseCDAPSessionManager;
+import rina.cdap.api.CDAPSession;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
@@ -46,8 +47,6 @@ import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
-import rina.rmt.api.BaseRMT;
-import rina.rmt.api.RMT;
 
 /**
  * Current limitations: Addresses of IPC processes are allocated forever (until we lose the connection with them)
@@ -77,7 +76,6 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 	
 	private RIBDaemon ribDaemon = null;
 	private ResourceAllocator resourceAllocator = null;
-	private RMT rmt = null;
 	private CDAPSessionManager cdapSessionManager = null;
 	private Map<Integer, Neighbor> portIdsPendingToBeAllocated = null;
 
@@ -92,7 +90,6 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 		super.setIPCProcess(ipcProcess);
 		this.ribDaemon = (RIBDaemon) getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		this.resourceAllocator = (ResourceAllocator) getIPCProcess().getIPCProcessComponent(BaseResourceAllocator.getComponentName());
-		this.rmt = (RMT) getIPCProcess().getIPCProcessComponent(BaseRMT.getComponentName());
 		this.cdapSessionManager = (CDAPSessionManager) getIPCProcess().getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 		populateRIB(ipcProcess);
 		subscribeToEvents();
@@ -407,7 +404,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 	public void eventHappened(Event event) {
 		if (event.getId().equals(Event.N_MINUS_1_FLOW_DEALLOCATED)){
 			NMinusOneFlowDeallocatedEvent flowEvent = (NMinusOneFlowDeallocatedEvent) event;
-			this.nMinusOneFlowDeallocated(flowEvent.getCDAPSessionDescriptor());
+			this.nMinusOneFlowDeallocated(flowEvent.getPortId());
 		}else if (event.getId().equals(Event.N_MINUS_1_FLOW_ALLOCATED)){
 			NMinusOneFlowAllocatedEvent flowEvent = (NMinusOneFlowAllocatedEvent) event;
 			this.nMinusOneFlowAllocated(flowEvent.getPortId());
@@ -423,7 +420,17 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 	 * has been deallocated
 	 * @param cdapSessionDescriptor
 	 */
-	private void nMinusOneFlowDeallocated(CDAPSessionDescriptor cdapSessionDescriptor){
+	private void nMinusOneFlowDeallocated(int portId){
+		CDAPSessionDescriptor cdapSessionDescriptor = null;
+		
+		//1 Check if the flow deallocated was a management flow
+		CDAPSession cdapSession = this.cdapSessionManager.getCDAPSession(portId);
+		if(cdapSession == null){
+			return;
+		}else{
+			cdapSessionDescriptor = cdapSession.getSessionDescriptor();
+		}
+		
 		//1 Remove the enrollment state machine from the list
 		try{
 			BaseEnrollmentStateMachine enrollmentStateMachine = this.getEnrollmentStateMachine(cdapSessionDescriptor, true);
@@ -437,7 +444,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 			log.error(ex);
 		}
 		
-		//2 Check if we still have connectivity to the neighbor, if not, issue a ConnectivityLostEvent
+		//3 Check if we still have connectivity to the neighbor, if not, issue a ConnectivityLostEvent
 		Iterator<String> iterator = this.enrollmentStateMachines.keySet().iterator();
 		while(iterator.hasNext()){
 			if (iterator.next().startsWith(cdapSessionDescriptor.getDestApName())){
@@ -450,10 +457,10 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 		List<Neighbor> neighbors = this.getIPCProcess().getNeighbors();
 		for(int i=0; i<neighbors.size(); i++){
 			if(neighbors.get(i).getApplicationProcessName().equals(cdapSessionDescriptor.getDestApName())){
-				ConnectivityToNeighborLostEvent event = new ConnectivityToNeighborLostEvent(neighbors.get(i));
+				ConnectivityToNeighborLostEvent event2 = new ConnectivityToNeighborLostEvent(neighbors.get(i));
 				log.debug("Notifying the Event Manager about a new event.");
-				log.debug(event.toString());
-				this.ribDaemon.deliverEvent(event);
+				log.debug(event2.toString());
+				this.ribDaemon.deliverEvent(event2);
 				return;
 			}
 		}
@@ -471,16 +478,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 		
 		EnrolleeStateMachine enrollmentStateMachine = null;
 		
-		//2 Tell the RMT to allocate a new flow to the IPC process  (will return a port Id)
-		try{
-			portId = rmt.allocateFlow(neighbor.getApplicationProcessName(), null);
-		}catch(Exception ex){
-			log.error(ex);
-			//This should never happen, log the error to fix it.
-			return;
-		}
-		
-		//3 Tell the enrollment task to create a new Enrollment state machine
+		//1 Tell the enrollment task to create a new Enrollment state machine
 		try{
 			enrollmentStateMachine = (EnrolleeStateMachine) this.createEnrollmentStateMachine(
 					new ApplicationProcessNamingInfo(neighbor.getApplicationProcessName(), 
@@ -491,7 +489,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 			return;
 		}
 		
-		//5 Tell the enrollment state machine to initiate the enrollment (will require an M_CONNECT message and a port Id)
+		//2 Tell the enrollment state machine to initiate the enrollment (will require an M_CONNECT message and a port Id)
 		try{
 			enrollmentStateMachine.initiateEnrollment(neighbor, portId);
 		}catch(IPCException ex){
@@ -552,11 +550,6 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 	  * join the DIF)
 	  */
 	 public void enrollmentCompleted(Neighbor dafMember, boolean enrollee){
-		 //1 Tell the RMT it can start listening for remote IPC processes
-		 if (enrollee){
-			 RMT rmt = (RMT) this.getIPCProcess().getIPCProcessComponent(BaseRMT.getComponentName());
-			 rmt.startListening();
-		 }
 	 }
 	
 	/**
@@ -567,7 +560,12 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 	private void sendErrorMessageAndDeallocateFlow(CDAPMessage cdapMessage, int portId){
 		try{
 			ribDaemon.sendMessage(cdapMessage, portId, null);
-			rmt.deallocateFlow(portId);
+		}catch(Exception ex){
+			log.error(ex);
+		}
+		
+		try{
+			this.resourceAllocator.getNMinus1FlowManager().deallocateNMinus1Flow(portId);
 		}catch(Exception ex){
 			log.error(ex.getMessage());
 		}

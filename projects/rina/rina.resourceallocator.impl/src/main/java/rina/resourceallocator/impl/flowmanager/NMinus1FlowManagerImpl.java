@@ -9,8 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.cdap.api.BaseCDAPSessionManager;
-import rina.cdap.api.CDAPSessionManager;
 import rina.events.api.events.NMinusOneFlowAllocatedEvent;
 import rina.events.api.events.NMinusOneFlowAllocationFailedEvent;
 import rina.events.api.events.NMinusOneFlowDeallocatedEvent;
@@ -59,11 +57,6 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 	private RIBDaemon ribDaemon = null;
 	
 	/**
-	 * The CDAP Session Manager
-	 */
-	private CDAPSessionManager cdapSessionManager = null;
-	
-	/**
 	 * The states of all the ongoing and allocated flows
 	 */
 	private Map<Integer, FlowServiceState> flowServiceStates = null;
@@ -85,7 +78,6 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 		this.ipcProcess = ipcProcess;
 		this.ipcManager = ipcProcess.getIPCManager();
 		this.ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-		this.cdapSessionManager = (CDAPSessionManager) ipcProcess.getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 		populateRIB(ipcProcess);
 	}
 	
@@ -162,8 +154,7 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 		}
 		
 		//Notify about the event
-		NMinusOneFlowDeallocatedEvent event = new NMinusOneFlowDeallocatedEvent(portId, 
-				cdapSessionManager.getCDAPSession(portId).getSessionDescriptor());
+		NMinusOneFlowDeallocatedEvent event = new NMinusOneFlowDeallocatedEvent(portId);
 		this.ribDaemon.deliverEvent(event);
 	}
 	
@@ -268,8 +259,7 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 		}
 		
 		//Notify about the event
-		NMinusOneFlowDeallocatedEvent event = new NMinusOneFlowDeallocatedEvent(portId, 
-				cdapSessionManager.getCDAPSession(portId).getSessionDescriptor());
+		NMinusOneFlowDeallocatedEvent event = new NMinusOneFlowDeallocatedEvent(portId);
 		this.ribDaemon.deliverEvent(event);
 	}
 

@@ -17,6 +17,7 @@
 		<pathelement location="../rina.resourceallocator.impl"/>
 		<pathelement location="../rina.idd.impl"/>
 		<pathelement location="../rina.ipcmanager.impl"/>
+		<pathelement location="../rina.shimipcprocess.ip"/>
 		<pathelement location="../rina.applibrary.impl"/>
 	</path>
 
