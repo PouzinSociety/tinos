@@ -29,5 +29,11 @@ public interface ResourceAllocator extends IPCProcessComponent{
 	 * @return
 	 */
 	public NMinus1FlowManager getNMinus1FlowManager();
+	
+	/**
+	 * Returns the PDU Forwarding table of this IPC Process
+	 * @return
+	 */
+	public PDUForwardingTable getPDUForwardingTable();
 
 }

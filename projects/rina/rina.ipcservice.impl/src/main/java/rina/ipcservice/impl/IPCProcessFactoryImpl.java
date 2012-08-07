@@ -187,6 +187,12 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		}
 
 		ipcProcess.addIPCProcessComponent(ribDaemon);
+		
+		if (this.resourceAllocatorFactory != null){
+			ipcProcess.addIPCProcessComponent(this.resourceAllocatorFactory.createResourceAllocator(apNamingInfo));
+		}else{
+			throw new Exception("Resource Allocator Factory is null");
+		}
 
 		if (this.rmtFactory != null){
 			ipcProcess.addIPCProcessComponent(this.rmtFactory.createRMT(apNamingInfo));
@@ -204,12 +210,6 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 			ipcProcess.addIPCProcessComponent(this.flowAllocatorFactory.createFlowAllocator(apNamingInfo));
 		}else{
 			throw new Exception("Flow Allocator Factory is null");
-		}
-		
-		if (this.resourceAllocatorFactory != null){
-			ipcProcess.addIPCProcessComponent(this.resourceAllocatorFactory.createResourceAllocator(apNamingInfo));
-		}else{
-			throw new Exception("Resource Allocator Factory is null");
 		}
 		
 		if (this.enrollmentTaskFactory != null){

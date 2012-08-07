@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 
 import rina.aux.QueueSubscriptor;
 import rina.delimiting.api.Delimiter;
+import rina.efcp.api.PDUParser;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcservice.api.IPCException;
 

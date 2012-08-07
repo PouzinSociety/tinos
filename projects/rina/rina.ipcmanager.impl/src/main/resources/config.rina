@@ -2,7 +2,6 @@
   "localConfiguration" : {
     "consolePort" : 32766,
     "flowAllocatorPort" : 32770,
-    "rmtPort" : 32769,
     "cdapTimeoutInMs" : 10000,
     "enrollmentTimeoutInMs" : 10000,
     "watchdogPeriodInMs" : 60000,
@@ -24,7 +23,7 @@
   		"neighbors" : [ {
   		  "applicationProcessName" : "Castefa.i2CAT",
   	 	  "applicationProcessInstance" : "1",
-  	  	"address" : "65"
+  	  	  "address" : "65"
   	    } ],
   		"difsToRegisterAt" : ["PublicInternet.DIF"]
    }],
@@ -97,10 +96,10 @@
     	"hostname" : "84.88.40.71", 
     	"socketPortNumber" : 38000
     }, {
-    	"applicationProcessName" : "mail", 
+    	"applicationProcessName" : "Snowman.TRIA-Harv", 
     	"applicationProcessInstance" : "1",
-    	"hostname" : "84.88.40.71", 
-    	"socketPortNumber" : 38001
+    	"hostname" : "trianetworksystems.dyndns.org", 
+    	"socketPortNumber" : 32790
     } ]
   } ],
   "knownIPCProcessConfigurations" : [ {

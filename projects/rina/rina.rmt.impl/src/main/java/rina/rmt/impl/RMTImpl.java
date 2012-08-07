@@ -8,6 +8,8 @@ import rina.events.api.EventListener;
 import rina.events.api.events.NMinusOneFlowAllocatedEvent;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.IPCProcess;
+import rina.resourceallocator.api.BaseResourceAllocator;
+import rina.resourceallocator.api.ResourceAllocator;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.rmt.api.BaseRMT;
@@ -48,8 +50,11 @@ public class RMTImpl extends BaseRMT implements EventListener{
 		this.ribDaemon = (RIBDaemon) this.getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		ribDaemon.subscribeToEvent(Event.N_MINUS_1_FLOW_ALLOCATED, this);
 		
+		ResourceAllocator resourceAllocator = (ResourceAllocator) this.getIPCProcess().getIPCProcessComponent(BaseResourceAllocator.getComponentName());
+		
 		//Initialize and execute the N-1 Outgoing SDU Listener
-		this.nMinusOneIncomingSDUListener = new NMinusOneIncomingSDUListener(ipcManager, ribDaemon);
+		this.nMinusOneIncomingSDUListener = new NMinusOneIncomingSDUListener(ipcManager, ribDaemon, 
+				resourceAllocator.getPDUForwardingTable(), ipcProcess);
 		this.ipcManager.execute(this.nMinusOneIncomingSDUListener);
 	}
 	

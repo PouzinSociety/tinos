@@ -3,6 +3,7 @@ package rina.efcp.impl;
 import java.net.Socket;
 
 import rina.efcp.api.DataTransferConstants;
+import rina.efcp.api.PDUParser;
 import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.Flow;
 import rina.ipcservice.api.APService;

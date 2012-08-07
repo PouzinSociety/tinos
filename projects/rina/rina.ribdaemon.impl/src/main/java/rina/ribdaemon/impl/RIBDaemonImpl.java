@@ -20,6 +20,7 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Flags;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.cdap.api.message.ObjectValue;
+import rina.efcp.api.PDUParser;
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
 import rina.enrollment.api.BaseEnrollmentTask;
@@ -138,7 +139,6 @@ public class RIBDaemonImpl extends BaseRIBDaemon implements EventListener{
 		try{
 			//If another thread was sending a message, let him finish
 			synchronized(atomicSendLock){
-				log.debug("Got an encoded CDAP message from portId "+portId);
 				cdapMessage = cdapSessionManager.messageReceived(encodedCDAPMessage, portId);
 				cdapSessionDescriptor = cdapSessionManager.getCDAPSession(portId).getSessionDescriptor();
 			}
@@ -371,7 +371,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon implements EventListener{
 	 * @throws RIBDaemonException
 	 */
 	public void sendMessage(CDAPMessage cdapMessage, int portId, CDAPMessageHandler cdapMessageHandler) throws RIBDaemonException{
-		byte[] serializedCDAPMessageToBeSend = null;
+		byte[] encodedManagementPDU = null;
 		
 		if (cdapMessage.getInvokeID() != 0 && !cdapMessage.getOpCode().equals(Opcode.M_CONNECT) 
 				&& !cdapMessage.getOpCode().equals(Opcode.M_RELEASE) 
@@ -390,8 +390,10 @@ public class RIBDaemonImpl extends BaseRIBDaemon implements EventListener{
 		
 		synchronized(atomicSendLock){
 			try{
-				serializedCDAPMessageToBeSend = cdapSessionManager.encodeNextMessageToBeSent(cdapMessage, portId);
-				this.ipcManager.getOutgoingFlowQueue(portId).writeDataToQueue(serializedCDAPMessageToBeSend);
+				this.cdapSessionManager.getCDAPSession(portId).getSessionDescriptor();
+				encodedManagementPDU = PDUParser.encodeManagementPDU(
+						cdapSessionManager.encodeNextMessageToBeSent(cdapMessage, portId)); 
+				this.ipcManager.getOutgoingFlowQueue(portId).writeDataToQueue(encodedManagementPDU);
 				cdapSessionManager.messageSent(cdapMessage, portId);
 				String destination = cdapSessionManager.getCDAPSession(portId).getSessionDescriptor().getDestApName();
 				log.debug("Sent CDAP Message to "+destination+" through underlying portId "+portId+": "+ cdapMessage.toString());

@@ -1,4 +1,4 @@
-package rina.efcp.impl;
+package rina.efcp.api;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,13 +21,13 @@ public class PDU {
 	 * A synonym for the application process name designating an IPC process 
 	 * with scope limited to the DIF and a binding to the source application process
 	 */
-	private long sourceAddress = 0L;
+	private long sourceAddress = -1L;
 	
 	/**
 	 * A synonym for the application process name designating an IPC process 
 	 * with scope limited to the DIF and a binding to the destination application process
 	 */
-	private long destinationAddress = 0L;
+	private long destinationAddress = -1L;
 	
 	/**
 	 * A three part identifier unambiguous within the scope of two communicating 
@@ -38,7 +38,7 @@ public class PDU {
 	/**
 	 * The field indicates the type of PDU.
 	 */
-	private int pduType = 0;
+	private int pduType = -1;
 	
 	/**
 	 * This field indicates conditions that affect the handling of the PDU. Flags should only indicate 

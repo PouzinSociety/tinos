@@ -3,7 +3,9 @@ package rina.resourceallocator.impl;
 import rina.ipcprocess.api.IPCProcess;
 import rina.resourceallocator.api.BaseResourceAllocator;
 import rina.resourceallocator.api.NMinus1FlowManager;
+import rina.resourceallocator.api.PDUForwardingTable;
 import rina.resourceallocator.impl.flowmanager.NMinus1FlowManagerImpl;
+import rina.resourceallocator.impl.pduforwarding.PDUForwardingTableImpl;
 
 /**
  * The Resource Allocator (RA) is the core of management in the IPC Process. 
@@ -28,18 +30,25 @@ import rina.resourceallocator.impl.flowmanager.NMinus1FlowManagerImpl;
 public class ResourceAllocatorImpl extends BaseResourceAllocator{
 	
 	private NMinus1FlowManagerImpl nMinus1FlowManager = null;
+	
+	private PDUForwardingTableImpl pduForwardingTable = null;
 
 	public ResourceAllocatorImpl(){
 		nMinus1FlowManager = new NMinus1FlowManagerImpl();
+		pduForwardingTable = new PDUForwardingTableImpl();
 	}
 	
 	public NMinus1FlowManager getNMinus1FlowManager() {
 		return this.nMinus1FlowManager;
 	}
 	
+	public PDUForwardingTable getPDUForwardingTable() {
+		return pduForwardingTable;
+	}
+	
 	public void setIPCProcess(IPCProcess ipcProcess){
 		super.setIPCProcess(ipcProcess);
 		this.nMinus1FlowManager.setIPCProcess(ipcProcess);
+		this.pduForwardingTable.setIPCProcess(ipcProcess);
 	}
-
 }

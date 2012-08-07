@@ -131,20 +131,6 @@ public class RINAConfiguration {
 	}
 	
 	/**
-	 * Get the RMT port number of the IPC Process named "apName"
-	 * @param apName
-	 * @return
-	 */
-	public int getRMTPortNumber(String apName){
-		KnownIPCProcessConfiguration ipcConf = this.getIPCProcessConfiguration(apName);
-		if (ipcConf != null){
-			return ipcConf.getRmtPortNumber();
-		}else{
-			return this.getLocalConfiguration().getRmtPort();
-		}
-	}
-	
-	/**
 	 * Get the Flow Allocator port number of the IPC Process named "apName"
 	 * @param apName
 	 * @return
@@ -190,20 +176,6 @@ public class RINAConfiguration {
 		}
 		
 		return null;
-	}
-	
-	/**
-	 * Get the RMT port number of the IPC Process whose address is "address"
-	 * @param address
-	 * @return
-	 */
-	public int getRMTPortNumber(long address){
-		KnownIPCProcessConfiguration ipcConf = this.getIPCProcessConfiguration(address);
-		if (ipcConf != null){
-			return ipcConf.getRmtPortNumber();
-		}else{
-			return this.getLocalConfiguration().getRmtPort();
-		}
 	}
 	
 	/**

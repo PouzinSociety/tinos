@@ -1,4 +1,4 @@
-package rina.efcp.impl;
+package rina.efcp.api;
 
 import rina.flowallocator.api.ConnectionId;
 
@@ -10,6 +10,8 @@ import com.google.common.primitives.Longs;
  *
  */
 public class PDUParser {
+
+	public static final int MANAGEMENT_PDU_TYPE = 0xC0;
 	
 	/**
 	 * Encode the fields that are always the same using Little Endian byte order
@@ -81,6 +83,47 @@ public class PDUParser {
 		System.arraycopy(sdu, 0, pdu, 15, sdu.length);
 		
 		return pdu;
+	}
+	
+	/**
+	 * Encodes a PDU to byte array
+	 * @param pdu
+	 * @return
+	 */
+	public static byte[] encodePDU(PDU pdu){
+		return encodePDU(pdu.getDestinationAddress(), pdu.getSourceAddress(), pdu.getConnectionId().getSourceCEPId(), 
+				pdu.getConnectionId().getDestinationCEPId(), pdu.getConnectionId().getQosId(), pdu.getSequenceNumber(), 
+				pdu.getPduType(), pdu.getFlags(), pdu.getUserData().get(0));
+	}
+	
+	/**
+	 * Encodes a PDU with the provided parameters
+	 * @param destinationAddress
+	 * @param sourceAddress
+	 * @param sourceCEPid
+	 * @param destinationCEPid
+	 * @param qosid
+	 * @param sequenceNumber
+	 * @param pduType
+	 * @param flags
+	 * @param sdu
+	 * @return
+	 */
+	public static byte[] encodePDU(long destinationAddress, long sourceAddress, long sourceCEPid, long destinationCEPid, int qosid, 
+			long sequenceNumber, int pduType, int flags, byte[] sdu){
+		byte[] preComputedPCI = computePCI(destinationAddress, sourceAddress, sourceCEPid, destinationCEPid, qosid);
+		return generatePDU(preComputedPCI, sequenceNumber, pduType, flags, sdu);
+	}
+	
+	/**
+	 * Encode a management PDU
+	 * @param destinationAddress
+	 * @param sourceAddress
+	 * @param sdu
+	 * @return
+	 */
+	public static byte[] encodeManagementPDU(byte[] sdu){
+		return encodePDU(0L, 0L, 0L, 0L, 0, 0L, MANAGEMENT_PDU_TYPE, 0, sdu);
 	}
 	
 	/**

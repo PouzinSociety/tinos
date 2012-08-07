@@ -18,11 +18,6 @@ public class LocalConfiguration {
 	private int flowAllocatorPort = 32770;
 	
 	/**
-	 * The port where the RMT is listening for incoming TCP connections from remote RMTs
-	 */
-	private int rmtPort = 32769;
-	
-	/**
 	 * The maximum time the CDAP state machine of a session will wait for connect or release responses (in ms)
 	 */
 	private int cdapTimeoutInMs = 10000;
@@ -76,14 +71,6 @@ public class LocalConfiguration {
 
 	public void setFlowAllocatorPort(int flowAllocatorPort) {
 		this.flowAllocatorPort = flowAllocatorPort;
-	}
-
-	public int getRmtPort() {
-		return rmtPort;
-	}
-
-	public void setRmtPort(int rmtPort) {
-		this.rmtPort = rmtPort;
 	}
 
 	public int getCdapTimeoutInMs() {
