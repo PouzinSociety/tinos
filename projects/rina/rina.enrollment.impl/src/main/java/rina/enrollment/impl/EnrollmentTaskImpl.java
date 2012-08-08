@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
@@ -78,11 +79,14 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 	private ResourceAllocator resourceAllocator = null;
 	private CDAPSessionManager cdapSessionManager = null;
 	private Map<Integer, Neighbor> portIdsPendingToBeAllocated = null;
+	
+	private Timer timer = null;
 
 	public EnrollmentTaskImpl(){
 		this.enrollmentStateMachines = new Hashtable<String, BaseEnrollmentStateMachine>();
 		this.timeout = RINAConfiguration.getInstance().getLocalConfiguration().getEnrollmentTimeoutInMs();
 		this.portIdsPendingToBeAllocated = new ConcurrentHashMap<Integer, Neighbor>();
+		this.timer = new Timer();
 	}
 	
 	@Override
@@ -261,14 +265,14 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 			return;
 		}
 		
-		//Allocate a new reliable N-1 Flow to the destination IPC Process
+		//Allocate a new reliable N-1 Flow to the destination IPC Process, dedicated to layer management
 		FlowService flowService = new FlowService();
 		flowService.setDestinationAPNamingInfo(candidateNamingInfo);
 		flowService.setSourceAPNamingInfo(this.getIPCProcess().getApplicationProcessNamingInfo());
 		QualityOfServiceSpecification qosSpec = new QualityOfServiceSpecification();
 		qosSpec.setQosCubeId(2);
 		flowService.setQoSSpecification(qosSpec);
-		this.resourceAllocator.getNMinus1FlowManager().allocateNMinus1Flow(flowService);
+		this.resourceAllocator.getNMinus1FlowManager().allocateNMinus1Flow(flowService, true);
 		
 		//Store state of pending flows
 		this.portIdsPendingToBeAllocated.put(new Integer(flowService.getPortId()), candidate);
@@ -543,13 +547,19 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 	}
 	 
 	 /**
-	  * Called by the enrollment state machine when the enrollment request has been completed, either successfully or unsuccessfully
+	  * Called by the enrollment state machine when the enrollment request has been completed successfully
 	  * @param candidate the IPC process we were trying to enroll to
 	  * @param enrollee true if this IPC process is the one that initiated the 
 	  * enrollment sequence (i.e. it is the application process that wants to 
 	  * join the DIF)
 	  */
 	 public void enrollmentCompleted(Neighbor dafMember, boolean enrollee){
+		 if (enrollee){
+			 //request the allocation of N-1 flows with the neighbor, to be used by data transfer
+			 RequestNMinusOneFlowAllocation task = new RequestNMinusOneFlowAllocation(dafMember, 
+					 this.getIPCProcess().getApplicationProcessNamingInfo(), this.resourceAllocator.getNMinus1FlowManager());
+			 timer.schedule(task, 200);
+		 }
 	 }
 	
 	/**

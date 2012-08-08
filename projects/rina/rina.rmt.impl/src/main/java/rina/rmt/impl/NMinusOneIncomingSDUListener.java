@@ -7,6 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.aux.QueueSubscriptor;
+import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.PDU;
 import rina.efcp.api.PDUParser;
 import rina.ipcmanager.api.IPCManager;
@@ -50,17 +51,23 @@ public class NMinusOneIncomingSDUListener implements QueueSubscriptor, Runnable{
 	private IPCProcess ipcProcess = null;
 	
 	/**
+	 * The data transfer AE
+	 */
+	private DataTransferAE dataTransferAE = null;
+	
+	/**
 	 * The IPC Process Address
 	 */
 	private long myAddress = -1;
 	
 	public NMinusOneIncomingSDUListener(IPCManager ipcManager, RIBDaemon ribDaemon, 
-			PDUForwardingTable pduForwardingTable, IPCProcess ipcProcess){
+			PDUForwardingTable pduForwardingTable, IPCProcess ipcProcess, DataTransferAE dataTransferAE){
 		this.ipcManager = ipcManager;
 		this.ribDaemon = ribDaemon;
 		this.queuesReadyToBeRead = new LinkedBlockingQueue<Integer>();
 		this.pduForwardingTable = pduForwardingTable;
 		this.ipcProcess = ipcProcess;
+		this.dataTransferAE = dataTransferAE;
 		log.debug("N-1 Incoming SDU Listener executing!");
 	}
 	
@@ -127,24 +134,35 @@ public class NMinusOneIncomingSDUListener implements QueueSubscriptor, Runnable{
 		
 		//4 Check the address to see if this IPC Process is the destination of this PDU
 		if (decodedPDU.getDestinationAddress() == getMyAddress()){
-			//TODO If it is deliver to right EFCP processing queue
+			try{
+				this.dataTransferAE.getIncomingConnectionQueue(decodedPDU.getConnectionId().getDestinationCEPId()).
+					writeDataToQueue(decodedPDU);
+			}catch(Exception ex){
+				log.warn("Problems writing PDU to incoming EFCP queue identified by CEP id " 
+						+ decodedPDU.getConnectionId().getDestinationCEPId() +". Dropping the PDU.", ex);
+			}
 		}else{
 			//If it is not, check forwarding table, reapply protection if required
 			//and deliver to right N-1 outgoing queue
-			int outgoingPortId = this.pduForwardingTable.getNMinusOnePortId(decodedPDU);
-			if (outgoingPortId == -1){
+			int[] outgoingPortIds = this.pduForwardingTable.getNMinusOnePortId(decodedPDU.getDestinationAddress(), 
+					decodedPDU.getConnectionId().getQosId());
+			if (outgoingPortIds == null){
 				log.warn("Dropping the PDU since I could not find an entry in the forwarding table for it."
 						+decodedPDU.toString());
 				return;
 			}
-			try {
-				//TODO reapply protection
-				//Send through N-1 flow
-				this.ipcManager.getOutgoingFlowQueue(outgoingPortId).writeDataToQueue(sdu);
-			} catch (IPCException ex) {
-				log.warn("Dropping the PDU since an error happened while writing to the N-1 flow " +
-						"identified by portId "+outgoingPortId, ex);
+			
+			for(int i=0; i<outgoingPortIds.length; i++){
+				try {	
+					//TODO reapply protection
+					//Send through N-1 flow
+					this.ipcManager.getOutgoingFlowQueue(outgoingPortIds[i]).writeDataToQueue(sdu);
+				} catch (IPCException ex) {
+					log.warn("Dropping the PDU since an error happened while writing to the N-1 flow " +
+							"identified by portId "+outgoingPortIds[i], ex);
+				}
 			}
+
 		}
 	}
 

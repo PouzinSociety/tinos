@@ -34,8 +34,8 @@ public class ResourceAllocatorImpl extends BaseResourceAllocator{
 	private PDUForwardingTableImpl pduForwardingTable = null;
 
 	public ResourceAllocatorImpl(){
-		nMinus1FlowManager = new NMinus1FlowManagerImpl();
 		pduForwardingTable = new PDUForwardingTableImpl();
+		nMinus1FlowManager = new NMinus1FlowManagerImpl(pduForwardingTable);
 	}
 	
 	public NMinus1FlowManager getNMinus1FlowManager() {

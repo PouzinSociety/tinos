@@ -16,6 +16,6 @@ public class LastSDUSentTimerTask extends TimerTask{
 
 	@Override
 	public void run() {
-		flowAllocatorInstance.socketClosed();
+		flowAllocatorInstance.lastSDUSentTimerExpired();
 	}
 }

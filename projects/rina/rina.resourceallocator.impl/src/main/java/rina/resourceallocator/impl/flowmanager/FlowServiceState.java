@@ -24,6 +24,12 @@ public class FlowServiceState {
 	 * The IPC Process that is handling our request
 	 */
 	private IPCService ipcService = null;
+	
+	/**
+	 * True if this N-1 flow is used for layer management, 
+	 * false otherwise
+	 */
+	private boolean management = false;
 
 	public FlowService getFlowService() {
 		return flowService;
@@ -49,6 +55,14 @@ public class FlowServiceState {
 		return ipcService;
 	}
 	
+	public boolean isManagement() {
+		return management;
+	}
+
+	public void setManagement(boolean management) {
+		this.management = management;
+	}
+
 	@Override
 	public boolean equals(Object object){
 		if (object == null){

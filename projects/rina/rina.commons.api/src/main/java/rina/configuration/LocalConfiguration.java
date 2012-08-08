@@ -13,11 +13,6 @@ public class LocalConfiguration {
 	private int consolePort = 32766;
 	
 	/**
-	 * The port where the Flow Allocator is listening for incoming TCP connections from remote Flow Allocators
-	 */
-	private int flowAllocatorPort = 32770;
-	
-	/**
 	 * The maximum time the CDAP state machine of a session will wait for connect or release responses (in ms)
 	 */
 	private int cdapTimeoutInMs = 10000;
@@ -63,14 +58,6 @@ public class LocalConfiguration {
 
 	public void setConsolePort(int consolePort) {
 		this.consolePort = consolePort;
-	}
-
-	public int getFlowAllocatorPort() {
-		return flowAllocatorPort;
-	}
-
-	public void setFlowAllocatorPort(int flowAllocatorPort) {
-		this.flowAllocatorPort = flowAllocatorPort;
 	}
 
 	public int getCdapTimeoutInMs() {

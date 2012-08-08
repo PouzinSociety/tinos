@@ -76,7 +76,7 @@ public interface IPCManager {
 	 * @return
 	 * @throws IPCException if there is no incoming queue associated to portId
 	 */
-	public BlockingQueueWithSubscriptor getIncomingFlowQueue(int portId) throws IPCException;
+	public BlockingQueueWithSubscriptor<byte[]> getIncomingFlowQueue(int portId) throws IPCException;
 	
 	/**
 	 * Get the outgoing queue that supports the flow identified by portId
@@ -84,7 +84,7 @@ public interface IPCManager {
 	 * @return
 	 * @throws IPCException if there is no outgoing queue associated to portId
 	 */
-	public BlockingQueueWithSubscriptor getOutgoingFlowQueue(int portId) throws IPCException;
+	public BlockingQueueWithSubscriptor<byte[]> getOutgoingFlowQueue(int portId) throws IPCException;
 	
 	/* CONVENIENT OPERATIONS */
 	public CDAPSessionManagerFactory getCDAPSessionManagerFactory();

@@ -194,16 +194,16 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 			throw new Exception("Resource Allocator Factory is null");
 		}
 
-		if (this.rmtFactory != null){
-			ipcProcess.addIPCProcessComponent(this.rmtFactory.createRMT(apNamingInfo));
-		}else{
-			throw new Exception("RMT Factory is null");
-		}
-
 		if (this.dataTransferAEFactory != null){
 			ipcProcess.addIPCProcessComponent(dataTransferAEFactory.createDataTransferAE(apNamingInfo));
 		}else{
 			throw new Exception("Data Transfer AE Factory is null");
+		}
+		
+		if (this.rmtFactory != null){
+			ipcProcess.addIPCProcessComponent(this.rmtFactory.createRMT(apNamingInfo));
+		}else{
+			throw new Exception("RMT Factory is null");
 		}
 
 		if (this.flowAllocatorFactory != null){

@@ -141,6 +141,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon implements EventListener{
 			synchronized(atomicSendLock){
 				cdapMessage = cdapSessionManager.messageReceived(encodedCDAPMessage, portId);
 				cdapSessionDescriptor = cdapSessionManager.getCDAPSession(portId).getSessionDescriptor();
+				log.debug("Received CDAP Message through N-1 flow identified by portId "+portId+":"+cdapMessage.toString());
 			}
 		}catch(CDAPException ex){
 			log.error("Error decoding CDAP message: " + ex.getMessage());

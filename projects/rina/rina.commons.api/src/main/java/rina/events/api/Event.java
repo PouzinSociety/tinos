@@ -8,6 +8,8 @@ package rina.events.api;
 public interface Event {
 	
 	public static final String CONNECTIVITY_TO_NEIGHBOR_LOST = "Connectivity to Neighbor Lost";
+	public static final String EFCP_CONNECTION_CREATED = "EFCP Connection Created";
+	public static final String EFCP_CONNECTION_DELETED = "EFCP Connection Deleted";
 	public static final String MANAGEMENT_FLOW_ALLOCATED = "Management Flow Allocated";
 	public static final String MANAGEMENT_FLOW_DEALLOCATED = "Management Flow Deallocated";
 	public static final String N_MINUS_1_FLOW_ALLOCATED = "N minus 1 Flow Allocated";

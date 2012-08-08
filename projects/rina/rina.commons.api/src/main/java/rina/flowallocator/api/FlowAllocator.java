@@ -1,7 +1,5 @@
 package rina.flowallocator.api;
 
-import java.net.Socket;
-
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcessComponent;
 import rina.ipcservice.api.APService;
@@ -61,15 +59,6 @@ public interface FlowAllocator extends IPCProcessComponent{
 	 * @param underlyingPortId
 	 */
 	public void createFlowRequestMessageReceived(CDAPMessage cdapMessage, int underlyingPortId);
-	
-	/**
-	 * The Flow Allocator TCP server notifies that a new TCP 
-	 * data flow has been accepted. This operation has to read the remote 
-	 * port id and either create a Flow Allocator instance or pass the 
-	 * information to an existing one.
-	 * @param socket
-	 */
-	public void newConnectionAccepted(Socket socket);
 	
 	/**
 	 * Called by the flow allocator instance when it finishes to cleanup the state.

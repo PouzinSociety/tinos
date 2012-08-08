@@ -1,7 +1,5 @@
 package rina.efcp.impl;
 
-import java.net.Socket;
-
 import rina.efcp.api.DataTransferConstants;
 import rina.efcp.api.PDUParser;
 import rina.flowallocator.api.ConnectionId;
@@ -119,11 +117,6 @@ public class DTAEIState {
 	private long destinationAddress = 0;
 	
 	/**
-	 * The socket used to transmit the PDU
-	 */
-	private Socket socket = null;
-	
-	/**
 	 * The portId associated to the flow in this IPC Process
 	 */
 	private long portId = 0;
@@ -220,14 +213,6 @@ public class DTAEIState {
 	
 	public long getPortId(){
 		return this.portId;
-	}
-
-	public Socket getSocket() {
-		return socket;
-	}
-
-	public void setSocket(Socket socket) {
-		this.socket = socket;
 	}
 
 	public Flow getFlow() {

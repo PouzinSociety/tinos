@@ -51,8 +51,6 @@ import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
-import rina.rmt.api.BaseRMT;
-import rina.rmt.api.RMT;
 
 /**
  * The IPC Manager is the component of a DAF that manages the local IPC resources. In its current implementation it 
@@ -91,13 +89,13 @@ public class IPCManagerImpl implements IPCManager{
 	 * The incoming flow queues of all the IPC Processes in this instantiation 
 	 * of the RINA software
 	 */
-	private Map<Integer, BlockingQueueWithSubscriptor> incomingFlowQueues = null;
+	private Map<Integer, BlockingQueueWithSubscriptor<byte[]>> incomingFlowQueues = null;
 	
 	/**
 	 * The outgoing flow queues of all the IPC Processes in this instantiation 
 	 * of the RINA software
 	 */
-	private Map<Integer, BlockingQueueWithSubscriptor> outgoingFlowQueues = null;
+	private Map<Integer, BlockingQueueWithSubscriptor<byte[]>> outgoingFlowQueues = null;
 	
 	/**
 	 * the SDU Delivery Service
@@ -115,8 +113,8 @@ public class IPCManagerImpl implements IPCManager{
 		apServiceTCPServer = new APServiceTCPServer(this, sduDeliveryService);
 		executorService.execute(apServiceTCPServer);
 		this.portIdsInUse = new ArrayList<Integer>();
-		this.incomingFlowQueues = new ConcurrentHashMap<Integer, BlockingQueueWithSubscriptor>();
-		this.outgoingFlowQueues = new ConcurrentHashMap<Integer, BlockingQueueWithSubscriptor>();
+		this.incomingFlowQueues = new ConcurrentHashMap<Integer, BlockingQueueWithSubscriptor<byte[]>>();
+		this.outgoingFlowQueues = new ConcurrentHashMap<Integer, BlockingQueueWithSubscriptor<byte[]>>();
 		log.debug("IPC Manager started");
 	}
 	
@@ -386,8 +384,8 @@ public class IPCManagerImpl implements IPCManager{
 					IPCException.PROBLEMS_ALLOCATING_FLOW + ". There are existing queues supporting this portId");
 		}
 		
-		this.incomingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor(portId, capacity));
-		this.outgoingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor(portId, capacity));
+		this.incomingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor<byte[]>(portId, capacity));
+		this.outgoingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor<byte[]>(portId, capacity));
 	}
 	
 	/**
@@ -406,8 +404,8 @@ public class IPCManagerImpl implements IPCManager{
 	 * @return
 	 * @throws IPCException if there is no incoming queue associated to portId
 	 */
-	public BlockingQueueWithSubscriptor getIncomingFlowQueue(int portId) throws IPCException{
-		BlockingQueueWithSubscriptor result = this.incomingFlowQueues.get(new Integer(portId));
+	public BlockingQueueWithSubscriptor<byte[]> getIncomingFlowQueue(int portId) throws IPCException{
+		BlockingQueueWithSubscriptor<byte[]> result = this.incomingFlowQueues.get(new Integer(portId));
 		if (result == null){
 			throw new IPCException(IPCException.ERROR_CODE, "Could not find the incoming flow queue associated to portId "+portId);
 		}
@@ -421,8 +419,8 @@ public class IPCManagerImpl implements IPCManager{
 	 * @return
 	 * @throws IPCException if there is no outgoing queue associated to portId
 	 */
-	public BlockingQueueWithSubscriptor getOutgoingFlowQueue(int portId) throws IPCException{
-		BlockingQueueWithSubscriptor result = this.outgoingFlowQueues.get(new Integer(portId));
+	public BlockingQueueWithSubscriptor<byte[]> getOutgoingFlowQueue(int portId) throws IPCException{
+		BlockingQueueWithSubscriptor<byte[]> result = this.outgoingFlowQueues.get(new Integer(portId));
 		if (result == null){
 			throw new IPCException(IPCException.ERROR_CODE, "Could not find the outgoing flow queue associated to portId "+portId);
 		}

@@ -2,6 +2,7 @@ package rina.ipcmanager.impl.apservice;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -96,7 +97,12 @@ public class APServiceImpl implements APService{
 			sendErrorMessageAndCloseSocket(errorMessage, socket);
 			return;
 		}else{
-			ipcService = (IPCService) ipcProcesses.get(0);
+			for(int i=0; i<ipcProcesses.size(); i++){
+				if (ipcProcesses.get(i).getType() == IPCProcess.IPCProcessType.NORMAL){
+					ipcService = (IPCService) ipcProcesses.get(i);
+					break;
+				}
+			}
 		}
 		
 		this.flowServiceState = new FlowServiceState();
@@ -197,8 +203,9 @@ public class APServiceImpl implements APService{
 			return;
 		}
 		
-		List<String> difNames = null;
-		if (applicationRegistration.getDifNames() == null || applicationRegistration.getDifNames().size() == 0){
+		
+		List<String> difNames = new ArrayList<String>();
+		/*if (applicationRegistration.getDifNames() == null || applicationRegistration.getDifNames().size() == 0){
 			difNames = ipcManager.listDIFNames();
 		}else{
 			difNames = applicationRegistration.getDifNames();
@@ -215,6 +222,20 @@ public class APServiceImpl implements APService{
 					ipcService.register(applicationRegistration.getApNamingInfo(), this);
 				}catch(Exception ex){
 					//TODO handle well this exception
+				}
+			}
+		}*/
+		
+		List<IPCProcess> ipcProcesses = ipcManager.listIPCProcesses();
+		IPCProcess ipcProcess = null;
+		for(int i=0; i<ipcProcesses.size(); i++){
+			ipcProcess = ipcProcesses.get(i);
+			if (ipcProcess.getType() == IPCProcess.IPCProcessType.NORMAL){
+				try{
+					((IPCService) ipcProcess).register(applicationRegistration.getApNamingInfo(), this);
+					difNames.add(ipcProcess.getDIFName());
+				}catch(Exception ex){
+					log.error("Error registering application", ex);
 				}
 			}
 		}

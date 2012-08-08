@@ -3,8 +3,11 @@ package rina.rmt.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import rina.efcp.api.BaseDataTransferAE;
+import rina.efcp.api.DataTransferAE;
 import rina.events.api.Event;
 import rina.events.api.EventListener;
+import rina.events.api.events.EFCPConnectionCreatedEvent;
 import rina.events.api.events.NMinusOneFlowAllocatedEvent;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.IPCProcess;
@@ -29,6 +32,12 @@ public class RMTImpl extends BaseRMT implements EventListener{
 	private NMinusOneIncomingSDUListener nMinusOneIncomingSDUListener = null;
 	
 	/**
+	 * The class that will execute in a separate thread to read the 
+	 * outgoing EFCP PDUs
+	 */
+	private EFCPOutgoingPDUListener efcpOutgoingPDUListener = null;
+	
+	/**
 	 * The IPC Manager
 	 */
 	private IPCManager ipcManager = null;
@@ -37,6 +46,11 @@ public class RMTImpl extends BaseRMT implements EventListener{
 	 * The RIB Daemon
 	 */
 	private RIBDaemon ribDaemon = null;
+	
+	/**
+	 * The Data Transfer AE
+	 */
+	private DataTransferAE dataTransferAE = null;
 	
 	public RMTImpl(){
 	}
@@ -49,13 +63,19 @@ public class RMTImpl extends BaseRMT implements EventListener{
 		//Subscribe to N-1 Flow deallocated events
 		this.ribDaemon = (RIBDaemon) this.getIPCProcess().getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		ribDaemon.subscribeToEvent(Event.N_MINUS_1_FLOW_ALLOCATED, this);
+		ribDaemon.subscribeToEvent(Event.EFCP_CONNECTION_CREATED, this);
 		
 		ResourceAllocator resourceAllocator = (ResourceAllocator) this.getIPCProcess().getIPCProcessComponent(BaseResourceAllocator.getComponentName());
+		this.dataTransferAE = (DataTransferAE) this.getIPCProcess().getIPCProcessComponent(BaseDataTransferAE.getComponentName());
 		
-		//Initialize and execute the N-1 Outgoing SDU Listener
+		//Initialize and execute the N-1 Incoming SDU Listener
 		this.nMinusOneIncomingSDUListener = new NMinusOneIncomingSDUListener(ipcManager, ribDaemon, 
-				resourceAllocator.getPDUForwardingTable(), ipcProcess);
+				resourceAllocator.getPDUForwardingTable(), ipcProcess, dataTransferAE);
 		this.ipcManager.execute(this.nMinusOneIncomingSDUListener);
+		
+		//Initialize and execute the EFCP Outgoing PDU Listener
+		this.efcpOutgoingPDUListener = new EFCPOutgoingPDUListener(ipcManager, dataTransferAE, resourceAllocator.getPDUForwardingTable());
+		this.ipcManager.execute(this.efcpOutgoingPDUListener);
 	}
 	
 	/**
@@ -64,17 +84,7 @@ public class RMTImpl extends BaseRMT implements EventListener{
 	@Override
 	public void stop(){
 		this.nMinusOneIncomingSDUListener.stop();
-	}
-
-	/**
-	 * When the RMT receives an EFCP PDU via a send primitive, it inspects the destination 
-	 * address field and the connection-id field of the PDU. Using the FIB, it determines 
-	 * which queue, the PDU should be placed on
-	 * @param pdu
-	 */
-	public void sendEFCPPDU(byte[] pdu) {
-		//It will never be called by this implementation since DTP is not implemented yet and 
-		//each flow allocation triggers a new TCP connection
+		this.efcpOutgoingPDUListener.stop();
 	}
 	
 	/**
@@ -88,6 +98,13 @@ public class RMTImpl extends BaseRMT implements EventListener{
 				this.ipcManager.getIncomingFlowQueue(flowEvent.getPortId()).subscribeToQueue(this.nMinusOneIncomingSDUListener);
 			}catch(Exception ex){
 				log.error("Problems subscribing to N-1 incoming flow queue.", ex);
+			}
+		}else if (event.getId().equals(Event.EFCP_CONNECTION_CREATED)){
+			EFCPConnectionCreatedEvent efcpEvent = (EFCPConnectionCreatedEvent) event;
+			try{
+				this.dataTransferAE.getOutgoingConnectionQueue(efcpEvent.getConnectionEndpointId()).subscribeToQueue(this.efcpOutgoingPDUListener);
+			}catch(Exception ex){
+				log.error("Problems subscribing to outgoing EFCP queue.", ex);
 			}
 		}
 	}

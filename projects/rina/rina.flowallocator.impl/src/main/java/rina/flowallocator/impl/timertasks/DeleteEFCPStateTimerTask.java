@@ -39,8 +39,14 @@ public class DeleteEFCPStateTimerTask extends TimerTask{
 		
 		// 3 Remove the incoming and outgoing flow queues, remove the DTP and DTCP state
 		this.ipcManager.removeFlowQueues(portId);
+		long connectionEndpointId = -1;
 		for(int i=0; i<flow.getConnectionIds().size(); i++){
-			this.dataTransferAE.deleteConnection(flow.getConnectionIds().get(i));
+			if (flow.isSource()){
+				connectionEndpointId = flow.getConnectionIds().get(i).getSourceCEPId();
+			}else{
+				connectionEndpointId = flow.getConnectionIds().get(i).getDestinationCEPId();
+			}
+			this.dataTransferAE.deleteConnection(connectionEndpointId);
 		}
 		this.dataTransferAE.freeCEPIds(this.portId);
 	}

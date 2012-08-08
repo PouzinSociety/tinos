@@ -1,6 +1,5 @@
 package rina.efcp.impl;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -9,8 +8,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.aux.QueueSubscriptor;
-import rina.delimiting.api.Delimiter;
+import rina.efcp.api.DataTransferAE;
+import rina.efcp.api.PDU;
 import rina.efcp.api.PDUParser;
+import rina.flowallocator.api.ConnectionId;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcservice.api.IPCException;
 
@@ -40,18 +41,18 @@ public class OutgoingFlowQueuesReader implements Runnable, QueueSubscriptor{
 	private Map<Integer, DTAEIState> portIdToConnectionMapping = null;
 	
 	/**
-	 * The Delimiter instance
+	 * the Data Transfer AE
 	 */
-	private Delimiter delimiter = null;
+	private DataTransferAE dataTransferAE = null;
 	
 	private boolean end = false;
 	
-	public OutgoingFlowQueuesReader(IPCManager ipcManager, 
-			Map<Integer, DTAEIState> portIdToConnectionMapping, Delimiter delimiter){
+	public OutgoingFlowQueuesReader(IPCManager ipcManager, Map<Integer, DTAEIState> portIdToConnectionMapping, 
+			DataTransferAE dataTransferAE){
 		this.ipcManager = ipcManager;
+		this.dataTransferAE = dataTransferAE;
 		this.queuesReadyToBeRead = new LinkedBlockingQueue<Integer>();
 		this.portIdToConnectionMapping = portIdToConnectionMapping;
-		this.delimiter = delimiter;
 	}
 		
 	public void stop(){
@@ -72,7 +73,7 @@ public class OutgoingFlowQueuesReader implements Runnable, QueueSubscriptor{
 		
 		while(!end){
 			try{
-				portId = this.queuesReadyToBeRead.take().intValue();
+				portId = this.queuesReadyToBeRead.take();
 				if (portId.intValue() < 0){
 					break;
 				}
@@ -107,28 +108,26 @@ public class OutgoingFlowQueuesReader implements Runnable, QueueSubscriptor{
 			return;
 		}
 		
-		//The last SDU has been written
-		if (sdu.length == 0){
-			try{
-				state.getSocket().getOutputStream().write(0);
-			}catch(IOException ex){
-				log.error(ex);
-				return;
-			}
-		}
-		
 		//Convert the SDU into a PDU and post it to an RMT queue (right now posting it to the socket)
 		byte[] pdu = PDUParser.generatePDU(state.getPreComputedPCI(), 
 				state.getNextSequenceToSend(), 0x81, 0x00, sdu);
+		
+		PDU pduWrapper = new PDU();
+		pduWrapper.setRawPDU(pdu);
+		pduWrapper.setDestinationAddress(state.getDestinationAddress());
+		ConnectionId connectionId = new ConnectionId();
+		connectionId.setQosId(state.getQoSId());
+		pduWrapper.setConnectionId(connectionId);
 		
 		/*log.debug("Encoded PDU: \n" + "Destination @: " + state.getDestinationAddress() + " CEPid: "+state.getSourceCEPid() + 
 				" Source @: "+state.getSourceAddress() + " CEPid: "+state.getSourceCEPid() + "\n QoSid: "
 				+ state.getQoSId() + " PDU type: 129 Flags: 00 Sequence Number: " +state.getNextSequenceToSend()); 
 		log.debug("Sending PDU " + printBytes(pdu)+"\n");*/
 		try{
-			state.getSocket().getOutputStream().write(this.delimiter.getDelimitedSdu(pdu));
-		}catch(IOException ex){
-			log.error(ex);
+			this.dataTransferAE.getOutgoingConnectionQueue(state.getSourceCEPid()).writeDataToQueue(pduWrapper);
+		}catch(Exception ex){
+			log.error("Problems writing PDU to outgoing EFCP queue belonging to CEP id "+state.getSourceCEPid() 
+					+ ". Dropping PDU.", ex);
 			return;
 		}
 		
@@ -148,6 +147,7 @@ public class OutgoingFlowQueuesReader implements Runnable, QueueSubscriptor{
 	}
 
 	public void queueReadyToBeRead(int queueId) {
+		log.debug("Outgoing queue of flow "+queueId+" has data available!");
 		try {
 			this.queuesReadyToBeRead.put(new Integer(queueId));
 		} catch (InterruptedException e) {

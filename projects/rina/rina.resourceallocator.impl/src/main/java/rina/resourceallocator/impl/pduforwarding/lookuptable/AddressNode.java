@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class AddressNode {
 	
-	private int portId = -1;
+	private int[] portIds = null;
 	
 	private Map<Integer, QoSIdNode> qosIdNodes = null;
 	
@@ -13,11 +13,8 @@ public class AddressNode {
 		qosIdNodes = new ConcurrentHashMap<Integer, QoSIdNode>();
 	}
 	
-	public void addQoSIdNode(int qosId, int portId){
-		QoSIdNode node = new QoSIdNode();
-		if (portId != -1){
-			node.setPortId(portId);
-		}
+	public void addQoSIdNode(int qosId, int[] portIds){
+		QoSIdNode node = new QoSIdNode(portIds);
 		this.qosIdNodes.put(new Integer(qosId), node);
 	}
 	
@@ -33,12 +30,12 @@ public class AddressNode {
 		this.qosIdNodes.remove(new Integer(qosId));
 	}
 	
-	public void setPortId(int portId){
-		this.portId = portId;
+	public void setPortIds(int[] portIds){
+		this.portIds = portIds;
 	}
 	
-	public int getPortId(){
-		return this.portId;
+	public int[] getPortIds(){
+		return this.portIds;
 	}
 
 }

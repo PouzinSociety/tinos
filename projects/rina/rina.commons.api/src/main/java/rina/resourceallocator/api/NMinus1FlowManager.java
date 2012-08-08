@@ -15,8 +15,9 @@ public interface NMinus1FlowManager {
 	 * Allocate an N-1 Flow with the requested QoS to the destination 
 	 * IPC Process 
 	 * @param flowService contains the destination IPC Process and requested QoS information
+	 * @param management true if this flow will be used for layer management, false otherwise
 	 */
-	public void allocateNMinus1Flow(FlowService flowService);
+	public void allocateNMinus1Flow(FlowService flowService, boolean management);
 	
 	/**
 	 * Deallocate the N-1 Flow identified by portId

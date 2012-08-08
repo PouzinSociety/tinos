@@ -10,6 +10,7 @@ import rina.events.api.events.NMinusOneFlowAllocatedEvent;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCService;
+import rina.resourceallocator.api.PDUForwardingTable;
 import rina.resourceallocator.impl.flowmanager.FlowServiceState.Status;
 import rina.resourceallocator.impl.ribobjects.NMinus1FlowRIBObject;
 import rina.resourceallocator.impl.ribobjects.NMinus1FlowSetRIBObject;
@@ -26,14 +27,19 @@ public class DeliverAllocateResponseTimerTask extends TimerTask{
 	private Map<Integer, FlowServiceState> flowServiceStates = null;
 	private APService apService = null;
 	private RIBDaemon ribDaemon = null;
+	private long destinationAddress = -1;
+	private PDUForwardingTable pduForwardingTable = null;
 	
 	public DeliverAllocateResponseTimerTask(IPCService ipcService, FlowService flowService, Map<Integer, 
-			FlowServiceState> flowServiceStates, APService apService, RIBDaemon ribDaemon){
+			FlowServiceState> flowServiceStates, APService apService, RIBDaemon ribDaemon, 
+			long destinationAddress, PDUForwardingTable pduForwardingTable){
 		this.ipcService = ipcService;
 		this.flowService = flowService;
 		this.flowServiceStates = flowServiceStates;
 		this.apService = apService;
 		this.ribDaemon = ribDaemon;
+		this.destinationAddress = destinationAddress;
+		this.pduForwardingTable = pduForwardingTable;
 	}
 	
 	@Override
@@ -52,6 +58,13 @@ public class DeliverAllocateResponseTimerTask extends TimerTask{
 						flowService);
 			}catch(RIBDaemonException ex){
 				log.warn("Error creting N Minus One Flow RIB Object", ex);
+			}
+			
+			log.debug(flowServiceState.isManagement() + " "+destinationAddress);
+			//TODO Move this to the routing module
+			if (!flowServiceState.isManagement() && destinationAddress != -1){
+				int qosId = flowServiceState.getFlowService().getQoSSpecification().getQosCubeId();
+				this.pduForwardingTable.addEntry(destinationAddress, qosId, new int[]{flowService.getPortId()});
 			}
 			
 			//Notify about the event

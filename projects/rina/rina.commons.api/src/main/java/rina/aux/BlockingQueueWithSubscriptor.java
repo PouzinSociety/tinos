@@ -13,7 +13,7 @@ import rina.ipcservice.api.IPCException;
  * @author eduardgrasa
  *
  */
-public class BlockingQueueWithSubscriptor {
+public class BlockingQueueWithSubscriptor<T> {
 	
 	/**
 	 * The class that is subscribed to this queue and 
@@ -25,7 +25,7 @@ public class BlockingQueueWithSubscriptor {
 	/**
 	 * The queue
 	 */
-	private BlockingQueue<byte[]> dataQueue = null;
+	private BlockingQueue<T> dataQueue = null;
 	
 	/**
 	 * The id of the queue
@@ -39,14 +39,14 @@ public class BlockingQueueWithSubscriptor {
 	 */
 	public BlockingQueueWithSubscriptor(int queueId, int queueCapacity){
 		this.queueId = queueId;
-		this.dataQueue = new ArrayBlockingQueue<byte[]>(queueCapacity);
+		this.dataQueue = new ArrayBlockingQueue<T>(queueCapacity);
 	}
 	
 	public void subscribeToQueue(QueueSubscriptor queueSubscriptor){
 		this.queueSubscriptor = queueSubscriptor;
 	}
 	
-	public BlockingQueue<byte[]> getDataQueue(){
+	public BlockingQueue<T> getDataQueue(){
 		return dataQueue;
 	}
 	
@@ -57,7 +57,7 @@ public class BlockingQueueWithSubscriptor {
 	 * @param data
 	 * @throws IPCException
 	 */
-	public void writeDataToQueue(byte[] data) throws IPCException{
+	public void writeDataToQueue(T data) throws IPCException{
 		try{
 			dataQueue.put(data);
 			if (this.queueSubscriptor != null){
@@ -74,7 +74,7 @@ public class BlockingQueueWithSubscriptor {
 	 * @return
 	 * @throws InterruptedException
 	 */
-	public byte[] take() throws InterruptedException{
+	public T take() throws InterruptedException{
 		return this.dataQueue.take();
 	}
 }

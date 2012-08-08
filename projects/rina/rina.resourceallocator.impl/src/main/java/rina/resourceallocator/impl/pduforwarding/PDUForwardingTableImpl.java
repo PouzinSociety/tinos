@@ -3,7 +3,6 @@ package rina.resourceallocator.impl.pduforwarding;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.efcp.api.PDU;
 import rina.ipcprocess.api.IPCProcess;
 import rina.resourceallocator.api.PDUForwardingTable;
 import rina.resourceallocator.impl.pduforwarding.lookuptable.LookupTable;
@@ -36,35 +35,32 @@ public class PDUForwardingTableImpl implements PDUForwardingTable{
 	}
 	
 	/**
-	 * Returns the N-1 portId through which the N PDU has to be sent
-	 * @param pdu
+	 * Returns the N-1 portIds through which the N PDU has to be sent
+	 * @param destinationAddress
+	 * @param qosId
 	 * @return
 	 */
-	public int getNMinusOnePortId(PDU pdu) {
-		return lookupTable.getPortId(pdu.getDestinationAddress(), 
-				pdu.getConnectionId().getQosId(),
-				pdu.getConnectionId().getDestinationCEPId());
+	public int[] getNMinusOnePortId(long destinationAddress, int qosId){
+		return lookupTable.getPortIds(destinationAddress, qosId);
 	}
 	
 	/**
 	 * Add an entry to the forwarding table
 	 * @param destinationAddress
 	 * @param qosId
-	 * @param destinationCEPId
-	 * @param portId the portId associated to the destination_address-qosId-destination_CEP_id 
+	 * @param portIds the portIds associated to the destination_address-qosId
 	 */
-	public void addEntry(long destinationAddress, int qosId, long destinationCEPId, int portId){
-		lookupTable.addEntry(destinationAddress, qosId, destinationCEPId, portId);
+	public void addEntry(long destinationAddress, int qosId, int[] portIds){
+		lookupTable.addEntry(destinationAddress, qosId, portIds);
 	}
 	
 	/**
 	 * Remove an entry from the forwarding table
 	 * @param destinationAddress
 	 * @param qosId
-	 * @param destinationCEPId
 	 */
-	public void removeEntry(long destinationAddress, int qosId, long destinationCEPId){
-		lookupTable.removeEntry(destinationAddress, qosId, destinationCEPId);
+	public void removeEntry(long destinationAddress, int qosId){
+		lookupTable.removeEntry(destinationAddress, qosId);
 	}
 
 }

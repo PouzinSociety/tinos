@@ -1,6 +1,5 @@
 package rina.efcp.impl;
 
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -9,13 +8,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.delimiting.api.BaseDelimiter;
-import rina.delimiting.api.Delimiter;
+import rina.aux.BlockingQueueWithSubscriptor;
+import rina.configuration.RINAConfiguration;
 import rina.efcp.api.BaseDataTransferAE;
 import rina.efcp.api.DataTransferConstants;
 import rina.efcp.api.PDU;
-import rina.efcp.api.PDUParser;
 import rina.efcp.impl.ribobjects.DataTransferConstantsRIBObject;
+import rina.events.api.Event;
+import rina.events.api.events.EFCPConnectionCreatedEvent;
+import rina.events.api.events.EFCPConnectionDeletedEvent;
 import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.Flow;
 import rina.ipcmanager.api.IPCManager;
@@ -68,25 +69,31 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	private Map<Long, DTAEIState> connectionStatesByConnectionId = null;
 	
 	/**
-	 * The IPC Process delimiter
-	 */
-	private Delimiter delimiter = null;
-	
-	/**
-	 * The address of this IPC process
-	 */
-	private long myAddres = -1;
-	
-	/**
 	 * The thread that will read and process SDUs from outgoing flows
 	 * (incoming from this IPC Process point of view)
 	 */
 	private OutgoingFlowQueuesReader outgoingFlowQueuesReader = null;
 	
 	/**
+	 * The thread that will read and process PDUs from incoming EFCP connections 
+	 * and deliver them to the right N-portId
+	 */
+	private IncomingEFCPQueuesReader incomingEFCPQueuesReader = null;
+	
+	/**
 	 * The IPC Manager
 	 */
 	private IPCManager ipcManager = null;
+	
+	/**
+	 * The incoming connection queues of all the EFCP connections in this IPC Process 
+	 */
+	private Map<Long, BlockingQueueWithSubscriptor<PDU>> incomingConnectionQueues = null;
+	
+	/**
+	 * The outgoing connection queues of all the EFCP connections in this IPC Process 
+	 */
+	private Map<Long, BlockingQueueWithSubscriptor<PDU>> outgoingConnectionQueues = null;
 	
 	public DataTransferAEImpl(){
 		this.reservedCEPIds = new ConcurrentHashMap<Integer, int[]>();
@@ -94,19 +101,22 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		this.portIdToConnectionMapping = new ConcurrentHashMap<Integer, DTAEIState>();
 		this.connectionStatesByConnectionId = new ConcurrentHashMap<Long, DTAEIState>();
 		this.dataTransferConstants = new DataTransferConstants();
+		this.incomingConnectionQueues = new ConcurrentHashMap<Long, BlockingQueueWithSubscriptor<PDU>>();
+		this.outgoingConnectionQueues = new ConcurrentHashMap<Long, BlockingQueueWithSubscriptor<PDU>>();
 	}
 	
 	@Override
 	public void setIPCProcess(IPCProcess ipcProcess){
 		super.setIPCProcess(ipcProcess);
 		this.ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-		this.delimiter = (Delimiter) ipcProcess.getIPCProcessComponent(BaseDelimiter.getComponentName());
 		populateRIB(ipcProcess);
 		this.dataTransferConstants = ipcProcess.getDataTransferConstants();
 		this.outgoingFlowQueuesReader = new OutgoingFlowQueuesReader(ipcProcess.getIPCManager(), 
-				portIdToConnectionMapping, delimiter);
+				portIdToConnectionMapping, this);
+		this.incomingEFCPQueuesReader = new IncomingEFCPQueuesReader(ipcManager, connectionStatesByConnectionId, this);
 		this.ipcManager = ipcProcess.getIPCManager();
 		ipcManager.execute(this.outgoingFlowQueuesReader);
+		ipcManager.execute(this.incomingEFCPQueuesReader);
 	}
 	
 	@Override
@@ -116,7 +126,7 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	}
 	
 	/**
-	 * Subscribe to the incoming flow queue identified by portId
+	 * Subscribe to the outgoing flow queue identified by portId
 	 * @param portId the id of the incoming flow queue
 	 */
 	public void subscribeToFlow(int portId) throws IPCException{
@@ -207,15 +217,9 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	 * Initialize the state of a new connection, and bind it to the portId (all the SDUs delivered 
 	 * to the portId by an application will be sent through this connection)
 	 * @param flow the flow object, describing the service supported by this connection
-	 * @param source true if this is the 'source' part of the connection, false if this 
-	 * is the 'destination' part of the connection
-	 * @param socket The socket used to send the data
-	 * @param applicationCallback the callback to the application, used to deliver the data
 	 */
-	public synchronized void createConnectionAndBindToPortId(Flow flow, Socket socket, APService applicationCallback){
+	public synchronized void createConnectionAndBindToPortId(Flow flow){
 		DTAEIState state = new DTAEIState(flow, this.dataTransferConstants);
-		state.setSocket(socket);
-		state.setApplicationCallback(applicationCallback);
 		
 		int portId = 0;
 		if (flow.isSource()){
@@ -224,13 +228,26 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 			portId = (int) flow.getDestinationPortId();
 		}
 		
+		Long connectionEndpointId = null;
 		ConnectionId connectionId = flow.getConnectionIds().get(flow.getCurrentConnectionIdIndex());
 		if (flow.isSource()){
-			this.connectionStatesByConnectionId.put(new Long(connectionId.getSourceCEPId()), state);
+			connectionEndpointId = new Long(connectionId.getSourceCEPId());
 		}else{
-			this.connectionStatesByConnectionId.put(new Long(connectionId.getDestinationCEPId()), state);
+			connectionEndpointId = new Long(connectionId.getDestinationCEPId());
 		}
+		this.connectionStatesByConnectionId.put(connectionEndpointId, state);
+		this.incomingConnectionQueues.put(connectionEndpointId, 
+				new BlockingQueueWithSubscriptor<PDU>(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues()));
+		this.outgoingConnectionQueues.put(connectionEndpointId, 
+				new BlockingQueueWithSubscriptor<PDU>(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues()));
 		this.portIdToConnectionMapping.put(new Integer(portId), state);
+		try{
+			this.getIncomingConnectionQueue(connectionEndpointId.longValue()).subscribeToQueue(this.incomingEFCPQueuesReader);
+		}catch(Exception ex){
+			log.error("Problems subscribing to incoming EFCP Connection queue identified by connectionEndpoint Id "+connectionEndpointId, ex);
+		}
+		Event event = new EFCPConnectionCreatedEvent(connectionEndpointId.longValue());
+		this.ribDaemon.deliverEvent(event);
 	}
 	
 	/**
@@ -249,61 +266,42 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	 * Destroy the instance of the data transfer AE associated to this connection endpoint Id
 	 * @param connection endpoint id
 	 */
-	public synchronized void deleteConnection(ConnectionId connectionId){
-		this.connectionStatesByConnectionId.remove(connectionId);
+	public synchronized void deleteConnection(long connectionEndpointId){
+		Long id = new Long(connectionEndpointId);
+		this.connectionStatesByConnectionId.remove(id);
+		this.outgoingConnectionQueues.remove(id);
+		this.incomingConnectionQueues.remove(id);
+		Event event = new EFCPConnectionDeletedEvent(connectionEndpointId);
+		this.ribDaemon.deliverEvent(event);
 	}
-	
-	private long getMyAddress(){
-		//This code is here since it must be called after enrollment
-		if (this.myAddres == -1){
-			this.myAddres = this.getIPCProcess().getAddress().longValue();
+
+	/**
+	 * Get the incoming queue that supports the connection identified by connectionEndpointId
+	 * @param connectionId
+	 * @return
+	 * @throws IPCException if there is no incoming queue associated to connectionEndpointId
+	 */
+	public BlockingQueueWithSubscriptor<PDU> getIncomingConnectionQueue(long connectionEndpointId) throws IPCException{
+		BlockingQueueWithSubscriptor<PDU> result = this.incomingConnectionQueues.get(new Long(connectionEndpointId));
+		if (result == null){
+			throw new IPCException(IPCException.ERROR_CODE, "Could not find the incoming EFCP connection queue " +
+					"associated to connection endpoint id "+connectionEndpointId);
 		}
 		
-		return this.myAddres;
+		return result;
 	}
 	
 	/**
-	 * A PDU has been delivered through an N-1 port
-	 * @param pdu
+	 * Get the outgoing queue that supports the connection identified by connectionEndpointId
+	 * @param connectionId
+	 * @return
+	 * @throws IPCException if there is no outgoing queue associated to connectionEndpointId
 	 */
-	public void pduDelivered(byte[] pdu){
-		//log.debug("Received pdu: "+printBytes(pdu) + "\n");
-		
-		//Parse PCI, see if the PDU is for us
-		long destinationAddress = PDUParser.parseDestinationAddress(pdu);
-		if (destinationAddress != this.getMyAddress()){
-			//TODO the PDU must be relayed, but we don't support relaying yet
-			log.error("Received a PDU not addressed to this IPC Process, " +
-					"but to this destination address: "+destinationAddress);
-			return;
-		}
-		
-		//Decode the PDU and look for associated state
-		PDU decodedPDU = PDUParser.parsePDU(pdu);
-		//log.debug("Decoded pdu:\n"+decodedPDU.toString()+"\n");
-		DTAEIState state = this.connectionStatesByConnectionId.get(new Long(decodedPDU.getConnectionId().getDestinationCEPId()));
-		if (state == null){
-			log.error("Received a PDU with an unrecognized Connection ID: "+decodedPDU.getConnectionId());
-			return;
-		}
-		
-		//Deliver the PDU to the portId
-		try{
-			this.ipcManager.getIncomingFlowQueue((int)state.getPortId()).writeDataToQueue(decodedPDU.getUserData().get(0));
-		}catch(Exception ex){
-			log.error(ex);
-		}
-		
-		//Update DTAEI state
-		synchronized(state){
-			state.incrementLastSequenceDelivered();
-		}
-	}
-	
-	private String printBytes(byte[] pdu){
-		String result = "";
-		for(int i=0; i<pdu.length; i++){
-			result = result + String.format("%02X ", pdu[i]);
+	public BlockingQueueWithSubscriptor<PDU> getOutgoingConnectionQueue(long connectionEndpointId) throws IPCException{
+		BlockingQueueWithSubscriptor<PDU> result = this.outgoingConnectionQueues.get(new Long(connectionEndpointId));
+		if (result == null){
+			throw new IPCException(IPCException.ERROR_CODE, "Could not find the outgoing EFCP connection queue " +
+					"associated to connection endpoint id "+connectionEndpointId);
 		}
 		
 		return result;

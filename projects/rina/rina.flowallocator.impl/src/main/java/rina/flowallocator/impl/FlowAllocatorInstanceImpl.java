@@ -1,7 +1,5 @@
 package rina.flowallocator.impl;
 
-import java.io.DataOutputStream;
-import java.net.Socket;
 import java.util.Timer;
 
 import org.apache.commons.logging.Log;
@@ -12,10 +10,7 @@ import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
-import rina.configuration.KnownIPCProcessConfiguration;
 import rina.configuration.RINAConfiguration;
-import rina.delimiting.api.BaseDelimiter;
-import rina.delimiting.api.Delimiter;
 import rina.efcp.api.BaseDataTransferAE;
 import rina.efcp.api.DataTransferAE;
 import rina.encoding.api.BaseEncoder;
@@ -26,7 +21,6 @@ import rina.flowallocator.api.Flow;
 import rina.flowallocator.api.Flow.State;
 import rina.flowallocator.impl.policies.NewFlowRequestPolicy;
 import rina.flowallocator.impl.policies.NewFlowRequestPolicyImpl;
-import rina.flowallocator.impl.tcp.TCPSocketReader;
 import rina.flowallocator.impl.timertasks.DeleteEFCPStateTimerTask;
 import rina.flowallocator.impl.timertasks.LastSDUReceivedTimerTask;
 import rina.flowallocator.impl.timertasks.LastSDUSentTimerTask;
@@ -86,17 +80,6 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	private int underlyingPortId = 0;
 	
 	/**
-	 * The data socket associated to this flow. For the current prototype a 
-	 * flow is directly associated to a TCP socket.
-	 */
-	private Socket socket = null;
-	
-	/**
-	 * Reads the data coming from the TCP connection that supports the flow
-	 */
-	private TCPSocketReader tcpSocketReader = null;
-	
-	/**
 	 * Controls if this Flow Allocator instance is operative or not
 	 */
 	private boolean finished = false;
@@ -129,11 +112,6 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 * The RIBDaemon of the IPC process
 	 */
 	private RIBDaemon ribDaemon = null;
-	
-	/**
-	 * The class used to delimit messages
-	 */
-	private Delimiter delimiter = null;
 	
 	/**
 	 * The class used to encode and decode objects transmitted through CDAP
@@ -200,12 +178,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		this.ipcProcess = ipcProcess;
 		this.portId = portId;
 		this.ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
-		this.delimiter = (Delimiter) ipcProcess.getIPCProcessComponent(BaseDelimiter.getComponentName());
 		this.encoder = (Encoder) ipcProcess.getIPCProcessComponent(BaseEncoder.getComponentName());
-	}
-	
-	public Socket getSocket(){
-		return this.socket;
 	}
 	
 	public int getPortId(){
@@ -273,8 +246,6 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		}
 		
 		try{
-			//4 Start the flow allocation sequence by opening a socket to the remote flow allocator
-			this.socket = connectToRemoteFlowAllocator(destinationAddress);
 			flow.setSourcePortId(portId);
 			
 			//5 get the portId of the CDAP session to the destination application process name
@@ -297,39 +268,6 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			this.dataTrasferAE.freeCEPIds(portId);
 			throw new IPCException(IPCException.PROBLEMS_ALLOCATING_FLOW_CODE, 
 					IPCException.PROBLEMS_ALLOCATING_FLOW + ex.getMessage());
-		}
-	}
-	
-	/**
-	 * Establishes a TCP flow to a remote flow allocator and sends the portid as data over the flow
-	 * @param destinationAddress
-	 * @return
-	 */
-	private Socket connectToRemoteFlowAllocator(long destinationAddress) throws IPCException{
-		log.debug("Trying to connect to IPC Process "+destinationAddress);
-		String hostName = null;
-		Socket socket = null;
-		int port = RINAConfiguration.getInstance().getFlowAllocatorPortNumber(destinationAddress);
-		log.debug("Remote Flow Allocator is listening at port "+port);
-		
-		try{
-			KnownIPCProcessConfiguration ipcConf = RINAConfiguration.getInstance().getIPCProcessConfiguration(destinationAddress);
-			if (ipcConf == null){
-				throw new IPCException(IPCException.UNKNOWN_IPC_PROCESS_CODE, 
-						IPCException.UNKNOWN_IPC_PROCESS + destinationAddress);
-			}
-			hostName = ipcConf.getHostName();
-			log.debug("Remote IPC Process contact hostname/IP addresss: "+hostName);
-			socket = new Socket(hostName, port);
-			log.debug("Socket connected!");
-			int tcpRendezVousId = new Long((this.ribDaemon.getIPCProcess().getAddress().longValue() << 16) + portId).intValue();
-			DataOutputStream stream = new DataOutputStream(socket.getOutputStream());
-			stream.writeInt(tcpRendezVousId);
-			stream.flush();
-			log.debug("Started a socket to the Flow Allocator at "+hostName+":"+port+". The local socket number is "+socket.getLocalPort());
-			return socket;
-		}catch(Exception ex){
-			throw new IPCException(5, "Problems connecting to remote Flow Allocator. "+ex.getMessage());
 		}
 	}
 
@@ -355,21 +293,6 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		this.underlyingPortId = underlyingPortId;
 		this.objectName = requestMessage.getObjName();
 		flow.setDestinationPortId(portId);
-	}
-	
-	/**
-	 * Then this happens both the M_CREATE Flow request and the TCP connection have been established, therefore 
-	 * we can continue with the Flow Allocation sequence.
-	 * @param socket
-	 */
-	public void setSocket(Socket socket){
-		synchronized(this){
-			if (this.socket != null){
-				return;
-			}
-			
-			this.socket = socket;
-		}
 		
 		//1 TODO Check if the source application process has access to the destination application process. If not send negative M_CREATE_R 
 		//back to the sender IPC process, and housekeeping.
@@ -470,7 +393,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			}
 			
 			//2 Create DTP and DTCP instances, and bind it to the port Id
-			this.dataTrasferAE.createConnectionAndBindToPortId(flow, socket, this.applicationCallback);
+			this.dataTrasferAE.createConnectionAndBindToPortId(flow);
 			
 			//3 Update Flow state
 			this.flow.setState(State.ALLOCATED);
@@ -487,11 +410,9 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 						0, requestMessage.getObjName(), objectValue, 0, null, requestMessage.getInvokeID());
 				this.ribDaemon.sendMessage(cdapMessage, underlyingPortId, null);
 				this.ribDaemon.create(requestMessage.getObjClass(), requestMessage.getObjName(), this);
-				tcpSocketReader = new TCPSocketReader(socket, this.delimiter, this.dataTrasferAE, this);
-				this.ipcProcess.execute(tcpSocketReader);
 			}catch(Exception ex){
 				log.error(ex);
-				this.dataTrasferAE.deleteConnection(flow.getConnectionIds().get(0));
+				this.dataTrasferAE.deleteConnection(flow.getConnectionIds().get(0).getDestinationCEPId());
 				this.dataTrasferAE.freeCEPIds(this.portId);
 				throw new IPCException(IPCException.PROBLEMS_ALLOCATING_FLOW_CODE, 
 						IPCException.PROBLEMS_ALLOCATING_FLOW + ex.getMessage());
@@ -550,12 +471,6 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 */
 	public void lastSDUReceived(){
 		this.flow.setState(State.LAST_SDU_DELIVERED);
-		
-		try{
-			this.socket.close();
-		}catch(Exception ex){
-		}
-		
 		lastSDUReceivedTimerTask = new LastSDUReceivedTimerTask(this);
 		timer.schedule(lastSDUReceivedTimerTask, LastSDUReceivedTimerTask.DELAY);
 	}
@@ -568,7 +483,9 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 */
 	public void deleteFlowRequestMessageReceived(CDAPMessage cdapMessage, int underlyingPortId){
 		//1 Cancel timer
-		this.lastSDUReceivedTimerTask.cancel();
+		if (this.lastSDUReceivedTimerTask != null){
+			this.lastSDUReceivedTimerTask.cancel();
+		}
 		
 		//2 Notify application
 		this.applicationCallback.deliverDeallocate(portId);
@@ -630,17 +547,18 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			}
 			
 			//5 Create an instance of DTP/DTCP and bind it to the port Id
-			this.dataTrasferAE.createConnectionAndBindToPortId(flow, socket, this.applicationCallback);
+			this.dataTrasferAE.createConnectionAndBindToPortId(flow);
 			
 			//6 Create the incoming and outgoing data queues
 			this.ipcManager.addFlowQueues(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
 			this.dataTrasferAE.subscribeToFlow(portId);
 			
+			//Update flow state
+			this.flow.setState(Flow.State.ALLOCATED);
+			
 			//7 Create the Flow object in the RIB, start a socket reader and deliver the response to the application
 			log.debug("Successfull create flow message response received for flow "+cdapMessage.getObjName()+".\n "+this.flow.toString());
 			this.ribDaemon.create(Flow.FLOW_RIB_OBJECT_CLASS, objectName, this);
-			this.tcpSocketReader = new TCPSocketReader(socket, this.delimiter, this.dataTrasferAE, this);
-			this.ipcProcess.execute(tcpSocketReader);
 			this.applicationCallback.deliverAllocateResponse(portId, 0, null);
 		}catch(Exception ex){
 			ex.printStackTrace();
@@ -677,16 +595,6 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	}
 	
 	public void destroyFlowAllocatorInstance(String flowObjectName){
-		//1 Close the socket if it is still open
-		if (this.socket != null){
-			try{
-				this.socket.close();
-			}catch(Exception ex){
-				log.error(ex.getMessage());
-				ex.printStackTrace();
-			}
-		}
-		
 		//2 Delete the object from the RIB
 		try{
 			this.ribDaemon.delete(Flow.FLOW_RIB_OBJECT_CLASS, flowObjectName);
@@ -708,7 +616,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 * When the TCP Socket Reader detects that the socket is closed, 
 	 * it will notify the Flow Allocator instance
 	 */
-	public void socketClosed(){
+	public void lastSDUSentTimerExpired(){
 		synchronized(this.flow){
 			switch (this.flow.getState()){
 			case DEALLOCATED:
@@ -720,16 +628,8 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			case LAST_SDU_SENT:
 				//1 Cancel timer
 				lastSDUSentTimerTask.cancel();
-				
-				//2 If the socket is not closed, close the socket
-				if (!this.socket.isClosed()){
-					try{
-						this.socket.close();
-					}catch(Exception ex){
-					}
-				}
 
-				//3 Send M_DELETE
+				//2 Send M_DELETE
 				try{
 					ObjectValue objectValue = new ObjectValue();
 					objectValue.setByteval(this.encoder.encode(flow));
@@ -740,7 +640,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 					log.error("Problems sending M_DELETE flow request");
 				}
 
-				//4 Housekeeping and remove state from RIB
+				//3 Housekeeping and remove state from RIB
 				destroyFlowAllocatorInstance(requestMessage.getObjName());
 				this.flow.setState(State.DEALLOCATED);
 				break;

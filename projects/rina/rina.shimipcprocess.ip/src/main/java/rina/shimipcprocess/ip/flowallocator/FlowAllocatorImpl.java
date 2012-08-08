@@ -5,6 +5,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -393,8 +394,13 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		qoSSpec.setName("reliable");
 		qoSSpec.setQosCubeId(2);
 		flowService.setQoSSpecification(qoSSpec);
-		flowService.setSourceAPNamingInfo(new ApplicationProcessNamingInfo(
-				socket.getInetAddress().getHostName(), ""+socket.getPort()));
+		ApplicationProcessNamingInfo sourceAPNamingInfo = this.getAPNamingInfo(socket.getInetAddress().getHostName());
+		if (sourceAPNamingInfo != null){
+			flowService.setSourceAPNamingInfo(sourceAPNamingInfo);
+		}else{
+			flowService.setSourceAPNamingInfo(new ApplicationProcessNamingInfo(
+					socket.getInetAddress().getHostName(), ""+socket.getPort()));
+		}
 		flowService.setDestinationAPNamingInfo(apNamingInfo);
 		flowService.setPortId(portId);
 		flowState.setFlowService(flowService);
@@ -405,6 +411,19 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		
 		log.debug("Delivering the allocate request to local application: "+apNamingInfo.getEncodedString());
 		applicationCallback.deliverAllocateRequest(flowService, (IPCService) this.ipcProcess);
+	}
+	
+	private ApplicationProcessNamingInfo getAPNamingInfo(String hostName){
+		Iterator<DirectoryEntry> iterator = this.directory.values().iterator();
+		DirectoryEntry currentEntry = null;
+		while(iterator.hasNext()){
+			currentEntry = iterator.next();
+			if (currentEntry.getHostname().equals(hostName)){
+				return currentEntry.getApNamingInfo();
+			}
+		}
+		
+		return null;
 	}
 	
 	/**
