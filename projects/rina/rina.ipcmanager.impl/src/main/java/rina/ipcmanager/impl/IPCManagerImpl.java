@@ -23,7 +23,7 @@ import rina.applicationprocess.api.WhatevercastName;
 import rina.cdap.api.CDAPSessionManagerFactory;
 import rina.configuration.DIFConfiguration;
 import rina.configuration.IPCProcessToCreate;
-import rina.configuration.KnownIPCProcessConfiguration;
+import rina.configuration.KnownIPCProcessAddress;
 import rina.configuration.RINAConfiguration;
 import rina.delimiting.api.DelimiterFactory;
 import rina.efcp.api.DataTransferConstants;
@@ -256,9 +256,9 @@ public class IPCManagerImpl implements IPCManager{
 					throw new Exception("Unrecognized DIF name: "+difName);
 				}
 
-				KnownIPCProcessConfiguration ipcProcessConfiguration = 
-					RINAConfiguration.getInstance().getIPCProcessConfiguration(apName);
-				if (ipcProcessConfiguration == null){
+				KnownIPCProcessAddress ipcProcessAddress = 
+					RINAConfiguration.getInstance().getIPCProcessAddress(apName);
+				if (ipcProcessAddress == null){
 					throw new Exception("Unrecoginzed IPC Process Name: "+apName);
 				}
 
@@ -274,7 +274,7 @@ public class IPCManagerImpl implements IPCManager{
 
 				ribDaemon.write(RIBObjectNames.ADDRESS_RIB_OBJECT_CLASS, 
 						RIBObjectNames.ADDRESS_RIB_OBJECT_NAME, 
-						ipcProcessConfiguration.getAddress());
+						ipcProcessAddress.getAddress());
 
 				ribDaemon.write(DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_CLASS, 
 						DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_NAME, 

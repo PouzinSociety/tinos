@@ -60,7 +60,6 @@ public class DeliverAllocateResponseTimerTask extends TimerTask{
 				log.warn("Error creting N Minus One Flow RIB Object", ex);
 			}
 			
-			log.debug(flowServiceState.isManagement() + " "+destinationAddress);
 			//TODO Move this to the routing module
 			if (!flowServiceState.isManagement() && destinationAddress != -1){
 				int qosId = flowServiceState.getFlowService().getQoSSpecification().getQosCubeId();

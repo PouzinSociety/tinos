@@ -25,10 +25,10 @@ public class RINAConfiguration {
 	private List<DIFConfiguration> difConfigurations = null;
 	
 	/**
-	 * The data of the known IPC Process (hostname, ports, apname, address) 
+	 * The addresses of the known IPC Process (apname, address) 
 	 * that can potentially be members of the DIFs I know
 	 */
-	private List<KnownIPCProcessConfiguration> knownIPCProcessConfigurations = null;
+	private List<KnownIPCProcessAddress> knownIPCProcessAddresses = null;
 	
 	/**
 	 * The address prefixes, assigned to different organizations
@@ -73,13 +73,13 @@ public class RINAConfiguration {
 		this.difConfigurations = difConfigurations;
 	}
 
-	public List<KnownIPCProcessConfiguration> getKnownIPCProcessConfigurations() {
-		return knownIPCProcessConfigurations;
+	public List<KnownIPCProcessAddress> getKnownIPCProcessAddresses() {
+		return knownIPCProcessAddresses;
 	}
 
-	public void setKnownIPCProcessConfigurations(
-			List<KnownIPCProcessConfiguration> knownIPCProcessConfigurations) {
-		this.knownIPCProcessConfigurations = knownIPCProcessConfigurations;
+	public void setKnownIPCProcessAddresses(
+			List<KnownIPCProcessAddress> knownIPCProcessAddresses) {
+		this.knownIPCProcessAddresses = knownIPCProcessAddresses;
 	}
 
 	public List<AddressPrefixConfiguration> getAddressPrefixes() {
@@ -111,19 +111,19 @@ public class RINAConfiguration {
 	}
 	
 	/**
-	 * Return the configuration of the IPC process named "apName" if it is known, 
+	 * Return the address of the IPC process named "apName" if it is known, 
 	 * null otherwise
 	 * @param apName
 	 * @return
 	 */
-	public KnownIPCProcessConfiguration getIPCProcessConfiguration(String apName){
-		if (knownIPCProcessConfigurations == null){
+	public KnownIPCProcessAddress getIPCProcessAddress(String apName){
+		if (knownIPCProcessAddresses == null){
 			return null;
 		}
 		
-		for(int i=0; i<knownIPCProcessConfigurations.size(); i++){
-			if (knownIPCProcessConfigurations.get(i).getApName().equals(apName)){
-				return knownIPCProcessConfigurations.get(i);
+		for(int i=0; i<knownIPCProcessAddresses.size(); i++){
+			if (knownIPCProcessAddresses.get(i).getApName().equals(apName)){
+				return knownIPCProcessAddresses.get(i);
 			}
 		}
 		
@@ -136,14 +136,14 @@ public class RINAConfiguration {
 	 * @param address
 	 * @return
 	 */
-	public KnownIPCProcessConfiguration getIPCProcessConfiguration(long address){
-		if (knownIPCProcessConfigurations == null){
+	public KnownIPCProcessAddress getIPCProcessAddress(long address){
+		if (knownIPCProcessAddresses == null){
 			return null;
 		}
 		
-		for(int i=0; i<knownIPCProcessConfigurations.size(); i++){
-			if (knownIPCProcessConfigurations.get(i).getAddress() == address){
-				return knownIPCProcessConfigurations.get(i);
+		for(int i=0; i<knownIPCProcessAddresses.size(); i++){
+			if (knownIPCProcessAddresses.get(i).getAddress() == address){
+				return knownIPCProcessAddresses.get(i);
 			}
 		}
 		
