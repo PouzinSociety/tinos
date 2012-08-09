@@ -13,7 +13,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.cdap.api.BaseCDAPSessionManager;
-import rina.cdap.api.CDAPSession;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
@@ -408,7 +407,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 	public void eventHappened(Event event) {
 		if (event.getId().equals(Event.N_MINUS_1_FLOW_DEALLOCATED)){
 			NMinusOneFlowDeallocatedEvent flowEvent = (NMinusOneFlowDeallocatedEvent) event;
-			this.nMinusOneFlowDeallocated(flowEvent.getPortId());
+			this.nMinusOneFlowDeallocated(flowEvent.getPortId(), flowEvent.getCdapSessionDescriptor());
 		}else if (event.getId().equals(Event.N_MINUS_1_FLOW_ALLOCATED)){
 			NMinusOneFlowAllocatedEvent flowEvent = (NMinusOneFlowAllocatedEvent) event;
 			this.nMinusOneFlowAllocated(flowEvent.getPortId());
@@ -424,15 +423,10 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 	 * has been deallocated
 	 * @param cdapSessionDescriptor
 	 */
-	private void nMinusOneFlowDeallocated(int portId){
-		CDAPSessionDescriptor cdapSessionDescriptor = null;
-		
+	private void nMinusOneFlowDeallocated(int portId, CDAPSessionDescriptor cdapSessionDescriptor){
 		//1 Check if the flow deallocated was a management flow
-		CDAPSession cdapSession = this.cdapSessionManager.getCDAPSession(portId);
-		if(cdapSession == null){
+		if(cdapSessionDescriptor == null){
 			return;
-		}else{
-			cdapSessionDescriptor = cdapSession.getSessionDescriptor();
 		}
 		
 		//1 Remove the enrollment state machine from the list

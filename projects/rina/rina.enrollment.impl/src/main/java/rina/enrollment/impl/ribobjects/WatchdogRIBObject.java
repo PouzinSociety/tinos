@@ -141,6 +141,7 @@ public class WatchdogRIBObject extends BaseRIBObject implements CDAPMessageHandl
 				this.neighborStatistics.put(neighborStats.getApName(), neighborStats);
 				this.getRIBDaemon().sendMessage(cdapMessage, neighbors.get(i).getUnderlyingPortId(), this);
 			}catch(Exception ex){
+				ex.printStackTrace();
 				log.error(ex);
 			}
 		}

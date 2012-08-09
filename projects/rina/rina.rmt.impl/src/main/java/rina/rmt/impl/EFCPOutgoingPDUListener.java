@@ -81,7 +81,6 @@ public class EFCPOutgoingPDUListener implements QueueSubscriptor, Runnable{
 	}
 
 	public void queueReadyToBeRead(int queueId){
-		log.debug("Outgoind EFCP queue identified by CEP-id "+queueId+ " has data available.");
 		try {
 			this.queuesReadyToBeRead.put(new Integer(queueId));
 		} catch (InterruptedException e) {

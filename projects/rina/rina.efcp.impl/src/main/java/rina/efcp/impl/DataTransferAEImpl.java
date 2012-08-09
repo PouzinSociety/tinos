@@ -108,13 +108,13 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	@Override
 	public void setIPCProcess(IPCProcess ipcProcess){
 		super.setIPCProcess(ipcProcess);
+		this.ipcManager = ipcProcess.getIPCManager();
 		this.ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		populateRIB(ipcProcess);
 		this.dataTransferConstants = ipcProcess.getDataTransferConstants();
 		this.outgoingFlowQueuesReader = new OutgoingFlowQueuesReader(ipcProcess.getIPCManager(), 
 				portIdToConnectionMapping, this);
 		this.incomingEFCPQueuesReader = new IncomingEFCPQueuesReader(ipcManager, connectionStatesByConnectionId, this);
-		this.ipcManager = ipcProcess.getIPCManager();
 		ipcManager.execute(this.outgoingFlowQueuesReader);
 		ipcManager.execute(this.incomingEFCPQueuesReader);
 	}
@@ -237,9 +237,9 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		}
 		this.connectionStatesByConnectionId.put(connectionEndpointId, state);
 		this.incomingConnectionQueues.put(connectionEndpointId, 
-				new BlockingQueueWithSubscriptor<PDU>(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues()));
+				new BlockingQueueWithSubscriptor<PDU>(connectionEndpointId.intValue(), RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues()));
 		this.outgoingConnectionQueues.put(connectionEndpointId, 
-				new BlockingQueueWithSubscriptor<PDU>(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues()));
+				new BlockingQueueWithSubscriptor<PDU>(connectionEndpointId.intValue(), RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues()));
 		this.portIdToConnectionMapping.put(new Integer(portId), state);
 		try{
 			this.getIncomingConnectionQueue(connectionEndpointId.longValue()).subscribeToQueue(this.incomingEFCPQueuesReader);

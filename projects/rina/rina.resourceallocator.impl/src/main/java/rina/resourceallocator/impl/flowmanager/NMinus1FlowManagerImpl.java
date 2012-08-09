@@ -10,6 +10,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
+import rina.cdap.api.BaseCDAPSessionManager;
+import rina.cdap.api.CDAPSession;
+import rina.cdap.api.CDAPSessionDescriptor;
+import rina.cdap.api.CDAPSessionManager;
 import rina.enrollment.api.Neighbor;
 import rina.events.api.events.NMinusOneFlowAllocatedEvent;
 import rina.events.api.events.NMinusOneFlowAllocationFailedEvent;
@@ -60,6 +64,11 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 	private RIBDaemon ribDaemon = null;
 	
 	/**
+	 * The CDAP Session Manager
+	 */
+	private CDAPSessionManager cdapSessionManager = null;
+	
+	/**
 	 * The states of all the ongoing and allocated flows
 	 */
 	private Map<Integer, FlowServiceState> flowServiceStates = null;
@@ -87,6 +96,8 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 		this.ipcProcess = ipcProcess;
 		this.ipcManager = ipcProcess.getIPCManager();
 		this.ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
+		this.cdapSessionManager = (CDAPSessionManager) ipcProcess.
+				getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
 		populateRIB(ipcProcess);
 	}
 	
@@ -174,7 +185,12 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 		}
 		
 		//Notify about the event
-		NMinusOneFlowDeallocatedEvent event = new NMinusOneFlowDeallocatedEvent(portId);
+		CDAPSession cdapSession = cdapSessionManager.getCDAPSession(portId);
+		CDAPSessionDescriptor cdapSessionDescriptor = null;
+		if (cdapSession != null){
+			cdapSessionDescriptor = cdapSession.getSessionDescriptor();
+		}
+		NMinusOneFlowDeallocatedEvent event = new NMinusOneFlowDeallocatedEvent(portId, cdapSessionDescriptor);
 		this.ribDaemon.deliverEvent(event);
 	}
 	
@@ -298,7 +314,12 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 		}
 		
 		//Notify about the event
-		NMinusOneFlowDeallocatedEvent event = new NMinusOneFlowDeallocatedEvent(portId);
+		CDAPSession cdapSession = cdapSessionManager.getCDAPSession(portId);
+		CDAPSessionDescriptor cdapSessionDescriptor = null;
+		if (cdapSession != null){
+			cdapSessionDescriptor = cdapSession.getSessionDescriptor();
+		}
+		NMinusOneFlowDeallocatedEvent event = new NMinusOneFlowDeallocatedEvent(portId, cdapSessionDescriptor);
 		this.ribDaemon.deliverEvent(event);
 	}
 	

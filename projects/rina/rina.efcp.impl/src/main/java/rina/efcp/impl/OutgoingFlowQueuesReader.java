@@ -122,7 +122,7 @@ public class OutgoingFlowQueuesReader implements Runnable, QueueSubscriptor{
 		/*log.debug("Encoded PDU: \n" + "Destination @: " + state.getDestinationAddress() + " CEPid: "+state.getSourceCEPid() + 
 				" Source @: "+state.getSourceAddress() + " CEPid: "+state.getSourceCEPid() + "\n QoSid: "
 				+ state.getQoSId() + " PDU type: 129 Flags: 00 Sequence Number: " +state.getNextSequenceToSend()); 
-		log.debug("Sending PDU " + printBytes(pdu)+"\n");*/
+		log.debug("Sending PDU " + printBytes(pdu)+" through outgoing EFCP queue " + state.getSourceCEPid()+"\n");*/
 		try{
 			this.dataTransferAE.getOutgoingConnectionQueue(state.getSourceCEPid()).writeDataToQueue(pduWrapper);
 		}catch(Exception ex){
@@ -147,7 +147,6 @@ public class OutgoingFlowQueuesReader implements Runnable, QueueSubscriptor{
 	}
 
 	public void queueReadyToBeRead(int queueId) {
-		log.debug("Outgoing queue of flow "+queueId+" has data available!");
 		try {
 			this.queuesReadyToBeRead.put(new Integer(queueId));
 		} catch (InterruptedException e) {

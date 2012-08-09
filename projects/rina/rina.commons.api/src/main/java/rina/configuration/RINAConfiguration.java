@@ -131,20 +131,6 @@ public class RINAConfiguration {
 	}
 	
 	/**
-	 * Get the Flow Allocator port number of the IPC Process named "apName"
-	 * @param apName
-	 * @return
-	 */
-	public int getFlowAllocatorPortNumber(String apName){
-		KnownIPCProcessConfiguration ipcConf = this.getIPCProcessConfiguration(apName);
-		if (ipcConf != null){
-			return ipcConf.getFlowAllocatorPortNumber();
-		}else{
-			return this.getLocalConfiguration().getFlowAllocatorPort();
-		}
-	}
-	
-	/**
 	 * Return the configuration of the IPC process whose address is "address" if it is known, 
 	 * null otherwise
 	 * @param address
@@ -176,20 +162,6 @@ public class RINAConfiguration {
 		}
 		
 		return null;
-	}
-	
-	/**
-	 * Get the Flow Allocator port number of the IPC Process whose address is "address"
-	 * @param address
-	 * @return
-	 */
-	public int getFlowAllocatorPortNumber(long address){
-		KnownIPCProcessConfiguration ipcConf = this.getIPCProcessConfiguration(address);
-		if (ipcConf != null){
-			return ipcConf.getFlowAllocatorPortNumber();
-		}else{
-			return this.getLocalConfiguration().getFlowAllocatorPort();
-		}
 	}
 	
 	/**

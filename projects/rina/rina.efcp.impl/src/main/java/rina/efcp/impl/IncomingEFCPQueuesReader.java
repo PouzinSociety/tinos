@@ -112,7 +112,6 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 	}
 
 	public void queueReadyToBeRead(int queueId) {
-		log.debug("Incoming EFCP Connection identified by CEP-id "+queueId+" has data available!");
 		try {
 			this.queuesReadyToBeRead.put(new Integer(queueId));
 		} catch (InterruptedException e) {

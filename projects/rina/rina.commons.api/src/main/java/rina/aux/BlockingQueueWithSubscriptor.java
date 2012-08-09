@@ -6,10 +6,10 @@ import java.util.concurrent.BlockingQueue;
 import rina.ipcservice.api.IPCException;
 
 /**
- * Represents a set of byte[] blocking queues identified by an Integer.
+ * Represents a set of T blocking queues identified by an Integer.
  * A special queue queues the identifiers of the queues that have data but 
  * have not been read yet.
- * Every time a new byte[] is written to one of the queues, a new
+ * Every time a new T is written to one of the queues, a new
  * @author eduardgrasa
  *
  */
