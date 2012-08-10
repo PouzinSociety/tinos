@@ -15,13 +15,6 @@ public interface APService {
 	 * @param resultReason null if no error, error description otherwise
 	 */
 	public void deliverAllocateResponse(int portId, int result, String resultReason);
-
-	/**
-	 * Invoked when in the Transfer state to deliver an SDU on this port-id
-	 * @param port_id
-	 * @param sdu
-	 */
-	public void deliverTransfer(int port_id, byte[] sdu);
 	
 	/**
 	 * This primitive is invoked in response to a sumbitStatus to report the current status of 

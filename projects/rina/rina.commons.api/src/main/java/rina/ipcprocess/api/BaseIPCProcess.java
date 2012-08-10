@@ -11,6 +11,8 @@ import rina.enrollment.api.Neighbor;
 import rina.flowallocator.api.Flow;
 import rina.flowallocator.api.QoSCube;
 import rina.ipcmanager.api.IPCManager;
+import rina.ipcservice.api.IPCException;
+import rina.ipcservice.api.IPCService;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
@@ -23,14 +25,25 @@ import rina.ribdaemon.api.RIBObjectNames;
  * @author eduardgrasa
  *
  */
-public abstract class BaseIPCProcess implements IPCProcess{
+public abstract class BaseIPCProcess implements IPCProcess, IPCService{
 	
 	private Map<String, IPCProcessComponent> ipcProcessComponents = null;
 	
 	private IPCManager ipcManager = null;
 	
-	public BaseIPCProcess(){
+	private IPCProcessType ipcProcessType = null;
+	
+	public BaseIPCProcess(IPCProcessType ipcProcessType){
+		this.ipcProcessType = ipcProcessType;
 		ipcProcessComponents = new ConcurrentHashMap<String, IPCProcessComponent>();
+	}
+	
+	/**
+	 * Return the type of the IPC Process
+	 * @return
+	 */
+	public IPCProcessType getType(){
+		return this.ipcProcessType;
 	}
 	
 	public Map<String, IPCProcessComponent> getIPCProcessComponents(){
@@ -54,6 +67,16 @@ public abstract class BaseIPCProcess implements IPCProcess{
 	
 	public void setIPCProcessCompnents(Map<String, IPCProcessComponent> ipcProcessComponents){
 		this.ipcProcessComponents = ipcProcessComponents;
+	}
+	
+	/**
+	 * Write an SDU to the portId
+	 * @param portId
+	 * @param sdu
+	 * @throws IPCException
+	 */
+	public void submitTransfer(int portId, byte[] sdu) throws IPCException{
+		this.ipcManager.getOutgoingFlowQueue(portId).writeDataToQueue(sdu);
 	}
 	
 	public void setIPCManager(IPCManager ipcManager){

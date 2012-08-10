@@ -1,31 +1,31 @@
 {
   "localConfiguration" : {
     "consolePort" : 32766,
-    "flowAllocatorPort" : 32770,
-    "rmtPort" : 32769,
     "cdapTimeoutInMs" : 10000,
     "enrollmentTimeoutInMs" : 10000,
     "watchdogPeriodInMs" : 60000,
     "declaredDeadIntervalInMs" : 120000,
-    "neighborsEnrollerPeriodInMs" : 10000 
+    "neighborsEnrollerPeriodInMs" : 10000, 
+    "lengthOfFlowQueues" : 10 
   },
   "ipcProcessesToCreate" : [ {
-    "type" : "normal",
-  	"applicationProcessName" : "Barcelona.i2CAT",
-  	"applicationProcessInstance" : "1",
-  	"difName" : "RINA-Demo.DIF",
-  	"neighbors" : [ {
-  	  "applicationProcessName" : "Castefa.i2CAT",
-  	  "applicationProcessInstance" : "1",
-  	  "address" : "65"
-  	} ]
-  },{
-  	"type" : "shimip",
-    "applicationProcessName" : "Barcelona.i2CAT.PublicInternet",
-  	"applicationProcessInstance" : "1",
-  	"difName" : "PublicInternet.DIF",
-  	"hostname" : "84.88.40.70"
-  } ],
+  		"type" : "shimip",
+    	"applicationProcessName" : "Barcelona.i2CAT.PublicInternet",
+  		"applicationProcessInstance" : "1",
+  		"difName" : "PublicInternet.DIF",
+  		"hostname" : "84.88.40.70"
+    }, {
+    	"type" : "normal",
+  		"applicationProcessName" : "Barcelona.i2CAT",
+  		"applicationProcessInstance" : "1",
+  		"difName" : "RINA-Demo.DIF",
+  		"neighbors" : [ {
+  		  "applicationProcessName" : "Castefa.i2CAT",
+  	 	  "applicationProcessInstance" : "1",
+  	  	  "address" : "65"
+  	    } ],
+  		"difsToRegisterAt" : ["PublicInternet.DIF"]
+   }],
   "difConfigurations" : [ {
     "difName" : "RINA-Demo.DIF",
     "dataTransferConstants" : {
@@ -67,82 +67,60 @@
       "maxAllowableGapSdu" : -1,
       "delay" : 0,
       "jitter" : 0
-    } ]
+    } ],
+    "nMinusOneFlowsConfiguration" : {
+    	"managementFlowQoSId" : 2,
+    	"dataFlowsQoSIds" : [ 1, 2 ]
+    }
   }, {
     "difName" : "PublicInternet.DIF",
     "expectedApplicationRegistrations" : [ {
-    	"applicationProcessName" : "skype", 
+    	"applicationProcessName" : "Barcelona.i2CAT", 
     	"applicationProcessInstance" : "1", 
-    	"socketPortNumber" : 38000
-    }, {
-    	"applicationProcessName" : "firefox", 
-    	"applicationProcessInstance" : "1", 
-    	"socketPortNumber" : 38001
+    	"socketPortNumber" : 32769
     } ], 
     "directory" : [ {
-    	"applicationProcessName" : "skype", 
+    	"applicationProcessName" : "Barcelona.i2CAT", 
     	"applicationProcessInstance" : "1",
     	"hostname" : "84.88.40.70", 
-    	"socketPortNumber" : 38000
+    	"socketPortNumber" : 32769
     }, {
-    	"applicationProcessName" : "firefox", 
-    	"applicationProcessInstance" : "1",
-    	"hostname" : "84.88.40.70", 
-    	"socketPortNumber" : 38001
-    }, {
-    	"applicationProcessName" : "safari", 
+    	"applicationProcessName" : "Castefa.i2CAT", 
     	"applicationProcessInstance" : "1",
     	"hostname" : "84.88.40.71", 
-    	"socketPortNumber" : 38000
+    	"socketPortNumber" : 32769
     }, {
-    	"applicationProcessName" : "mail", 
+    	"applicationProcessName" : "Snowman.TRIA-Harv", 
     	"applicationProcessInstance" : "1",
-    	"hostname" : "84.88.40.71", 
-    	"socketPortNumber" : 38001
+    	"hostname" : "trianetworksystems.dyndns.org", 
+    	"socketPortNumber" : 32790
+    }, {
+    	"applicationProcessName" : "OpenWrt1.TRIA-CU", 
+    	"applicationProcessInstance" : "1",
+    	"hostname" : "shore.dyndns-ip.com", 
+    	"socketPortNumber" : 32769
+    }, {
+    	"applicationProcessName" : "TSSG", 
+    	"applicationProcessInstance" : "1",
+    	"hostname" : "rina.tssg.org", 
+    	"socketPortNumber" : 32769
     } ]
   } ],
-  "knownIPCProcessConfigurations" : [ {
+  "knownIPCProcessAddresses" : [ {
     "apName" : "Snowman.TRIA-Harv",
-    "address" : 16,
-    "hostName" : "trianetworksystems.dyndns.org",
-    "rmtPortNumber" : 32790,
-    "flowAllocatorPortNumber" : 32791
+    "address" : 16
   }, {
     "apName" : "OpenWrt1.TRIA-CU",
-    "address" : 96,
-    "hostName" : "shore.dyndns-ip.com",
-    "rmtPortNumber" : 32769,
-    "flowAllocatorPortNumber" : 32770
+    "address" : 96
   }, {
     "apName" : "Barcelona.i2CAT",
-    "address" : 64,
-    "hostName" : "84.88.41.36",
-    "rmtPortNumber" : 32769,
-    "flowAllocatorPortNumber" : 32770
+    "address" : 64
   }, {
     "apName" : "Castefa.i2CAT",
-    "address" : 65,
-    "hostName" : "84.88.40.23",
-    "rmtPortNumber" : 32769,
-    "flowAllocatorPortNumber" : 32770
-  }, {
-    "apName" : "Glories.i2CAT",
-    "address" : 66,
-    "hostName" : "84.88.41.35",
-    "rmtPortNumber" : 32769,
-    "flowAllocatorPortNumber" : 32770
-  }, {
-    "apName" : "Nexus.i2CAT",
-    "address" : 67,
-    "hostName" : "147.83.206.92",
-    "rmtPortNumber" : 32769,
-    "flowAllocatorPortNumber" : 32770
+    "address" : 65
   }, {
     "apName" : "TSSG",
-    "address" : 80,
-    "hostName" : "rina.tssg.org",
-    "rmtPortNumber" : 32769,
-    "flowAllocatorPortNumber" : 32770
+    "address" : 80
   } ],
   "addressPrefixes" : [ {
     "addressPrefix" : 0,

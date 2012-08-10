@@ -15,15 +15,11 @@ import rina.ipcprocess.api.IPCProcessComponent;
 public interface RIBDaemon extends IPCProcessComponent, EventManager{
 	
 	/**
-	 * Invoked by the RMT when it detects a CDAP message. The RIB Daemon has to process the CDAP message and, 
-	 * if valid, it will either pass it to interested subscribers and/or write to storage and/or modify other 
-	 * tasks data structures. It may be the case that the CDAP message is not addressed to an application 
-	 * entity within this IPC process, then the RMT may decide to rely the message to the right destination 
-	 * (after consulting an adequate forwarding table).
-	 * @param cdapMessage
-	 * @param the portId of the flow from where the CDAP message was obtained
+	 * A new management SDU has been delivered, the RIB Daemon will process it
+	 * @param managementSDU
+	 * @param portId
 	 */
-	public void cdapMessageDelivered(byte[] cdapMessage, int portId);
+	public void managementSDUDelivered(byte[] managementSDU, int portId);
 	
 	/**
 	 * Add a RIB object to the RIB

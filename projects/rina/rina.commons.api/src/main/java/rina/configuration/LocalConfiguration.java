@@ -13,16 +13,6 @@ public class LocalConfiguration {
 	private int consolePort = 32766;
 	
 	/**
-	 * The port where the Flow Allocator is listening for incoming TCP connections from remote Flow Allocators
-	 */
-	private int flowAllocatorPort = 32770;
-	
-	/**
-	 * The port where the RMT is listening for incoming TCP connections from remote RMTs
-	 */
-	private int rmtPort = 32769;
-	
-	/**
 	 * The maximum time the CDAP state machine of a session will wait for connect or release responses (in ms)
 	 */
 	private int cdapTimeoutInMs = 10000;
@@ -56,6 +46,11 @@ public class LocalConfiguration {
 	 * initiate the enrollment.
 	 */
 	private int neighborsEnrollerPeriodInMs = 10000;
+	
+	/**
+	 * The length of Flow queues
+	 */
+	private int lengthOfFlowQueues = 10;
 
 	public int getConsolePort() {
 		return consolePort;
@@ -63,22 +58,6 @@ public class LocalConfiguration {
 
 	public void setConsolePort(int consolePort) {
 		this.consolePort = consolePort;
-	}
-
-	public int getFlowAllocatorPort() {
-		return flowAllocatorPort;
-	}
-
-	public void setFlowAllocatorPort(int flowAllocatorPort) {
-		this.flowAllocatorPort = flowAllocatorPort;
-	}
-
-	public int getRmtPort() {
-		return rmtPort;
-	}
-
-	public void setRmtPort(int rmtPort) {
-		this.rmtPort = rmtPort;
 	}
 
 	public int getCdapTimeoutInMs() {
@@ -127,5 +106,13 @@ public class LocalConfiguration {
 
 	public void setNeighborsEnrollerPeriodInMs(int neighborsEnrollerPeriodInMs) {
 		this.neighborsEnrollerPeriodInMs = neighborsEnrollerPeriodInMs;
+	}
+
+	public int getLengthOfFlowQueues() {
+		return lengthOfFlowQueues;
+	}
+
+	public void setLengthOfFlowQueues(int lengthOfFlowQueues) {
+		this.lengthOfFlowQueues = lengthOfFlowQueues;
 	}
 }

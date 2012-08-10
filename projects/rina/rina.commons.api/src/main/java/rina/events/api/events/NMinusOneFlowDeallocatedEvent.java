@@ -15,7 +15,10 @@ public class NMinusOneFlowDeallocatedEvent extends BaseEvent{
 	/** The portId of the deallocated flow **/
 	private int portId = 0;
 	
-	/** The descriptor of the CDAP session running over the flow that has been deallocated**/
+	/**
+	 * If the N-1 flow deallocated was a management flow, this is 
+	 * the CDAP Session descriptor associated to it
+	 */
 	private CDAPSessionDescriptor cdapSessionDescriptor = null;
 	
 	public NMinusOneFlowDeallocatedEvent(int portId, CDAPSessionDescriptor cdapSessionDescriptor) {
@@ -27,16 +30,16 @@ public class NMinusOneFlowDeallocatedEvent extends BaseEvent{
 	public int getPortId() {
 		return this.portId;
 	}
-
-	public CDAPSessionDescriptor getCDAPSessionDescriptor() {
-		return this.cdapSessionDescriptor;
-	}
 	
+	public CDAPSessionDescriptor getCdapSessionDescriptor() {
+		return cdapSessionDescriptor;
+	}
+
 	@Override
 	public String toString(){
 		String result = "Event id: "+this.getId()+" \n";
 		result = result + "Port id: "+this.getPortId() + "\n";
-		result = result + "CDAP Session Descriptor: "+this.cdapSessionDescriptor.toString();
+		result = result + "CDAP Session descriptor: " + this.getCdapSessionDescriptor() + "\n";
 		
 		return result;
 	}

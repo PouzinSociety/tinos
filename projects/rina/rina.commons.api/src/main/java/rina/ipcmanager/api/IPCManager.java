@@ -2,6 +2,7 @@ package rina.ipcmanager.api;
 
 import java.util.List;
 
+import rina.aux.BlockingQueueWithSubscriptor;
 import rina.cdap.api.CDAPSessionManagerFactory;
 import rina.delimiting.api.DelimiterFactory;
 import rina.encoding.api.EncoderFactory;
@@ -9,6 +10,7 @@ import rina.flowallocator.api.Flow;
 import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.idd.api.InterDIFDirectoryFactory;
 import rina.ipcprocess.api.IPCProcess;
+import rina.ipcservice.api.IPCException;
 
 /**
  * The IPC Manager is the component of a DAF that manages the local IPC resources. In its current implementation it 
@@ -40,6 +42,51 @@ public interface IPCManager {
 	 */
 	public void execute(Runnable runnable);
 	
+	/* PORT_ID MANAGEMENT */
+	/**
+	 * Get a portId available for its use
+	 * @return
+	 */
+	public int getAvailablePortId();
+	
+	/**
+	 * Mark a portId as available to be reused
+	 * @param portId
+	 */
+	public void freePortId(int portId);
+	
+	/* INCOMING AND OUTGOING FLOW QUEUES MANAGEMENT */
+	/**
+	 * Add an incoming and outgoing flow queues to support the flow identified by portId
+	 * @param portId
+	 * @param capacity the capacity of the queues
+	 * @throws IPCException if the portId is already in use
+	 */
+	public void addFlowQueues(int portId, int capacity) throws IPCException;
+	
+	/**
+	 * Remove the incoming and outgoing flow queues that support the flow identified by portId
+	 * @param portId
+	 */
+	public void removeFlowQueues(int portId);
+	
+	/**
+	 * Get the incoming queue that supports the flow identified by portId
+	 * @param portId
+	 * @return
+	 * @throws IPCException if there is no incoming queue associated to portId
+	 */
+	public BlockingQueueWithSubscriptor<byte[]> getIncomingFlowQueue(int portId) throws IPCException;
+	
+	/**
+	 * Get the outgoing queue that supports the flow identified by portId
+	 * @param portId
+	 * @return
+	 * @throws IPCException if there is no outgoing queue associated to portId
+	 */
+	public BlockingQueueWithSubscriptor<byte[]> getOutgoingFlowQueue(int portId) throws IPCException;
+	
+	/* CONVENIENT OPERATIONS */
 	public CDAPSessionManagerFactory getCDAPSessionManagerFactory();
 	public DelimiterFactory getDelimiterFactory();
 	public EncoderFactory getEncoderFactory();

@@ -12,7 +12,7 @@ import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.ObjectValue;
 import rina.configuration.AddressPrefixConfiguration;
-import rina.configuration.KnownIPCProcessConfiguration;
+import rina.configuration.KnownIPCProcessAddress;
 import rina.configuration.RINAConfiguration;
 import rina.efcp.api.DataTransferConstants;
 import rina.encoding.api.Encoder;
@@ -232,10 +232,10 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 		
 		//Check if we know the remote IPC Process
 		RINAConfiguration rinaConf = RINAConfiguration.getInstance();
-		KnownIPCProcessConfiguration ipcConf = rinaConf.getIPCProcessConfiguration(
+		KnownIPCProcessAddress ipcAddress = rinaConf.getIPCProcessAddress(
 				this.remotePeer.getApplicationProcessName());
-		if (ipcConf != null){
-			if (ipcConf.getAddress() == address){
+		if (ipcAddress != null){
+			if (ipcAddress.getAddress() == address){
 				return true;
 			}else{
 				return false;
@@ -280,10 +280,10 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 		RINAConfiguration rinaConf = RINAConfiguration.getInstance();
 		
 		//See if we know the configuration of the remote IPC Process
-		KnownIPCProcessConfiguration ipcConf = rinaConf.getIPCProcessConfiguration(
+		KnownIPCProcessAddress ipcAddress = rinaConf.getIPCProcessAddress(
 				this.remotePeer.getApplicationProcessName());
-		if (ipcConf != null){
-			return ipcConf.getAddress();
+		if (ipcAddress != null){
+			return ipcAddress.getAddress();
 		}
 		
 		//See if we know the prefix of the remote IPC Process

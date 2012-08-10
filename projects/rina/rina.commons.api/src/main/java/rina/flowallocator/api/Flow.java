@@ -26,7 +26,7 @@ public class Flow {
 	
 	public static final String FLOW_RIB_OBJECT_CLASS = "flow";
 	
-	public enum State {NULL, ALLOCATION_IN_PROGRESS, ALLOCATED, LAST_SDU_SENT, LAST_SDU_DELIVERED, DEALLOCATED};
+	public enum State {NULL, ALLOCATION_IN_PROGRESS, ALLOCATED, WAITING_2_MPL_BEFORE_TEARING_DOWN, DEALLOCATED};
 
 	/**
 	 * The application that requested the flow
