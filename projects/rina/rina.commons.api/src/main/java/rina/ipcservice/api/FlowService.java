@@ -65,8 +65,8 @@ public class FlowService {
 	
 	public String toString(){
 		String result = "";
-		result = result + "Source application process naming info: " + this.getSourceAPNamingInfo() + "\n";
-		result = result + "Destination application process naming info: " + this.getDestinationAPNamingInfo() + "\n";
+		result = result + "Source AP naming info: " + this.getSourceAPNamingInfo();
+		result = result + "Destination AP naming info: " + this.getDestinationAPNamingInfo();
 		if (qosSpec != null){
 			result = result + qosSpec.toString();
 		}

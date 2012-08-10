@@ -3,6 +3,8 @@ package rina.efcp.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import rina.efcp.api.PDU;
+
 /**
  * Implements the PDU reassembly queue
  * @author eduardgrasa

@@ -1,8 +1,6 @@
 package rina.efcp.api;
 
-import java.net.Socket;
-
-import rina.flowallocator.api.ConnectionId;
+import rina.aux.BlockingQueueWithSubscriptor;
 import rina.flowallocator.api.Flow;
 import rina.ipcprocess.api.IPCProcessComponent;
 import rina.ipcservice.api.APService;
@@ -42,36 +40,35 @@ public interface DataTransferAE extends IPCProcessComponent {
 	 * Initialize the state of a new connection, and bind it to the portId (all the SDUs delivered 
 	 * to the portId by an application will be sent through this connection)
 	 * @param flow the flow object, describing the service supported by this connection
-	 * @param socket The socket used to send the data
-	 * @param local true if this is a connection supporting a local flow, false otherways
-	 * @param applicationCallback the callback to the application, used to deliver the data
 	 */
-	public void createConnectionAndBindToPortId(Flow flow, Socket socket, APService applicationCallback);
+	public void createConnectionAndBindToPortId(Flow flow);
 	
 	/**
 	 * Destroy the instance of the data transfer AE associated to this connection endpoint Id
 	 * @param connection endpoint id
 	 */
-	public void deleteConnection(ConnectionId connectionId);
+	public void deleteConnection(long connectionEndpointId);
 	
 	/**
-	 * Post an SDU to the portId (will be sent through the connection identified by portId)
-	 * @param portID
-	 * @param sdu
-	 * @throws IPCException
+	 * Subscribe to the outgoing flow queue identified by portId
+	 * @param portId the id of the incoming flow queue
 	 */
-	public void postSDU(int portID, byte[] sdu) throws IPCException;
+	public void subscribeToFlow(int portId) throws IPCException;
 	
 	/**
-	 * Sends a delimited 0 length SDU
-	 * @param portId
-	 * @throws IPCException
+	 * Get the incoming queue that supports the connection identified by connectionEndpointId
+	 * @param connectionId
+	 * @return
+	 * @throws IPCException if there is no incoming queue associated to connectionEndpointId
 	 */
-	public void post0LengthSDU(int portId) throws IPCException;
+	public BlockingQueueWithSubscriptor<PDU> getIncomingConnectionQueue(long connectionEndpointId) throws IPCException;
 	
 	/**
-	 * A PDU has been delivered through an N-1 port
-	 * @param pdu
+	 * Get the outgoing queue that supports the connection identified by connectionEndpointId
+	 * @param connectionId
+	 * @return
+	 * @throws IPCException if there is no outgoing queue associated to connectionEndpointId
 	 */
-	public void pduDelivered(byte[] pdu);
+	public BlockingQueueWithSubscriptor<PDU> getOutgoingConnectionQueue(long connectionEndpointId) throws IPCException;
+	
 }

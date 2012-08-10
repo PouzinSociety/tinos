@@ -6,8 +6,8 @@ import org.junit.Test;
 
 import rina.efcp.api.DataTransferConstants;
 import rina.efcp.impl.DTAEIState;
-import rina.efcp.impl.PDU;
-import rina.efcp.impl.PDUParser;
+import rina.efcp.api.PDU;
+import rina.efcp.api.PDUParser;
 import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.Flow;
 

@@ -25,6 +25,7 @@ public class MockIPCProcess extends BaseIPCProcess implements IPCService{
 	private ExecutorService executorService = null;
 	
 	public MockIPCProcess(){
+		super(IPCProcessType.FAKE);
 		executorService = Executors.newFixedThreadPool(2);
 	}
 	

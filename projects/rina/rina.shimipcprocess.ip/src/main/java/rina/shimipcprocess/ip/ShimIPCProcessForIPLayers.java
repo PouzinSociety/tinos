@@ -14,7 +14,6 @@ import rina.flowallocator.api.Flow;
 import rina.flowallocator.api.QoSCube;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.BaseIPCProcess;
-import rina.ipcprocess.api.IPCProcessComponent;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
@@ -59,26 +58,19 @@ public class ShimIPCProcessForIPLayers extends BaseIPCProcess implements IPCServ
 	private RIBDaemon ribDaemon = null;
 	
 	public ShimIPCProcessForIPLayers(ApplicationProcessNamingInfo apNamingInfo, String hostName, String difName, Delimiter delimiter, IPCManager ipcManager){
-		super();
+		super(IPCProcessType.SHIM_IP);
 		this.apNamingInfo = apNamingInfo;
 		this.hostName = hostName;
 		this.difName = difName;
 		this.addIPCProcessComponent(delimiter);
 		this.flowAllocator = new FlowAllocatorImpl(hostName, delimiter, ipcManager, this);
 		this.addIPCProcessComponent(this.flowAllocator);
-		this.flowAllocator.setIPCProcess(this);
 		this.ribDaemon = new RIBDaemonImpl(this, flowAllocator);
 		this.addIPCProcessComponent(ribDaemon);
-		this.ribDaemon.setIPCProcess(this);
 	}
 	
 	public String getHostname(){
 		return this.hostName;
-	}
-	
-	@Override
-	public IPCProcessComponent getIPCProcessComponent(String componentName){
-		return this.ribDaemon;
 	}
 	
 	/**
@@ -144,16 +136,6 @@ public class ShimIPCProcessForIPLayers extends BaseIPCProcess implements IPCServ
 
 	public void submitDeallocate(int portId) throws IPCException {
 		this.flowAllocator.submitDeallocate(portId);
-	}
-
-	public void submitStatus(int arg0) {
-	}
-
-	public void submitTransfer(int portId, byte[] sdu) throws IPCException {
-		this.flowAllocator.submitTransfer(portId, sdu);
-	}
-	
-	public void addIPCProcessComponent(IPCProcessComponent ipcProcessComponent) {
 	}
 
 	public void destroy() {

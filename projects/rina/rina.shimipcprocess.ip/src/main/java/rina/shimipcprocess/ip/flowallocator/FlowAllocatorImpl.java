@@ -5,6 +5,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -17,6 +18,7 @@ import org.apache.commons.logging.LogFactory;
 
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.cdap.api.message.CDAPMessage;
+import rina.configuration.RINAConfiguration;
 import rina.delimiting.api.Delimiter;
 import rina.flowallocator.api.BaseFlowAllocator;
 import rina.flowallocator.api.DirectoryForwardingTable;
@@ -103,6 +105,12 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	 */
 	private IPCProcess ipcProcess = null;
 	
+	/**
+	 * The runnable that reads the incoming flow queues and 
+	 * dispatches the SDUs following a certain QoS cryteria
+	 */
+	private OutgoingFlowQueuesReader incomingFlowQueuesReader = null;
+	
 	public FlowAllocatorImpl(String hostName, Delimiter delimiter, IPCManager ipcManager, ShimIPCProcessForIPLayers ipcProcess){
 		this.hostName = hostName;
 		this.expectedApplicationRegistrations = new ConcurrentHashMap<String, Integer>();
@@ -114,6 +122,8 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		this.timer = new Timer();
 		this.ipcManager = ipcManager;
 		this.ipcProcess = ipcProcess;
+		this.incomingFlowQueuesReader = new OutgoingFlowQueuesReader(ipcManager, flows, delimiter);
+		this.ipcManager.execute(incomingFlowQueuesReader);
 		
 		//Create QoS cubes
 		this.qosCubes = new ArrayList<QoSCube>();
@@ -132,6 +142,11 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		qosCube.setPartialDelivery(false);
 		qosCube.setUndetectedBitErrorRate(new Double("1.0E-9"));
 		this.qosCubes.add(qosCube);
+	}
+	
+	public void stop(){
+		super.stop();
+		this.incomingFlowQueuesReader.stop();
 	}
 	
 	public List<QoSCube> getQoSCubes(){
@@ -277,7 +292,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		
 		synchronized(this.flows){
 			flowState = new FlowState();
-			portId = generatePortId();
+			portId = this.ipcManager.getAvailablePortId();
 			if (portId == -1){
 				throw new IPCException(IPCException.PROBLEMS_ALLOCATING_FLOW_CODE, 
 						IPCException.PROBLEMS_ALLOCATING_FLOW + 
@@ -296,7 +311,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 				Socket socket = new Socket(directoryEntry.getHostname(), directoryEntry.getPortNumber());
 				flowState.setSocket(socket);
 
-				TCPSocketReader reader = new TCPSocketReader(socket, delimiter, applicationCallback, portId, this);
+				TCPSocketReader reader = new TCPSocketReader(socket, delimiter, ipcManager, portId, this);
 				this.ipcManager.execute(reader);
 				AllocateResponseTimerTask timerTask = new AllocateResponseTimerTask(applicationCallback, portId);
 				timer.schedule(timerTask, 20);
@@ -305,7 +320,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 				datagramSocket.connect(InetAddress.getByName(directoryEntry.getHostname()), directoryEntry.getPortNumber());
 				flowState.setDatagramSocket(datagramSocket);
 				
-				UDPSocketReader reader = new UDPSocketReader(datagramSocket, applicationCallback, portId, this);
+				UDPSocketReader reader = new UDPSocketReader(datagramSocket, ipcManager, portId, this);
 				AllocateResponseTimerTask timerTask = new AllocateResponseTimerTask(applicationCallback, portId);
 				this.ipcManager.execute(reader);
 				timer.schedule(timerTask, 20);
@@ -319,6 +334,8 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		}
 		
 		flowState.setState(State.ALLOCATED);
+		this.ipcManager.addFlowQueues(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
+		this.ipcManager.getOutgoingFlowQueue(portId).subscribeToQueue(this.incomingFlowQueuesReader);
 		return portId;
 	}
 	
@@ -330,7 +347,10 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		FlowState flowState = null;
 		
 		synchronized(this.flows){
-			flowState = this.flows.remove(new Integer(portId));
+			Integer iPortId = new Integer(portId);
+			flowState = this.flows.remove(iPortId);
+			this.ipcManager.removeFlowQueues(portId);
+			this.ipcManager.freePortId(portId);
 		}
 		
 		if (flowState != null){
@@ -341,19 +361,6 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 				}
 			}
 		}
-	}
-	
-	private int generatePortId(){
-		int i=1;
-		while (i<Integer.MAX_VALUE){
-			if (this.flows.get(new Integer(i)) == null){
-				return i;
-			}
-
-			i++;
-		}
-
-		return -1;
 	}
 	
 	/**
@@ -369,7 +376,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		
 		synchronized(this.flows){
 			flowState = new FlowState();
-			portId = generatePortId();
+			portId = this.ipcManager.getAvailablePortId();
 			//Not enough portIds, cannot accept the request
 			if (portId == -1){
 				try{
@@ -386,9 +393,17 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		QualityOfServiceSpecification qoSSpec = new QualityOfServiceSpecification();
 		qoSSpec.setName("reliable");
 		qoSSpec.setQosCubeId(2);
+		qoSSpec.setMaxAllowableGapSDU(0);
+		qoSSpec.setOrder(true);
+		qoSSpec.setPartialDelivery(false);
 		flowService.setQoSSpecification(qoSSpec);
-		flowService.setSourceAPNamingInfo(new ApplicationProcessNamingInfo(
-				socket.getInetAddress().getHostName(), ""+socket.getPort()));
+		ApplicationProcessNamingInfo sourceAPNamingInfo = this.getAPNamingInfo(socket.getInetAddress().getHostName());
+		if (sourceAPNamingInfo != null){
+			flowService.setSourceAPNamingInfo(sourceAPNamingInfo);
+		}else{
+			flowService.setSourceAPNamingInfo(new ApplicationProcessNamingInfo(
+					socket.getInetAddress().getHostName(), ""+socket.getPort()));
+		}
 		flowService.setDestinationAPNamingInfo(apNamingInfo);
 		flowService.setPortId(portId);
 		flowState.setFlowService(flowService);
@@ -399,6 +414,19 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		
 		log.debug("Delivering the allocate request to local application: "+apNamingInfo.getEncodedString());
 		applicationCallback.deliverAllocateRequest(flowService, (IPCService) this.ipcProcess);
+	}
+	
+	private ApplicationProcessNamingInfo getAPNamingInfo(String hostName){
+		Iterator<DirectoryEntry> iterator = this.directory.values().iterator();
+		DirectoryEntry currentEntry = null;
+		while(iterator.hasNext()){
+			currentEntry = iterator.next();
+			if (currentEntry.getHostname().equals(hostName)){
+				return currentEntry.getApNamingInfo();
+			}
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -433,7 +461,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		int portId = 0;
 		synchronized(this.flows){
 			flowState = new FlowState();
-			portId = generatePortId();
+			portId = this.ipcManager.getAvailablePortId();
 			//Not enough portIds, cannot accept the request
 			if (portId == -1){
 				try{
@@ -510,17 +538,19 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		
 		flowState.setApplicationCallback(applicationCallback);
 		flowState.setState(State.ALLOCATED);
+		this.ipcManager.addFlowQueues(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
+		this.ipcManager.getOutgoingFlowQueue(portId).subscribeToQueue(this.incomingFlowQueuesReader);
 	}
 	
 	private void submitAllocateResponseForReliableFlow(Socket socket, APService applicationCallback, int portId){
-		TCPSocketReader reader = new TCPSocketReader(socket, delimiter, applicationCallback, portId, this);
+		TCPSocketReader reader = new TCPSocketReader(socket, delimiter, ipcManager, portId, this);
 		this.ipcManager.execute(reader);
 	}
 	
 	private void submitAllocateResponseForUnreliableFlow(FlowState flowState, APService applicationCallback, int portId){
 		BlockinqQueueReader reader = new BlockinqQueueReader(
 				this.unreliableFlowQueues.get(flowState.getBlockingQueueId()), 
-				applicationCallback, portId, this);
+				ipcManager, portId, this);
 		this.ipcManager.execute(reader);
 		flowState.setBlockingQueueReader(reader);
 	}
@@ -533,7 +563,10 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		FlowState flowState = null;
 		
 		synchronized(this.flows){
-			flowState = this.flows.remove(new Integer(portId));
+			Integer iPortId = new Integer(portId);
+			flowState = this.flows.remove(iPortId);
+			this.ipcManager.removeFlowQueues(portId);
+			this.ipcManager.freePortId(portId);
 		}
 		
 		if (flowState != null){
@@ -550,41 +583,6 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 				}
 			}catch(Exception ex){
 			}
-		}
-	}
-	
-	public void submitTransfer(int portId, byte[] sdu) throws IPCException {
-		FlowState flowState = null;
-		DatagramPacket datagramPacket = null;
-		
-		synchronized(this.flows){
-			flowState = this.flows.get(new Integer(portId));
-		}
-		
-		if (flowState == null){
-			throw new IPCException(IPCException.PROBLEMS_SENDING_SDU_CODE, 
-					IPCException.PROBLEMS_SENDING_SDU + ". Could not find state associated to portId "+portId);
-		}
-		
-		try{
-			if (flowState.getSocket() != null){
-				flowState.getSocket().getOutputStream().write(delimiter.getDelimitedSdu(sdu));
-			}else if (flowState.getBlockingQueueReader() != null){
-				//Reusing the UDP server socket
-				datagramPacket = new DatagramPacket(sdu, sdu.length);
-				datagramPacket.setAddress(InetAddress.getByName(
-						flowState.getFlowService().getSourceAPNamingInfo().getApplicationProcessName()));
-				datagramPacket.setPort(Integer.parseInt(
-						flowState.getFlowService().getSourceAPNamingInfo().getApplicationProcessInstance()));
-				flowState.getDatagramSocket().send(datagramPacket);
-			}else{
-				//Dedicated and already connected UDP socket
-				datagramPacket = new DatagramPacket(sdu, sdu.length);
-				flowState.getDatagramSocket().send(datagramPacket);
-			}
-		}catch(Exception ex){
-			throw new IPCException(IPCException.PROBLEMS_SENDING_SDU_CODE, 
-					IPCException.PROBLEMS_SENDING_SDU + ex.getMessage());
 		}
 	}
 
@@ -610,10 +608,6 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	}
 
 	public void receivedDeallocateLocalFlowRequest(int arg0) throws IPCException {
-		//Won't implement
-	}
-
-	public void newConnectionAccepted(Socket socket){
 		//Won't implement
 	}
 }

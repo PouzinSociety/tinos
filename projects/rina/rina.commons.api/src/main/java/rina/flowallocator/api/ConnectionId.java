@@ -10,19 +10,19 @@ public class ConnectionId {
 	 * A DIF-assigned identifier only known within the DIF that stands for a 
 	 * particular QoS hypercube.
 	 */
-	private int qosId = 0;
+	private int qosId = -1;
 	
 	/**
 	 * An identifier unique within the DT-AEI of the source IPC Process that identifies 
 	 * the source endpoint of this connection
 	 */
-	private long sourceCEPId = 0;
+	private long sourceCEPId = -1L;
 	
 	/**
 	 * An identifier unique within the DT-AEI of the destination IPC Process that identifies 
 	 * the destination endpoint of this connection
 	 */
-	private long destinationCEPId = 0;
+	private long destinationCEPId = -1L;
 
 	public int getQosId() {
 		return qosId;

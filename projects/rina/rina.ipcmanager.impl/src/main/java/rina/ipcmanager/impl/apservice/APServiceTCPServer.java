@@ -48,13 +48,19 @@ private static final Log log = LogFactory.getLog(APServiceTCPServer.class);
 	 */
 	private InterDIFDirectory interDIFDirectory = null;
 	
-	public APServiceTCPServer(IPCManager ipcManager){
-		this(ipcManager, DEFAULT_PORT);
+	/**
+	 * The SDU Delivery Service
+	 */
+	private SDUDeliveryService sduDeliveryService = null;
+	
+	public APServiceTCPServer(IPCManager ipcManager, SDUDeliveryService sduDeliveryService){
+		this(ipcManager, sduDeliveryService, DEFAULT_PORT);
 	}
 	
-	public APServiceTCPServer(IPCManager ipcManager, int port){
+	public APServiceTCPServer(IPCManager ipcManager, SDUDeliveryService sduDeliveryService, int port){
 		this.ipcManager = ipcManager;
 		this.port = port;
+		this.sduDeliveryService = sduDeliveryService;
 	}
 	
 	public void setInterDIFDirectory(InterDIFDirectory interDIFDirectory){
@@ -100,7 +106,7 @@ private static final Log log = LogFactory.getLog(APServiceTCPServer.class);
 	}
 	
 	private void newConnectionAccepted(Socket socket){
-		APServiceImpl apService = new APServiceImpl(this.ipcManager);
+		APServiceImpl apService = new APServiceImpl(this.ipcManager, this.sduDeliveryService);
 		apService.setInterDIFDirectory(interDIFDirectory);
 		TCPSocketReader socketReader = new TCPSocketReader(socket, ipcManager.getDelimiterFactory().createDelimiter(DelimiterFactory.DIF),
 				ipcManager.getEncoderFactory().createEncoderInstance(), ipcManager.getCDAPSessionManagerFactory().createCDAPSessionManager(), 

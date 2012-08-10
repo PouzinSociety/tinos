@@ -102,10 +102,6 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		//Won't implement
 	}
 
-	public void cdapMessageDelivered(byte[] arg0, int arg1) {
-		//Won't implement
-	}
-
 	public void processOperation(CDAPMessage arg0, CDAPSessionDescriptor arg1) throws RIBDaemonException {
 		//Won't implement
 	}
@@ -155,6 +151,10 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 	public void write(String arg0, long arg1, String arg2, Object arg3,
 			NotificationPolicy arg4) throws RIBDaemonException {
 		// Won't implement
+	}
+
+	public void managementSDUDelivered(byte[] arg0, int arg1) {
+		//Won't implement
 	}
 
 }

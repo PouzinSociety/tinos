@@ -43,51 +43,51 @@ public class FlowServiceState {
 	 */
 	private TCPSocketReader tcpSocketReader = null;
 
-	public synchronized FlowService getFlowService() {
+	public FlowService getFlowService() {
 		return flowService;
 	}
 
-	public synchronized void setFlowService(FlowService flowService) {
+	public void setFlowService(FlowService flowService) {
 		this.flowService = flowService;
 	}
 
-	public synchronized Socket getSocket() {
+	public Socket getSocket() {
 		return socket;
 	}
 
-	public synchronized void setSocket(Socket socket) {
+	public void setSocket(Socket socket) {
 		this.socket = socket;
 	}
 
-	public synchronized Status getStatus() {
+	public Status getStatus() {
 		return status;
 	}
 
-	public synchronized void setStatus(Status status) {
+	public void setStatus(Status status) {
 		this.status = status;
 	}
 
-	public synchronized void setIpcService(IPCService ipcService) {
+	public void setIpcService(IPCService ipcService) {
 		this.ipcService = ipcService;
 	}
 
-	public synchronized IPCService getIpcService() {
+	public IPCService getIpcService() {
 		return ipcService;
 	}
 
-	public synchronized void setCdapMessage(CDAPMessage cdapMessage) {
+	public void setCdapMessage(CDAPMessage cdapMessage) {
 		this.cdapMessage = cdapMessage;
 	}
 
-	public synchronized CDAPMessage getCdapMessage() {
+	public CDAPMessage getCdapMessage() {
 		return cdapMessage;
 	}
 
-	public synchronized void setTcpSocketReader(TCPSocketReader tcpSocketReader) {
+	public void setTcpSocketReader(TCPSocketReader tcpSocketReader) {
 		this.tcpSocketReader = tcpSocketReader;
 	}
 
-	public synchronized TCPSocketReader getTcpSocketReader() {
+	public TCPSocketReader getTcpSocketReader() {
 		return tcpSocketReader;
 	}
 	

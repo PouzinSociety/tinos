@@ -1,7 +1,5 @@
 package rina.flowallocator.api;
 
-import java.net.Socket;
-
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
@@ -25,20 +23,6 @@ public interface FlowAllocatorInstance{
 	 * @return
 	 */
 	public Flow getFlow();
-	
-	
-	/**
-	 * Set the socket associated to this Flow Allocator Instance, will make the 
-	 * Flow Allocation process continue
-	 * @param Socket
-	 */
-	public void setSocket(Socket socket);
-	
-	/**
-	 * When the TCP Socket Reader detects that the socket is closed, 
-	 * it will notify the Flow Allocator instance
-	 */
-	public void socketClosed();
 
 	/**
 	 * Called by the FA to forward an Allocate request to a FAI
@@ -94,11 +78,6 @@ public interface FlowAllocatorInstance{
 	 * @param applicationCallback
 	 */
 	public void setApplicationCallback(APService applicationCallback);
-	
-	/**
-	 * The last SDU for this flow has been received
-	 */
-	public abstract void lastSDUReceived();
 	
 	/* Deal with local flows (flows between applications from the same system) */
 	

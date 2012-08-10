@@ -13,10 +13,10 @@ import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.delimiting.api.BaseSocketReader;
 import rina.delimiting.api.Delimiter;
 import rina.encoding.api.Encoder;
+import rina.ipcmanager.api.IPCManager;
 import rina.ipcservice.api.ApplicationRegistration;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
-import rina.ipcservice.api.IPCService;
 
 /**
  * Reads a TCP socket that comes from the "RINA Library" side. 6 CDAP messages can be received:
@@ -52,7 +52,7 @@ public class TCPSocketReader extends BaseSocketReader{
 	/**
 	 * The local IPC process the data has to be sent to
 	 */
-	private IPCService ipcService = null;
+	private IPCManager ipcManager = null;
 	
 	/**
 	 * The portId associated to the flow established by application process 
@@ -77,8 +77,8 @@ public class TCPSocketReader extends BaseSocketReader{
 		this.portId = portId;
 	}
 	
-	public void setIPCService(IPCService ipcService){
-		this.ipcService = ipcService;
+	public void setIPCManager(IPCManager ipcManager){
+		this.ipcManager = ipcManager;
 	}
 	
 	/**
@@ -168,9 +168,10 @@ public class TCPSocketReader extends BaseSocketReader{
 		}
 
 		try {
-			this.ipcService.submitTransfer(this.portId, sdu);
+			this.ipcManager.getOutgoingFlowQueue(portId).writeDataToQueue(sdu);
 		} catch (IPCException ex) {
 			ex.printStackTrace();
+			log.error(ex);
 			//TODO, what else to do?
 		}
 	}
@@ -180,7 +181,7 @@ public class TCPSocketReader extends BaseSocketReader{
 	 * @param cdapMessage
 	 */
 	private void handleMStartReceived(CDAPMessage cdapMessage){
-		if (ipcService != null){
+		if (ipcManager != null){
 			//This socket can only be used for data transfer
 			//TODO send error message and close socket?
 			return;

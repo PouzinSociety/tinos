@@ -70,10 +70,8 @@ public class FlowEncoder extends BaseEncoder{
 		case 2:
 			return State.ALLOCATED;
 		case 3:
-			return State.LAST_SDU_SENT;
+			return State.WAITING_2_MPL_BEFORE_TEARING_DOWN;
 		case 4:
-			return State.LAST_SDU_DELIVERED;
-		case 5:
 			return State.DEALLOCATED;
 		default:
 			return State.NULL;
@@ -132,12 +130,10 @@ public class FlowEncoder extends BaseEncoder{
 			return 1;
 		case ALLOCATED:
 			return 2;
-		case LAST_SDU_SENT:
-			return 3;
-		case LAST_SDU_DELIVERED:
+		case WAITING_2_MPL_BEFORE_TEARING_DOWN:
 			return 4;
 		case DEALLOCATED:
-			return 5;
+			return 4;
 		default:
 			return 0;
 		}

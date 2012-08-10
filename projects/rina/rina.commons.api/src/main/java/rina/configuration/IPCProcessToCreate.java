@@ -17,49 +17,71 @@ public class IPCProcessToCreate {
 	private String applicationProcessInstance = null;
 	private String difName = null;
 	private List<Neighbor> neighbors = null;
+	private List<String> difsToRegisterAt = null;
 	private String hostname = null;
-	Map<String, String> parameters = null;
+	private Map<String, String> parameters = null;
 	
 	public String getType() {
 		return type;
 	}
+	
 	public void setType(String type) {
 		this.type = type;
 	}
+	
 	public String getHostname() {
 		return hostname;
 	}
+	
 	public void setHostname(String hostname) {
 		this.hostname = hostname;
 	}
+	
 	public String getApplicationProcessName() {
 		return applicationProcessName;
 	}
+	
 	public void setApplicationProcessName(String applicationProcessName) {
 		this.applicationProcessName = applicationProcessName;
 	}
+	
 	public String getApplicationProcessInstance() {
 		return applicationProcessInstance;
 	}
+	
 	public void setApplicationProcessInstance(String applicationProcessInstance) {
 		this.applicationProcessInstance = applicationProcessInstance;
 	}
+	
 	public String getDifName() {
 		return difName;
 	}
+	
 	public void setDifName(String difName) {
 		this.difName = difName;
 	}
+	
 	public List<Neighbor> getNeighbors() {
 		return neighbors;
 	}
+	
 	public void setNeighbors(List<Neighbor> neighbors) {
 		this.neighbors = neighbors;
 	}
+	
 	public Map<String, String> getParameters() {
 		return parameters;
 	}
+	
 	public void setParameters(Map<String, String> parameters) {
 		this.parameters = parameters;
+	}
+	
+	public List<String> getDifsToRegisterAt() {
+		return difsToRegisterAt;
+	}
+	
+	public void setDifsToRegisterAt(List<String> difsToRegisterAt) {
+		this.difsToRegisterAt = difsToRegisterAt;
 	}
 }
