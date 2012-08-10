@@ -393,6 +393,9 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		QualityOfServiceSpecification qoSSpec = new QualityOfServiceSpecification();
 		qoSSpec.setName("reliable");
 		qoSSpec.setQosCubeId(2);
+		qoSSpec.setMaxAllowableGapSDU(0);
+		qoSSpec.setOrder(true);
+		qoSSpec.setPartialDelivery(false);
 		flowService.setQoSSpecification(qoSSpec);
 		ApplicationProcessNamingInfo sourceAPNamingInfo = this.getAPNamingInfo(socket.getInetAddress().getHostName());
 		if (sourceAPNamingInfo != null){
@@ -605,10 +608,6 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	}
 
 	public void receivedDeallocateLocalFlowRequest(int arg0) throws IPCException {
-		//Won't implement
-	}
-
-	public void newConnectionAccepted(Socket socket){
 		//Won't implement
 	}
 }

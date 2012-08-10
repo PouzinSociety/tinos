@@ -67,7 +67,11 @@
       "maxAllowableGapSdu" : -1,
       "delay" : 0,
       "jitter" : 0
-    } ]
+    } ],
+    "nMinusOneFlowsConfiguration" : {
+    	"managementFlowQoSId" : 2,
+    	"dataFlowsQoSIds" : [ 1, 2 ]
+    }
   }, {
     "difName" : "PublicInternet.DIF",
     "expectedApplicationRegistrations" : [ {

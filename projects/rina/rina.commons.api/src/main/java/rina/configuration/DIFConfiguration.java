@@ -28,10 +28,23 @@ public class DIFConfiguration {
 	 */
 	private List<QoSCube> qosCubes = null;
 	
+	/**
+	 * Only for normal DIFs
+	 */
+	private NMinusOneFlowsConfiguration nMinusOneFlowsConfiguration = null;
+	
 	/** Only for shim IP DIFs **/
 	private List<ExpectedApplicationRegistration> expectedApplicationRegistrations = null;
 	private List<DirectoryEntry> directory = null;
 
+	public NMinusOneFlowsConfiguration getnMinusOneFlowsConfiguration() {
+		return nMinusOneFlowsConfiguration;
+	}
+	public void setnMinusOneFlowsConfiguration(
+			NMinusOneFlowsConfiguration nMinusOneFlowsConfiguration) {
+		this.nMinusOneFlowsConfiguration = nMinusOneFlowsConfiguration;
+	}
+	
 	public List<ExpectedApplicationRegistration> getExpectedApplicationRegistrations() {
 		return expectedApplicationRegistrations;
 	}

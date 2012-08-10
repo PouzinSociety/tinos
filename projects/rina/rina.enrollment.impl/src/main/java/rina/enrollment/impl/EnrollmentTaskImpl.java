@@ -16,6 +16,7 @@ import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.cdap.api.message.CDAPMessage;
+import rina.configuration.NMinusOneFlowsConfiguration;
 import rina.configuration.RINAConfiguration;
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
@@ -263,16 +264,39 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 			log.error(message);
 			return;
 		}
-		
-		//Allocate a new reliable N-1 Flow to the destination IPC Process, dedicated to layer management
+
+		//Request the allocation of a new N-1 Flow to the destination IPC Process, dedicated to layer management
+		NMinusOneFlowsConfiguration nMinusOneFlowConfiguration = null;
+		if (this.getIPCProcess().getDIFName() != null){
+			nMinusOneFlowConfiguration = 
+				RINAConfiguration.getInstance().getDIFConfiguration(this.getIPCProcess().getDIFName()).getnMinusOneFlowsConfiguration();
+		}
+		QualityOfServiceSpecification qosSpec = new QualityOfServiceSpecification();
+		if (nMinusOneFlowConfiguration == null){
+			//No configured N-1 management flow QoS id, using the reliable one
+			qosSpec.setQosCubeId(2);
+		}else{
+			qosSpec.setQosCubeId(nMinusOneFlowConfiguration.getManagementFlowQoSId());
+		}
+
+		switch(qosSpec.getQosCubeId()){
+		case 1:
+			qosSpec.setMaxAllowableGapSDU(-1);
+			qosSpec.setPartialDelivery(true);
+			qosSpec.setOrder(false);
+			break;
+		case 2:
+			qosSpec.setMaxAllowableGapSDU(0);
+			qosSpec.setPartialDelivery(false);
+			qosSpec.setOrder(true);
+		}
+
 		FlowService flowService = new FlowService();
 		flowService.setDestinationAPNamingInfo(candidateNamingInfo);
 		flowService.setSourceAPNamingInfo(this.getIPCProcess().getApplicationProcessNamingInfo());
-		QualityOfServiceSpecification qosSpec = new QualityOfServiceSpecification();
-		qosSpec.setQosCubeId(2);
 		flowService.setQoSSpecification(qosSpec);
 		this.resourceAllocator.getNMinus1FlowManager().allocateNMinus1Flow(flowService, true);
-		
+
 		//Store state of pending flows
 		this.portIdsPendingToBeAllocated.put(new Integer(flowService.getPortId()), candidate);
 	}
@@ -551,7 +575,8 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 		 if (enrollee){
 			 //request the allocation of N-1 flows with the neighbor, to be used by data transfer
 			 RequestNMinusOneFlowAllocation task = new RequestNMinusOneFlowAllocation(dafMember, 
-					 this.getIPCProcess().getApplicationProcessNamingInfo(), this.resourceAllocator.getNMinus1FlowManager());
+					 this.getIPCProcess().getApplicationProcessNamingInfo(), this.resourceAllocator.getNMinus1FlowManager(), 
+					 RINAConfiguration.getInstance().getDIFConfiguration(this.getIPCProcess().getDIFName()));
 			 timer.schedule(task, 200);
 		 }
 	 }
