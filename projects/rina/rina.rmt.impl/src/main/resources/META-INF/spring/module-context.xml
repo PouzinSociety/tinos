@@ -4,5 +4,5 @@
 			http://www.springframework.org/schema/beans
 			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-	<bean name="rmtFactoryBean" class="rina.rmt.impl.tcp.TCPRMTFactoryImpl"/>
+	<bean name="rmtFactoryBean" class="rina.rmt.impl.RMTFactoryImpl"/>
 </beans>

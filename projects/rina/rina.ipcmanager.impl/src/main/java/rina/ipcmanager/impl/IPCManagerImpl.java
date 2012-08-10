@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -22,11 +23,9 @@ import rina.applicationprocess.api.WhatevercastName;
 import rina.cdap.api.CDAPSessionManagerFactory;
 import rina.configuration.DIFConfiguration;
 import rina.configuration.IPCProcessToCreate;
-import rina.configuration.KnownIPCProcessConfiguration;
+import rina.configuration.KnownIPCProcessAddress;
 import rina.configuration.RINAConfiguration;
 import rina.delimiting.api.DelimiterFactory;
-import rina.efcp.api.BaseDataTransferAE;
-import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.DataTransferConstants;
 import rina.encoding.api.EncoderFactory;
 import rina.enrollment.api.BaseEnrollmentTask;
@@ -38,17 +37,20 @@ import rina.flowallocator.api.Flow;
 import rina.idd.api.InterDIFDirectoryFactory;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcmanager.impl.apservice.APServiceTCPServer;
+import rina.ipcmanager.impl.apservice.SDUDeliveryService;
 import rina.ipcmanager.impl.console.IPCManagerConsole;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
+import rina.aux.BlockingQueueWithSubscriptor;
+import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
+import rina.resourceallocator.api.BaseResourceAllocator;
+import rina.resourceallocator.api.ResourceAllocator;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBObject;
 import rina.ribdaemon.api.RIBObjectNames;
-import rina.rmt.api.BaseRMT;
-import rina.rmt.api.RMT;
 
 /**
  * The IPC Manager is the component of a DAF that manages the local IPC resources. In its current implementation it 
@@ -78,14 +80,41 @@ public class IPCManagerImpl implements IPCManager{
 	
 	private APServiceTCPServer apServiceTCPServer = null;
 	
+	/**
+	 * The list that contains the portIds that are currently in use
+	 */
+	private List<Integer> portIdsInUse = null;
+	
+	/**
+	 * The incoming flow queues of all the IPC Processes in this instantiation 
+	 * of the RINA software
+	 */
+	private Map<Integer, BlockingQueueWithSubscriptor<byte[]>> incomingFlowQueues = null;
+	
+	/**
+	 * The outgoing flow queues of all the IPC Processes in this instantiation 
+	 * of the RINA software
+	 */
+	private Map<Integer, BlockingQueueWithSubscriptor<byte[]>> outgoingFlowQueues = null;
+	
+	/**
+	 * the SDU Delivery Service
+	 */
+	private SDUDeliveryService sduDeliveryService = null;
+	
 	public IPCManagerImpl(){
 		this.ipcProcessFactories = new HashMap<String, IPCProcessFactory>();
 		executorService = Executors.newCachedThreadPool();
 		initializeConfiguration();
 		console = new IPCManagerConsole(this);
 		executorService.execute(console);
-		apServiceTCPServer = new APServiceTCPServer(this);
+		sduDeliveryService = new SDUDeliveryService(this);
+		executorService.execute(sduDeliveryService);
+		apServiceTCPServer = new APServiceTCPServer(this, sduDeliveryService);
 		executorService.execute(apServiceTCPServer);
+		this.portIdsInUse = new ArrayList<Integer>();
+		this.incomingFlowQueues = new ConcurrentHashMap<Integer, BlockingQueueWithSubscriptor<byte[]>>();
+		this.outgoingFlowQueues = new ConcurrentHashMap<Integer, BlockingQueueWithSubscriptor<byte[]>>();
 		log.debug("IPC Manager started");
 	}
 	
@@ -203,7 +232,7 @@ public class IPCManagerImpl implements IPCManager{
 			try{
 				this.createIPCProcess(currentProcess.getType(), currentProcess.getApplicationProcessName(), 
 						currentProcess.getApplicationProcessInstance(), currentProcess.getDifName(), 
-						rinaConfiguration, currentProcess.getNeighbors());
+						rinaConfiguration, currentProcess.getNeighbors(), currentProcess.getDifsToRegisterAt());
 			}catch(Exception ex){
 				log.error(ex);
 			}
@@ -211,7 +240,7 @@ public class IPCManagerImpl implements IPCManager{
 	}
 
 	public void createIPCProcess(String type, String apName, String apInstance, String difName, 
-			RINAConfiguration config, List<Neighbor> neighbors) throws Exception{
+			RINAConfiguration config, List<Neighbor> neighbors, List<String> difsToRegisterAt) throws Exception{
 		IPCProcessFactory ipcProcessFactory = this.ipcProcessFactories.get(type);
 		if (ipcProcessFactory == null){
 			throw new Exception("Unsupported IPC Process type: "+type);
@@ -227,9 +256,9 @@ public class IPCManagerImpl implements IPCManager{
 					throw new Exception("Unrecognized DIF name: "+difName);
 				}
 
-				KnownIPCProcessConfiguration ipcProcessConfiguration = 
-					RINAConfiguration.getInstance().getIPCProcessConfiguration(apName);
-				if (ipcProcessConfiguration == null){
+				KnownIPCProcessAddress ipcProcessAddress = 
+					RINAConfiguration.getInstance().getIPCProcessAddress(apName);
+				if (ipcProcessAddress == null){
 					throw new Exception("Unrecoginzed IPC Process Name: "+apName);
 				}
 
@@ -245,7 +274,7 @@ public class IPCManagerImpl implements IPCManager{
 
 				ribDaemon.write(RIBObjectNames.ADDRESS_RIB_OBJECT_CLASS, 
 						RIBObjectNames.ADDRESS_RIB_OBJECT_NAME, 
-						ipcProcessConfiguration.getAddress());
+						ipcProcessAddress.getAddress());
 
 				ribDaemon.write(DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_CLASS, 
 						DataTransferConstants.DATA_TRANSFER_CONSTANTS_RIB_OBJECT_NAME, 
@@ -263,9 +292,17 @@ public class IPCManagerImpl implements IPCManager{
 
 				ribDaemon.start(RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_CLASS, 
 						RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME);
-
-				RMT rmt = (RMT) ipcProcess.getIPCProcessComponent(BaseRMT.getComponentName());
-				rmt.startListening();
+			}
+			
+			if (difsToRegisterAt != null){
+				ResourceAllocator resourceAllocator = (ResourceAllocator) ipcProcess.getIPCProcessComponent(BaseResourceAllocator.getComponentName());
+				for(int i=0; i<difsToRegisterAt.size(); i++){
+					try{
+						resourceAllocator.getNMinus1FlowManager().registerIPCProcess(difsToRegisterAt.get(i));
+					}catch(IPCException ex){
+						log.error("Error registering IPC Process "+apName+" "+apInstance+" to N-1 DIF "+difsToRegisterAt);
+					}
+				}
 			}
 		}
 	}
@@ -299,6 +336,96 @@ public class IPCManagerImpl implements IPCManager{
 		}
 		
 		throw new Exception("Could not find IPC Process with AP name: "+apName+" and AP instance: "+apInstance);
+	}
+	
+	/**
+	 * Get a portId available for its use
+	 * @return a positive portId if there's one available, 
+	 * -1 if no free portIds are found
+	 */
+	public int getAvailablePortId(){
+		Integer candidate = null;
+		
+		synchronized(this.portIdsInUse){
+			for(int i=1; i<Integer.MAX_VALUE; i++){
+				candidate = new Integer(i);
+				if (this.portIdsInUse.contains(candidate)){
+					continue;
+				}
+
+				this.portIdsInUse.add(candidate);
+				return i;
+			}
+
+			return -1;
+		}
+	}
+	
+	/**
+	 * Mark a portId as available to be reused
+	 * @param portId
+	 */
+	public void freePortId(int portId){
+		synchronized(this.portIdsInUse){
+			this.portIdsInUse.remove(new Integer(portId));
+		}
+	}
+	
+	/**
+	 * Add an incoming and outgoing flow queues to support the flow identified by portId
+	 * @param portId
+	 * @throws IPCException if the portId is already in use
+	 */
+	public void addFlowQueues(int portId, int capacity) throws IPCException{
+		Integer queueId = new Integer(portId);
+		if (this.incomingFlowQueues.get(queueId) != null || 
+				this.outgoingFlowQueues.get(queueId) != null){
+			throw new IPCException(IPCException.PROBLEMS_ALLOCATING_FLOW_CODE, 
+					IPCException.PROBLEMS_ALLOCATING_FLOW + ". There are existing queues supporting this portId");
+		}
+		
+		this.incomingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor<byte[]>(portId, capacity));
+		this.outgoingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor<byte[]>(portId, capacity));
+	}
+	
+	/**
+	 * Remove the incoming and outgoing flow queues that support the flow identified by portId
+	 * @param portId
+	 */
+	public void removeFlowQueues(int portId){
+		Integer queueId = new Integer(portId);
+		this.incomingFlowQueues.remove(queueId);
+		this.outgoingFlowQueues.remove(queueId);
+	}
+	
+	/**
+	 * Get the incoming queue that supports the flow identified by portId
+	 * @param portId
+	 * @return
+	 * @throws IPCException if there is no incoming queue associated to portId
+	 */
+	public BlockingQueueWithSubscriptor<byte[]> getIncomingFlowQueue(int portId) throws IPCException{
+		BlockingQueueWithSubscriptor<byte[]> result = this.incomingFlowQueues.get(new Integer(portId));
+		if (result == null){
+			throw new IPCException(IPCException.ERROR_CODE, "Could not find the incoming flow queue associated to portId "+portId);
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Get the outgoing queue that supports the flow identified by portId
+	 * @param portId
+	 * @return
+	 * @throws IPCException if there is no outgoing queue associated to portId
+	 */
+	public BlockingQueueWithSubscriptor<byte[]> getOutgoingFlowQueue(int portId) throws IPCException{
+		BlockingQueueWithSubscriptor<byte[]> result = this.outgoingFlowQueues.get(new Integer(portId));
+		if (result == null){
+			throw new IPCException(IPCException.ERROR_CODE, "Could not find the outgoing flow queue associated to portId "+portId);
+		}
+		
+		return result;
 	}
 	
 	public String listIPCProcessesInformation(){
@@ -360,9 +487,8 @@ public class IPCManagerImpl implements IPCManager{
 	}
 	
 	public void writeDataToFlow(String sourceAPName, String sourceAPInstance, int portId, String data) throws Exception{
-		IPCProcess ipcProcess = getIPCProcess(sourceAPName, sourceAPInstance);
-		DataTransferAE dtae = (DataTransferAE) ipcProcess.getIPCProcessComponent(BaseDataTransferAE.getComponentName());
-		dtae.postSDU(portId, data.getBytes());
+		IPCService ipcService = (IPCService) getIPCProcess(sourceAPName, sourceAPInstance);
+		ipcService.submitTransfer(portId, data.getBytes());
 	}
 	
 	public void deallocateFlow(String sourceAPName, String sourceAPInstance, int portId) throws Exception{

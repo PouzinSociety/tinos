@@ -18,11 +18,6 @@ public class MockRIBDaemon extends BaseRIBDaemon{
 		
 	}
 
-	public void cdapMessageDelivered(byte[] arg0, int arg1) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	public void create(String arg0, long arg2, String arg1, Object arg3,
 			NotificationPolicy arg4) throws RIBDaemonException {
 		// TODO Auto-generated method stub
@@ -92,6 +87,12 @@ public class MockRIBDaemon extends BaseRIBDaemon{
 
 	public void write(String arg0, long arg2, String arg1, Object arg3,
 			NotificationPolicy arg4) throws RIBDaemonException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void managementSDUDelivered(byte[] arg0, int arg1) {
 		// TODO Auto-generated method stub
 		
 	}

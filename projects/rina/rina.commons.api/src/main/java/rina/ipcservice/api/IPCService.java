@@ -8,6 +8,8 @@ import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 public interface IPCService {
 	
+	public enum FlowState {BLOCKED, AVAILABLE};
+	
 	/**
 	 * This primitive is invoked by an Application Process to request the allocation of 
 	 * IPC resources with the destination application.
@@ -28,19 +30,14 @@ public interface IPCService {
 	public void submitDeallocate(int portId) throws IPCException;
 	
 	/**
-	 * Write an SDU to the portId
+	 * Write an SDU to the flow identified by portId. This 
+	 * operation will block if the flow is not available for transmitting
+	 * (because the queue is full).
 	 * @param portId
 	 * @param sdu
-	 * @throws IPCException
+	 * @throws IPCException if the flow doesn't exist
 	 */
 	public void submitTransfer(int portId, byte[] sdu) throws IPCException;
-	
-	/**
-	 * This primitive is invoked at any time by the Application any time it wishes to 
-	 * obtain a status on the flow.
-	 * @param port_id
-	 */
-	public void submitStatus(int port_id);
 	
 	/**
 	 * This primitive is invoked by the requested Application Process to respond to an allocation 

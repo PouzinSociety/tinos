@@ -24,6 +24,18 @@ public interface IPCProcess{
 	 */
 	public enum OperationalStatus {STARTED, STOPPED};
 	
+	/**
+	 * The type of IPC Process
+	 * @author eduardgrasa
+	 */
+	public enum IPCProcessType {FAKE, NORMAL, SHIM_IP};
+	
+	/**
+	 * Return the type of the IPC Process
+	 * @return
+	 */
+	public IPCProcessType getType();
+	
 	/* IPC Process Component management */
 	public Map<String, IPCProcessComponent> getIPCProcessComponents();
 	

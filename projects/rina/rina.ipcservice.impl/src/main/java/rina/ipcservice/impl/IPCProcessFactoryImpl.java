@@ -17,6 +17,7 @@ import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
+import rina.resourceallocator.api.ResourceAllocatorFactory;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonFactory;
 import rina.rmt.api.RMTFactory;
@@ -69,6 +70,11 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	private EnrollmentTaskFactory enrollmentTaskFactory = null;
 	
 	/**
+	 * Factory of resource allocators
+	 */
+	private ResourceAllocatorFactory resourceAllocatorFactory = null;
+	
+	/**
 	 * The IPCManager of this system
 	 */
 	private IPCManager ipcManager = null;
@@ -111,6 +117,14 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	
 	public CDAPSessionManagerFactory getCDAPSessionManagerFactory(){
 		return this.cdapSessionManagerFactory;
+	}
+	
+	public void setResourceAllocatorFactory(ResourceAllocatorFactory resourceAllocatorFactory){
+		this.resourceAllocatorFactory = resourceAllocatorFactory;
+	}
+	
+	public ResourceAllocatorFactory getResourceAllocatorFactory(){
+		return this.resourceAllocatorFactory;
 	}
 	
 	public EncoderFactory getEncoderFactory(){
@@ -173,17 +187,11 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		}
 
 		ipcProcess.addIPCProcessComponent(ribDaemon);
-
-		if (this.rmtFactory != null){
-			ipcProcess.addIPCProcessComponent(this.rmtFactory.createRMT(apNamingInfo));
+		
+		if (this.resourceAllocatorFactory != null){
+			ipcProcess.addIPCProcessComponent(this.resourceAllocatorFactory.createResourceAllocator(apNamingInfo));
 		}else{
-			throw new Exception("RMT Factory is null");
-		}
-
-		if (this.enrollmentTaskFactory != null){
-			ipcProcess.addIPCProcessComponent(this.enrollmentTaskFactory.createEnrollmentTask(apNamingInfo));
-		}else{
-			throw new Exception("Enrollment Task Factory is null");
+			throw new Exception("Resource Allocator Factory is null");
 		}
 
 		if (this.dataTransferAEFactory != null){
@@ -191,11 +199,23 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		}else{
 			throw new Exception("Data Transfer AE Factory is null");
 		}
+		
+		if (this.rmtFactory != null){
+			ipcProcess.addIPCProcessComponent(this.rmtFactory.createRMT(apNamingInfo));
+		}else{
+			throw new Exception("RMT Factory is null");
+		}
 
 		if (this.flowAllocatorFactory != null){
 			ipcProcess.addIPCProcessComponent(this.flowAllocatorFactory.createFlowAllocator(apNamingInfo));
 		}else{
 			throw new Exception("Flow Allocator Factory is null");
+		}
+		
+		if (this.enrollmentTaskFactory != null){
+			ipcProcess.addIPCProcessComponent(this.enrollmentTaskFactory.createEnrollmentTask(apNamingInfo));
+		}else{
+			throw new Exception("Enrollment Task Factory is null");
 		}
 
 		ipcProcesses.put(apName+"-"+apInstance, ipcProcess);
@@ -220,6 +240,7 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		enrollmentTaskFactory.destroyEnrollmentTask(apNamingInfo);
 		dataTransferAEFactory.destroyDataTransferAE(apNamingInfo);
 		flowAllocatorFactory.destroyFlowAllocator(apNamingInfo);
+		resourceAllocatorFactory.destroyResourceAllocator(apNamingInfo);
 		ipcProcess.destroy();
 	}
 
