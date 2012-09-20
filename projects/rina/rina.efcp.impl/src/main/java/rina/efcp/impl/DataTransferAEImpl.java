@@ -237,9 +237,11 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		}
 		this.connectionStatesByConnectionId.put(connectionEndpointId, state);
 		this.incomingConnectionQueues.put(connectionEndpointId, 
-				new BlockingQueueWithSubscriptor<PDU>(connectionEndpointId.intValue(), RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues()));
+				new BlockingQueueWithSubscriptor<PDU>(connectionEndpointId.intValue(), 
+				RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues()));
 		this.outgoingConnectionQueues.put(connectionEndpointId, 
-				new BlockingQueueWithSubscriptor<PDU>(connectionEndpointId.intValue(), RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues()));
+				new BlockingQueueWithSubscriptor<PDU>(connectionEndpointId.intValue(), 
+				RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues()));
 		this.portIdToConnectionMapping.put(new Integer(portId), state);
 		try{
 			this.getIncomingConnectionQueue(connectionEndpointId.longValue()).subscribeToQueue(this.incomingEFCPQueuesReader);

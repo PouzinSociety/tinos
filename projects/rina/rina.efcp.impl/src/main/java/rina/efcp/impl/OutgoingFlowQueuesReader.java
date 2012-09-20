@@ -16,7 +16,7 @@ import rina.ipcmanager.api.IPCManager;
 import rina.ipcservice.api.IPCException;
 
 /**
- * Reads the incoming flow queues, gets SDUs from them, 
+ * Reads the outgoing flow queues, gets SDUs from them, 
  * applies DTP and posts to the right socket.
  * @author eduardgrasa
  *
@@ -100,7 +100,7 @@ public class OutgoingFlowQueuesReader implements Runnable, QueueSubscriptor{
 			}
 			
 			try{
-				this.ipcManager.getOutgoingFlowQueue(state.getRemotePortId()).writeDataToQueue(sdu);
+				this.ipcManager.getIncomingFlowQueue(state.getRemotePortId()).writeDataToQueue(sdu);
 			}catch(IPCException ex){
 				log.error(ex);
 			}

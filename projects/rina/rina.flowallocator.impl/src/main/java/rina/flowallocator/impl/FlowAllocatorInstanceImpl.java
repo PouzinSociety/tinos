@@ -142,8 +142,6 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		//TODO initialize the newFlowRequestPolicy
 		this.newFlowRequestPolicy = new NewFlowRequestPolicyImpl();
 		this.allocateLock = new Object();
-		this.dataTrasferAE = (DataTransferAE) ipcProcess.getIPCProcessComponent(BaseDataTransferAE.getComponentName());
-		this.ipcManager = ipcProcess.getIPCManager();
 		log.debug("Created flow allocator instance to manage the flow identified by portId "+portId);
 	}
 	
@@ -156,7 +154,6 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	public FlowAllocatorInstanceImpl(IPCProcess ipcProcess, FlowAllocator flowAllocator, int portId){
 		initialize(ipcProcess, flowAllocator, portId);
 		this.local = true;
-		this.dataTrasferAE = (DataTransferAE) ipcProcess.getIPCProcessComponent(BaseDataTransferAE.getComponentName());
 		log.debug("Created flow allocator instance to manage the flow identified by portId "+portId);
 	}
 	
@@ -164,8 +161,10 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		this.flowAllocator = flowAllocator;
 		this.ipcProcess = ipcProcess;
 		this.portId = portId;
+		this.dataTrasferAE = (DataTransferAE) ipcProcess.getIPCProcessComponent(BaseDataTransferAE.getComponentName());
 		this.ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		this.encoder = (Encoder) ipcProcess.getIPCProcessComponent(BaseEncoder.getComponentName());
+		this.ipcManager = ipcProcess.getIPCManager();
 	}
 	
 	public int getPortId(){
@@ -219,7 +218,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		this.objectName = Flow.FLOW_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + flowName;
 		if (destinationAddress == sourceAddress){
 			local = true;
-			this.flowAllocator.receivedLocalFlowRequest(flowService, this.objectName);
+			this.flowAllocator.receivedLocalFlowRequest(flowService);
 			return;
 		}
 		
@@ -302,7 +301,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 * @param objectName
 	 * @throws IPCException
 	 */
-	public void receivedLocalFlowRequest(FlowService flowService, String objectName) throws IPCException{
+	public void receivedLocalFlowRequest(FlowService flowService) throws IPCException{
 		if (!local){
 			throw new IPCException(IPCException.PROBLEMS_ALLOCATING_FLOW_CODE, 
 					IPCException.PROBLEMS_ALLOCATING_FLOW + "This Flow Allocator instance cannot deal with local flows.");
@@ -318,8 +317,15 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		}
 		
 		this.remotePortId = flowService.getPortId();
-		this.objectName = objectName;
-		flowService.setPortId(portId);
+		long address = this.flowAllocator.getIPCProcess().getAddress();
+		this.flow = new Flow();
+		this.flow.setSourceAddress(address);
+		this.flow.setDestinationAddress(address);
+		this.flow.setSourceNamingInfo(flowService.getSourceAPNamingInfo());
+		this.flow.setDestinationNamingInfo(flowService.getDestinationAPNamingInfo());
+		String flowName = ""+address+"-"+this.portId;
+		this.objectName = Flow.FLOW_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + flowName;
+		flowService.setPortId(this.portId);
 		this.applicationCallback.deliverAllocateRequest(flowService, (IPCService) ipcProcess);
 	}
 
@@ -341,18 +347,21 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 		
 		//If the IPC flow is between local applications
 		if (local){
-			this.dataTrasferAE.createLocalConnectionAndBindToPortId(this.portId, this.remotePortId, applicationCallback);
-			this.flowAllocator.receivedLocalFlowResponse(this.remotePortId, this.portId, success, reason);
-			this.flow.setState(State.ALLOCATED);
 			if (success){
 				try{
+					this.flow.setSourcePortId(this.remotePortId);
+					this.flow.setDestinationPortId(this.portId);
+					this.flow.setState(State.ALLOCATED);
 					this.ribDaemon.create(Flow.FLOW_RIB_OBJECT_CLASS, this.objectName, this);
+					this.dataTrasferAE.createLocalConnectionAndBindToPortId(this.portId, this.remotePortId, applicationCallback);
 					this.ipcManager.addFlowQueues(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
 					this.dataTrasferAE.subscribeToFlow(portId);
 				}catch(Exception ex){
 					ex.printStackTrace();
+					log.error(ex);
 				}
 			}
+			this.flowAllocator.receivedLocalFlowResponse(this.remotePortId, this.portId, success, reason);
 			return;
 		}
 		
@@ -561,10 +570,13 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			try{
 				this.dataTrasferAE.createLocalConnectionAndBindToPortId(this.portId, remotePortId, this.applicationCallback);
 				this.remotePortId = remotePortId;
-				this.applicationCallback.deliverAllocateResponse(portId, 0, null);
+				this.flow.setState(State.ALLOCATED);
+				this.flow.setSourcePortId(this.portId);
+				this.flow.setDestinationPortId(this.remotePortId);
 				this.ribDaemon.create(Flow.FLOW_RIB_OBJECT_CLASS, objectName, this);
 				this.ipcManager.addFlowQueues(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
 				this.dataTrasferAE.subscribeToFlow(portId);
+				this.applicationCallback.deliverAllocateResponse(portId, 0, null);
 			}catch(Exception ex){
 				ex.printStackTrace();
 			}

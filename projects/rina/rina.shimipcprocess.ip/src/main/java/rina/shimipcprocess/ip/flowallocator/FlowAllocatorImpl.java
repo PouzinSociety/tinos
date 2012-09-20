@@ -599,7 +599,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		//Won't implement
 	}
 
-	public void receivedLocalFlowRequest(FlowService arg0, String arg1) throws IPCException {
+	public void receivedLocalFlowRequest(FlowService arg0) throws IPCException {
 		//Won't implement
 	}
 
