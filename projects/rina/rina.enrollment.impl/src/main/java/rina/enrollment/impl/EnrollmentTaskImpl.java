@@ -434,7 +434,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 			this.nMinusOneFlowDeallocated(flowEvent.getPortId(), flowEvent.getCdapSessionDescriptor());
 		}else if (event.getId().equals(Event.N_MINUS_1_FLOW_ALLOCATED)){
 			NMinusOneFlowAllocatedEvent flowEvent = (NMinusOneFlowAllocatedEvent) event;
-			this.nMinusOneFlowAllocated(flowEvent.getPortId());
+			this.nMinusOneFlowAllocated(flowEvent.getNMinusOneFlowDescriptor().getPortId());
 		}else if (event.getId().equals(Event.N_MINUS_1_FLOW_ALLOCATION_FAILED)){
 			NMinusOneFlowAllocationFailedEvent flowEvent = (NMinusOneFlowAllocationFailedEvent) event;
 			this.nMinusOneFlowAllocationFailed(flowEvent.getPortId(), 

@@ -6,10 +6,9 @@ import java.util.concurrent.BlockingQueue;
 import rina.ipcservice.api.IPCException;
 
 /**
- * Represents a set of T blocking queues identified by an Integer.
- * A special queue queues the identifiers of the queues that have data but 
- * have not been read yet.
- * Every time a new T is written to one of the queues, a new
+ * Represents a blocking queue with a certain capacity, identified by an Integer.
+ * The queue has the option of specifying a subscriptor. The subscriptor will be called
+ * every time an object of class T is written to the queue.
  * @author eduardgrasa
  *
  */

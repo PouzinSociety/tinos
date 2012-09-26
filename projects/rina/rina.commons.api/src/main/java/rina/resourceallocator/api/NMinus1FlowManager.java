@@ -27,6 +27,14 @@ public interface NMinus1FlowManager {
 	public void deallocateNMinus1Flow(int portId) throws IPCException;
 	
 	/**
+	 * Return the N-1 Flow descriptor associated to the flow identified by portId
+	 * @param portId
+	 * @return the N-1 Flow descriptor
+	 * @throws IPCException if no N-1 Flow identified by portId exists
+	 */
+	public NMinus1FlowDescriptor getNMinus1FlowDescriptor(int portId) throws IPCException;
+	
+	/**
 	 * Register the IPC Process to one or more N-1 DIFs
 	 * @param difName The N-1 DIF where this IPC Process will register
 	 * @throws IPCException

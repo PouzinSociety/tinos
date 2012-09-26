@@ -10,8 +10,9 @@ import rina.events.api.events.NMinusOneFlowAllocatedEvent;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCService;
+import rina.protection.api.NullSDUProtectionModule;
+import rina.resourceallocator.api.NMinus1FlowDescriptor;
 import rina.resourceallocator.api.PDUForwardingTable;
-import rina.resourceallocator.impl.flowmanager.FlowServiceState.Status;
 import rina.resourceallocator.impl.ribobjects.NMinus1FlowRIBObject;
 import rina.resourceallocator.impl.ribobjects.NMinus1FlowSetRIBObject;
 import rina.ribdaemon.api.RIBDaemon;
@@ -24,18 +25,18 @@ public class DeliverAllocateResponseTimerTask extends TimerTask{
 	
 	private IPCService ipcService = null;
 	private FlowService flowService = null;
-	private Map<Integer, FlowServiceState> flowServiceStates = null;
+	private Map<Integer, NMinus1FlowDescriptor> nMinus1FlowDescriptors = null;
 	private APService apService = null;
 	private RIBDaemon ribDaemon = null;
 	private long destinationAddress = -1;
 	private PDUForwardingTable pduForwardingTable = null;
 	
 	public DeliverAllocateResponseTimerTask(IPCService ipcService, FlowService flowService, Map<Integer, 
-			FlowServiceState> flowServiceStates, APService apService, RIBDaemon ribDaemon, 
+			NMinus1FlowDescriptor> nMinus1FlowDescriptors, APService apService, RIBDaemon ribDaemon, 
 			long destinationAddress, PDUForwardingTable pduForwardingTable){
 		this.ipcService = ipcService;
 		this.flowService = flowService;
-		this.flowServiceStates = flowServiceStates;
+		this.nMinus1FlowDescriptors = nMinus1FlowDescriptors;
 		this.apService = apService;
 		this.ribDaemon = ribDaemon;
 		this.destinationAddress = destinationAddress;
@@ -46,31 +47,35 @@ public class DeliverAllocateResponseTimerTask extends TimerTask{
 	public void run() {
 		try{
 			ipcService.submitAllocateResponse(flowService.getPortId(), true, null, apService);
-			FlowServiceState flowServiceState = new FlowServiceState();
-			flowServiceState.setFlowService(flowService);
-			flowServiceState.setIpcService(ipcService);
-			flowServiceState.setStatus(Status.ALLOCATED);
-			this.flowServiceStates.put(new Integer(flowService.getPortId()), flowServiceState);
+			NMinus1FlowDescriptor nMinus1FlowDescriptor = new NMinus1FlowDescriptor();
+			nMinus1FlowDescriptor.setFlowService(flowService);
+			nMinus1FlowDescriptor.setIpcService(ipcService);
+			nMinus1FlowDescriptor.setStatus(NMinus1FlowDescriptor.Status.ALLOCATED);
+			this.nMinus1FlowDescriptors.put(new Integer(flowService.getPortId()), nMinus1FlowDescriptor);
 			
 			try{
 				this.ribDaemon.create(NMinus1FlowRIBObject.N_MINUS_ONE_FLOW_RIB_OBJECT_CLASS, 
 						NMinus1FlowSetRIBObject.N_MINUS_ONE_FLOW_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + flowService.getPortId(), 
-						flowService);
+						nMinus1FlowDescriptor);
 			}catch(RIBDaemonException ex){
 				log.warn("Error creting N Minus One Flow RIB Object", ex);
 			}
 			
 			//TODO Move this to the routing module
-			if (!flowServiceState.isManagement() && destinationAddress != -1){
-				int qosId = flowServiceState.getFlowService().getQoSSpecification().getQosCubeId();
+			if (!nMinus1FlowDescriptor.isManagement() && destinationAddress != -1){
+				int qosId = nMinus1FlowDescriptor.getFlowService().getQoSSpecification().getQosCubeId();
 				this.pduForwardingTable.addEntry(destinationAddress, qosId, new int[]{flowService.getPortId()});
 			}
 			
 			//Notify about the event
-			NMinusOneFlowAllocatedEvent event = new NMinusOneFlowAllocatedEvent(flowService.getPortId(), flowService);
+			nMinus1FlowDescriptor.setPortId(flowService.getPortId());
+			//TODO get adequate SDU protection module
+			nMinus1FlowDescriptor.setSduProtectionModule(new NullSDUProtectionModule());
+			NMinusOneFlowAllocatedEvent event = new NMinusOneFlowAllocatedEvent(nMinus1FlowDescriptor);
 			this.ribDaemon.deliverEvent(event);
 		}catch(Exception ex){
 			log.error("Problems submiting allocate response for N-1 flow identified by portId "+flowService.getPortId()+". "+ex);
+			ex.printStackTrace();
 		}
 	}
 

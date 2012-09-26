@@ -25,9 +25,10 @@ import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
+import rina.protection.api.NullSDUProtectionModule;
+import rina.resourceallocator.api.NMinus1FlowDescriptor;
 import rina.resourceallocator.api.NMinus1FlowManager;
 import rina.resourceallocator.api.PDUForwardingTable;
-import rina.resourceallocator.impl.flowmanager.FlowServiceState.Status;
 import rina.resourceallocator.impl.ribobjects.DIFRegistrationRIBObject;
 import rina.resourceallocator.impl.ribobjects.DIFRegistrationSetRIBObject;
 import rina.resourceallocator.impl.ribobjects.NMinus1FlowRIBObject;
@@ -69,9 +70,9 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 	private CDAPSessionManager cdapSessionManager = null;
 	
 	/**
-	 * The states of all the ongoing and allocated flows
+	 * The states of all the ongoing and allocated N-1 flows
 	 */
-	private Map<Integer, FlowServiceState> flowServiceStates = null;
+	private Map<Integer, NMinus1FlowDescriptor> nMinus1FlowDescriptors = null;
 	
 	/**
 	 * The DIFs this IPC Process is registered at
@@ -86,7 +87,7 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 	private Timer timer = null;
 
 	public NMinus1FlowManagerImpl(PDUForwardingTable pduForwardingTable){
-		this.flowServiceStates = new ConcurrentHashMap<Integer, FlowServiceState>();
+		this.nMinus1FlowDescriptors = new ConcurrentHashMap<Integer, NMinus1FlowDescriptor>();
 		this.difRegistrations = new ArrayList<String>();
 		this.timer = new Timer();
 		this.pduForwardingTable = pduForwardingTable;
@@ -114,6 +115,22 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 	}
 	
 	/**
+	 * Return the N-1 Flow descriptor associated to the flow identified by portId
+	 * @param portId
+	 * @return the N-1 Flow descriptor
+	 * @throws IPCException if no N-1 Flow identified by portId exists
+	 */
+	public NMinus1FlowDescriptor getNMinus1FlowDescriptor(int portId) throws IPCException{
+		NMinus1FlowDescriptor result = this.nMinus1FlowDescriptors.get(new Integer(portId));
+		if (result == null){
+			throw new IPCException(IPCException.ERROR_CODE, 
+					"Could not find an N-1 flow identified by portId " + portId);
+		}
+		
+		return result;
+	}
+	
+	/**
 	 * Request the allocation of an N-1 Flow with the requested QoS 
 	 * to the destination IPC Process 
 	 * @param flowService contains the destination IPC Process and requested QoS information
@@ -123,7 +140,7 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 		//TODO, implement properly with the IDD, right now it requests the flow allocation to 
 		//the first shim IPC Process for IP networks that it finds.
 		IPCService ipcService = null;
-		FlowServiceState flowServiceState = null;
+		NMinus1FlowDescriptor nMinus1FlowDescriptor = null;
 		
 		List<IPCProcess> candidates = this.ipcManager.listIPCProcesses();
 		IPCProcess currentCandidate = null;
@@ -143,12 +160,12 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 		try{
 			int portId = ipcService.submitAllocateRequest(flowService, this);
 			flowService.setPortId(portId);
-			flowServiceState = new FlowServiceState();
-			flowServiceState.setFlowService(flowService);
-			flowServiceState.setIpcService(ipcService);
-			flowServiceState.setStatus(Status.ALLOCATION_REQUESTED);
-			flowServiceState.setManagement(management);
-			this.flowServiceStates.put(new Integer(portId), flowServiceState);
+			nMinus1FlowDescriptor = new NMinus1FlowDescriptor();
+			nMinus1FlowDescriptor.setFlowService(flowService);
+			nMinus1FlowDescriptor.setIpcService(ipcService);
+			nMinus1FlowDescriptor.setStatus(NMinus1FlowDescriptor.Status.ALLOCATION_REQUESTED);
+			nMinus1FlowDescriptor.setManagement(management);
+			this.nMinus1FlowDescriptors.put(new Integer(portId), nMinus1FlowDescriptor);
 		}catch(Exception ex){
 			log.error("Issues allocating an N-1 flow to "+flowService+". Details: "+ex);
 		}
@@ -160,13 +177,13 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 	 * @throws IPCException if no N-1 Flow identified by portId exists
 	 */
 	public void deallocateNMinus1Flow(int portId) throws IPCException {
-		FlowServiceState flowServiceState = this.flowServiceStates.remove(new Integer(portId));
-		if (flowServiceState == null){
+		NMinus1FlowDescriptor nMinus1FlowDescriptor = this.nMinus1FlowDescriptors.remove(new Integer(portId));
+		if (nMinus1FlowDescriptor == null){
 			throw new IPCException(IPCException.PROBLEMS_DEALLOCATING_FLOW_CODE, 
 					IPCException.PROBLEMS_DEALLOCATING_FLOW + ". Could not find an N-1 flow identified by portId " + portId);
 		}
 		
-		flowServiceState.getIpcService().submitDeallocate(portId);
+		nMinus1FlowDescriptor.getIpcService().submitDeallocate(portId);
 		
 		try{
 			this.ribDaemon.delete(NMinus1FlowRIBObject.N_MINUS_ONE_FLOW_RIB_OBJECT_CLASS, 
@@ -176,10 +193,10 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 		}
 		
 		//TODO Move this to the routing module
-		if (!flowServiceState.isManagement()){
-			long destinationAddress = this.getNeighborAddress(flowServiceState.getFlowService().getDestinationAPNamingInfo());
+		if (!nMinus1FlowDescriptor.isManagement()){
+			long destinationAddress = this.getNeighborAddress(nMinus1FlowDescriptor.getFlowService().getDestinationAPNamingInfo());
 			if (destinationAddress != -1){
-				int qosId = flowServiceState.getFlowService().getQoSSpecification().getQosCubeId();
+				int qosId = nMinus1FlowDescriptor.getFlowService().getQoSSpecification().getQosCubeId();
 				this.pduForwardingTable.removeEntry(destinationAddress, qosId);
 			}
 		}
@@ -228,7 +245,7 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 			//Accept the request
 			try{
 				DeliverAllocateResponseTimerTask timerTask =  new DeliverAllocateResponseTimerTask(
-						ipcService, flowService, flowServiceStates, this, this.ribDaemon, 
+						ipcService, flowService, nMinus1FlowDescriptors, this, this.ribDaemon, 
 						this.getNeighborAddress(flowService.getSourceAPNamingInfo()), this.pduForwardingTable);
 				this.timer.schedule(timerTask, 10);
 			}catch(Exception ex){
@@ -242,46 +259,50 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 	}
 
 	public void deliverAllocateResponse(int portId, int result, String resultReason) {
-		FlowServiceState flowServiceState = this.flowServiceStates.get(new Integer(portId));
-		if (flowServiceState == null){
+		NMinus1FlowDescriptor nMinus1FlowDescriptor = this.nMinus1FlowDescriptors.get(new Integer(portId));
+		if (nMinus1FlowDescriptor == null){
 			log.warn("Received an allocation notification of an N-1 flow that I was not aware of: "+portId);
 			return;
 		}
 		
-		if (!flowServiceState.getStatus().equals(Status.ALLOCATION_REQUESTED)){
+		if (!nMinus1FlowDescriptor.getStatus().equals(NMinus1FlowDescriptor.Status.ALLOCATION_REQUESTED)){
 			log.warn("Received an allocation notification of an N-1 flow " +
 					"whose status was not ALLOCATION_REQUESTED. "+portId);
 		}
 		
 		if (result == 0){
-			flowServiceState.setStatus(Status.ALLOCATED);
+			nMinus1FlowDescriptor.setStatus(NMinus1FlowDescriptor.Status.ALLOCATED);
 			try{
 				this.ribDaemon.create(NMinus1FlowRIBObject.N_MINUS_ONE_FLOW_RIB_OBJECT_CLASS, 
 						NMinus1FlowSetRIBObject.N_MINUS_ONE_FLOW_SET_RIB_OBJECT_NAME + RIBObjectNames.SEPARATOR + portId, 
-						flowServiceState.getFlowService());
+						nMinus1FlowDescriptor);
 			}catch(RIBDaemonException ex){
 				log.warn("Error creating N Minus One Flow RIB Object", ex);
 			}
 			
 			//TODO Move this to the routing module
-			if (!flowServiceState.isManagement()){
-				long destinationAddress = this.getNeighborAddress(flowServiceState.getFlowService().getDestinationAPNamingInfo());
+			if (!nMinus1FlowDescriptor.isManagement()){
+				long destinationAddress = this.getNeighborAddress(nMinus1FlowDescriptor.getFlowService().getDestinationAPNamingInfo());
 				if (destinationAddress != -1){
-					int qosId = flowServiceState.getFlowService().getQoSSpecification().getQosCubeId();
+					int qosId = nMinus1FlowDescriptor.getFlowService().getQoSSpecification().getQosCubeId();
 					this.pduForwardingTable.addEntry(destinationAddress, qosId, new int[]{portId});
 				}
 			}
 			
+			
 			//Notify about the event
-			NMinusOneFlowAllocatedEvent event = new NMinusOneFlowAllocatedEvent(portId, flowServiceState.getFlowService());
+			nMinus1FlowDescriptor.setPortId(portId);
+			//TODO get adequate SDU protection module
+			nMinus1FlowDescriptor.setSduProtectionModule(new NullSDUProtectionModule());
+			NMinusOneFlowAllocatedEvent event = new NMinusOneFlowAllocatedEvent(nMinus1FlowDescriptor);
 			this.ribDaemon.deliverEvent(event);
 		}else{
 			log.error("Allocation of N-1 flow identified by portId "+ portId + " denied because "+resultReason);
-			this.flowServiceStates.remove(new Integer(portId));
+			this.nMinus1FlowDescriptors.remove(new Integer(portId));
 			
 			//Notify about the event
 			NMinusOneFlowAllocationFailedEvent event = new NMinusOneFlowAllocationFailedEvent(
-					portId, flowServiceState.getFlowService(), resultReason);
+					portId, nMinus1FlowDescriptor.getFlowService(), resultReason);
 			this.ribDaemon.deliverEvent(event);
 		}
 	}
@@ -291,8 +312,8 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 	 * deallocated event to trigger a Forwarding table recalculation
 	 */
 	public void deliverDeallocate(int portId) {
-		FlowServiceState flowServiceState = this.flowServiceStates.remove(new Integer(portId));
-		if (flowServiceState == null){
+		NMinus1FlowDescriptor nMinus1FlowDescriptor = this.nMinus1FlowDescriptors.remove(new Integer(portId));
+		if (nMinus1FlowDescriptor == null){
 			log.warn("Received a deallocation notification of an N-1 flow that I was not aware of: "+portId);
 			return;
 		}
@@ -305,10 +326,10 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 		}
 		
 		//TODO Move this to the routing module
-		if (!flowServiceState.isManagement()){
-			long destinationAddress = this.getNeighborAddress(flowServiceState.getFlowService().getDestinationAPNamingInfo());
+		if (!nMinus1FlowDescriptor.isManagement()){
+			long destinationAddress = this.getNeighborAddress(nMinus1FlowDescriptor.getFlowService().getDestinationAPNamingInfo());
 			if (destinationAddress != -1){
-				int qosId = flowServiceState.getFlowService().getQoSSpecification().getQosCubeId();
+				int qosId = nMinus1FlowDescriptor.getFlowService().getQoSSpecification().getQosCubeId();
 				this.pduForwardingTable.removeEntry(destinationAddress, qosId);
 			}
 		}

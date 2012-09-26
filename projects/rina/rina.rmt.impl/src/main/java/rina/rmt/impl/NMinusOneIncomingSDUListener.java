@@ -13,6 +13,7 @@ import rina.efcp.api.PDUParser;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.IPCException;
+import rina.resourceallocator.api.NMinus1FlowManager;
 import rina.resourceallocator.api.PDUForwardingTable;
 import rina.ribdaemon.api.RIBDaemon;
 
@@ -56,18 +57,25 @@ public class NMinusOneIncomingSDUListener implements QueueSubscriptor, Runnable{
 	private DataTransferAE dataTransferAE = null;
 	
 	/**
+	 * The N-1 Flow Manager
+	 */
+	private NMinus1FlowManager nMinus1FlowManager = null;
+	
+	/**
 	 * The IPC Process Address
 	 */
 	private long myAddress = -1;
 	
 	public NMinusOneIncomingSDUListener(IPCManager ipcManager, RIBDaemon ribDaemon, 
-			PDUForwardingTable pduForwardingTable, IPCProcess ipcProcess, DataTransferAE dataTransferAE){
+			PDUForwardingTable pduForwardingTable, IPCProcess ipcProcess, 
+			DataTransferAE dataTransferAE, NMinus1FlowManager nMinus1FlowManager){
 		this.ipcManager = ipcManager;
 		this.ribDaemon = ribDaemon;
 		this.queuesReadyToBeRead = new LinkedBlockingQueue<Integer>();
 		this.pduForwardingTable = pduForwardingTable;
 		this.ipcProcess = ipcProcess;
 		this.dataTransferAE = dataTransferAE;
+		this.nMinus1FlowManager = nMinus1FlowManager;
 		log.debug("N-1 Incoming SDU Listener executing!");
 	}
 	
@@ -121,7 +129,13 @@ public class NMinusOneIncomingSDUListener implements QueueSubscriptor, Runnable{
 	 * @param sdu
 	 */
 	private void processNMinusOneSDU(byte[] sdu, int portId){
-		//1 TODO Remove protection if any
+		//1 Remove protection if any
+		try{
+			sdu = this.nMinus1FlowManager.getNMinus1FlowDescriptor(portId).getSduProtectionModule().unprotectSDU(sdu);
+		}catch(IPCException ex){
+			log.error("Problems unprotecting SDU, dropping it. "+ex.getMessage());
+			return;
+		}
 		
 		//2 Parse PDU (Optimization: only parse what is relevant)
 		PDU decodedPDU = PDUParser.parsePDU(sdu);
