@@ -20,6 +20,7 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Flags;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.cdap.api.message.ObjectValue;
+import rina.efcp.api.PDU;
 import rina.efcp.api.PDUParser;
 import rina.encoding.api.BaseEncoder;
 import rina.encoding.api.Encoder;
@@ -30,6 +31,9 @@ import rina.events.api.EventListener;
 import rina.events.api.events.NMinusOneFlowDeallocatedEvent;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.IPCProcess;
+import rina.resourceallocator.api.ResourceAllocator;
+import rina.resourceallocator.api.BaseResourceAllocator;
+import rina.resourceallocator.api.NMinus1FlowManager;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.NotificationPolicy;
 import rina.ribdaemon.api.RIBDaemonException;
@@ -69,6 +73,11 @@ public class RIBDaemonImpl extends BaseRIBDaemon implements EventListener{
 	private IPCManager ipcManager = null;
 	
 	/**
+	 * The N-1 Flow Manager
+	 */
+	private NMinus1FlowManager nMinus1FlowManager = null;
+	
+	/**
 	 * The queue of incoming management SDUs
 	 */
 	private BlockingQueue<IncomingManagementSDU> incomingManagementSDUs = null;
@@ -100,6 +109,15 @@ public class RIBDaemonImpl extends BaseRIBDaemon implements EventListener{
 	
 	private void subscribeToEvents(){
 		this.subscribeToEvent(Event.N_MINUS_1_FLOW_DEALLOCATED, this);
+	}
+	
+	private NMinus1FlowManager getNMinus1FlowManager(){
+		if (this.nMinus1FlowManager == null){
+			ResourceAllocator resourceAllocator = (ResourceAllocator) getIPCProcess().getIPCProcessComponent(BaseResourceAllocator.getComponentName());
+			this.nMinus1FlowManager = resourceAllocator.getNMinus1FlowManager();
+		}
+		
+		return this.nMinus1FlowManager;
 	}
 	
 	@Override
@@ -372,7 +390,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon implements EventListener{
 	 * @throws RIBDaemonException
 	 */
 	public void sendMessage(CDAPMessage cdapMessage, int portId, CDAPMessageHandler cdapMessageHandler) throws RIBDaemonException{
-		byte[] encodedManagementPDU = null;
+		PDU managementPDU = null;
 		
 		if (cdapMessage.getInvokeID() != 0 && !cdapMessage.getOpCode().equals(Opcode.M_CONNECT) 
 				&& !cdapMessage.getOpCode().equals(Opcode.M_RELEASE) 
@@ -392,9 +410,11 @@ public class RIBDaemonImpl extends BaseRIBDaemon implements EventListener{
 		synchronized(atomicSendLock){
 			try{
 				this.cdapSessionManager.getCDAPSession(portId).getSessionDescriptor();
-				encodedManagementPDU = PDUParser.encodeManagementPDU(
-						cdapSessionManager.encodeNextMessageToBeSent(cdapMessage, portId)); 
-				this.ipcManager.getOutgoingFlowQueue(portId).writeDataToQueue(encodedManagementPDU);
+				managementPDU = PDUParser.generateManagementPDU(
+						cdapSessionManager.encodeNextMessageToBeSent(cdapMessage, portId));
+				byte[] sdu = getNMinus1FlowManager().getNMinus1FlowDescriptor(portId).
+						getSduProtectionModule().protectPDU(managementPDU);
+				this.ipcManager.getOutgoingFlowQueue(portId).writeDataToQueue(sdu);
 				cdapSessionManager.messageSent(cdapMessage, portId);
 				String destination = cdapSessionManager.getCDAPSession(portId).getSessionDescriptor().getDestApName();
 				log.debug("Sent CDAP Message to "+destination+" through underlying portId "+portId+": "+ cdapMessage.toString());

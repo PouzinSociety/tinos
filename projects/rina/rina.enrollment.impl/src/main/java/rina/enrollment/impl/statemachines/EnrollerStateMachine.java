@@ -22,6 +22,8 @@ import rina.enrollment.api.Neighbor;
 import rina.flowallocator.api.DirectoryForwardingTable;
 import rina.flowallocator.api.QoSCube;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
+import rina.resourceallocator.api.BaseResourceAllocator;
+import rina.resourceallocator.api.ResourceAllocator;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObject;
@@ -70,6 +72,14 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 		CDAPMessage outgoingCDAPMessage = null;
 		this.portId = portId;
 		log.debug(portId);
+		
+		//Mark the underlying flow as a management flow
+		try{
+			ResourceAllocator resourceAllocator = (ResourceAllocator) this.enrollmentTask.getIPCProcess().getIPCProcessComponent(BaseResourceAllocator.getComponentName());
+			resourceAllocator.getNMinus1FlowManager().getNMinus1FlowDescriptor(portId).setManagement(true);
+		}catch(Exception ex){
+			log.warn(ex);
+		}
 
 		log.debug("Authenticating PC process "+cdapMessage.getSrcApName()+" "+cdapMessage.getSrcApInst());
 		remotePeer.setApplicationProcessName(cdapMessage.getSrcApName());

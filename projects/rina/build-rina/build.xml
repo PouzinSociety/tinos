@@ -10,6 +10,7 @@
 		<pathelement location="../rina.encoding.impl"/>
 		<pathelement location="../rina.efcp.impl"/>
 		<pathelement location="../rina.enrollment.impl"/>
+		<pathelement location="../rina.protection.impl"/>
 		<pathelement location="../rina.ipcservice.impl"/>
 		<pathelement location="../rina.ribdaemon.impl"/>
 		<pathelement location="../rina.rmt.impl"/>

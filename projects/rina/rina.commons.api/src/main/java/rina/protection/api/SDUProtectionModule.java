@@ -1,19 +1,20 @@
 package rina.protection.api;
 
+import rina.efcp.api.PDU;
 import rina.ipcservice.api.IPCException;
 
 /**
  * An instantiation of an SDU protection module. Can protect 
- * an SDU by prepending some bytes, and unprotect the SDU by 
+ * a PDU by prepending some bytes, and unprotect the SDU by 
  * removing them. SDU Protection comprises integrity, confidentiality 
- * and compression.
+ * and compression. SDU Protection is also the responsible 
+ * for encoding the bytes forming the PCI header, the user data and 
+ * protection into a single SDU in an efficient way.
  * 
  * @author eduardgrasa
  *
  */
 public interface SDUProtectionModule {
-	
-	public static final String NULL = "NULL";
 	
 	/**
 	 * Return the type of the SDU Protection Module
@@ -22,18 +23,20 @@ public interface SDUProtectionModule {
 	public String getType();
 
 	/**
-	 * Protects an SDU before being sent through an N-1 flow
-	 * @param sdu
-	 * @return the protected SDU
-	 * @throws IPCException if there is an issue protecting the SDU
+	 * Protects a PDU before being sent through an N-1 flow
+	 * @param pdu
+	 * @return the protected PDU
+	 * @throws IPCException if there is an issue protecting the PDU
 	 */
-	public byte[] protectSDU(byte[] sdu) throws IPCException;
+	public byte[] protectPDU(PDU pdu) throws IPCException;
 	
 	/**
-	 * Unprotects an SDU after receiving it from an N-1 flow
+	 * Unprotects a PDU after receiving it from an N-1 flow. When this 
+	 * call returns the PDU.rawPDU attribute must contain a byte array 
+	 * that is the concatenation of the encoded PCI + the user data.
 	 * @param sdu
-	 * @return the unprotected SDU
+	 * @return the unprotected PDU
 	 * @throws IPCException if there is an issue unprotecting the SDU
 	 */
-	public byte[] unprotectSDU(byte[] sdu) throws IPCException;
+	public PDU unprotectPDU(byte[] pdu) throws IPCException;
 }

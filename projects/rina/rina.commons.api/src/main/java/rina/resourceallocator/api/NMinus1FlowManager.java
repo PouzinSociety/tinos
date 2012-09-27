@@ -1,5 +1,8 @@
 package rina.resourceallocator.api;
 
+import java.util.List;
+
+import rina.configuration.SDUProtectionOption;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 
@@ -40,4 +43,18 @@ public interface NMinus1FlowManager {
 	 * @throws IPCException
 	 */
 	public void registerIPCProcess(String difName) throws IPCException;
+	
+	/**
+	 * Set the list of preferred SDU protection options as specified by management
+	 * @param sduProtectionOptions
+	 */
+	public void setSDUProtecionOptions(List<SDUProtectionOption> sduProtectionOptions);
+	
+	/**
+	 * Return the type of SDU Protection module to be used for the DIF called "nminus1DIFName"
+	 * (return the NULL type if no entries for "nminus1DIFName" are found)
+	 * @param nMinus1DIFName
+	 * @return
+	 */
+	public String getSDUProtectionOption(String nMinus1DIFName);
 }

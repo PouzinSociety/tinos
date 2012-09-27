@@ -25,6 +25,7 @@ import rina.configuration.DIFConfiguration;
 import rina.configuration.IPCProcessToCreate;
 import rina.configuration.KnownIPCProcessAddress;
 import rina.configuration.RINAConfiguration;
+import rina.configuration.SDUProtectionOption;
 import rina.delimiting.api.DelimiterFactory;
 import rina.efcp.api.DataTransferConstants;
 import rina.encoding.api.EncoderFactory;
@@ -45,6 +46,7 @@ import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.aux.BlockingQueueWithSubscriptor;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
+import rina.protection.api.SDUProtectionModuleRepository;
 import rina.resourceallocator.api.BaseResourceAllocator;
 import rina.resourceallocator.api.ResourceAllocator;
 import rina.ribdaemon.api.BaseRIBDaemon;
@@ -101,6 +103,11 @@ public class IPCManagerImpl implements IPCManager{
 	 * the SDU Delivery Service
 	 */
 	private SDUDeliveryService sduDeliveryService = null;
+	
+	/**
+	 * The SDU Protection Module repository (fetched from the OSGi registry)
+	 */
+	private SDUProtectionModuleRepository sduProtectionModuleRepository = null;
 	
 	public IPCManagerImpl(){
 		this.ipcProcessFactories = new HashMap<String, IPCProcessFactory>();
@@ -207,6 +214,18 @@ public class IPCManagerImpl implements IPCManager{
 		executorService.execute(runnable);
 	}
 	
+	/**
+	 * Get the SDU Protection Module Repository
+	 * @return
+	 */
+	public SDUProtectionModuleRepository getSDUProtectionModuleRepository(){
+		return this.sduProtectionModuleRepository;
+	}
+	
+	public void setSDUProtectionModuleRepository(SDUProtectionModuleRepository sduProtectionModuleRepository){
+		this.sduProtectionModuleRepository = sduProtectionModuleRepository;
+	}
+	
 	public void stop(){
 		apServiceTCPServer.setEnd(true);
 		console.stop();
@@ -232,15 +251,18 @@ public class IPCManagerImpl implements IPCManager{
 			try{
 				this.createIPCProcess(currentProcess.getType(), currentProcess.getApplicationProcessName(), 
 						currentProcess.getApplicationProcessInstance(), currentProcess.getDifName(), 
-						rinaConfiguration, currentProcess.getNeighbors(), currentProcess.getDifsToRegisterAt());
+						rinaConfiguration, currentProcess.getNeighbors(), currentProcess.getDifsToRegisterAt(), 
+						currentProcess.getSduProtectionOptions());
 			}catch(Exception ex){
+				ex.printStackTrace();
 				log.error(ex);
 			}
 		}
 	}
 
 	public void createIPCProcess(String type, String apName, String apInstance, String difName, 
-			RINAConfiguration config, List<Neighbor> neighbors, List<String> difsToRegisterAt) throws Exception{
+			RINAConfiguration config, List<Neighbor> neighbors, List<String> difsToRegisterAt, 
+			List<SDUProtectionOption> sduProtectionOptions) throws Exception{
 		IPCProcessFactory ipcProcessFactory = this.ipcProcessFactories.get(type);
 		if (ipcProcessFactory == null){
 			throw new Exception("Unsupported IPC Process type: "+type);
@@ -294,8 +316,9 @@ public class IPCManagerImpl implements IPCManager{
 						RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME);
 			}
 			
+			ResourceAllocator resourceAllocator = null;
 			if (difsToRegisterAt != null){
-				ResourceAllocator resourceAllocator = (ResourceAllocator) ipcProcess.getIPCProcessComponent(BaseResourceAllocator.getComponentName());
+				resourceAllocator = (ResourceAllocator) ipcProcess.getIPCProcessComponent(BaseResourceAllocator.getComponentName());
 				for(int i=0; i<difsToRegisterAt.size(); i++){
 					try{
 						resourceAllocator.getNMinus1FlowManager().registerIPCProcess(difsToRegisterAt.get(i));
@@ -303,6 +326,11 @@ public class IPCManagerImpl implements IPCManager{
 						log.error("Error registering IPC Process "+apName+" "+apInstance+" to N-1 DIF "+difsToRegisterAt);
 					}
 				}
+			}
+			
+			if (sduProtectionOptions != null){
+				resourceAllocator = (ResourceAllocator) ipcProcess.getIPCProcessComponent(BaseResourceAllocator.getComponentName());
+				resourceAllocator.getNMinus1FlowManager().setSDUProtecionOptions(sduProtectionOptions);
 			}
 		}
 	}

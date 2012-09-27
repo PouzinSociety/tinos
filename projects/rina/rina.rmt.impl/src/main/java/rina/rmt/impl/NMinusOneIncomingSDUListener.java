@@ -130,39 +130,42 @@ public class NMinusOneIncomingSDUListener implements QueueSubscriptor, Runnable{
 	 */
 	private void processNMinusOneSDU(byte[] sdu, int portId){
 		//1 Remove protection if any
+		PDU pdu = null;
 		try{
-			sdu = this.nMinus1FlowManager.getNMinus1FlowDescriptor(portId).getSduProtectionModule().unprotectSDU(sdu);
+			pdu = this.nMinus1FlowManager.getNMinus1FlowDescriptor(portId).getSduProtectionModule().unprotectPDU(sdu);
 		}catch(IPCException ex){
 			log.error("Problems unprotecting SDU, dropping it. "+ex.getMessage());
 			return;
 		}
 		
-		//2 Parse PDU (Optimization: only parse what is relevant)
-		PDU decodedPDU = PDUParser.parsePDU(sdu);
+		//2 Parse PDU 
+		PDUParser.parsePCIForRMT(pdu);
 		
 		//3 Check if the PDU is a management PDU, if it is, send to RIB Daemon
-		if(decodedPDU.getPduType() == PDUParser.MANAGEMENT_PDU_TYPE){
-			this.ribDaemon.managementSDUDelivered(decodedPDU.getUserData().get(0), portId);
+		if(pdu.getPduType() == PDUParser.MANAGEMENT_PDU_TYPE){
+			PDUParser.parsePCIForEFCP(pdu);
+			this.ribDaemon.managementSDUDelivered(pdu.getUserData(), portId);
 			return;
 		}
 		
 		//4 Check the address to see if this IPC Process is the destination of this PDU
-		if (decodedPDU.getDestinationAddress() == getMyAddress()){
+		if (pdu.getDestinationAddress() == getMyAddress()){
 			try{
-				this.dataTransferAE.getIncomingConnectionQueue(decodedPDU.getConnectionId().getDestinationCEPId()).
-					writeDataToQueue(decodedPDU);
+				PDUParser.parsePCIForEFCP(pdu);
+				this.dataTransferAE.getIncomingConnectionQueue(pdu.getConnectionId().getDestinationCEPId()).
+					writeDataToQueue(pdu);
 			}catch(Exception ex){
 				log.warn("Problems writing PDU to incoming EFCP queue identified by CEP id " 
-						+ decodedPDU.getConnectionId().getDestinationCEPId() +". Dropping the PDU.", ex);
+						+ pdu.getConnectionId().getDestinationCEPId() +". Dropping the PDU.", ex);
 			}
 		}else{
 			//If it is not, check forwarding table, reapply protection if required
 			//and deliver to right N-1 outgoing queue
-			int[] outgoingPortIds = this.pduForwardingTable.getNMinusOnePortId(decodedPDU.getDestinationAddress(), 
-					decodedPDU.getConnectionId().getQosId());
+			int[] outgoingPortIds = this.pduForwardingTable.getNMinusOnePortId(pdu.getDestinationAddress(), 
+					pdu.getConnectionId().getQosId());
 			if (outgoingPortIds == null){
 				log.warn("Dropping the PDU since I could not find an entry in the forwarding table for it."
-						+decodedPDU.toString());
+						+pdu.toString());
 				return;
 			}
 			

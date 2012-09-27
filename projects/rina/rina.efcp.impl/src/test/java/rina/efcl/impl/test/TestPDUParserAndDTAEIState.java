@@ -39,15 +39,17 @@ public class TestPDUParserAndDTAEIState {
 	
 	@Test
 	public void testPDUEncodingDecoding(){
-		byte[] pdu = null;
+		PDU pdu = null;
 		byte[] sdu = new String("Testing EFCP encoding and decoding").getBytes();
 		
 		for(int i=0; i<3; i++){
 			pdu = PDUParser.generatePDU(state.getPreComputedPCI(), 
-					state.getNextSequenceToSend(), 0x81, 0x00, sdu);
-			printBytes(pdu);
+					state.getNextSequenceToSend(), flow.getDestinationAddress(), 
+					flow.getConnectionIds().get(0), 0x81, 0x00, sdu);
+			printBytes(pdu.getEncodedPCI());
 
-			PDU decodedPDU = PDUParser.parsePDU(pdu);
+			PDU decodedPDU = PDUParser.parsePCIForRMT(pdu);
+			decodedPDU = PDUParser.parsePCIForEFCP(pdu);
 			state.incrementNextSequenceToSend();
 			
 			System.out.println(decodedPDU.toString());
@@ -60,7 +62,7 @@ public class TestPDUParserAndDTAEIState {
 			Assert.assertEquals(i, decodedPDU.getSequenceNumber());
 			Assert.assertEquals(0x81, decodedPDU.getPduType());
 			Assert.assertEquals(0x00, decodedPDU.getFlags());
-			Assert.assertEquals(new String(sdu), new String(decodedPDU.getUserData().get(0)));
+			Assert.assertEquals(new String(sdu), new String(decodedPDU.getUserData()));
 		}
 	}
 	

@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RINA SDU Prorection Impl
+Bundle-SymbolicName: rina.protection.impl
+Bundle-Version: ${version}
+Bundle-Vendor: i2CAT
+Export-Template: rina.protection.*;version="${version}"
+Import-Template: rina.*;version="[1, 2)"

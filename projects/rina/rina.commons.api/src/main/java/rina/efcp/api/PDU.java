@@ -18,6 +18,11 @@ public class PDU {
 	private byte[] rawPDU = null;
 	
 	/**
+	 * The encoded PCI
+	 */
+	private byte[] encodedPCI = null;
+	
+	/**
 	 * A synonym for the application process name designating an IPC process 
 	 * with scope limited to the DIF and a binding to the source application process
 	 */
@@ -54,16 +59,25 @@ public class PDU {
 	private long sequenceNumber = 0;
 	
 	/**
+	 * The TTL bytes (may be added by SDU protection)
+	 */
+	private byte[] ttl = new byte[0];
+	
+	/**
+	 * The Error check code bytes (may be added by SDU protection)
+	 */
+	private byte[] errorCheckCode = new byte[0];
+	
+	/**
 	 * This field contains one or more octets that are uninterpreted by EFCP. This field contains a 
 	 * SDU-Fragment or one or more Delimited-SDUs up to the MaxPDUSize. PDUs containing SDU Fragments other 
 	 * than the last fragment should be MaxPDUSize. (Because the PCI is fixed length a field is not 
 	 * required to specify the length of the last fragment).
 	 */
-	private List<byte[]> userData = null;
+	private byte[] userData = null;
 	
 	
 	public PDU(){
-		userData = new ArrayList<byte[]>();
 	}
 
 	public long getSourceAddress() {
@@ -113,6 +127,14 @@ public class PDU {
 	public void setRawPDU(byte[] rawPDU) {
 		this.rawPDU = rawPDU;
 	}
+	
+	public byte[] getEncodedPCI(){
+		return encodedPCI;
+	}
+	
+	public void setEncodedPCI(byte[] encodedPCI){
+		this.encodedPCI = encodedPCI;
+	}
 
 	public long getSequenceNumber() {
 		return sequenceNumber;
@@ -122,14 +144,30 @@ public class PDU {
 		this.sequenceNumber = sequenceNumber;
 	}
 
-	public List<byte[]> getUserData() {
+	public byte[] getUserData() {
 		return userData;
 	}
 
-	public void setUserData(List<byte[]> userData) {
+	public void setUserData(byte[] userData) {
 		this.userData = userData;
 	}
 	
+	public byte[] getTtl() {
+		return ttl;
+	}
+
+	public void setTtl(byte[] ttl) {
+		this.ttl = ttl;
+	}
+
+	public byte[] getErrorCheckCode() {
+		return errorCheckCode;
+	}
+
+	public void setErrorCheckCode(byte[] errorCheckCode) {
+		this.errorCheckCode = errorCheckCode;
+	}
+
 	public boolean equals(Object candidate){
 		if (candidate == null){
 			return false;

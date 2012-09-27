@@ -24,7 +24,11 @@
   	 	  "applicationProcessInstance" : "1",
   	  	  "address" : "65"
   	    } ],
-  		"difsToRegisterAt" : ["PublicInternet.DIF"]
+  		"difsToRegisterAt" : ["PublicInternet.DIF"],
+  		"sduProtectionOptions" : [ {
+  			nMinus1DIFName = "PublicInternet.DIF",
+  			sduProtectionType = "NULL"
+  		} ]
    }],
   "difConfigurations" : [ {
     "difName" : "RINA-Demo.DIF",

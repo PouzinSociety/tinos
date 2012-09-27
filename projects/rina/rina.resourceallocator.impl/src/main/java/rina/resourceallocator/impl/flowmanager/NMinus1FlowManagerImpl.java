@@ -14,6 +14,7 @@ import rina.cdap.api.BaseCDAPSessionManager;
 import rina.cdap.api.CDAPSession;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
+import rina.configuration.SDUProtectionOption;
 import rina.enrollment.api.Neighbor;
 import rina.events.api.events.NMinusOneFlowAllocatedEvent;
 import rina.events.api.events.NMinusOneFlowAllocationFailedEvent;
@@ -25,7 +26,7 @@ import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
-import rina.protection.api.NullSDUProtectionModule;
+import rina.protection.api.SDUProtectionModuleRepository;
 import rina.resourceallocator.api.NMinus1FlowDescriptor;
 import rina.resourceallocator.api.NMinus1FlowManager;
 import rina.resourceallocator.api.PDUForwardingTable;
@@ -84,6 +85,12 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 	 */
 	private PDUForwardingTable pduForwardingTable = null;
 	
+	/**
+	 * Maps the preferred SDU protection module for each potential 
+	 * N-1 DIF
+	 */
+	private Map<String, String> nMinus1DIFProtectionOptions = null;
+	
 	private Timer timer = null;
 
 	public NMinus1FlowManagerImpl(PDUForwardingTable pduForwardingTable){
@@ -91,6 +98,7 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 		this.difRegistrations = new ArrayList<String>();
 		this.timer = new Timer();
 		this.pduForwardingTable = pduForwardingTable;
+		this.nMinus1DIFProtectionOptions = new ConcurrentHashMap<String, String>();
 	}
 	
 	public void setIPCProcess(IPCProcess ipcProcess){
@@ -131,6 +139,36 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 	}
 	
 	/**
+	 * Set the list of preferred SDU protection options as specified by management
+	 * @param sduProtectionOptions
+	 */
+	public void setSDUProtecionOptions(List<SDUProtectionOption> sduProtectionOptions){
+		if (sduProtectionOptions == null){
+			return;
+		}
+		
+		for(int i=0; i<sduProtectionOptions.size(); i++){
+			this.nMinus1DIFProtectionOptions.put(sduProtectionOptions.get(i).getnMinus1DIFName(), 
+					sduProtectionOptions.get(i).getSduProtectionType());
+		}
+	}
+	
+	/**
+	 * Return the type of SDU Protection module to be used for the DIF called "nminus1DIFName"
+	 * (return the NULL type if no entries for "nminus1DIFName" are found)
+	 * @param nMinus1DIFName
+	 * @return
+	 */
+	public String getSDUProtectionOption(String nMinus1DIFName){
+		String result = this.nMinus1DIFProtectionOptions.get(nMinus1DIFName);
+		if (result == null){
+			return SDUProtectionModuleRepository.NULL;
+		}
+		
+		return result;
+	}
+	
+	/**
 	 * Request the allocation of an N-1 Flow with the requested QoS 
 	 * to the destination IPC Process 
 	 * @param flowService contains the destination IPC Process and requested QoS information
@@ -140,6 +178,7 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 		//TODO, implement properly with the IDD, right now it requests the flow allocation to 
 		//the first shim IPC Process for IP networks that it finds.
 		IPCService ipcService = null;
+		String nMinus1DIFName = null;
 		NMinus1FlowDescriptor nMinus1FlowDescriptor = null;
 		
 		List<IPCProcess> candidates = this.ipcManager.listIPCProcesses();
@@ -148,6 +187,7 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 			currentCandidate = candidates.get(i);
 			if (currentCandidate.getType().equals(IPCProcessType.SHIM_IP)){
 				ipcService = (IPCService) currentCandidate;
+				nMinus1DIFName = currentCandidate.getDIFName();
 			}
 		}
 		
@@ -165,6 +205,7 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 			nMinus1FlowDescriptor.setIpcService(ipcService);
 			nMinus1FlowDescriptor.setStatus(NMinus1FlowDescriptor.Status.ALLOCATION_REQUESTED);
 			nMinus1FlowDescriptor.setManagement(management);
+			nMinus1FlowDescriptor.setnMinus1DIFName(nMinus1DIFName);
 			this.nMinus1FlowDescriptors.put(new Integer(portId), nMinus1FlowDescriptor);
 		}catch(Exception ex){
 			log.error("Issues allocating an N-1 flow to "+flowService+". Details: "+ex);
@@ -245,8 +286,8 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 			//Accept the request
 			try{
 				DeliverAllocateResponseTimerTask timerTask =  new DeliverAllocateResponseTimerTask(
-						ipcService, flowService, nMinus1FlowDescriptors, this, this.ribDaemon, 
-						this.getNeighborAddress(flowService.getSourceAPNamingInfo()), this.pduForwardingTable);
+						ipcService, ipcManager, flowService, nMinus1FlowDescriptors, this, this.ribDaemon, 
+						this.getNeighborAddress(flowService.getSourceAPNamingInfo()), this.pduForwardingTable, this);
 				this.timer.schedule(timerTask, 10);
 			}catch(Exception ex){
 				log.error("Problems submiting allocate response for N-1 flow identified by portId "+flowService.getPortId()+". "+ex);
@@ -292,8 +333,14 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 			
 			//Notify about the event
 			nMinus1FlowDescriptor.setPortId(portId);
-			//TODO get adequate SDU protection module
-			nMinus1FlowDescriptor.setSduProtectionModule(new NullSDUProtectionModule());
+			//Get adequate SDU protection module
+			try{
+				nMinus1FlowDescriptor.setSduProtectionModule(
+						this.ipcManager.getSDUProtectionModuleRepository().getSDUProtectionModule(
+								getSDUProtectionOption(nMinus1FlowDescriptor.getnMinus1DIFName())));
+			}catch(Exception ex){
+				log.error(ex);
+			}
 			NMinusOneFlowAllocatedEvent event = new NMinusOneFlowAllocatedEvent(nMinus1FlowDescriptor);
 			this.ribDaemon.deliverEvent(event);
 		}else{

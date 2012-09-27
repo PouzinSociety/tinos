@@ -109,22 +109,18 @@ public class OutgoingFlowQueuesReader implements Runnable, QueueSubscriptor{
 		}
 		
 		//Convert the SDU into a PDU and post it to an RMT queue (right now posting it to the socket)
-		byte[] pdu = PDUParser.generatePDU(state.getPreComputedPCI(), 
-				state.getNextSequenceToSend(), 0x81, 0x00, sdu);
-		
-		PDU pduWrapper = new PDU();
-		pduWrapper.setRawPDU(pdu);
-		pduWrapper.setDestinationAddress(state.getDestinationAddress());
 		ConnectionId connectionId = new ConnectionId();
 		connectionId.setQosId(state.getQoSId());
-		pduWrapper.setConnectionId(connectionId);
+		PDU pdu = PDUParser.generatePDU(state.getPreComputedPCI(), 
+				state.getNextSequenceToSend(), state.getDestinationAddress(), 
+				connectionId, 0x81, 0x00, sdu);
 		
 		/*log.debug("Encoded PDU: \n" + "Destination @: " + state.getDestinationAddress() + " CEPid: "+state.getSourceCEPid() + 
 				" Source @: "+state.getSourceAddress() + " CEPid: "+state.getSourceCEPid() + "\n QoSid: "
 				+ state.getQoSId() + " PDU type: 129 Flags: 00 Sequence Number: " +state.getNextSequenceToSend()); 
 		log.debug("Sending PDU " + printBytes(pdu)+" through outgoing EFCP queue " + state.getSourceCEPid()+"\n");*/
 		try{
-			this.dataTransferAE.getOutgoingConnectionQueue(state.getSourceCEPid()).writeDataToQueue(pduWrapper);
+			this.dataTransferAE.getOutgoingConnectionQueue(state.getSourceCEPid()).writeDataToQueue(pdu);
 		}catch(Exception ex){
 			log.error("Problems writing PDU to outgoing EFCP queue belonging to CEP id "+state.getSourceCEPid() 
 					+ ". Dropping PDU.", ex);

@@ -7,11 +7,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.events.api.events.NMinusOneFlowAllocatedEvent;
+import rina.ipcmanager.api.IPCManager;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCService;
-import rina.protection.api.NullSDUProtectionModule;
+import rina.ipcprocess.api.IPCProcess;
 import rina.resourceallocator.api.NMinus1FlowDescriptor;
+import rina.resourceallocator.api.NMinus1FlowManager;
 import rina.resourceallocator.api.PDUForwardingTable;
 import rina.resourceallocator.impl.ribobjects.NMinus1FlowRIBObject;
 import rina.resourceallocator.impl.ribobjects.NMinus1FlowSetRIBObject;
@@ -24,23 +26,27 @@ public class DeliverAllocateResponseTimerTask extends TimerTask{
 	private static final Log log = LogFactory.getLog(DeliverAllocateResponseTimerTask.class);
 	
 	private IPCService ipcService = null;
+	private IPCManager ipcManager = null;
 	private FlowService flowService = null;
 	private Map<Integer, NMinus1FlowDescriptor> nMinus1FlowDescriptors = null;
 	private APService apService = null;
 	private RIBDaemon ribDaemon = null;
 	private long destinationAddress = -1;
 	private PDUForwardingTable pduForwardingTable = null;
+	private NMinus1FlowManager nMinus1FlowManager = null;
 	
-	public DeliverAllocateResponseTimerTask(IPCService ipcService, FlowService flowService, Map<Integer, 
+	public DeliverAllocateResponseTimerTask(IPCService ipcService, IPCManager ipcManager, FlowService flowService, Map<Integer, 
 			NMinus1FlowDescriptor> nMinus1FlowDescriptors, APService apService, RIBDaemon ribDaemon, 
-			long destinationAddress, PDUForwardingTable pduForwardingTable){
+			long destinationAddress, PDUForwardingTable pduForwardingTable, NMinus1FlowManager nMinus1FlowManager){
 		this.ipcService = ipcService;
+		this.ipcManager = ipcManager;
 		this.flowService = flowService;
 		this.nMinus1FlowDescriptors = nMinus1FlowDescriptors;
 		this.apService = apService;
 		this.ribDaemon = ribDaemon;
 		this.destinationAddress = destinationAddress;
 		this.pduForwardingTable = pduForwardingTable;
+		this.nMinus1FlowManager = nMinus1FlowManager;
 	}
 	
 	@Override
@@ -51,6 +57,7 @@ public class DeliverAllocateResponseTimerTask extends TimerTask{
 			nMinus1FlowDescriptor.setFlowService(flowService);
 			nMinus1FlowDescriptor.setIpcService(ipcService);
 			nMinus1FlowDescriptor.setStatus(NMinus1FlowDescriptor.Status.ALLOCATED);
+			nMinus1FlowDescriptor.setnMinus1DIFName(((IPCProcess)ipcService).getDIFName());
 			this.nMinus1FlowDescriptors.put(new Integer(flowService.getPortId()), nMinus1FlowDescriptor);
 			
 			try{
@@ -69,8 +76,15 @@ public class DeliverAllocateResponseTimerTask extends TimerTask{
 			
 			//Notify about the event
 			nMinus1FlowDescriptor.setPortId(flowService.getPortId());
-			//TODO get adequate SDU protection module
-			nMinus1FlowDescriptor.setSduProtectionModule(new NullSDUProtectionModule());
+			//Get adequate SDU protection module
+			try{
+				nMinus1FlowDescriptor.setSduProtectionModule(
+						this.ipcManager.getSDUProtectionModuleRepository().getSDUProtectionModule(
+								nMinus1FlowManager.getSDUProtectionOption(
+										nMinus1FlowDescriptor.getnMinus1DIFName())));
+			}catch(Exception ex){
+				log.error(ex);
+			}
 			NMinusOneFlowAllocatedEvent event = new NMinusOneFlowAllocatedEvent(nMinus1FlowDescriptor);
 			this.ribDaemon.deliverEvent(event);
 		}catch(Exception ex){

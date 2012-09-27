@@ -113,7 +113,7 @@ public class EFCPOutgoingPDUListener implements QueueSubscriptor, Runnable{
 			try {	
 				//Apply protection
 				sdu = this.nMinus1FlowManager.getNMinus1FlowDescriptor(
-						outgoingPortIds[i]).getSduProtectionModule().protectSDU(pdu.getRawPDU());
+						outgoingPortIds[i]).getSduProtectionModule().protectPDU(pdu);
 				//Send through N-1 flow
 				this.ipcManager.getOutgoingFlowQueue(outgoingPortIds[i]).writeDataToQueue(sdu);
 			} catch (IPCException ex) {

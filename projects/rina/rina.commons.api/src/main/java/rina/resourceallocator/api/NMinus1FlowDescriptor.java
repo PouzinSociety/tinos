@@ -44,6 +44,11 @@ public class NMinus1FlowDescriptor {
 	 * false otherwise
 	 */
 	private boolean management = false;
+	
+	/**
+	 * The name of the N-1 DIF through which the N-1 flow is allocated
+	 */
+	private String nMinus1DIFName = null;
 
 	public int getPortId() {
 		return portId;
@@ -86,15 +91,24 @@ public class NMinus1FlowDescriptor {
 	}
 
 	public boolean isManagement() {
-		return management;
+		return this.management;
 	}
 
 	public void setManagement(boolean management) {
 		this.management = management;
 	}
 
+	public String getnMinus1DIFName() {
+		return nMinus1DIFName;
+	}
+
+	public void setnMinus1DIFName(String nMinus1DIFName) {
+		this.nMinus1DIFName = nMinus1DIFName;
+	}
+
 	public String toString(){
 		String result = "Port Id: "+portId+";  Is Management: " + this.management + "; Status: "+this.status+ "\n";
+		result = result + "N-1 DIF name: " + this.nMinus1DIFName + "\n";
 		result = result + "Flow service: "+flowService.toString();
 		if (this.sduProtectionModule != null){
 			result = result + "SDU Protection: "+this.sduProtectionModule.toString();

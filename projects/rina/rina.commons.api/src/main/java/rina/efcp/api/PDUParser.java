@@ -49,9 +49,10 @@ public class PDUParser {
 		
 		return preComputedPCI;
 	}
-
+	
+	
 	/**
-	 * Generate a PDU from a pre-computed PCI. Use unsigned types and little-endian byte order
+	 * Generate a PDU data structure from a pre-computed PCI. Use unsigned types and little-endian byte order
 	 * @param pci
 	 * @param sequenceNumber
 	 * @param pduType
@@ -59,97 +60,67 @@ public class PDUParser {
 	 * @param sdu
 	 * @return
 	 */
-	public static byte[] generatePDU(byte[] pci, long sequenceNumber, int pduType, int flags, byte[] sdu){
-		byte[] pdu = new byte[pci.length + sdu.length];
-		
-		for(int i=0; i<9; i++){
-			pdu[i] = pci[i];
-		}
+	public static PDU generatePDU(byte[] pci, long sequenceNumber, long destinationAddress, 
+			ConnectionId connectionId, int pduType, int flags, byte[] sdu){
+		PDU pdu = new PDU();
 		
 		//Encode pduType
-		pdu[9] = (byte) (pduType & 0xFF);
+		pci[9] = (byte) (pduType & 0xFF);
 		
 		//Encode flags
-		pdu[10] = (byte) (flags & 0xFF);
+		pci[10] = (byte) (flags & 0xFF);
 		
 		//Encode sequence number
 		byte[] aux = Longs.toByteArray(sequenceNumber);
-		pdu[11] = aux[7];
-		pdu[12] = aux[6];
-		pdu[13] = aux[5];
-		pdu[14] = aux[4];
+		pci[11] = aux[7];
+		pci[12] = aux[6];
+		pci[13] = aux[5];
+		pci[14] = aux[4];
 		
-		//Add user SDU
-		System.arraycopy(sdu, 0, pdu, 15, sdu.length);
+		pdu.setEncodedPCI(pci);
+		pdu.setSequenceNumber(sequenceNumber);
+		pdu.setDestinationAddress(destinationAddress);
+		pdu.setConnectionId(connectionId);
+		pdu.setUserData(sdu);
 		
 		return pdu;
 	}
 	
-	/**
-	 * Encodes a PDU to byte array
-	 * @param pdu
-	 * @return
-	 */
-	public static byte[] encodePDU(PDU pdu){
-		return encodePDU(pdu.getDestinationAddress(), pdu.getSourceAddress(), pdu.getConnectionId().getSourceCEPId(), 
-				pdu.getConnectionId().getDestinationCEPId(), pdu.getConnectionId().getQosId(), pdu.getSequenceNumber(), 
-				pdu.getPduType(), pdu.getFlags(), pdu.getUserData().get(0));
+	public static PDU generateManagementPDU(byte[] sdu){
+		byte[] pci = computePCI(0,0,0,0,0);
+		return generatePDU(pci, 0, 0, null, MANAGEMENT_PDU_TYPE, 0, sdu);
 	}
 	
 	/**
-	 * Encodes a PDU with the provided parameters
-	 * @param destinationAddress
-	 * @param sourceAddress
-	 * @param sourceCEPid
-	 * @param destinationCEPid
-	 * @param qosid
-	 * @param sequenceNumber
-	 * @param pduType
-	 * @param flags
-	 * @param sdu
-	 * @return
-	 */
-	public static byte[] encodePDU(long destinationAddress, long sourceAddress, long sourceCEPid, long destinationCEPid, int qosid, 
-			long sequenceNumber, int pduType, int flags, byte[] sdu){
-		byte[] preComputedPCI = computePCI(destinationAddress, sourceAddress, sourceCEPid, destinationCEPid, qosid);
-		return generatePDU(preComputedPCI, sequenceNumber, pduType, flags, sdu);
-	}
-	
-	/**
-	 * Encode a management PDU
-	 * @param destinationAddress
-	 * @param sourceAddress
-	 * @param sdu
-	 * @return
-	 */
-	public static byte[] encodeManagementPDU(byte[] sdu){
-		return encodePDU(0L, 0L, 0L, 0L, 0, 0L, MANAGEMENT_PDU_TYPE, 0, sdu);
-	}
-	
-	/**
-	 * Parse the values of the encoded PDU into a canonical data structure.
+	 * Parse the values of the encoded PDU relevant to the RMT into a canonical data structure.
 	 * Uses unsigned types and little-endian byte order
 	 * @param encodedPDU
 	 * @return
 	 */
-	public static PDU parsePDU(byte[] encodedPDU){
-		PDU pdu = new PDU();
-		pdu.setRawPDU(encodedPDU);
+	public static PDU parsePCIForRMT(PDU pdu){
+		byte[] encodedPDU = pdu.getRawPDU();
 		pdu.setDestinationAddress((encodedPDU[1] & 0xFFL) << 8 | (encodedPDU[0] & 0xFFL));
 		pdu.setSourceAddress((encodedPDU[3] & 0xFFL) << 8 | (encodedPDU[2] & 0xFFL));
 		ConnectionId connectionId = new ConnectionId();
-		connectionId.setDestinationCEPId((encodedPDU[5] & 0xFFL) << 8 | (encodedPDU[4] & 0xFFL));
-		connectionId.setSourceCEPId((encodedPDU[7] & 0xFFL) << 8 | (encodedPDU[6] & 0xFFL));
 		connectionId.setQosId(encodedPDU[8] & 0xFF); //has to be 'anded' with 0xFF to remove the sign bit
 		pdu.setConnectionId(connectionId);
 		pdu.setPduType(encodedPDU[9] & 0xFF);
 		pdu.setFlags(encodedPDU[10] & 0xFF);
+		
+		return pdu;
+	}
+	
+	public static PDU parsePCIForEFCP(PDU pdu){
+		byte[] encodedPDU = pdu.getRawPDU();
 		pdu.setSequenceNumber((encodedPDU[14] & 0xFFL) << 24 | (encodedPDU[13] & 0xFFL) << 16 | 
 				(encodedPDU[12] & 0xFFL) << 8 | (encodedPDU[11] & 0xFFL));
+		ConnectionId connectionId = pdu.getConnectionId();
+		connectionId.setDestinationCEPId((encodedPDU[5] & 0xFFL) << 8 | (encodedPDU[4] & 0xFFL));
+		connectionId.setSourceCEPId((encodedPDU[7] & 0xFFL) << 8 | (encodedPDU[6] & 0xFFL));
 		
 		byte[] sdu = new byte[encodedPDU.length - 15];
 		System.arraycopy(encodedPDU, 15, sdu, 0, sdu.length);
-		pdu.getUserData().add(sdu);
+		pdu.setUserData(sdu);
 		
 		return pdu;
 	}

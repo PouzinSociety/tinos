@@ -93,7 +93,7 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 			return;
 		}
 		
-		byte[] sdu = pdu.getUserData().get(0);
+		byte[] sdu = pdu.getUserData();
 		if (sdu.length == 0){
 			//TODO do something special?
 		}else{
