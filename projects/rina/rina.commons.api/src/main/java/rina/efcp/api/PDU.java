@@ -1,8 +1,5 @@
 package rina.efcp.api;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import rina.flowallocator.api.ConnectionId;
 
 /**
@@ -16,6 +13,11 @@ public class PDU {
 	 * The PDU before parsing it
 	 */
 	private byte[] rawPDU = null;
+	
+	/**
+	 * The first byte that belongs to the PCI in the rawPDU array 
+	 */
+	private byte pciStartIndex = 0;
 	
 	/**
 	 * The encoded PCI
@@ -59,11 +61,6 @@ public class PDU {
 	private long sequenceNumber = 0;
 	
 	/**
-	 * The TTL bytes (may be added by SDU protection)
-	 */
-	private byte[] ttl = new byte[0];
-	
-	/**
 	 * The Error check code bytes (may be added by SDU protection)
 	 */
 	private byte[] errorCheckCode = new byte[0];
@@ -75,7 +72,6 @@ public class PDU {
 	 * required to specify the length of the last fragment).
 	 */
 	private byte[] userData = null;
-	
 	
 	public PDU(){
 	}
@@ -128,6 +124,14 @@ public class PDU {
 		this.rawPDU = rawPDU;
 	}
 	
+	public byte getPciStartIndex() {
+		return pciStartIndex;
+	}
+
+	public void setPciStartIndex(byte pciStartIndex) {
+		this.pciStartIndex = pciStartIndex;
+	}
+
 	public byte[] getEncodedPCI(){
 		return encodedPCI;
 	}
@@ -150,14 +154,6 @@ public class PDU {
 
 	public void setUserData(byte[] userData) {
 		this.userData = userData;
-	}
-	
-	public byte[] getTtl() {
-		return ttl;
-	}
-
-	public void setTtl(byte[] ttl) {
-		this.ttl = ttl;
 	}
 
 	public byte[] getErrorCheckCode() {

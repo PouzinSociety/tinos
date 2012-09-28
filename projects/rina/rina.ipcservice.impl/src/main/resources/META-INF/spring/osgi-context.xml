@@ -19,6 +19,7 @@
     <osgi:reference id="dataTransferAEFactoryService" interface="rina.efcp.api.DataTransferAEFactory" />
     <osgi:reference id="flowAllocatorFactoryService" interface="rina.flowallocator.api.FlowAllocatorFactory" />
     <osgi:reference id="resourceAllocatorFactoryService" interface="rina.resourceallocator.api.ResourceAllocatorFactory" />
+    <osgi:reference id="sduProtectionModuleFactoryService" interface="rina.protection.api.SDUProtecionModuleRepositoryFactory" />
           
     <!--  Export the IPCProcessFactoryImpl to the OSGi registry-->
     <osgi:service id="ipcProcessFactory" ref="ipcProcessFactoryImpl">

@@ -46,7 +46,6 @@ import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.aux.BlockingQueueWithSubscriptor;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
-import rina.protection.api.SDUProtectionModuleRepository;
 import rina.resourceallocator.api.BaseResourceAllocator;
 import rina.resourceallocator.api.ResourceAllocator;
 import rina.ribdaemon.api.BaseRIBDaemon;
@@ -103,11 +102,6 @@ public class IPCManagerImpl implements IPCManager{
 	 * the SDU Delivery Service
 	 */
 	private SDUDeliveryService sduDeliveryService = null;
-	
-	/**
-	 * The SDU Protection Module repository (fetched from the OSGi registry)
-	 */
-	private SDUProtectionModuleRepository sduProtectionModuleRepository = null;
 	
 	public IPCManagerImpl(){
 		this.ipcProcessFactories = new HashMap<String, IPCProcessFactory>();
@@ -212,18 +206,6 @@ public class IPCManagerImpl implements IPCManager{
 	 */
 	public synchronized void execute(Runnable runnable){
 		executorService.execute(runnable);
-	}
-	
-	/**
-	 * Get the SDU Protection Module Repository
-	 * @return
-	 */
-	public SDUProtectionModuleRepository getSDUProtectionModuleRepository(){
-		return this.sduProtectionModuleRepository;
-	}
-	
-	public void setSDUProtectionModuleRepository(SDUProtectionModuleRepository sduProtectionModuleRepository){
-		this.sduProtectionModuleRepository = sduProtectionModuleRepository;
 	}
 	
 	public void stop(){

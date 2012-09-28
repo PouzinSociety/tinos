@@ -26,6 +26,7 @@ import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
 import rina.ipcservice.api.IPCService;
+import rina.protection.api.BaseSDUProtectionModuleRepository;
 import rina.protection.api.SDUProtectionModuleRepository;
 import rina.resourceallocator.api.NMinus1FlowDescriptor;
 import rina.resourceallocator.api.NMinus1FlowManager;
@@ -286,7 +287,7 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 			//Accept the request
 			try{
 				DeliverAllocateResponseTimerTask timerTask =  new DeliverAllocateResponseTimerTask(
-						ipcService, ipcManager, flowService, nMinus1FlowDescriptors, this, this.ribDaemon, 
+						ipcService, flowService, nMinus1FlowDescriptors, this, this.ribDaemon, 
 						this.getNeighborAddress(flowService.getSourceAPNamingInfo()), this.pduForwardingTable, this);
 				this.timer.schedule(timerTask, 10);
 			}catch(Exception ex){
@@ -335,9 +336,9 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 			nMinus1FlowDescriptor.setPortId(portId);
 			//Get adequate SDU protection module
 			try{
+				SDUProtectionModuleRepository sduProc = (SDUProtectionModuleRepository) this.ipcProcess.getIPCProcessComponent(BaseSDUProtectionModuleRepository.getComponentName());
 				nMinus1FlowDescriptor.setSduProtectionModule(
-						this.ipcManager.getSDUProtectionModuleRepository().getSDUProtectionModule(
-								getSDUProtectionOption(nMinus1FlowDescriptor.getnMinus1DIFName())));
+						sduProc.getSDUProtectionModule(getSDUProtectionOption(nMinus1FlowDescriptor.getnMinus1DIFName())));
 			}catch(Exception ex){
 				log.error(ex);
 			}

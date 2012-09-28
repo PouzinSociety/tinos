@@ -7,11 +7,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.events.api.events.NMinusOneFlowAllocatedEvent;
-import rina.ipcmanager.api.IPCManager;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCService;
 import rina.ipcprocess.api.IPCProcess;
+import rina.protection.api.BaseSDUProtectionModuleRepository;
+import rina.protection.api.SDUProtectionModuleRepository;
 import rina.resourceallocator.api.NMinus1FlowDescriptor;
 import rina.resourceallocator.api.NMinus1FlowManager;
 import rina.resourceallocator.api.PDUForwardingTable;
@@ -26,7 +27,6 @@ public class DeliverAllocateResponseTimerTask extends TimerTask{
 	private static final Log log = LogFactory.getLog(DeliverAllocateResponseTimerTask.class);
 	
 	private IPCService ipcService = null;
-	private IPCManager ipcManager = null;
 	private FlowService flowService = null;
 	private Map<Integer, NMinus1FlowDescriptor> nMinus1FlowDescriptors = null;
 	private APService apService = null;
@@ -35,11 +35,10 @@ public class DeliverAllocateResponseTimerTask extends TimerTask{
 	private PDUForwardingTable pduForwardingTable = null;
 	private NMinus1FlowManager nMinus1FlowManager = null;
 	
-	public DeliverAllocateResponseTimerTask(IPCService ipcService, IPCManager ipcManager, FlowService flowService, Map<Integer, 
+	public DeliverAllocateResponseTimerTask(IPCService ipcService, FlowService flowService, Map<Integer, 
 			NMinus1FlowDescriptor> nMinus1FlowDescriptors, APService apService, RIBDaemon ribDaemon, 
 			long destinationAddress, PDUForwardingTable pduForwardingTable, NMinus1FlowManager nMinus1FlowManager){
 		this.ipcService = ipcService;
-		this.ipcManager = ipcManager;
 		this.flowService = flowService;
 		this.nMinus1FlowDescriptors = nMinus1FlowDescriptors;
 		this.apService = apService;
@@ -78,8 +77,10 @@ public class DeliverAllocateResponseTimerTask extends TimerTask{
 			nMinus1FlowDescriptor.setPortId(flowService.getPortId());
 			//Get adequate SDU protection module
 			try{
+				IPCProcess ipcProcess = (IPCProcess) this.ipcService;
+				SDUProtectionModuleRepository sduProc = (SDUProtectionModuleRepository) ipcProcess.getIPCProcessComponent(BaseSDUProtectionModuleRepository.getComponentName());
 				nMinus1FlowDescriptor.setSduProtectionModule(
-						this.ipcManager.getSDUProtectionModuleRepository().getSDUProtectionModule(
+						sduProc.getSDUProtectionModule(
 								nMinus1FlowManager.getSDUProtectionOption(
 										nMinus1FlowDescriptor.getnMinus1DIFName())));
 			}catch(Exception ex){

@@ -5,6 +5,6 @@
 			http://www.springframework.org/schema/beans
 			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-	<bean name="sduProtectionModuleRepositoryImpl" class="rina.protection.impl.SDUProtectionModuleRepositoryImpl"/>
+	<bean name="sduProtectionModuleRepositoryFactoryBean" class="rina.protection.impl.SDUProtectionModuleRepositoryFactoryImpl"/>
 
 </beans>

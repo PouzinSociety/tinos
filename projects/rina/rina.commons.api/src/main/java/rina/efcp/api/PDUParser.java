@@ -99,38 +99,31 @@ public class PDUParser {
 	 */
 	public static PDU parsePCIForRMT(PDU pdu){
 		byte[] encodedPDU = pdu.getRawPDU();
-		pdu.setDestinationAddress((encodedPDU[1] & 0xFFL) << 8 | (encodedPDU[0] & 0xFFL));
-		pdu.setSourceAddress((encodedPDU[3] & 0xFFL) << 8 | (encodedPDU[2] & 0xFFL));
+		byte offset = pdu.getPciStartIndex();
+		pdu.setDestinationAddress((encodedPDU[1+offset] & 0xFFL) << 8 | (encodedPDU[0+offset] & 0xFFL));
+		pdu.setSourceAddress((encodedPDU[3+offset] & 0xFFL) << 8 | (encodedPDU[2+offset] & 0xFFL));
 		ConnectionId connectionId = new ConnectionId();
-		connectionId.setQosId(encodedPDU[8] & 0xFF); //has to be 'anded' with 0xFF to remove the sign bit
+		connectionId.setQosId(encodedPDU[8+offset] & 0xFF); //has to be 'anded' with 0xFF to remove the sign bit
 		pdu.setConnectionId(connectionId);
-		pdu.setPduType(encodedPDU[9] & 0xFF);
-		pdu.setFlags(encodedPDU[10] & 0xFF);
+		pdu.setPduType(encodedPDU[9+offset] & 0xFF);
+		pdu.setFlags(encodedPDU[10+offset] & 0xFF);
 		
 		return pdu;
 	}
 	
 	public static PDU parsePCIForEFCP(PDU pdu){
 		byte[] encodedPDU = pdu.getRawPDU();
-		pdu.setSequenceNumber((encodedPDU[14] & 0xFFL) << 24 | (encodedPDU[13] & 0xFFL) << 16 | 
-				(encodedPDU[12] & 0xFFL) << 8 | (encodedPDU[11] & 0xFFL));
+		byte offset = pdu.getPciStartIndex();
+		pdu.setSequenceNumber((encodedPDU[14+offset] & 0xFFL) << 24 | (encodedPDU[13+offset] & 0xFFL) << 16 | 
+				(encodedPDU[12+offset] & 0xFFL) << 8 | (encodedPDU[11+offset] & 0xFFL));
 		ConnectionId connectionId = pdu.getConnectionId();
-		connectionId.setDestinationCEPId((encodedPDU[5] & 0xFFL) << 8 | (encodedPDU[4] & 0xFFL));
-		connectionId.setSourceCEPId((encodedPDU[7] & 0xFFL) << 8 | (encodedPDU[6] & 0xFFL));
+		connectionId.setDestinationCEPId((encodedPDU[5+offset] & 0xFFL) << 8 | (encodedPDU[4+offset] & 0xFFL));
+		connectionId.setSourceCEPId((encodedPDU[7+offset] & 0xFFL) << 8 | (encodedPDU[6+offset] & 0xFFL));
 		
-		byte[] sdu = new byte[encodedPDU.length - 15];
-		System.arraycopy(encodedPDU, 15, sdu, 0, sdu.length);
+		byte[] sdu = new byte[encodedPDU.length - 15 - offset];
+		System.arraycopy(encodedPDU, 15 + offset, sdu, 0, sdu.length);
 		pdu.setUserData(sdu);
 		
 		return pdu;
-	}
-	
-	/**
-	 * Returns the decoded destination address of a PDU's PCI
-	 * @param encodedPDU
-	 * @return the decoded destination address
-	 */
-	public static long parseDestinationAddress(byte[] encodedPDU){
-		return (encodedPDU[1] & 0xFFL) << 8 | (encodedPDU[0] & 0xFFL);
 	}
 }

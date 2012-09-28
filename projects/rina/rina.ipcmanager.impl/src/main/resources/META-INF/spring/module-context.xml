@@ -7,6 +7,5 @@
 			
 			<bean name="ipcmanager" class="rina.ipcmanager.impl.IPCManagerImpl">
 				<property name="InterDIFDirectoryFactory" ref="iddFactoryService"/>
-				<property name="SDUProtectionModuleRepository" ref="sduProtectionModuleRepositoryService"/>
 			</bean>
 </beans>

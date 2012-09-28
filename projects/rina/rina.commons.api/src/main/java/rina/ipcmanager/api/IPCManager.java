@@ -11,7 +11,6 @@ import rina.flowallocator.api.FlowAllocatorInstance;
 import rina.idd.api.InterDIFDirectoryFactory;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.IPCException;
-import rina.protection.api.SDUProtectionModuleRepository;
 
 /**
  * The IPC Manager is the component of a DAF that manages the local IPC resources. In its current implementation it 
@@ -42,12 +41,6 @@ public interface IPCManager {
 	 * @param runnable
 	 */
 	public void execute(Runnable runnable);
-	
-	/**
-	 * Get the SDU Protection Module Repository
-	 * @return
-	 */
-	public SDUProtectionModuleRepository getSDUProtectionModuleRepository();
 	
 	/* PORT_ID MANAGEMENT */
 	/**

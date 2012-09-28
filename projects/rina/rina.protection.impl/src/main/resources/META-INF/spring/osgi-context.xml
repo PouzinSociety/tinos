@@ -8,9 +8,9 @@
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
           
     <!--  Export the IPCProcessFactoryImpl to the OSGi registry-->
-    <osgi:service id="sduProtectionModuleRepository" ref="sduProtectionModuleRepositoryImpl">
+    <osgi:service id="sduProtectionModuleRepositoryFactory" ref="sduProtectionModuleRepositoryFactoryBean">
      	<osgi:interfaces>
- 			<value>rina.protection.api.SDUProtectionModuleRepository</value>
+ 			<value>rina.protection.api.SDUProtecionModuleRepositoryFactory</value>
  		</osgi:interfaces>
     </osgi:service>
 

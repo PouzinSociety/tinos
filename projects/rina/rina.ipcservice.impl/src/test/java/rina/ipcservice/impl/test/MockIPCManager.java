@@ -112,10 +112,4 @@ public class MockIPCManager implements IPCManager{
 		
 	}
 
-	@Override
-	public SDUProtectionModuleRepository getSDUProtectionModuleRepository() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }
