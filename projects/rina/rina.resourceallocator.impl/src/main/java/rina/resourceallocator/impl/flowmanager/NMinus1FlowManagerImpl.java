@@ -281,13 +281,13 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 		}
 	}
 
-	public String deliverAllocateRequest(FlowService flowService, IPCService ipcService) {
+	public String deliverAllocateRequest(FlowService flowService, IPCService nMinus1ipcService) {
 		if (flowService.getDestinationAPNamingInfo().getApplicationProcessName().equals(this.ipcProcess.getApplicationProcessName()) 
 				&& flowService.getDestinationAPNamingInfo().getApplicationProcessInstance().equals(this.ipcProcess.getApplicationProcessInstance())){
 			//Accept the request
 			try{
 				DeliverAllocateResponseTimerTask timerTask =  new DeliverAllocateResponseTimerTask(
-						ipcService, flowService, nMinus1FlowDescriptors, this, this.ribDaemon, 
+						nMinus1ipcService, this.ipcProcess, flowService, nMinus1FlowDescriptors, this, this.ribDaemon, 
 						this.getNeighborAddress(flowService.getSourceAPNamingInfo()), this.pduForwardingTable, this);
 				this.timer.schedule(timerTask, 10);
 			}catch(Exception ex){

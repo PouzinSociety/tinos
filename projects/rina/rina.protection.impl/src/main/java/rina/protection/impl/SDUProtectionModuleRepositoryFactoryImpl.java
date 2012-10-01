@@ -20,7 +20,6 @@ public class SDUProtectionModuleRepositoryFactoryImpl implements SDUProtecionMod
 		try {
 			sduProtectionModuleRepository = new SDUProtectionModuleRepositoryImpl();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		synchronized(sduProtectionModuleRepositoryRespositories){

@@ -26,7 +26,8 @@ public class DeliverAllocateResponseTimerTask extends TimerTask{
 
 	private static final Log log = LogFactory.getLog(DeliverAllocateResponseTimerTask.class);
 	
-	private IPCService ipcService = null;
+	private IPCService nMinus1ipcService = null;
+	private IPCProcess ipcProcess = null;
 	private FlowService flowService = null;
 	private Map<Integer, NMinus1FlowDescriptor> nMinus1FlowDescriptors = null;
 	private APService apService = null;
@@ -35,10 +36,11 @@ public class DeliverAllocateResponseTimerTask extends TimerTask{
 	private PDUForwardingTable pduForwardingTable = null;
 	private NMinus1FlowManager nMinus1FlowManager = null;
 	
-	public DeliverAllocateResponseTimerTask(IPCService ipcService, FlowService flowService, Map<Integer, 
+	public DeliverAllocateResponseTimerTask(IPCService nMinus1ipcService, IPCProcess ipcProcess, FlowService flowService, Map<Integer, 
 			NMinus1FlowDescriptor> nMinus1FlowDescriptors, APService apService, RIBDaemon ribDaemon, 
 			long destinationAddress, PDUForwardingTable pduForwardingTable, NMinus1FlowManager nMinus1FlowManager){
-		this.ipcService = ipcService;
+		this.nMinus1ipcService = nMinus1ipcService;
+		this.ipcProcess = ipcProcess;
 		this.flowService = flowService;
 		this.nMinus1FlowDescriptors = nMinus1FlowDescriptors;
 		this.apService = apService;
@@ -51,12 +53,12 @@ public class DeliverAllocateResponseTimerTask extends TimerTask{
 	@Override
 	public void run() {
 		try{
-			ipcService.submitAllocateResponse(flowService.getPortId(), true, null, apService);
+			nMinus1ipcService.submitAllocateResponse(flowService.getPortId(), true, null, apService);
 			NMinus1FlowDescriptor nMinus1FlowDescriptor = new NMinus1FlowDescriptor();
 			nMinus1FlowDescriptor.setFlowService(flowService);
-			nMinus1FlowDescriptor.setIpcService(ipcService);
+			nMinus1FlowDescriptor.setIpcService(nMinus1ipcService);
 			nMinus1FlowDescriptor.setStatus(NMinus1FlowDescriptor.Status.ALLOCATED);
-			nMinus1FlowDescriptor.setnMinus1DIFName(((IPCProcess)ipcService).getDIFName());
+			nMinus1FlowDescriptor.setnMinus1DIFName(((IPCProcess)nMinus1ipcService).getDIFName());
 			this.nMinus1FlowDescriptors.put(new Integer(flowService.getPortId()), nMinus1FlowDescriptor);
 			
 			try{
@@ -77,13 +79,13 @@ public class DeliverAllocateResponseTimerTask extends TimerTask{
 			nMinus1FlowDescriptor.setPortId(flowService.getPortId());
 			//Get adequate SDU protection module
 			try{
-				IPCProcess ipcProcess = (IPCProcess) this.ipcService;
 				SDUProtectionModuleRepository sduProc = (SDUProtectionModuleRepository) ipcProcess.getIPCProcessComponent(BaseSDUProtectionModuleRepository.getComponentName());
 				nMinus1FlowDescriptor.setSduProtectionModule(
 						sduProc.getSDUProtectionModule(
 								nMinus1FlowManager.getSDUProtectionOption(
 										nMinus1FlowDescriptor.getnMinus1DIFName())));
 			}catch(Exception ex){
+				ex.printStackTrace();
 				log.error(ex);
 			}
 			NMinusOneFlowAllocatedEvent event = new NMinusOneFlowAllocatedEvent(nMinus1FlowDescriptor);
