@@ -80,7 +80,10 @@ public class ShimIPCProcessForIPLayersFactory implements IPCProcessFactory{
 			for(int i=0; i<shimIPDIFconfiguration.getExpectedApplicationRegistrations().size(); i++){
 				expectedRegistration = shimIPDIFconfiguration.getExpectedApplicationRegistrations().get(i);
 				ipcProcess.addExpectedApplicationRegistration(
-						new ApplicationProcessNamingInfo(expectedRegistration.getApplicationProcessName(), expectedRegistration.getApplicationProcessInstance()), 
+						new ApplicationProcessNamingInfo(expectedRegistration.getApplicationProcessName(), 
+								expectedRegistration.getApplicationProcessInstance(), 
+								expectedRegistration.getApplicationEntityName(), 
+								null), 
 						expectedRegistration.getSocketPortNumber());
 			}
 			
@@ -88,8 +91,12 @@ public class ShimIPCProcessForIPLayersFactory implements IPCProcessFactory{
 			for(int i=0; i<shimIPDIFconfiguration.getDirectory().size(); i++){
 				directoryEntry = shimIPDIFconfiguration.getDirectory().get(i);
 				ipcProcess.addOrModifyDirectoryEntry(
-						new ApplicationProcessNamingInfo(directoryEntry.getApplicationProcessName(), directoryEntry.getApplicationProcessInstance()), 
-						directoryEntry.getHostname(), directoryEntry.getSocketPortNumber());
+						new ApplicationProcessNamingInfo(directoryEntry.getApplicationProcessName(), 
+								directoryEntry.getApplicationProcessInstance(), 
+								directoryEntry.getApplicationEntityName(), 
+								null), 
+						directoryEntry.getHostname(), 
+						directoryEntry.getSocketPortNumber());
 			}
 		}else{
 			throw new Exception("IPC Manager or Delimiter factory are null");

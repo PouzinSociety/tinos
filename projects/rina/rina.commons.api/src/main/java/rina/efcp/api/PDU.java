@@ -9,6 +9,9 @@ import rina.flowallocator.api.ConnectionId;
  */
 public class PDU {
 	
+	public static final int MANAGEMENT_PDU_TYPE = 0xC0;
+	public static final int IDENTIFY_SENDER_PDU_TYPE = 0xC1;
+	
 	/**
 	 * The PDU before parsing it
 	 */

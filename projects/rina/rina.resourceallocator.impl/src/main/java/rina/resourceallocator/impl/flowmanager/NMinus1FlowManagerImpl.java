@@ -1,6 +1,7 @@
 package rina.resourceallocator.impl.flowmanager;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -15,6 +16,8 @@ import rina.cdap.api.CDAPSession;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.configuration.SDUProtectionOption;
+import rina.efcp.api.PDU;
+import rina.efcp.api.PDUParser;
 import rina.enrollment.api.Neighbor;
 import rina.events.api.events.NMinusOneFlowAllocatedEvent;
 import rina.events.api.events.NMinusOneFlowAllocationFailedEvent;
@@ -173,9 +176,8 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 	 * Request the allocation of an N-1 Flow with the requested QoS 
 	 * to the destination IPC Process 
 	 * @param flowService contains the destination IPC Process and requested QoS information
-	 * @param management true if this flow will be used for layer management, false otherwise
 	 */
-	public void allocateNMinus1Flow(FlowService flowService, boolean management){
+	public void allocateNMinus1Flow(FlowService flowService){
 		//TODO, implement properly with the IDD, right now it requests the flow allocation to 
 		//the first shim IPC Process for IP networks that it finds.
 		IPCService ipcService = null;
@@ -205,7 +207,11 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 			nMinus1FlowDescriptor.setFlowService(flowService);
 			nMinus1FlowDescriptor.setIpcService(ipcService);
 			nMinus1FlowDescriptor.setStatus(NMinus1FlowDescriptor.Status.ALLOCATION_REQUESTED);
-			nMinus1FlowDescriptor.setManagement(management);
+			if (flowService.getDestinationAPNamingInfo().getApplicationEntityName().equals(IPCService.MANAGEMENT_AE)){
+				nMinus1FlowDescriptor.setManagement(true);
+			}else{
+				nMinus1FlowDescriptor.setManagement(false);
+			}
 			nMinus1FlowDescriptor.setnMinus1DIFName(nMinus1DIFName);
 			this.nMinus1FlowDescriptors.put(new Integer(portId), nMinus1FlowDescriptor);
 		}catch(Exception ex){
@@ -270,7 +276,15 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 					"Problems registering IPC Process: Could not find any N-1 IPC Process to register at.");
 		}
 		
-		ipcService.register(this.ipcProcess.getApplicationProcessNamingInfo(), this);
+		//Register both the Management AE and the Data Transfer AE for this IPC Process
+		ApplicationProcessNamingInfo apNamingInfo = (ApplicationProcessNamingInfo) this.ipcProcess.getApplicationProcessNamingInfo().clone();
+		apNamingInfo.setApplicationEntityName(IPCService.MANAGEMENT_AE);
+		ipcService.register(apNamingInfo, this);
+		
+		apNamingInfo = (ApplicationProcessNamingInfo) apNamingInfo.clone();
+		apNamingInfo.setApplicationEntityName(IPCService.DATA_TRANSFER_AE);
+		ipcService.register(apNamingInfo, this);
+		
 		this.difRegistrations.add(difName);
 		try{
 			this.ribDaemon.create(DIFRegistrationRIBObject.DIF_REGISTRATION_RIB_OBJECT_CLASS, 
@@ -281,22 +295,82 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 		}
 	}
 
+	/**
+	 * Called by an N-1 DIF
+	 */
 	public String deliverAllocateRequest(FlowService flowService, IPCService nMinus1ipcService) {
+		String errorMessage = null;
 		if (flowService.getDestinationAPNamingInfo().getApplicationProcessName().equals(this.ipcProcess.getApplicationProcessName()) 
 				&& flowService.getDestinationAPNamingInfo().getApplicationProcessInstance().equals(this.ipcProcess.getApplicationProcessInstance())){
-			//Accept the request
-			try{
+			if (flowService.getDestinationAPNamingInfo().getApplicationEntityName() == null){
+				//Deny the request
+				errorMessage = "Null destination application entity";
+				log.error(errorMessage);
 				DeliverAllocateResponseTimerTask timerTask =  new DeliverAllocateResponseTimerTask(
-						nMinus1ipcService, this.ipcProcess, flowService, nMinus1FlowDescriptors, this, this.ribDaemon, 
-						this.getNeighborAddress(flowService.getSourceAPNamingInfo()), this.pduForwardingTable, this);
+						nMinus1ipcService, null, flowService, null, this, null, null, errorMessage, false);
 				this.timer.schedule(timerTask, 10);
-			}catch(Exception ex){
-				log.error("Problems submiting allocate response for N-1 flow identified by portId "+flowService.getPortId()+". "+ex);
+				return errorMessage;
 			}
 			
-			return null;
+			String encodedApNamingInfo = flowService.getDestinationAPNamingInfo().getEncodedString();
+			if (flowService.getDestinationAPNamingInfo().getApplicationEntityName().equals(IPCService.MANAGEMENT_AE)){
+				//Flow for the Management AE, check there's not already one with the source AP Name
+				synchronized(this.nMinus1FlowDescriptors){
+					Iterator<NMinus1FlowDescriptor> iterator = this.nMinus1FlowDescriptors.values().iterator();
+					NMinus1FlowDescriptor currentFlowDescriptor = null;
+					while(iterator.hasNext()){
+						currentFlowDescriptor = iterator.next();
+						if (currentFlowDescriptor.getFlowService().getDestinationAPNamingInfo().equals(encodedApNamingInfo) || 
+								currentFlowDescriptor.getFlowService().getSourceAPNamingInfo().equals(encodedApNamingInfo)){
+							//Deny the flow request, we already have a Management flow with the source application
+							errorMessage = "Management flow with "+encodedApNamingInfo+" already established";
+							log.error(errorMessage);
+							DeliverAllocateResponseTimerTask timerTask =  new DeliverAllocateResponseTimerTask(
+									nMinus1ipcService, null, flowService, null, this, null, null, errorMessage, true);
+							this.timer.schedule(timerTask, 10);
+							return errorMessage;
+						}
+					}
+					
+					//Reply with a positive answer
+					try{
+						DeliverAllocateResponseTimerTask timerTask =  new DeliverAllocateResponseTimerTask(
+								nMinus1ipcService, this.ipcProcess, flowService, nMinus1FlowDescriptors, this, this.ribDaemon, 
+								this, null, true);
+						this.timer.schedule(timerTask, 10);
+					}catch(Exception ex){
+						log.error("Problems submiting allocate response for N-1 flow identified by portId "+flowService.getPortId()+". "+ex);
+					}
+
+					return null;
+				}
+			}else if (flowService.getDestinationAPNamingInfo().getApplicationEntityName().equals(IPCService.DATA_TRANSFER_AE)){
+				//Always reply with a positive answer for the moment. TODO: Only allows 1 flow to the data transfer AE per IPC Process at a time
+				try{
+					DeliverAllocateResponseTimerTask timerTask =  new DeliverAllocateResponseTimerTask(
+							nMinus1ipcService, this.ipcProcess, flowService, nMinus1FlowDescriptors, this, this.ribDaemon, 
+							this, null, false);
+					this.timer.schedule(timerTask, 10);
+				}catch(Exception ex){
+					log.error("Problems submiting allocate response for N-1 flow identified by portId "+flowService.getPortId()+". "+ex);
+				}
+
+				return null;
+			}else{
+				errorMessage = "Unrecognized AE Name";
+				log.error(errorMessage);
+				DeliverAllocateResponseTimerTask timerTask =  new DeliverAllocateResponseTimerTask(
+						nMinus1ipcService, null, flowService, null, this, null, null, errorMessage, false);
+				this.timer.schedule(timerTask, 10);
+				return errorMessage;
+			}
 		}else{
-			return "This IPC Process is not the intended destination of this flow";
+			errorMessage = "This IPC Process is not the intended destination of this flow";
+			log.error(errorMessage);
+			DeliverAllocateResponseTimerTask timerTask =  new DeliverAllocateResponseTimerTask(
+					nMinus1ipcService, null, flowService, null, this, null, null, errorMessage, false);
+			this.timer.schedule(timerTask, 10);
+			return errorMessage;
 		}
 	}
 
@@ -322,17 +396,6 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 				log.warn("Error creating N Minus One Flow RIB Object", ex);
 			}
 			
-			//TODO Move this to the routing module
-			if (!nMinus1FlowDescriptor.isManagement()){
-				long destinationAddress = this.getNeighborAddress(nMinus1FlowDescriptor.getFlowService().getDestinationAPNamingInfo());
-				if (destinationAddress != -1){
-					int qosId = nMinus1FlowDescriptor.getFlowService().getQoSSpecification().getQosCubeId();
-					this.pduForwardingTable.addEntry(destinationAddress, qosId, new int[]{portId});
-				}
-			}
-			
-			
-			//Notify about the event
 			nMinus1FlowDescriptor.setPortId(portId);
 			//Get adequate SDU protection module
 			try{
@@ -342,6 +405,27 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 			}catch(Exception ex){
 				log.error(ex);
 			}
+			
+			//TODO Move this to the routing module
+			if (!nMinus1FlowDescriptor.isManagement()){
+				long destinationAddress = this.getNeighborAddress(nMinus1FlowDescriptor.getFlowService().getDestinationAPNamingInfo());
+				if (destinationAddress != -1){
+					int qosId = nMinus1FlowDescriptor.getFlowService().getQoSSpecification().getQosCubeId();
+					this.pduForwardingTable.addEntry(destinationAddress, qosId, new int[]{portId});
+				}
+				
+				//Send NO-OP PDU
+				try{
+					PDU noOpPDU = PDUParser.generateIdentifySenderPDU(this.ipcProcess.getAddress().longValue());
+					byte[] sdu = nMinus1FlowDescriptor.getSduProtectionModule().protectPDU(noOpPDU);
+					this.ipcManager.getOutgoingFlowQueue(portId).writeDataToQueue(sdu);
+				}catch(Exception ex){
+					ex.printStackTrace();
+					log.error("Problems sending No OP PDU through N-1 flow "+portId, ex);
+				}
+			}
+			
+			//Notify about the event
 			NMinusOneFlowAllocatedEvent event = new NMinusOneFlowAllocatedEvent(nMinus1FlowDescriptor);
 			this.ribDaemon.deliverEvent(event);
 		}else{

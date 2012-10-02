@@ -4,6 +4,7 @@ public class DirectoryEntry {
 
 	private String applicationProcessName = null;
 	private String applicationProcessInstance = null;
+	private String applicationEntityName = null;
 	private String hostname = null;
 	private int socketPortNumber = -1;
 	
@@ -19,6 +20,12 @@ public class DirectoryEntry {
 	public void setApplicationProcessInstance(String applicationProcessInstance) {
 		this.applicationProcessInstance = applicationProcessInstance;
 	}
+	public String getApplicationEntityName() {
+		return applicationEntityName;
+	}
+	public void setApplicationEntityName(String applicationEntityName) {
+		this.applicationEntityName = applicationEntityName;
+	}
 	public String getHostname() {
 		return hostname;
 	}
@@ -31,6 +38,4 @@ public class DirectoryEntry {
 	public void setSocketPortNumber(int socketPortNumber) {
 		this.socketPortNumber = socketPortNumber;
 	}
-	
-	
 }

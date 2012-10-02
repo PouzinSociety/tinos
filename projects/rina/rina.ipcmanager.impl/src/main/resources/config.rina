@@ -81,33 +81,74 @@
     "expectedApplicationRegistrations" : [ {
     	"applicationProcessName" : "Barcelona.i2CAT", 
     	"applicationProcessInstance" : "1", 
+    	"applicationEntityName" : "Management",
     	"socketPortNumber" : 32769
+    }, {
+    	"applicationProcessName" : "Barcelona.i2CAT", 
+    	"applicationProcessInstance" : "1", 
+    	"applicationEntityName" : "Data Transfer",
+    	"socketPortNumber" : 32770
     } ], 
     "directory" : [ {
     	"applicationProcessName" : "Barcelona.i2CAT", 
     	"applicationProcessInstance" : "1",
+    	"applicationEntityName" : "Management",
     	"hostname" : "84.88.40.70", 
+    	"socketPortNumber" : 32769
+    }, {
+    	"applicationProcessName" : "Barcelona.i2CAT", 
+    	"applicationProcessInstance" : "1",
+    	"applicationEntityName" : "Data Transfer",
+    	"hostname" : "84.88.40.70", 
+    	"socketPortNumber" : 32770
+    }, {
+    	"applicationProcessName" : "Castefa.i2CAT", 
+    	"applicationProcessInstance" : "1",
+    	"applicationEntityName" : "Management",
+    	"hostname" : "84.88.40.71", 
     	"socketPortNumber" : 32769
     }, {
     	"applicationProcessName" : "Castefa.i2CAT", 
     	"applicationProcessInstance" : "1",
+    	"applicationEntityName" : "Data Transfer",
     	"hostname" : "84.88.40.71", 
-    	"socketPortNumber" : 32769
+    	"socketPortNumber" : 32770
     }, {
     	"applicationProcessName" : "Snowman.TRIA-Harv", 
     	"applicationProcessInstance" : "1",
+    	"applicationEntityName" : "Management",
     	"hostname" : "trianetworksystems.dyndns.org", 
     	"socketPortNumber" : 32790
     }, {
+    	"applicationProcessName" : "Snowman.TRIA-Harv", 
+    	"applicationProcessInstance" : "1",
+    	"applicationEntityName" : "Data Transfer",
+    	"hostname" : "trianetworksystems.dyndns.org", 
+    	"socketPortNumber" : 32791
+    }, {
     	"applicationProcessName" : "OpenWrt1.TRIA-CU", 
     	"applicationProcessInstance" : "1",
+    	"applicationEntityName" : "Management",
     	"hostname" : "shore.dyndns-ip.com", 
+    	"socketPortNumber" : 32769
+    }, {
+    	"applicationProcessName" : "OpenWrt1.TRIA-CU", 
+    	"applicationProcessInstance" : "1",
+    	"applicationEntityName" : "Data Transfer",
+    	"hostname" : "shore.dyndns-ip.com", 
+    	"socketPortNumber" : 32770
+    }, {
+    	"applicationProcessName" : "TSSG", 
+    	"applicationProcessInstance" : "1",
+    	"applicationEntityName" : "Management",
+    	"hostname" : "rina.tssg.org", 
     	"socketPortNumber" : 32769
     }, {
     	"applicationProcessName" : "TSSG", 
     	"applicationProcessInstance" : "1",
+    	"applicationEntityName" : "Data Transfer",
     	"hostname" : "rina.tssg.org", 
-    	"socketPortNumber" : 32769
+    	"socketPortNumber" : 32770
     } ]
   } ],
   "knownIPCProcessAddresses" : [ {

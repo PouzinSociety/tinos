@@ -41,6 +41,7 @@ import rina.ipcprocess.api.IPCProcess;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
+import rina.ipcservice.api.IPCService;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 import rina.resourceallocator.api.BaseResourceAllocator;
 import rina.resourceallocator.api.ResourceAllocator;
@@ -291,11 +292,14 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 			qosSpec.setOrder(true);
 		}
 
+		candidateNamingInfo.setApplicationEntityName(IPCService.MANAGEMENT_AE);
+		ApplicationProcessNamingInfo apNamingInfo = (ApplicationProcessNamingInfo) this.getIPCProcess().getApplicationProcessNamingInfo().clone();
+		apNamingInfo.setApplicationEntityName(IPCService.MANAGEMENT_AE);
 		FlowService flowService = new FlowService();
 		flowService.setDestinationAPNamingInfo(candidateNamingInfo);
-		flowService.setSourceAPNamingInfo(this.getIPCProcess().getApplicationProcessNamingInfo());
+		flowService.setSourceAPNamingInfo(apNamingInfo);
 		flowService.setQoSSpecification(qosSpec);
-		this.resourceAllocator.getNMinus1FlowManager().allocateNMinus1Flow(flowService, true);
+		this.resourceAllocator.getNMinus1FlowManager().allocateNMinus1Flow(flowService);
 
 		//Store state of pending flows
 		this.portIdsPendingToBeAllocated.put(new Integer(flowService.getPortId()), candidate);
@@ -573,7 +577,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 	  */
 	 public void enrollmentCompleted(Neighbor dafMember, boolean enrollee){
 		 if (enrollee){
-			 //request the allocation of N-1 flows with the neighbor, to be used by data transfer
+			 //request the allocation of N-1 flows to the neighbor's Data Transfer AE
 			 RequestNMinusOneFlowAllocation task = new RequestNMinusOneFlowAllocation(dafMember, 
 					 this.getIPCProcess().getApplicationProcessNamingInfo(), this.resourceAllocator.getNMinus1FlowManager(), 
 					 RINAConfiguration.getInstance().getDIFConfiguration(this.getIPCProcess().getDIFName()));

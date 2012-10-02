@@ -1,5 +1,6 @@
 package rina.rmt.impl;
 
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -10,6 +11,7 @@ import rina.aux.QueueSubscriptor;
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.PDU;
 import rina.efcp.api.PDUParser;
+import rina.enrollment.api.Neighbor;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.IPCException;
@@ -142,13 +144,41 @@ public class NMinusOneIncomingSDUListener implements QueueSubscriptor, Runnable{
 		PDUParser.parsePCIForRMT(pdu);
 		
 		//3 Check if the PDU is a management PDU, if it is, send to RIB Daemon
-		if(pdu.getPduType() == PDUParser.MANAGEMENT_PDU_TYPE){
+		if(pdu.getPduType() == PDU.MANAGEMENT_PDU_TYPE){
 			PDUParser.parsePCIForEFCP(pdu);
 			this.ribDaemon.managementSDUDelivered(pdu.getUserData(), portId);
 			return;
 		}
 		
-		//4 Check the address to see if this IPC Process is the destination of this PDU
+		//4 Check if the PDU is a "identify sender" PDU, if it is, process it and either update
+		//forwarding table or tear down N-1 flow
+		if (pdu.getPduType() == PDU.IDENTIFY_SENDER_PDU_TYPE){
+			//See if we have a management flow with the source address
+			List<Neighbor> neighbors = this.ipcProcess.getNeighbors();
+			for(int i=0; i<neighbors.size(); i++){
+				if(neighbors.get(i).getAddress() == pdu.getSourceAddress()){
+					//Add entry to PDU forwarding table, so that we can start using the flow
+					try{
+						int qosId = this.nMinus1FlowManager.getNMinus1FlowDescriptor(portId).getFlowService().getQoSSpecification().getQosCubeId();
+						this.pduForwardingTable.addEntry(pdu.getSourceAddress(), qosId, new int[]{portId});
+					}catch(Exception ex){
+						ex.printStackTrace();
+						log.error("Error while looking for the properties of N-1 Flow identified by portId "+portId, ex);
+					}
+					return;
+				}
+			}
+			
+			//The N-1 flow is not coming from a neighbor, deallocate the N-1 flow
+			try {
+				this.nMinus1FlowManager.deallocateNMinus1Flow(portId);
+			} catch (Exception e) {
+				e.printStackTrace();
+				log.error("Errow while deallocating N-1 flow.", e);
+			}
+		}
+		
+		//5 Check the address to see if this IPC Process is the destination of this PDU
 		if (pdu.getDestinationAddress() == getMyAddress()){
 			try{
 				PDUParser.parsePCIForEFCP(pdu);

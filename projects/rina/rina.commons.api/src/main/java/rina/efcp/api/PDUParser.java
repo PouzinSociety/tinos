@@ -10,8 +10,6 @@ import com.google.common.primitives.Longs;
  *
  */
 public class PDUParser {
-
-	public static final int MANAGEMENT_PDU_TYPE = 0xC0;
 	
 	/**
 	 * Encode the fields that are always the same using Little Endian byte order
@@ -88,7 +86,12 @@ public class PDUParser {
 	
 	public static PDU generateManagementPDU(byte[] sdu){
 		byte[] pci = computePCI(0,0,0,0,0);
-		return generatePDU(pci, 0, 0, null, MANAGEMENT_PDU_TYPE, 0, sdu);
+		return generatePDU(pci, 0, 0, null, PDU.MANAGEMENT_PDU_TYPE, 0, sdu);
+	}
+	
+	public static PDU generateIdentifySenderPDU(long address){
+		byte[] pci = computePCI(0, address, 0, 0, 0);
+		return generatePDU(pci, 0, 0, null, PDU.IDENTIFY_SENDER_PDU_TYPE, 0, new byte[0]);
 	}
 	
 	/**

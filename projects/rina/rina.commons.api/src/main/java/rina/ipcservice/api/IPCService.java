@@ -8,6 +8,9 @@ import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 
 public interface IPCService {
 	
+	public static final String MANAGEMENT_AE = "Management";
+	public static final String DATA_TRANSFER_AE = "Data Transfer";
+	
 	public enum FlowState {BLOCKED, AVAILABLE};
 	
 	/**
