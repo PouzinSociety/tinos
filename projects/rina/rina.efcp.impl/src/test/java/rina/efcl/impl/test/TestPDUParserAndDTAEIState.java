@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import rina.efcp.api.DataTransferConstants;
 import rina.efcp.impl.DTAEIState;
+import rina.efcp.impl.parsers.PDUParserImpl;
 import rina.efcp.api.PDU;
 import rina.efcp.api.PDUParser;
 import rina.flowallocator.api.ConnectionId;
@@ -17,6 +18,7 @@ public class TestPDUParserAndDTAEIState {
 	private DTAEIState state = null;
 	private ConnectionId connectionId = null;
 	private DataTransferConstants dataTransferConstants = null;
+	private PDUParser pduParser = null;
 	
 	@Before
 	public void setup(){
@@ -31,10 +33,11 @@ public class TestPDUParserAndDTAEIState {
 		connectionId.setSourceCEPId(12);
 		connectionId.setQosId((byte)1);
 		flow.getConnectionIds().add(connectionId);
+		pduParser = new PDUParserImpl();
 		
 		dataTransferConstants = new DataTransferConstants();
 		
-		state = new DTAEIState(flow, dataTransferConstants);
+		state = new DTAEIState(flow, dataTransferConstants, pduParser);
 	}
 	
 	@Test
@@ -43,13 +46,13 @@ public class TestPDUParserAndDTAEIState {
 		byte[] sdu = new String("Testing EFCP encoding and decoding").getBytes();
 		
 		for(int i=0; i<3; i++){
-			pdu = PDUParser.generatePDU(state.getPreComputedPCI(), 
+			pdu = pduParser.generatePDU(state.getPreComputedPCI(), 
 					state.getNextSequenceToSend(), flow.getDestinationAddress(), 
 					flow.getConnectionIds().get(0), 0x81, 0x00, sdu);
 			printBytes(pdu.getEncodedPCI());
 
-			PDU decodedPDU = PDUParser.parsePCIForRMT(pdu);
-			decodedPDU = PDUParser.parsePCIForEFCP(pdu);
+			PDU decodedPDU = pduParser.parsePCIForRMT(pdu);
+			decodedPDU = pduParser.parsePCIForEFCP(pdu);
 			state.incrementNextSequenceToSend();
 			
 			System.out.println(decodedPDU.toString());

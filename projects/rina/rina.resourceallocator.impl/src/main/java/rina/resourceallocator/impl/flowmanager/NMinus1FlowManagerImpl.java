@@ -16,6 +16,8 @@ import rina.cdap.api.CDAPSession;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.CDAPSessionManager;
 import rina.configuration.SDUProtectionOption;
+import rina.efcp.api.BaseDataTransferAE;
+import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.PDU;
 import rina.efcp.api.PDUParser;
 import rina.enrollment.api.Neighbor;
@@ -95,6 +97,11 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 	 */
 	private Map<String, String> nMinus1DIFProtectionOptions = null;
 	
+	/**
+	 * PDUParser pduParser
+	 */
+	private PDUParser pduParser = null;
+	
 	private Timer timer = null;
 
 	public NMinus1FlowManagerImpl(PDUForwardingTable pduForwardingTable){
@@ -111,6 +118,8 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 		this.ribDaemon = (RIBDaemon) ipcProcess.getIPCProcessComponent(BaseRIBDaemon.getComponentName());
 		this.cdapSessionManager = (CDAPSessionManager) ipcProcess.
 				getIPCProcessComponent(BaseCDAPSessionManager.getComponentName());
+		DataTransferAE dataTransferAE = (DataTransferAE) ipcProcess.getIPCProcessComponent(BaseDataTransferAE.getComponentName());
+		this.pduParser = dataTransferAE.getPDUParser();
 		populateRIB(ipcProcess);
 	}
 	
@@ -416,7 +425,8 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 				
 				//Send NO-OP PDU
 				try{
-					PDU noOpPDU = PDUParser.generateIdentifySenderPDU(this.ipcProcess.getAddress().longValue());
+					PDU noOpPDU = this.pduParser.generateIdentifySenderPDU(this.ipcProcess.getAddress().longValue(),  
+							nMinus1FlowDescriptor.getFlowService().getQoSSpecification().getQosCubeId());
 					byte[] sdu = nMinus1FlowDescriptor.getSduProtectionModule().protectPDU(noOpPDU);
 					this.ipcManager.getOutgoingFlowQueue(portId).writeDataToQueue(sdu);
 				}catch(Exception ex){

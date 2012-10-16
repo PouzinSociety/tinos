@@ -226,7 +226,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 		BaseEnrollmentStateMachine enrollmentStateMachine = null;
 
 		if (apNamingInfo.getApplicationEntityName() == null || 
-				apNamingInfo.getApplicationEntityName().equals(BaseEnrollmentStateMachine.DEFAULT_ENROLLMENT)){
+				apNamingInfo.getApplicationEntityName().equals(IPCService.MANAGEMENT_AE)){
 			if (enrollee){
 				enrollmentStateMachine = new EnrolleeStateMachine(ribDaemon, cdapSessionManager, encoder, 
 						apNamingInfo, this, timeout);

@@ -2,6 +2,7 @@ package rina.aux;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import rina.ipcservice.api.IPCException;
 
@@ -34,11 +35,15 @@ public class BlockingQueueWithSubscriptor<T> {
 	/**
 	 * Constructs the queue with a queueId and a capacity
 	 * @param queueId the identifier of the queue
-	 * @param queueCapacity the capacity of the queue
+	 * @param queueCapacity the capacity of the queue, it it is <= 0 an unlimited capacity queue will be used
 	 */
 	public BlockingQueueWithSubscriptor(int queueId, int queueCapacity){
 		this.queueId = queueId;
-		this.dataQueue = new ArrayBlockingQueue<T>(queueCapacity);
+		if (queueCapacity <= 0){
+			this.dataQueue = new LinkedBlockingQueue<T>();
+		}else{
+			this.dataQueue = new ArrayBlockingQueue<T>(queueCapacity);
+		}
 	}
 	
 	public void subscribeToQueue(QueueSubscriptor queueSubscriptor){

@@ -47,7 +47,6 @@ public abstract class BaseEnrollmentStateMachine extends BaseCDAPMessageHandler{
 	public static final String UNEXPECTED_ERROR = "Unexpected error. ";
 	public static final String UNSUCCESSFULL_READ_RESPONSE = "Received an unsuccessful read response or a read response with a null object value";
 	public static final String UNSUCCESSFULL_START = "Received unsuccessful start request";
-	public static final String DEFAULT_ENROLLMENT = "default_enrollment";
 	
 	/**
 	 * All the possible states of all the enroller state machines

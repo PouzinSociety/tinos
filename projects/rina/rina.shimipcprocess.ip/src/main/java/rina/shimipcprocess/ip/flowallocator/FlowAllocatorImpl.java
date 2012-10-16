@@ -334,7 +334,12 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		}
 		
 		flowState.setState(State.ALLOCATED);
-		this.ipcManager.addFlowQueues(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
+		int queueCapacity = 0;
+		if (flowService.getDestinationAPNamingInfo().getApplicationEntityName() == null || 
+			!flowService.getDestinationAPNamingInfo().getApplicationEntityName().equals(IPCService.MANAGEMENT_AE)){
+			queueCapacity = RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues();
+		}
+		this.ipcManager.addFlowQueues(portId, queueCapacity);
 		this.ipcManager.getOutgoingFlowQueue(portId).subscribeToQueue(this.incomingFlowQueuesReader);
 		return portId;
 	}
@@ -538,7 +543,12 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		
 		flowState.setApplicationCallback(applicationCallback);
 		flowState.setState(State.ALLOCATED);
-		this.ipcManager.addFlowQueues(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
+		int queueCapacity = 0;
+		if (flowState.getFlowService().getDestinationAPNamingInfo().getApplicationEntityName() == null || 
+			!flowState.getFlowService().getDestinationAPNamingInfo().getApplicationEntityName().equals(IPCService.MANAGEMENT_AE)){
+			queueCapacity = RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues();
+		}
+		this.ipcManager.addFlowQueues(portId, queueCapacity);
 		this.ipcManager.getOutgoingFlowQueue(portId).subscribeToQueue(this.incomingFlowQueuesReader);
 	}
 	

@@ -354,7 +354,9 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 					this.flow.setState(State.ALLOCATED);
 					this.ribDaemon.create(Flow.FLOW_RIB_OBJECT_CLASS, this.objectName, this);
 					this.dataTrasferAE.createLocalConnectionAndBindToPortId(this.portId, this.remotePortId, applicationCallback);
-					this.ipcManager.addFlowQueues(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
+					this.ipcManager.addFlowQueues(
+							portId, 
+							RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
 					this.dataTrasferAE.subscribeToFlow(portId);
 				}catch(Exception ex){
 					ex.printStackTrace();
@@ -395,7 +397,9 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			this.flow.setState(State.ALLOCATED);
 			
 			//4 Add the flow queue
-			this.ipcManager.addFlowQueues(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
+			this.ipcManager.addFlowQueues(
+					portId, 
+					RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
 			this.dataTrasferAE.subscribeToFlow(portId);
 			
 			//5 Create CDAP response message
@@ -538,7 +542,9 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 			this.dataTrasferAE.createConnectionAndBindToPortId(flow);
 			
 			//6 Create the incoming and outgoing data queues
-			this.ipcManager.addFlowQueues(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
+			this.ipcManager.addFlowQueues(
+					portId, 
+					RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
 			this.dataTrasferAE.subscribeToFlow(portId);
 			
 			//Update flow state
@@ -574,7 +580,9 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 				this.flow.setSourcePortId(this.portId);
 				this.flow.setDestinationPortId(this.remotePortId);
 				this.ribDaemon.create(Flow.FLOW_RIB_OBJECT_CLASS, objectName, this);
-				this.ipcManager.addFlowQueues(portId, RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
+				this.ipcManager.addFlowQueues(
+						portId, 
+						RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues());
 				this.dataTrasferAE.subscribeToFlow(portId);
 				this.applicationCallback.deliverAllocateResponse(portId, 0, null);
 			}catch(Exception ex){

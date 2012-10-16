@@ -13,6 +13,7 @@ import rina.configuration.RINAConfiguration;
 import rina.efcp.api.BaseDataTransferAE;
 import rina.efcp.api.DataTransferConstants;
 import rina.efcp.api.PDU;
+import rina.efcp.api.PDUParser;
 import rina.efcp.impl.ribobjects.DataTransferConstantsRIBObject;
 import rina.events.api.Event;
 import rina.events.api.events.EFCPConnectionCreatedEvent;
@@ -95,6 +96,11 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	 */
 	private Map<Long, BlockingQueueWithSubscriptor<PDU>> outgoingConnectionQueues = null;
 	
+	/**
+	 * The PDU Parser
+	 */
+	private PDUParser pduParser = null;
+	
 	public DataTransferAEImpl(){
 		this.reservedCEPIds = new ConcurrentHashMap<Integer, int[]>();
 		this.reservedCEPIdList = new ArrayList<Integer>();
@@ -117,6 +123,18 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		this.incomingEFCPQueuesReader = new IncomingEFCPQueuesReader(ipcManager, connectionStatesByConnectionId, this);
 		ipcManager.execute(this.outgoingFlowQueuesReader);
 		ipcManager.execute(this.incomingEFCPQueuesReader);
+	}
+	
+	/**
+	 * Return the PDU Parser to be used by this IPC Process
+	 * @return
+	 */
+	public PDUParser getPDUParser(){
+		return this.pduParser;
+	}
+	
+	public void setPDUParser(PDUParser pduParser){
+		this.pduParser = pduParser;
 	}
 	
 	@Override
@@ -219,7 +237,7 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	 * @param flow the flow object, describing the service supported by this connection
 	 */
 	public synchronized void createConnectionAndBindToPortId(Flow flow){
-		DTAEIState state = new DTAEIState(flow, this.dataTransferConstants);
+		DTAEIState state = new DTAEIState(flow, this.dataTransferConstants, this.pduParser);
 		
 		int portId = 0;
 		if (flow.isSource()){

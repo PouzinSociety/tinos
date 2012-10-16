@@ -20,6 +20,8 @@ import rina.cdap.api.message.CDAPMessage;
 import rina.cdap.api.message.CDAPMessage.Flags;
 import rina.cdap.api.message.CDAPMessage.Opcode;
 import rina.cdap.api.message.ObjectValue;
+import rina.efcp.api.BaseDataTransferAE;
+import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.PDU;
 import rina.efcp.api.PDUParser;
 import rina.encoding.api.BaseEncoder;
@@ -88,6 +90,11 @@ public class RIBDaemonImpl extends BaseRIBDaemon implements EventListener{
 	 */
 	private IncomingManagementSDUsReader incomingManagementSDUsReader = null;
 	
+	/**
+	 * PDU Parser
+	 */
+	private PDUParser pduParser = null;
+	
 	public RIBDaemonImpl(){
 		rib = new RIB();
 		messageHandlersWaitingForReply = new ConcurrentHashMap<String, CDAPMessageHandler>();
@@ -109,6 +116,15 @@ public class RIBDaemonImpl extends BaseRIBDaemon implements EventListener{
 	
 	private void subscribeToEvents(){
 		this.subscribeToEvent(Event.N_MINUS_1_FLOW_DEALLOCATED, this);
+	}
+	
+	private PDUParser getPDUParser(){
+		if (this.pduParser == null){
+			DataTransferAE dataTransferAE = (DataTransferAE) getIPCProcess().getIPCProcessComponent(BaseDataTransferAE.getComponentName());
+			this.pduParser = dataTransferAE.getPDUParser();
+		}
+		
+		return this.pduParser;
 	}
 	
 	private NMinus1FlowManager getNMinus1FlowManager(){
@@ -164,7 +180,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon implements EventListener{
 		}catch(CDAPException ex){
 			log.error("Error decoding CDAP message: " + ex.getMessage());
 			ex.printStackTrace();
-			if (ex.getCDAPMessage().getInvokeID() != 0){
+			if (ex.getCDAPMessage() != null && ex.getCDAPMessage().getInvokeID() != 0){
 				this.sendErrorMessage(ex, portId);
 			}
 			return;
@@ -410,10 +426,11 @@ public class RIBDaemonImpl extends BaseRIBDaemon implements EventListener{
 		synchronized(atomicSendLock){
 			try{
 				this.cdapSessionManager.getCDAPSession(portId).getSessionDescriptor();
-				managementPDU = PDUParser.generateManagementPDU(
+				managementPDU = this.getPDUParser().generateManagementPDU(
 						cdapSessionManager.encodeNextMessageToBeSent(cdapMessage, portId));
 				byte[] sdu = getNMinus1FlowManager().getNMinus1FlowDescriptor(portId).
 						getSduProtectionModule().protectPDU(managementPDU);
+				log.debug("About to send through underlying portId "+portId+" : "+cdapMessage.toString());
 				this.ipcManager.getOutgoingFlowQueue(portId).writeDataToQueue(sdu);
 				cdapSessionManager.messageSent(cdapMessage, portId);
 				String destination = cdapSessionManager.getCDAPSession(portId).getSessionDescriptor().getDestApName();

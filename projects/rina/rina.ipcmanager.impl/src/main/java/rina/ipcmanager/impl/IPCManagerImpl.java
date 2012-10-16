@@ -384,9 +384,10 @@ public class IPCManagerImpl implements IPCManager{
 	/**
 	 * Add an incoming and outgoing flow queues to support the flow identified by portId
 	 * @param portId
+	  * @param queueCapacity the capacity of the queue, it it is <= 0 an unlimited capacity queue will be used
 	 * @throws IPCException if the portId is already in use
 	 */
-	public void addFlowQueues(int portId, int capacity) throws IPCException{
+	public void addFlowQueues(int portId, int queueCapacity) throws IPCException{
 		Integer queueId = new Integer(portId);
 		if (this.incomingFlowQueues.get(queueId) != null || 
 				this.outgoingFlowQueues.get(queueId) != null){
@@ -394,8 +395,8 @@ public class IPCManagerImpl implements IPCManager{
 					IPCException.PROBLEMS_ALLOCATING_FLOW + ". There are existing queues supporting this portId");
 		}
 		
-		this.incomingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor<byte[]>(portId, capacity));
-		this.outgoingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor<byte[]>(portId, capacity));
+		this.incomingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor<byte[]>(portId, queueCapacity));
+		this.outgoingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor<byte[]>(portId, queueCapacity));
 	}
 	
 	/**

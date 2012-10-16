@@ -147,7 +147,7 @@ public class DTAEIState {
 	 * @param flow
 	 * @param dataTransferConstants
 	 */
-	public DTAEIState(Flow flow, DataTransferConstants dataTransferConstants){
+	public DTAEIState(Flow flow, DataTransferConstants dataTransferConstants, PDUParser pduParser){
 		this.flow = flow;
 		ConnectionId connectionId = flow.getConnectionIds().get(flow.getCurrentConnectionIdIndex());
 		this.qosid = connectionId.getQosId(); 
@@ -167,7 +167,7 @@ public class DTAEIState {
 		this.reasemblyQeueue = new ReassemblyQueue();
 		this.maxFlowSDUSize = dataTransferConstants.getMaxSDUSize();
 		this.maxFlowPDUSize = dataTransferConstants.getMaxPDUSize();
-		this.preComputedPCI = PDUParser.computePCI(this.destinationAddress, 
+		this.preComputedPCI = pduParser.computePCI(this.destinationAddress, 
 				this.sourceAddress, this.sourceCEPid, this.destinationCEPid, this.qosid);
 	}
 	

@@ -64,6 +64,11 @@ public class NMinusOneIncomingSDUListener implements QueueSubscriptor, Runnable{
 	private NMinus1FlowManager nMinus1FlowManager = null;
 	
 	/**
+	 * PDUPaser
+	 */
+	private PDUParser pduParser = null;
+	
+	/**
 	 * The IPC Process Address
 	 */
 	private long myAddress = -1;
@@ -77,6 +82,7 @@ public class NMinusOneIncomingSDUListener implements QueueSubscriptor, Runnable{
 		this.pduForwardingTable = pduForwardingTable;
 		this.ipcProcess = ipcProcess;
 		this.dataTransferAE = dataTransferAE;
+		this.pduParser = dataTransferAE.getPDUParser();
 		this.nMinus1FlowManager = nMinus1FlowManager;
 		log.debug("N-1 Incoming SDU Listener executing!");
 	}
@@ -141,11 +147,11 @@ public class NMinusOneIncomingSDUListener implements QueueSubscriptor, Runnable{
 		}
 		
 		//2 Parse PDU 
-		PDUParser.parsePCIForRMT(pdu);
+		this.pduParser.parsePCIForRMT(pdu);
 		
 		//3 Check if the PDU is a management PDU, if it is, send to RIB Daemon
 		if(pdu.getPduType() == PDU.MANAGEMENT_PDU_TYPE){
-			PDUParser.parsePCIForEFCP(pdu);
+			this.pduParser.parsePCIForEFCP(pdu);
 			this.ribDaemon.managementSDUDelivered(pdu.getUserData(), portId);
 			return;
 		}
@@ -181,7 +187,7 @@ public class NMinusOneIncomingSDUListener implements QueueSubscriptor, Runnable{
 		//5 Check the address to see if this IPC Process is the destination of this PDU
 		if (pdu.getDestinationAddress() == getMyAddress()){
 			try{
-				PDUParser.parsePCIForEFCP(pdu);
+				this.pduParser.parsePCIForEFCP(pdu);
 				this.dataTransferAE.getIncomingConnectionQueue(pdu.getConnectionId().getDestinationCEPId()).
 					writeDataToQueue(pdu);
 			}catch(Exception ex){

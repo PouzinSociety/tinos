@@ -13,7 +13,6 @@ import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.IPCException;
-import rina.protection.api.SDUProtectionModuleRepository;
 
 public class MockIPCManager implements IPCManager{
 
@@ -87,12 +86,6 @@ public class MockIPCManager implements IPCManager{
 	}
 
 	@Override
-	public void addFlowQueues(int arg0, int arg1) throws IPCException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public BlockingQueueWithSubscriptor getIncomingFlowQueue(int arg0)
 			throws IPCException {
 		// TODO Auto-generated method stub
@@ -108,6 +101,12 @@ public class MockIPCManager implements IPCManager{
 
 	@Override
 	public void removeFlowQueues(int arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addFlowQueues(int arg0, int arg1) throws IPCException {
 		// TODO Auto-generated method stub
 		
 	}

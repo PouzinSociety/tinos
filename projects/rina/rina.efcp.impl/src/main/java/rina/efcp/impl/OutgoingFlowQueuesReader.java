@@ -45,12 +45,18 @@ public class OutgoingFlowQueuesReader implements Runnable, QueueSubscriptor{
 	 */
 	private DataTransferAE dataTransferAE = null;
 	
+	/**
+	 * The PDU Parser
+	 */
+	private PDUParser pduParser = null;
+	
 	private boolean end = false;
 	
 	public OutgoingFlowQueuesReader(IPCManager ipcManager, Map<Integer, DTAEIState> portIdToConnectionMapping, 
 			DataTransferAE dataTransferAE){
 		this.ipcManager = ipcManager;
 		this.dataTransferAE = dataTransferAE;
+		this.pduParser = dataTransferAE.getPDUParser();
 		this.queuesReadyToBeRead = new LinkedBlockingQueue<Integer>();
 		this.portIdToConnectionMapping = portIdToConnectionMapping;
 	}
@@ -111,7 +117,7 @@ public class OutgoingFlowQueuesReader implements Runnable, QueueSubscriptor{
 		//Convert the SDU into a PDU and post it to an RMT queue (right now posting it to the socket)
 		ConnectionId connectionId = new ConnectionId();
 		connectionId.setQosId(state.getQoSId());
-		PDU pdu = PDUParser.generatePDU(state.getPreComputedPCI(), 
+		PDU pdu = this.pduParser.generatePDU(state.getPreComputedPCI(), 
 				state.getNextSequenceToSend(), state.getDestinationAddress(), 
 				connectionId, 0x81, 0x00, sdu);
 		

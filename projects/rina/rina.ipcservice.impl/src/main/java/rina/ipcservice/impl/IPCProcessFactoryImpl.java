@@ -196,19 +196,19 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		}else{
 			throw new Exception("Encoder Factory is null");
 		}
-
+		
 		ipcProcess.addIPCProcessComponent(ribDaemon);
+		
+		if (this.dataTransferAEFactory != null){
+			ipcProcess.addIPCProcessComponent(dataTransferAEFactory.createDataTransferAE(apNamingInfo));
+		}else{
+			throw new Exception("Data Transfer AE Factory is null");
+		}
 		
 		if (this.resourceAllocatorFactory != null){
 			ipcProcess.addIPCProcessComponent(this.resourceAllocatorFactory.createResourceAllocator(apNamingInfo));
 		}else{
 			throw new Exception("Resource Allocator Factory is null");
-		}
-
-		if (this.dataTransferAEFactory != null){
-			ipcProcess.addIPCProcessComponent(dataTransferAEFactory.createDataTransferAE(apNamingInfo));
-		}else{
-			throw new Exception("Data Transfer AE Factory is null");
 		}
 		
 		if (this.rmtFactory != null){
