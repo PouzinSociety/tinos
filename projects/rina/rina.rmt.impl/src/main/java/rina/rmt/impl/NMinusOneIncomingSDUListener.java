@@ -151,7 +151,7 @@ public class NMinusOneIncomingSDUListener implements QueueSubscriptor, Runnable{
 		
 		//3 Check if the PDU is a management PDU, if it is, send to RIB Daemon
 		if(pdu.getPduType() == PDU.MANAGEMENT_PDU_TYPE){
-			this.pduParser.parsePCIForEFCP(pdu);
+			pdu = this.pduParser.parsePCIForEFCP(pdu);
 			this.ribDaemon.managementSDUDelivered(pdu.getUserData(), portId);
 			return;
 		}
@@ -187,7 +187,7 @@ public class NMinusOneIncomingSDUListener implements QueueSubscriptor, Runnable{
 		//5 Check the address to see if this IPC Process is the destination of this PDU
 		if (pdu.getDestinationAddress() == getMyAddress()){
 			try{
-				this.pduParser.parsePCIForEFCP(pdu);
+				pdu = this.pduParser.parsePCIForEFCP(pdu);
 				this.dataTransferAE.getIncomingConnectionQueue(pdu.getConnectionId().getDestinationCEPId()).
 					writeDataToQueue(pdu);
 			}catch(Exception ex){

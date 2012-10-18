@@ -8,8 +8,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.aux.QueueSubscriptor;
+import rina.efcp.api.DTPPDU;
 import rina.efcp.api.DataTransferAE;
-import rina.efcp.api.PDU;
 import rina.efcp.api.PDUParser;
 import rina.flowallocator.api.ConnectionId;
 import rina.ipcmanager.api.IPCManager;
@@ -117,14 +117,13 @@ public class OutgoingFlowQueuesReader implements Runnable, QueueSubscriptor{
 		//Convert the SDU into a PDU and post it to an RMT queue (right now posting it to the socket)
 		ConnectionId connectionId = new ConnectionId();
 		connectionId.setQosId(state.getQoSId());
-		PDU pdu = this.pduParser.generatePDU(state.getPreComputedPCI(), 
+		DTPPDU pdu = this.pduParser.generateDTPPDU(state.getPreComputedPCI(), 
 				state.getNextSequenceToSend(), state.getDestinationAddress(), 
-				connectionId, 0x81, 0x00, sdu);
+				connectionId, 0x00, sdu);
 		
 		/*log.debug("Encoded PDU: \n" + "Destination @: " + state.getDestinationAddress() + " CEPid: "+state.getSourceCEPid() + 
 				" Source @: "+state.getSourceAddress() + " CEPid: "+state.getSourceCEPid() + "\n QoSid: "
-				+ state.getQoSId() + " PDU type: 129 Flags: 00 Sequence Number: " +state.getNextSequenceToSend()); 
-		log.debug("Sending PDU " + printBytes(pdu)+" through outgoing EFCP queue " + state.getSourceCEPid()+"\n");*/
+				+ state.getQoSId() + " PDU type: 129 Flags: 00 Sequence Number: " +state.getNextSequenceToSend()); */
 		try{
 			this.dataTransferAE.getOutgoingConnectionQueue(state.getSourceCEPid()).writeDataToQueue(pdu);
 		}catch(Exception ex){
@@ -137,15 +136,6 @@ public class OutgoingFlowQueuesReader implements Runnable, QueueSubscriptor{
 		synchronized(state){
 			state.incrementNextSequenceToSend();
 		}
-	}
-	
-	private String printBytes(byte[] pdu){
-		String result = "";
-		for(int i=0; i<pdu.length; i++){
-			result = result + String.format("%02X ", pdu[i]);
-		}
-		
-		return result;
 	}
 
 	public void queueReadyToBeRead(int queueId) {

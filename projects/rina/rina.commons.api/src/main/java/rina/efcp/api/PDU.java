@@ -9,8 +9,10 @@ import rina.flowallocator.api.ConnectionId;
  */
 public class PDU {
 	
-	public static final int MANAGEMENT_PDU_TYPE = 0xC0;
+	public static final int DTP_PDU_TYPE = 0x81;
 	public static final int IDENTIFY_SENDER_PDU_TYPE = 0xC1;
+	public static final int FLOW_CONTROL_ONLY_DTCP_PDU = 0x89;
+	public static final int MANAGEMENT_PDU_TYPE = 0xC0;	
 	
 	/**
 	 * The PDU before parsing it
@@ -49,14 +51,6 @@ public class PDU {
 	 * The field indicates the type of PDU.
 	 */
 	private int pduType = -1;
-	
-	/**
-	 * This field indicates conditions that affect the handling of the PDU. Flags should only indicate 
-	 * conditions that can change from one PDU to the next. Conditions that are invariant over the life 
-	 * of the connection should be established during allocation or by the action of management. The 
-	 * interpretation of the flags depends on the PDU Type.
-	 */
-	private int flags = 0;
 	
 	/**
 	 * The PDU sequenceNumber
@@ -109,14 +103,6 @@ public class PDU {
 
 	public void setPduType(int pduType) {
 		this.pduType = pduType;
-	}
-
-	public int getFlags() {
-		return flags;
-	}
-
-	public void setFlags(int flags) {
-		this.flags = flags;
 	}
 
 	public byte[] getRawPDU() {
@@ -186,7 +172,7 @@ public class PDU {
 		result = result + "Destination @: " +this.destinationAddress + " CEPid: " + this.connectionId.getDestinationCEPId() + 
 			" Source @: " +this.sourceAddress + " CEPid: " +this.connectionId.getSourceCEPId() + "\n" + 
 			" QoSid: " +this.connectionId.getQosId() + " PDU type: " +this.getPduType() + 
-			" Flags: " +this.flags + " Sequence number: " +this.sequenceNumber;
+			" Sequence number: " +this.sequenceNumber;
 		
 		return result;
 	}

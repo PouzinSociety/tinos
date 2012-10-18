@@ -8,7 +8,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.aux.QueueSubscriptor;
+import rina.efcp.api.DTPPDU;
 import rina.efcp.api.DataTransferAE;
+import rina.efcp.api.FlowControlOnlyDTCPPDU;
 import rina.efcp.api.PDU;
 import rina.ipcmanager.api.IPCManager;
 
@@ -61,6 +63,14 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 		}
 	}
 
+	public void queueReadyToBeRead(int queueId) {
+		try {
+			this.queuesReadyToBeRead.put(new Integer(queueId));
+		} catch (InterruptedException e) {
+			log.error(e);
+		}
+	}
+	
 	/**
 	 * Read the data from the queues and process it
 	 */
@@ -93,6 +103,21 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 			return;
 		}
 		
+		if (pdu instanceof DTPPDU){
+			this.processDTPPDU((DTPPDU)pdu, state);
+		}else if (pdu instanceof FlowControlOnlyDTCPPDU){
+			this.processFlowControlOnlyDTCPPDU((FlowControlOnlyDTCPPDU)pdu, state);
+		}else{
+			log.error("Received a PDU with of an unrecognized type: "+pdu.toString());
+		}
+	}
+	
+	/**
+	 * Update DTAEI state and send SDU to N-portId
+	 * @param DTP PDU
+	 * @param flowState
+	 */
+	private void processDTPPDU(DTPPDU pdu, DTAEIState state){
 		byte[] sdu = pdu.getUserData();
 		if (sdu.length == 0){
 			//TODO do something special?
@@ -110,13 +135,15 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 			state.incrementLastSequenceDelivered();
 		}
 	}
-
-	public void queueReadyToBeRead(int queueId) {
-		try {
-			this.queuesReadyToBeRead.put(new Integer(queueId));
-		} catch (InterruptedException e) {
-			log.error(e);
-		}
+	
+	/**
+	 * When the PDU is received then: If Creditbased Then SndrCredit := PDU(RtWindEdge) SndLeftWindEdge := UpdateCredit(Ack, RtWindEdge) Fi 
+	 * If Ratebased present Then SndrRate := PDU(Rate) TimePeriod ;= TimeUnit Fi 
+	 * If WaitQ not Empty Then Send as many PDUs as possible, given the current allocation Fi
+	 * @param pdu the Flow Control Only DTCP PDU
+	 * @param state
+	 */
+	private void processFlowControlOnlyDTCPPDU(FlowControlOnlyDTCPPDU pdu, DTAEIState state){
+		
 	}
-
 }

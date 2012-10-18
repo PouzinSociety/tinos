@@ -167,7 +167,7 @@ public class DTAEIState {
 		this.reasemblyQeueue = new ReassemblyQueue();
 		this.maxFlowSDUSize = dataTransferConstants.getMaxSDUSize();
 		this.maxFlowPDUSize = dataTransferConstants.getMaxPDUSize();
-		this.preComputedPCI = pduParser.computePCI(this.destinationAddress, 
+		this.preComputedPCI = pduParser.computeDTPPCI(this.destinationAddress, 
 				this.sourceAddress, this.sourceCEPid, this.destinationCEPid, this.qosid);
 	}
 	

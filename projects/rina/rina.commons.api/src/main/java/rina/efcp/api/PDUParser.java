@@ -10,21 +10,35 @@ import rina.flowallocator.api.ConnectionId;
 public interface PDUParser {
 
 	/**
-	 * Encode the fields that are always the same using Little Endian byte order
+	 * Encode the DTP fields that are always the same during the flow lifetime using Little Endian byte order
 	 */
-	public byte[] computePCI(long destinationAddress, long sourceAddress, long sourceCEPid, long destinationCEPid, int qosid);
+	public byte[] computeDTPPCI(long destinationAddress, long sourceAddress, long sourceCEPid, long destinationCEPid, int qosid);
 	
 	/**
-	 * Generate a PDU data structure from a pre-computed PCI. Use unsigned types and little-endian byte order
+	 * Encode the fields that are always the same in the Flow Control Only DTCP PCI during the flow lifetime, using Little Endian 
+	 * byte order
+	 * @param destinationAddress
+	 * @param sourceAddress
+	 * @param sourceCEPid
+	 * @param destinationCEPid
+	 * @param qosid
+	 * @return
+	 */
+	public byte[] computeFlowControlOnlyDTCPPCI(long destinationAddress, long sourceAddress, long sourceCEPid, long destinationCEPid, int qosid);
+	
+	/**
+	 * Generate a DTP PDU data structure from a pre-computed DTP PCI. Use unsigned types and little-endian byte order
 	 * @param pci
 	 * @param sequenceNumber
-	 * @param pduType
 	 * @param flags
 	 * @param sdu
 	 * @return
 	 */
-	public PDU generatePDU(byte[] pci, long sequenceNumber, long destinationAddress, 
-			ConnectionId connectionId, int pduType, int flags, byte[] sdu);
+	public DTPPDU generateDTPPDU(byte[] pci, long sequenceNumber, long destinationAddress, 
+			ConnectionId connectionId, int flags, byte[] sdu);
+	
+	public FlowControlOnlyDTCPPDU generateFlowControlOnlyDTCPPDU(byte[] pci, long sequenceNumber, long destinationAddress, 
+			ConnectionId connectionId, long rightWindowEdge);
 	
 	public PDU generateManagementPDU(byte[] sdu);
 	
