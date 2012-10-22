@@ -1,7 +1,6 @@
 package rina.enrollment.impl;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +83,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 	private Timer timer = null;
 
 	public EnrollmentTaskImpl(){
-		this.enrollmentStateMachines = new Hashtable<String, BaseEnrollmentStateMachine>();
+		this.enrollmentStateMachines = new ConcurrentHashMap<String, BaseEnrollmentStateMachine>();
 		this.timeout = RINAConfiguration.getInstance().getLocalConfiguration().getEnrollmentTimeoutInMs();
 		this.portIdsPendingToBeAllocated = new ConcurrentHashMap<Integer, Neighbor>();
 		this.timer = new Timer();

@@ -20,11 +20,16 @@ public class NewFlowRequestPolicyImpl implements NewFlowRequestPolicy{
 		flow.setSource(true);
 		flow.setState(State.ALLOCATION_IN_PROGRESS);
 		List<ConnectionId> connectionIds = new ArrayList<ConnectionId>();
+		
+		int qosId = 2;
+		if (flowService.getQoSSpecification() != null){
+			qosId = flowService.getQoSSpecification().getQosCubeId();
+		}
 		ConnectionId connectionId = new ConnectionId();
-		connectionId.setQosId(0x02);
+		connectionId.setQosId(qosId);
 		connectionIds.add(connectionId);
 		connectionId = new ConnectionId();
-		connectionId.setQosId((byte)1);
+		connectionId.setQosId(qosId);
 		connectionIds.add(connectionId);
 		flow.setConnectionIds(connectionIds);
 		

@@ -38,7 +38,7 @@ public class TestInformation {
 	private String pattern = null;
 	
 	/**
-	 * The name of a QoS cube for the data flows
+	 * The id of a QoS cube for the data flows
 	 */
 	private String qos = null;
 	

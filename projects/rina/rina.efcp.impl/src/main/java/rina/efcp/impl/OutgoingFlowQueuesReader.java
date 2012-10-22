@@ -11,6 +11,9 @@ import rina.aux.QueueSubscriptor;
 import rina.efcp.api.DTPPDU;
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.PDUParser;
+import rina.efcp.impl.events.EFCPEvent;
+import rina.efcp.impl.events.IPCProcessStoppedEvent;
+import rina.efcp.impl.events.SDUDeliveredFromNPortEvent;
 import rina.flowallocator.api.ConnectionId;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcservice.api.IPCException;
@@ -31,9 +34,9 @@ public class OutgoingFlowQueuesReader implements Runnable, QueueSubscriptor{
 	private IPCManager ipcManager = null;
 	
 	/**
-	 * The queues from incoming flows
+	 * The queue of EFCP Events
 	 */
-	private BlockingQueue<Integer> queuesReadyToBeRead = null;
+	private BlockingQueue<EFCPEvent> efcpEvents = null;
 	
 	/**
 	 * The mappings of portId to connection
@@ -57,34 +60,40 @@ public class OutgoingFlowQueuesReader implements Runnable, QueueSubscriptor{
 		this.ipcManager = ipcManager;
 		this.dataTransferAE = dataTransferAE;
 		this.pduParser = dataTransferAE.getPDUParser();
-		this.queuesReadyToBeRead = new LinkedBlockingQueue<Integer>();
+		this.efcpEvents = new LinkedBlockingQueue<EFCPEvent>();
 		this.portIdToConnectionMapping = portIdToConnectionMapping;
 	}
 		
 	public void stop(){
 		this.end = true;
 		try{
-			this.queuesReadyToBeRead.put(new Integer(-1));
+			this.efcpEvents.put(new IPCProcessStoppedEvent());
 		}catch(Exception ex){
 			log.error(ex);
 		}
 	}
 
 	/**
-	 * Read the data from the queues and process it
+	 * Process the events
 	 */
 	public void run() {
-		Integer portId = null;
-		byte[] sdu = null;
+		EFCPEvent efcpEvent = null;
+		SDUDeliveredFromNPortEvent sduEvent = null;
 		
 		while(!end){
 			try{
-				portId = this.queuesReadyToBeRead.take();
-				if (portId.intValue() < 0){
+				efcpEvent = this.efcpEvents.take();
+				switch(efcpEvent.getId()){
+				case EFCPEvent.IPC_PROCESS_STOPPED_EVENT:
+					log.info("EFCP Outgoing Flow Queues Reader stopping");
+					return;
+				case EFCPEvent.SDU_DELIVERED_FROM_N_PORT:
+					sduEvent = (SDUDeliveredFromNPortEvent) efcpEvent;
+					this.processSDUDeliveredFromNPortEvent(sduEvent.getPortId());
 					break;
+				default:
+					log.info("Unknown event delivered to the EFCP: "+efcpEvent.getId());
 				}
-				sdu = this.ipcManager.getOutgoingFlowQueue(portId).take();
-				this.processSDU(sdu, portIdToConnectionMapping.get(portId));
 			}catch(Exception ex){
 				log.error("Problems reading the identity of the next queue to read. ", ex);
 			}
@@ -92,11 +101,14 @@ public class OutgoingFlowQueuesReader implements Runnable, QueueSubscriptor{
 	}
 	
 	/**
-	 * Delimit the sdu if required, and send it through the right socket
+	 * Process the event
 	 * @param sdu
 	 * @param flowState
 	 */
-	private void processSDU(byte[] sdu, DTAEIState state){
+	private void processSDUDeliveredFromNPortEvent(int portId) throws Exception{
+		byte[] sdu = this.ipcManager.getOutgoingFlowQueue(portId).take();
+		DTAEIState state = this.portIdToConnectionMapping.get(portId);
+		
 		//This connection is supporting a local flow
 		if (state.isLocal()){
 			DTAEIState state2 = this.portIdToConnectionMapping.get(new Integer(state.getRemotePortId()));
@@ -140,7 +152,7 @@ public class OutgoingFlowQueuesReader implements Runnable, QueueSubscriptor{
 
 	public void queueReadyToBeRead(int queueId) {
 		try {
-			this.queuesReadyToBeRead.put(new Integer(queueId));
+			this.efcpEvents.put(new SDUDeliveredFromNPortEvent(queueId));
 		} catch (InterruptedException e) {
 			log.error(e);
 		}

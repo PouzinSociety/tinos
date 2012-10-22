@@ -14,6 +14,8 @@ import rina.cdap.api.message.ObjectValue;
 import rina.cdap.impl.CDAPSessionManagerImpl;
 import rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory;
 import rina.ipcservice.api.IPCException;
+import rina.ipcservice.api.QualityOfServiceSpecification;
+import rina.utils.apps.rinaband.Main;
 import rina.utils.apps.rinaband.StatisticsInformation;
 import rina.utils.apps.rinaband.TestInformation;
 import rina.utils.apps.rinaband.protobuf.RINABandStatisticsMessageEncoder;
@@ -110,7 +112,13 @@ public class RINABandClient implements SDUListener{
 	public void execute(){
 		try{
 			//1 Allocate a flow to the RINABand Server control AE
-			this.controlFlow = new Flow(this.clientApNamingInfo, this.controlApNamingInfo, null, this);
+			QualityOfServiceSpecification qosSpec = new QualityOfServiceSpecification();
+			if (testInformation.getQos().equals(Main.RELIABLE)){
+				qosSpec.setQosCubeId(2);
+			}else{
+				qosSpec.setQosCubeId(1);
+			}
+			this.controlFlow = new Flow(this.clientApNamingInfo, this.controlApNamingInfo, qosSpec, this);
 			
 			//2 Send the create test message
 			ObjectValue objectValue = new ObjectValue();
@@ -182,6 +190,12 @@ public class RINABandClient implements SDUListener{
 			TestWorker testWorker = null;
 			long before = 0;
 			int retries = 0;
+			QualityOfServiceSpecification qosSpec = new QualityOfServiceSpecification();
+			if (testInformation.getQos().equals(Main.RELIABLE)){
+				qosSpec.setQosCubeId(2);
+			}else{
+				qosSpec.setQosCubeId(1);
+			}
 			for(int i=0; i<this.testInformation.getNumberOfFlows(); i++){
 				try{
 					testWorker = new TestWorker(this.testInformation, this);
@@ -192,7 +206,7 @@ public class RINABandClient implements SDUListener{
 					//reached the directory of the IPC process running in the local system
 					while(retries < 3){
 						try{
-							flow =  new Flow(this.clientApNamingInfo, this.dataApNamingInfo, null, testWorker);
+							flow =  new Flow(this.clientApNamingInfo, this.dataApNamingInfo, qosSpec, testWorker);
 							testWorker.setFlow(flow, System.currentTimeMillis() - before);
 							this.testWorkers.add(testWorker);
 							break;

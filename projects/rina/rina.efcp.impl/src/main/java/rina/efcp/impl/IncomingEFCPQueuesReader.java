@@ -12,6 +12,9 @@ import rina.efcp.api.DTPPDU;
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.FlowControlOnlyDTCPPDU;
 import rina.efcp.api.PDU;
+import rina.efcp.impl.events.EFCPEvent;
+import rina.efcp.impl.events.IPCProcessStoppedEvent;
+import rina.efcp.impl.events.PDUDeliveredFromRMTEvent;
 import rina.ipcmanager.api.IPCManager;
 
 /**
@@ -30,9 +33,9 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 	private IPCManager ipcManager = null;
 	
 	/**
-	 * The queues from incoming flows
+	 * The queue of EFCP Events
 	 */
-	private BlockingQueue<Integer> queuesReadyToBeRead = null;
+	private BlockingQueue<EFCPEvent> efcpEvents = null;
 	
 	/**
 	 * The mappings of portId to connection
@@ -50,42 +53,48 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 			DataTransferAE dataTransferAE){
 		this.ipcManager = ipcManager;
 		this.dataTransferAE = dataTransferAE;
-		this.queuesReadyToBeRead = new LinkedBlockingQueue<Integer>();
+		this.efcpEvents = new LinkedBlockingQueue<EFCPEvent>();
 		this.connectionStatesByConnectionId = connectionStatesByConnectionId;
 	}
 		
 	public void stop(){
 		this.end = true;
 		try{
-			this.queuesReadyToBeRead.put(new Integer(-1));
+			this.efcpEvents.put(new IPCProcessStoppedEvent());
 		}catch(Exception ex){
 			log.error(ex);
 		}
 	}
-
+	
 	public void queueReadyToBeRead(int queueId) {
 		try {
-			this.queuesReadyToBeRead.put(new Integer(queueId));
+			this.efcpEvents.put(new PDUDeliveredFromRMTEvent(queueId));
 		} catch (InterruptedException e) {
 			log.error(e);
 		}
 	}
 	
 	/**
-	 * Read the data from the queues and process it
+	 * Process the events
 	 */
 	public void run() {
-		long connectionEndpointId = -1;
-		PDU pdu = null;
+		EFCPEvent efcpEvent = null;
+		PDUDeliveredFromRMTEvent pduEvent = null;
 		
 		while(!end){
 			try{
-				connectionEndpointId = this.queuesReadyToBeRead.take().longValue();
-				if (connectionEndpointId < 0){
+				efcpEvent = this.efcpEvents.take();
+				switch(efcpEvent.getId()){
+				case EFCPEvent.IPC_PROCESS_STOPPED_EVENT:
+					log.info("EFCP Incoming Connection Queues Reader stopping");
+					return;
+				case EFCPEvent.PDU_DELIVERED_FROM_RMT:
+					pduEvent = (PDUDeliveredFromRMTEvent) efcpEvent;
+					this.processEFCPPDUDeliveredFromRMT(pduEvent.getConnectionEndpointId());
 					break;
+				default:
+					log.info("Unknown event delivered to the EFCP: "+efcpEvent.getId());
 				}
-				pdu = this.dataTransferAE.getIncomingConnectionQueue(connectionEndpointId).take();
-				this.processEFCPPDU(pdu, connectionStatesByConnectionId.get(new Long(connectionEndpointId)));
 			}catch(Exception ex){
 				log.error("Problems reading the identity of the next queue to read. ", ex);
 			}
@@ -97,7 +106,10 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 	 * @param sdu
 	 * @param flowState
 	 */
-	private void processEFCPPDU(PDU pdu, DTAEIState state){
+	private void processEFCPPDUDeliveredFromRMT(long connectionEndpointId) throws Exception{
+		PDU pdu = this.dataTransferAE.getIncomingConnectionQueue(connectionEndpointId).take();
+		DTAEIState state = connectionStatesByConnectionId.get(new Long(connectionEndpointId));
+		
 		if (state == null){
 			log.error("Received a PDU with an unrecognized Connection ID: "+pdu.getConnectionId());
 			return;
