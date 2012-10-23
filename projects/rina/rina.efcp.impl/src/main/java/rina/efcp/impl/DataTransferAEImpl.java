@@ -121,6 +121,7 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 		this.outgoingFlowQueuesReader = new OutgoingFlowQueuesReader(ipcProcess.getIPCManager(), 
 				portIdToConnectionMapping, this);
 		this.incomingEFCPQueuesReader = new IncomingEFCPQueuesReader(ipcManager, connectionStatesByConnectionId, this);
+		this.incomingEFCPQueuesReader.setOutgoingFlowQueuesReader(this.outgoingFlowQueuesReader);
 		ipcManager.execute(this.outgoingFlowQueuesReader);
 		ipcManager.execute(this.incomingEFCPQueuesReader);
 	}

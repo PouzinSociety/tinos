@@ -15,6 +15,7 @@ import rina.efcp.api.PDU;
 import rina.efcp.impl.events.EFCPEvent;
 import rina.efcp.impl.events.IPCProcessStoppedEvent;
 import rina.efcp.impl.events.PDUDeliveredFromRMTEvent;
+import rina.flowallocator.api.ConnectionId;
 import rina.ipcmanager.api.IPCManager;
 
 /**
@@ -47,6 +48,11 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 	 */
 	private DataTransferAE dataTransferAE = null;
 	
+	/**
+	 * The outgoing Flow queues reader
+	 */
+	private OutgoingFlowQueuesReader outgoingFlowQueuesReader = null;
+	
 	private boolean end = false;
 	
 	public IncomingEFCPQueuesReader(IPCManager ipcManager, Map<Long, DTAEIState> connectionStatesByConnectionId, 
@@ -57,6 +63,11 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 		this.connectionStatesByConnectionId = connectionStatesByConnectionId;
 	}
 		
+	public void setOutgoingFlowQueuesReader(
+			OutgoingFlowQueuesReader outgoingFlowQueuesReader) {
+		this.outgoingFlowQueuesReader = outgoingFlowQueuesReader;
+	}
+	
 	public void stop(){
 		this.end = true;
 		try{
@@ -146,6 +157,28 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 		synchronized(state){
 			state.incrementLastSequenceDelivered();
 		}
+		
+		//Check if credit has to be extended
+		DTCPStateVector dtcpStateVector = state.getDTCPStateVector();
+		if (dtcpStateVector.isFlowControlEnabled()){
+			if (state.getLastSequenceDelivered() == dtcpStateVector.getReceiveRightWindowEdge()){
+				//The sender has no more credit, extend it
+				ConnectionId connectionId = new ConnectionId();
+				connectionId.setQosId(state.getQoSId());
+				FlowControlOnlyDTCPPDU dtcpPDU = this.dataTransferAE.getPDUParser().generateFlowControlOnlyDTCPPDU(
+						dtcpStateVector.getFlowControlOnlyPCI(), dtcpStateVector.getNextSequenceToSend(), 
+						state.getDestinationAddress(), connectionId, dtcpStateVector.getReceiveRightWindowEdge() + 50);
+				try{
+					this.dataTransferAE.getOutgoingConnectionQueue(state.getSourceCEPid()).writeDataToQueue(dtcpPDU);
+					synchronized(state){
+						dtcpStateVector.incrementNextSequenceToSend();
+						dtcpStateVector.setReceiveRightWindowEdge(dtcpStateVector.getReceiveRightWindowEdge() + 50);
+					}
+				}catch(Exception ex){
+					log.error("Problems extending credit");
+				}
+			}
+		}
 	}
 	
 	/**
@@ -156,6 +189,19 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 	 * @param state
 	 */
 	private void processFlowControlOnlyDTCPPDU(FlowControlOnlyDTCPPDU pdu, DTAEIState state){
-		
+		DTCPStateVector dtcpStateVector = state.getDTCPStateVector();
+		if(dtcpStateVector.isFlowControlEnabled()){
+			if (dtcpStateVector.getFlowControlType().equals(DTCPStateVector.CREDIT_BASED_FLOW_CONTROL)){
+				//log.debug("Extending credit! New right window edge: "+pdu.getRightWindowEdge());
+				synchronized(state){
+					dtcpStateVector.setSendRightWindowEdge(pdu.getRightWindowEdge());
+					this.outgoingFlowQueuesReader.creditExtended((int)state.getPortId());
+				}
+			}else{
+				//TODO deal with RATE-based flow control
+			}
+		}else{
+			log.error("Received a Flow Control Only DTCP PDU but Flow Control is not enabled for flow "+state.getPortId());
+		}
 	}
 }

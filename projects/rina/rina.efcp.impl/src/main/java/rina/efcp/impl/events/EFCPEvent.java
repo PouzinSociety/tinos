@@ -11,6 +11,7 @@ public interface EFCPEvent {
 	public static final byte IPC_PROCESS_STOPPED_EVENT = 0;
 	public static final byte SDU_DELIVERED_FROM_N_PORT = 1;
 	public static final byte PDU_DELIVERED_FROM_RMT = 2;
+	public static final byte CREDIT_EXTENDED_EVENT = 3;
 
 	/**
 	 * Returns the ID of the event

@@ -2,6 +2,7 @@ package rina.utils.apps.rinaband.client;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -97,6 +98,7 @@ public class RINABandClient implements SDUListener{
 	private long epochTimeFirstSDUSent = 0;
 	private long epochTimeLastSDUSent = 0;
 	private int completedReceives = 0;
+	private Timer timer = null;
 	
 	public RINABandClient(TestInformation testInformation, ApplicationProcessNamingInfo controlApNamingInfo, 
 			ApplicationProcessNamingInfo dataApNamingInfo){
@@ -196,9 +198,10 @@ public class RINABandClient implements SDUListener{
 			}else{
 				qosSpec.setQosCubeId(1);
 			}
+			this.timer = new Timer();
 			for(int i=0; i<this.testInformation.getNumberOfFlows(); i++){
 				try{
-					testWorker = new TestWorker(this.testInformation, this);
+					testWorker = new TestWorker(this.testInformation, this, timer);
 					before = System.currentTimeMillis();
 					retries = 0;
 					
@@ -335,6 +338,7 @@ public class RINABandClient implements SDUListener{
 				System.out.println("Received SDUs per second: "+currentWorker.getStatistics().getReceivedSDUsPerSecond());
 				System.out.println("Received KiloBytes per second (KBps): "+
 						currentWorker.getStatistics().getReceivedSDUsPerSecond()*this.testInformation.getSduSize()/1024);
+				System.out.println("% of received SDUs lost: "+100*currentWorker.getStatistics().getReceivedSDUsLost()/this.testInformation.getNumberOfSDUs());
 				System.out.println();
 			}
 			

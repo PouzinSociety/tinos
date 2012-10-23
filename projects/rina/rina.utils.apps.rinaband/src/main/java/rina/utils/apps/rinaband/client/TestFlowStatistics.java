@@ -26,6 +26,11 @@ public class TestFlowStatistics {
 	 * The SDUs/second received
 	 */
 	private long receivedSDUsPerSecond = 0;
+	
+	/**
+	 * The number of received SDUs that have been lost
+	 */
+	private long receivedSDUsLost = 0;
 
 	public long getFlowSetupTimeInMillis() {
 		return flowSetupTimeInMillis;
@@ -57,5 +62,13 @@ public class TestFlowStatistics {
 
 	public void setFlowTearDownTimeInMillis(long flowTearDownTimeInMillis) {
 		this.flowTearDownTimeInMillis = flowTearDownTimeInMillis;
+	}
+
+	public long getReceivedSDUsLost() {
+		return receivedSDUsLost;
+	}
+
+	public void setReceivedSDUsLost(long receivedSDUsLost) {
+		this.receivedSDUsLost = receivedSDUsLost;
 	}
 }

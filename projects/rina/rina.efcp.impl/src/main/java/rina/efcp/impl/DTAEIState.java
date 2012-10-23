@@ -1,6 +1,9 @@
 package rina.efcp.impl;
 
+import java.util.ArrayList;
+
 import rina.efcp.api.DataTransferConstants;
+import rina.efcp.api.PDU;
 import rina.efcp.api.PDUParser;
 import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.Flow;
@@ -52,15 +55,9 @@ public class DTAEIState {
 	private String state = null;
 	
 	/**
-	 * NOTE: Will be implemented in the future, after the demo
+	 * DTCP State Vector
 	 */
-	//private DTCPStateVector dtcpStateVector = null;
-	
-	/**
-	 * The highest sequence number that the remote application is currently 
-	 * willing to accept on this connection.
-	 */
-	private long rightWindowEdge = 0L;
+    private DTCPStateVector dtcpStateVector = null;
 	
 	/**
 	 * The queue of PDUs that have been handed off to the RMT but not yet acknowledged.
@@ -68,13 +65,6 @@ public class DTAEIState {
 	 * the real type
 	 */
 	private String retransmissionQueue = null;
-	
-	/**
-	 * The queue of PDUs ready to be sent once the window opens.
-	 * NOTE: The String type is just a placeholder, obviously it will be replaced by 
-	 * the real type
-	 */
-	private String closedWindowQueue = null;
 	
 	/**
 	 * The source Connection Endpoint ID
@@ -169,6 +159,17 @@ public class DTAEIState {
 		this.maxFlowPDUSize = dataTransferConstants.getMaxPDUSize();
 		this.preComputedPCI = pduParser.computeDTPPCI(this.destinationAddress, 
 				this.sourceAddress, this.sourceCEPid, this.destinationCEPid, this.qosid);
+		
+		this.dtcpStateVector = new DTCPStateVector();
+		this.dtcpStateVector.setFlowControlEnabled(true);
+		if (dtcpStateVector.isFlowControlEnabled()){
+			this.dtcpStateVector.setFlowControlType(DTCPStateVector.CREDIT_BASED_FLOW_CONTROL);
+			this.dtcpStateVector.setClosedWindowQueue(new ArrayList<PDU>());
+			this.dtcpStateVector.setReceiveRightWindowEdge(50);
+			this.dtcpStateVector.setSendRightWindowEdge(50);
+			this.dtcpStateVector.setFlowControlOnlyPCI(pduParser.computeFlowControlOnlyDTCPPCI(this.destinationAddress, this.sourceAddress, 
+					this.sourceCEPid, this.destinationCEPid, this.qosid));
+		}
 	}
 	
 	public APService getApplicationCallback() {
@@ -177,6 +178,10 @@ public class DTAEIState {
 
 	public void setApplicationCallback(APService applicationCallback) {
 		this.applicationCallback = applicationCallback;
+	}
+	
+	public DTCPStateVector getDTCPStateVector(){
+		return this.dtcpStateVector;
 	}
 	
 	public long getSourceAddress(){
@@ -291,27 +296,11 @@ public class DTAEIState {
 		this.nextSequenceToSend++;
 	}
 
-	public long getRightWindowEdge() {
-		return rightWindowEdge;
-	}
-
-	public void setRightWindowEdge(long rightWindowEdge) {
-		this.rightWindowEdge = rightWindowEdge;
-	}
-
 	public String getRetransmissionQueue() {
 		return retransmissionQueue;
 	}
 
 	public void setRetransmissionQueue(String retransmissionQueue) {
 		this.retransmissionQueue = retransmissionQueue;
-	}
-
-	public String getClosedWindowQueue() {
-		return closedWindowQueue;
-	}
-
-	public void setClosedWindowQueue(String closedWindowQueue) {
-		this.closedWindowQueue = closedWindowQueue;
 	}
 }

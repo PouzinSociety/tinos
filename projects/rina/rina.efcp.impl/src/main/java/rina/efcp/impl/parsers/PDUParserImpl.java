@@ -163,7 +163,7 @@ public class PDUParserImpl implements PDUParser{
 		pci[13] = aux[4];
 		
 		//Encode right window edge
-		aux = Longs.toByteArray(sequenceNumber);
+		aux = Longs.toByteArray(rightWindowEdge);
 		pci[14] = aux[7];
 		pci[15] = aux[6];
 		pci[16] = aux[5];

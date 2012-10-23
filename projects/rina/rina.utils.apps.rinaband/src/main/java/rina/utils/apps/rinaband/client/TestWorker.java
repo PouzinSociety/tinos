@@ -1,5 +1,7 @@
 package rina.utils.apps.rinaband.client;
 
+import java.util.Timer;
+
 import rina.applibrary.api.Flow;
 import rina.applibrary.api.SDUListener;
 import rina.utils.apps.rinaband.TestInformation;
@@ -69,11 +71,19 @@ public class TestWorker implements Runnable, SDUListener{
 	 */
 	private SDUGenerator sduGenerator = null;
 	
-	public TestWorker(TestInformation testInformation, RINABandClient rinaBandClient){
+	/**
+	 * The test declared dead timer task
+	 */
+	private TestDeclaredDeadTimerTask testDeadTimerTask = null;
+	
+	private Timer timer = null;
+	
+	public TestWorker(TestInformation testInformation, RINABandClient rinaBandClient, Timer timer){
 		this.testInformation = testInformation;
 		this.rinaBandClient = rinaBandClient;
 		this.statistics = new TestFlowStatistics();
 		this.lock = new Object();
+		this.timer = timer;
 		
 		if (!this.testInformation.isClientSendsSDUs()){
 			this.sendCompleted = true;
@@ -81,6 +91,8 @@ public class TestWorker implements Runnable, SDUListener{
 		
 		if (!this.testInformation.isServerSendsSDUs()){
 			this.receiveCompleted = true;
+		}else{
+			this.scheduleTestDeadTimerTask();
 		}
 		
 		if (this.testInformation.getPattern().equals(SDUGenerator.NONE_PATTERN)){
@@ -88,6 +100,11 @@ public class TestWorker implements Runnable, SDUListener{
 		}else if (this.testInformation.getPattern().equals(SDUGenerator.INCREMENT_PATTERN)){
 			sduGenerator = new IncrementSDUGenerator(this.testInformation.getSduSize());
 		}
+	}
+	
+	private void scheduleTestDeadTimerTask(){
+		testDeadTimerTask = new TestDeclaredDeadTimerTask(this);
+		timer.schedule(testDeadTimerTask, TestDeclaredDeadTimerTask.DEFAULT_DELAY_IN_MS);
 	}
 
 	public void setFlow(Flow flow, long flowSetupTimeInMillis){
@@ -155,6 +172,8 @@ public class TestWorker implements Runnable, SDUListener{
 	 * Called when an sdu is received through the flow
 	 */
 	public void sduDelivered(byte[] sdu) {
+		testDeadTimerTask.cancel();
+		
 		if (this.receivedSDUs == 0){
 			this.nanoTimeOfFirstSDUReceived = System.nanoTime();
 			this.epochTimeOfFirstSDUReceived = System.currentTimeMillis();
@@ -163,16 +182,31 @@ public class TestWorker implements Runnable, SDUListener{
 		
 		this.receivedSDUs++;
 		if (this.receivedSDUs == this.testInformation.getNumberOfSDUs()){
-			long currentTimeInNanos = System.nanoTime();
-			long epochTime = System.currentTimeMillis();
-			long totalTimeInNanos = (currentTimeInNanos - this.nanoTimeOfFirstSDUReceived);
-			this.rinaBandClient.setLastSDUReceived(epochTime);
-			synchronized(lock){
-				this.statistics.setReceivedSDUsPerSecond(1000L*1000L*1000L*this.receivedSDUs/totalTimeInNanos);
-				this.receiveCompleted = true;
-				if (this.sendCompleted){
-					this.rinaBandClient.testCompleted(this);
-				}
+			this.processLastSDUReceived();
+		}else{
+			this.scheduleTestDeadTimerTask();
+		}
+	}
+	
+	/**
+	 * Called by the test declared dead timer if no SDU has been received in 
+	 * X ms.
+	 */
+	public void notWaitingToReceiveMoreSDUs(){
+		this.processLastSDUReceived();
+	}
+	
+	private void processLastSDUReceived(){
+		long currentTimeInNanos = System.nanoTime();
+		long epochTime = System.currentTimeMillis();
+		long totalTimeInNanos = (currentTimeInNanos - this.nanoTimeOfFirstSDUReceived);
+		this.rinaBandClient.setLastSDUReceived(epochTime);
+		synchronized(lock){
+			this.statistics.setReceivedSDUsPerSecond(1000L*1000L*1000L*this.receivedSDUs/totalTimeInNanos);
+			this.statistics.setReceivedSDUsLost(this.testInformation.getNumberOfSDUs() - this.receivedSDUs);
+			this.receiveCompleted = true;
+			if (this.sendCompleted){
+				this.rinaBandClient.testCompleted(this);
 			}
 		}
 	}
