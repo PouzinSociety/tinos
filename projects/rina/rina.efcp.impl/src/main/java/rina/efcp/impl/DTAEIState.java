@@ -3,6 +3,7 @@ package rina.efcp.impl;
 import java.util.ArrayList;
 
 import rina.efcp.api.DataTransferConstants;
+import rina.efcp.api.EFCPPolicyConstants;
 import rina.efcp.api.PDU;
 import rina.efcp.api.PDUParser;
 import rina.flowallocator.api.ConnectionId;
@@ -157,18 +158,21 @@ public class DTAEIState {
 		this.reasemblyQeueue = new ReassemblyQueue();
 		this.maxFlowSDUSize = dataTransferConstants.getMaxSDUSize();
 		this.maxFlowPDUSize = dataTransferConstants.getMaxPDUSize();
-		this.preComputedPCI = pduParser.computeDTPPCI(this.destinationAddress, 
+		this.preComputedPCI = pduParser.preComputePCI(this.destinationAddress, 
 				this.sourceAddress, this.sourceCEPid, this.destinationCEPid, this.qosid);
-		
+
 		this.dtcpStateVector = new DTCPStateVector();
-		this.dtcpStateVector.setFlowControlEnabled(true);
-		if (dtcpStateVector.isFlowControlEnabled()){
-			this.dtcpStateVector.setFlowControlType(DTCPStateVector.CREDIT_BASED_FLOW_CONTROL);
-			this.dtcpStateVector.setClosedWindowQueue(new ArrayList<PDU>());
-			this.dtcpStateVector.setReceiveRightWindowEdge(50);
-			this.dtcpStateVector.setSendRightWindowEdge(50);
-			this.dtcpStateVector.setFlowControlOnlyPCI(pduParser.computeFlowControlOnlyDTCPPCI(this.destinationAddress, this.sourceAddress, 
-					this.sourceCEPid, this.destinationCEPid, this.qosid));
+		String flowControl = flow.getPolicies().get(EFCPPolicyConstants.DTCP_FLOW_CONTROL);
+		if (flowControl != null){
+			this.dtcpStateVector.setFlowControlEnabled(true);
+			if (dtcpStateVector.isFlowControlEnabled()){
+				this.dtcpStateVector.setFlowControlType(flowControl);
+				this.dtcpStateVector.setClosedWindowQueue(new ArrayList<PDU>());
+				this.dtcpStateVector.setReceiveRightWindowEdge(50);
+				this.dtcpStateVector.setSendRightWindowEdge(50);
+				this.dtcpStateVector.setFlowControlOnlyPCI(pduParser.preComputePCI(this.destinationAddress, this.sourceAddress, 
+						this.sourceCEPid, this.destinationCEPid, this.qosid));
+			}
 		}
 	}
 	

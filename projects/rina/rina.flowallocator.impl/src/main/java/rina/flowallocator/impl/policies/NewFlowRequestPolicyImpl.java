@@ -3,6 +3,7 @@ package rina.flowallocator.impl.policies;
 import java.util.ArrayList;
 import java.util.List;
 
+import rina.efcp.api.EFCPPolicyConstants;
 import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.Flow;
 import rina.flowallocator.api.Flow.State;
@@ -32,6 +33,13 @@ public class NewFlowRequestPolicyImpl implements NewFlowRequestPolicy{
 		connectionId.setQosId(qosId);
 		connectionIds.add(connectionId);
 		flow.setConnectionIds(connectionIds);
+		
+		flow.getPolicies().put(EFCPPolicyConstants.DTCP_FLOW_CONTROL, EFCPPolicyConstants.CREDIT);
+		flow.getPolicies().put(EFCPPolicyConstants.DTCP_FLOW_CONTROL_INITIAL_CREDIT_POLICY, EFCPPolicyConstants.CONSTANT);
+		flow.getPolicies().put(EFCPPolicyConstants.DTCP_FLOW_CONTROL_RECEIVING_FLOW_CONTROL_POLICY, EFCPPolicyConstants.EXHAUSTED);
+		flow.getPolicies().put(EFCPPolicyConstants.DTCP_FLOW_CONTROL_UPDATE_CREDIT_POLICY, EFCPPolicyConstants.CONSTANT);
+		flow.getPolicyParameters().put(EFCPPolicyConstants.DTCP_FLOW_CONTROL_INITIAL_CREDIT_POLICY_CONSTANT_VALUE, "50");
+		flow.getPolicyParameters().put(EFCPPolicyConstants.DTCP_FLOW_CONTROL_UPDATE_CREDIT_POLICY_CONSTANT_VALUE, "50");
 		
 		return flow;
 	}

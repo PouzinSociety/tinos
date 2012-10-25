@@ -9,7 +9,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.aux.QueueSubscriptor;
-import rina.efcp.api.DTPPDU;
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.PDU;
 import rina.efcp.api.PDUParser;
@@ -162,7 +161,7 @@ public class OutgoingFlowQueuesReader implements Runnable, QueueSubscriptor{
 		//Convert the SDU into a PDU and post it to an RMT queue (right now posting it to the socket)
 		ConnectionId connectionId = new ConnectionId();
 		connectionId.setQosId(state.getQoSId());
-		DTPPDU pdu = this.pduParser.generateDTPPDU(state.getPreComputedPCI(), 
+		PDU pdu = this.pduParser.generateDTPPDU(state.getPreComputedPCI(), 
 				state.getNextSequenceToSend(), state.getDestinationAddress(), 
 				connectionId, 0x00, sdu);
 		

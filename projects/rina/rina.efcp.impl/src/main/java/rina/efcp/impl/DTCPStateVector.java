@@ -5,10 +5,6 @@ import java.util.List;
 import rina.efcp.api.PDU;
 
 public class DTCPStateVector {
-	
-	public static final String RATE_BASED_FLOW_CONTROL = "Rate based flow control";
-	public static final String CREDIT_BASED_FLOW_CONTROL = "Credit based flow control";
-	
 	private boolean flowControlEnabled = false;
 	private boolean transmissionControlEnabled = false;
 	private boolean retransmissionControlEnabled = false;

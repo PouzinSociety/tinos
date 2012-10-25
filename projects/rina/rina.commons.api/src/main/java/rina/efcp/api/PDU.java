@@ -50,7 +50,15 @@ public class PDU {
 	/**
 	 * The field indicates the type of PDU.
 	 */
-	private int pduType = -1;
+	private int pduType = 0;
+	
+	/**
+	 * This field indicates conditions that affect the handling of the PDU. Flags should only indicate 
+	 * conditions that can change from one PDU to the next. Conditions that are invariant over the life 
+	 * of the connection should be established during allocation or by the action of management. The 
+	 * interpretation of the flags depends on the PDU Type.
+	 */
+	public int flags = 0;
 	
 	/**
 	 * The PDU sequenceNumber
@@ -153,6 +161,14 @@ public class PDU {
 		this.errorCheckCode = errorCheckCode;
 	}
 
+	public int getFlags() {
+		return flags;
+	}
+
+	public void setFlags(int flags) {
+		this.flags = flags;
+	}
+
 	public boolean equals(Object candidate){
 		if (candidate == null){
 			return false;
@@ -171,7 +187,7 @@ public class PDU {
 		String result = "";
 		result = result + "Destination @: " +this.destinationAddress + " CEPid: " + this.connectionId.getDestinationCEPId() + 
 			" Source @: " +this.sourceAddress + " CEPid: " +this.connectionId.getSourceCEPId() + "\n" + 
-			" QoSid: " +this.connectionId.getQosId() + " PDU type: " +this.getPduType() + 
+			" QoSid: " +this.connectionId.getQosId() + " PDU type: " +this.getPduType() + " Flags: " + this.getFlags() +
 			" Sequence number: " +this.sequenceNumber;
 		
 		return result;

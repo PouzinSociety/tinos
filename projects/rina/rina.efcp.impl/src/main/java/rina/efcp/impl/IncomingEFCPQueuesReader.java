@@ -8,8 +8,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import rina.aux.QueueSubscriptor;
-import rina.efcp.api.DTPPDU;
 import rina.efcp.api.DataTransferAE;
+import rina.efcp.api.EFCPPolicyConstants;
 import rina.efcp.api.FlowControlOnlyDTCPPDU;
 import rina.efcp.api.PDU;
 import rina.efcp.impl.events.EFCPEvent;
@@ -126,11 +126,14 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 			return;
 		}
 		
-		if (pdu instanceof DTPPDU){
-			this.processDTPPDU((DTPPDU)pdu, state);
-		}else if (pdu instanceof FlowControlOnlyDTCPPDU){
+		switch(pdu.getPduType()){
+		case PDU.DTP_PDU_TYPE:
+			this.processDTPPDU(pdu, state);
+			break;
+		case PDU.FLOW_CONTROL_ONLY_DTCP_PDU:
 			this.processFlowControlOnlyDTCPPDU((FlowControlOnlyDTCPPDU)pdu, state);
-		}else{
+			break;
+		default:
 			log.error("Received a PDU with of an unrecognized type: "+pdu.toString());
 		}
 	}
@@ -140,7 +143,7 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 	 * @param DTP PDU
 	 * @param flowState
 	 */
-	private void processDTPPDU(DTPPDU pdu, DTAEIState state){
+	private void processDTPPDU(PDU pdu, DTAEIState state){
 		byte[] sdu = pdu.getUserData();
 		if (sdu.length == 0){
 			//TODO do something special?
@@ -167,7 +170,7 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 				connectionId.setQosId(state.getQoSId());
 				FlowControlOnlyDTCPPDU dtcpPDU = this.dataTransferAE.getPDUParser().generateFlowControlOnlyDTCPPDU(
 						dtcpStateVector.getFlowControlOnlyPCI(), dtcpStateVector.getNextSequenceToSend(), 
-						state.getDestinationAddress(), connectionId, dtcpStateVector.getReceiveRightWindowEdge() + 50);
+						state.getDestinationAddress(), connectionId, dtcpStateVector.getReceiveRightWindowEdge() + 50, 0, 0);
 				try{
 					this.dataTransferAE.getOutgoingConnectionQueue(state.getSourceCEPid()).writeDataToQueue(dtcpPDU);
 					synchronized(state){
@@ -191,7 +194,7 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 	private void processFlowControlOnlyDTCPPDU(FlowControlOnlyDTCPPDU pdu, DTAEIState state){
 		DTCPStateVector dtcpStateVector = state.getDTCPStateVector();
 		if(dtcpStateVector.isFlowControlEnabled()){
-			if (dtcpStateVector.getFlowControlType().equals(DTCPStateVector.CREDIT_BASED_FLOW_CONTROL)){
+			if (dtcpStateVector.getFlowControlType().equals(EFCPPolicyConstants.CREDIT)){
 				//log.debug("Extending credit! New right window edge: "+pdu.getRightWindowEdge());
 				synchronized(state){
 					dtcpStateVector.setSendRightWindowEdge(pdu.getRightWindowEdge());

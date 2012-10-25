@@ -7,7 +7,7 @@ import org.junit.Test;
 import rina.efcp.api.DataTransferConstants;
 import rina.efcp.impl.DTAEIState;
 import rina.efcp.impl.parsers.PDUParserImpl;
-import rina.efcp.api.DTPPDU;
+import rina.efcp.api.PDU;
 import rina.efcp.api.PDUParser;
 import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.Flow;
@@ -42,7 +42,7 @@ public class TestPDUParserAndDTAEIState {
 	
 	@Test
 	public void testPDUEncodingDecoding(){
-		DTPPDU pdu = null;
+		PDU pdu = null;
 		byte[] sdu = new String("Testing EFCP encoding and decoding").getBytes();
 		
 		for(int i=0; i<3; i++){
@@ -51,7 +51,7 @@ public class TestPDUParserAndDTAEIState {
 					flow.getConnectionIds().get(0), 0x00, sdu);
 			printBytes(pdu.getEncodedPCI());
 
-			DTPPDU decodedPDU = (DTPPDU) pduParser.parsePCIForEFCP(pduParser.parsePCIForRMT(pdu));
+			PDU decodedPDU = pduParser.parsePCIForEFCP(pduParser.parsePCIForRMT(pdu));
 			state.incrementNextSequenceToSend();
 			
 			System.out.println(decodedPDU.toString());

@@ -10,13 +10,7 @@ import rina.flowallocator.api.ConnectionId;
 public interface PDUParser {
 
 	/**
-	 * Encode the DTP fields that are always the same during the flow lifetime using Little Endian byte order
-	 */
-	public byte[] computeDTPPCI(long destinationAddress, long sourceAddress, long sourceCEPid, long destinationCEPid, int qosid);
-	
-	/**
-	 * Encode the fields that are always the same in the Flow Control Only DTCP PCI during the flow lifetime, using Little Endian 
-	 * byte order
+	 * Encode the fields that are always the same during the flow lifetime using Little Endian byte order
 	 * @param destinationAddress
 	 * @param sourceAddress
 	 * @param sourceCEPid
@@ -24,23 +18,39 @@ public interface PDUParser {
 	 * @param qosid
 	 * @return
 	 */
-	public byte[] computeFlowControlOnlyDTCPPCI(long destinationAddress, long sourceAddress, long sourceCEPid, long destinationCEPid, int qosid);
+	public byte[] preComputePCI(long destinationAddress, long sourceAddress, long sourceCEPid, long destinationCEPid, int qosid);
 	
 	/**
 	 * Generate a DTP PDU data structure from a pre-computed DTP PCI. Use unsigned types and little-endian byte order
 	 * @param pci
 	 * @param sequenceNumber
 	 * @param flags
-	 * @param sdu
+	 * @param userData
 	 * @return
 	 */
-	public DTPPDU generateDTPPDU(byte[] pci, long sequenceNumber, long destinationAddress, 
-			ConnectionId connectionId, int flags, byte[] sdu);
+	public PDU generateDTPPDU(byte[] pci, long sequenceNumber, long destinationAddress, 
+			ConnectionId connectionId, int flags, byte[] userData);
 	
+	/**
+	 * Generate a DTCP Flow control only PDU
+	 * @param pci
+	 * @param sequenceNumber
+	 * @param destinationAddress
+	 * @param connectionId
+	 * @param rightWindowEdge
+	 * @param newRate
+	 * @param timeUnit
+	 * @return
+	 */
 	public FlowControlOnlyDTCPPDU generateFlowControlOnlyDTCPPDU(byte[] pci, long sequenceNumber, long destinationAddress, 
-			ConnectionId connectionId, long rightWindowEdge);
+			ConnectionId connectionId, long rightWindowEdge, long newRate, long timeUnit);
 	
-	public PDU generateManagementPDU(byte[] sdu);
+	/**
+	 * Generates an EFCP Management PDU
+	 * @param managementData
+	 * @return
+	 */
+	public PDU generateManagementPDU(byte[] managementData);
 	
 	public PDU generateIdentifySenderPDU(long address, int qosId);
 	

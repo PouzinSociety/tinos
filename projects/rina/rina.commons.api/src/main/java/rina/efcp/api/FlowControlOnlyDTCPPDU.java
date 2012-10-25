@@ -14,6 +14,17 @@ public class FlowControlOnlyDTCPPDU extends PDU{
 	 */
 	private long rightWindowEdge = 0;
 	
+	/**
+	 * This field contains the value of the rate that the receiver is giving to the sender. The Sender is allowed to 
+	 * send this many PDUs in the given Time Unit.
+	 */
+	private long newRate = 0;
+	
+	/**
+	 * This field contains the unit of Time in milliseconds over which the rate is computed.
+	 */
+	private long timeUnit = 0;
+	
 	public FlowControlOnlyDTCPPDU(){
 		this.setPduType(PDU.FLOW_CONTROL_ONLY_DTCP_PDU);
 	}
@@ -28,6 +39,7 @@ public class FlowControlOnlyDTCPPDU extends PDU{
 		this.setErrorCheckCode(pdu.getErrorCheckCode());
 		this.setRawPDU(pdu.getRawPDU());
 		this.setUserData(pdu.getUserData());
+		this.setFlags(pdu.getFlags());
 	}
 	
 	public long getRightWindowEdge() {
@@ -38,13 +50,30 @@ public class FlowControlOnlyDTCPPDU extends PDU{
 		this.rightWindowEdge = rightWindowEdge;
 	}
 
+	public long getNewRate() {
+		return newRate;
+	}
+
+	public void setNewRate(long newRate) {
+		this.newRate = newRate;
+	}
+
+	public long getTimeUnit() {
+		return timeUnit;
+	}
+
+	public void setTimeUnit(long timeUnit) {
+		this.timeUnit = timeUnit;
+	}
+
 	@Override
 	public String toString(){
 		String result = "";
 		result = result + "Destination @: " +this.getDestinationAddress() + " CEPid: " + this.getConnectionId().getDestinationCEPId() + 
 			" Source @: " +this.getSourceAddress() + " CEPid: " +this.getConnectionId().getSourceCEPId() + "\n" + 
 			" QoSid: " +this.getConnectionId().getQosId() + " PDU type: " +this.getPduType() + 
-			" Sequence number: " +this.getSequenceNumber() + " Right window edge: " +this.getRightWindowEdge();
+			" Sequence number: " +this.getSequenceNumber() + " Right window edge: " +this.getRightWindowEdge() + 
+			" New rate: "+ this.getNewRate() + " Time Unit: "+ this.getTimeUnit();
 		
 		return result;
 	}
