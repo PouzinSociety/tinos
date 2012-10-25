@@ -35,6 +35,7 @@ public class NewFlowRequestPolicyImpl implements NewFlowRequestPolicy{
 		flow.setConnectionIds(connectionIds);
 		
 		flow.getPolicies().put(EFCPPolicyConstants.DTCP_FLOW_CONTROL, EFCPPolicyConstants.CREDIT);
+		flow.getPolicies().put(EFCPPolicyConstants.DTCP_FLOW_CONTROL_FLOW_CONTROL_OVERRUN_POLICY, EFCPPolicyConstants.DISCARD);
 		flow.getPolicies().put(EFCPPolicyConstants.DTCP_FLOW_CONTROL_INITIAL_CREDIT_POLICY, EFCPPolicyConstants.CONSTANT);
 		flow.getPolicies().put(EFCPPolicyConstants.DTCP_FLOW_CONTROL_RECEIVING_FLOW_CONTROL_POLICY, EFCPPolicyConstants.EXHAUSTED);
 		flow.getPolicies().put(EFCPPolicyConstants.DTCP_FLOW_CONTROL_UPDATE_CREDIT_POLICY, EFCPPolicyConstants.CONSTANT);

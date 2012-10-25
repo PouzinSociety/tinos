@@ -148,6 +148,15 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 		if (sdu.length == 0){
 			//TODO do something special?
 		}else{
+			if (state.getDTCPStateVector().isFlowControlEnabled()){
+				if (this.flowControlOverrunPolicy(pdu, state)){
+					//Discard PDU, since the sender has exceeded the credit or rate that was granted, 
+					//and the current policy says it has to be discarded
+					log.warn("Discarding PDU since the sender has exceeded the credit or rate that was granted. "+pdu.toString());
+					return;
+				}
+			}
+			
 			//Deliver the PDU to the portId
 			try{
 				this.ipcManager.getIncomingFlowQueue((int)state.getPortId()).writeDataToQueue(sdu);
@@ -161,26 +170,80 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 			state.incrementLastSequenceDelivered();
 		}
 		
-		//Check if credit has to be extended
-		DTCPStateVector dtcpStateVector = state.getDTCPStateVector();
-		if (dtcpStateVector.isFlowControlEnabled()){
-			if (state.getLastSequenceDelivered() == dtcpStateVector.getReceiveRightWindowEdge()){
-				//The sender has no more credit, extend it
-				ConnectionId connectionId = new ConnectionId();
-				connectionId.setQosId(state.getQoSId());
-				FlowControlOnlyDTCPPDU dtcpPDU = this.dataTransferAE.getPDUParser().generateFlowControlOnlyDTCPPDU(
-						dtcpStateVector.getFlowControlOnlyPCI(), dtcpStateVector.getNextSequenceToSend(), 
-						state.getDestinationAddress(), connectionId, dtcpStateVector.getReceiveRightWindowEdge() + 50, 0, 0);
-				try{
-					this.dataTransferAE.getOutgoingConnectionQueue(state.getSourceCEPid()).writeDataToQueue(dtcpPDU);
-					synchronized(state){
-						dtcpStateVector.incrementNextSequenceToSend();
-						dtcpStateVector.setReceiveRightWindowEdge(dtcpStateVector.getReceiveRightWindowEdge() + 50);
-					}
-				}catch(Exception ex){
-					log.error("Problems extending credit");
-				}
+		if (state.getDTCPStateVector().isFlowControlEnabled()){
+			updateFlowControlState(state);
+		}
+	}
+	
+	/**
+	 * Checks if the sender has exceeded the credit or rate that had been granted
+	 * @param pdu
+	 * @param state
+	 * @return
+	 */
+	private boolean flowControlOverrunPolicy(PDU pdu, DTAEIState state){
+		if (state.getDTCPStateVector().getFlowControlType().equals(EFCPPolicyConstants.CREDIT)){
+			if (state.getLastSequenceDelivered() > state.getDTCPStateVector().getReceiveRightWindowEdge()){
+				return true;
 			}
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Causes the flow control state to be updated (if present), and any associated 
+	 * actions to be carried out
+	 * @param state
+	 */
+	private void updateFlowControlState(DTAEIState state){
+		if (state.getDTCPStateVector().getFlowControlType().equals(EFCPPolicyConstants.CREDIT)){
+			if (creditHasToBeExtended(state)){
+				long newRightWindowEdge =  this.computeNewRightWindowEdge(state);
+				this.sendFlowControlOnlyDTCPPDUAndUpdateState(state, newRightWindowEdge);
+			}
+		}
+	}
+	
+	/**
+	 * Check if the credit has to be extended. This operation will vary depending on the applied policy
+	 * @param state
+	 * @return
+	 */
+	private boolean creditHasToBeExtended(DTAEIState state){
+		return state.getLastSequenceDelivered() == state.getDTCPStateVector().getReceiveRightWindowEdge();
+	}
+	
+	/**
+	 * Returns the new right window edge, increasing the credit. This operation will vary 
+	 * depending on the applied policy
+	 * @param state
+	 * @return
+	 */
+	private long computeNewRightWindowEdge(DTAEIState state){
+		return state.getDTCPStateVector().getReceiveRightWindowEdge() + 50;
+	}
+	
+	/**
+	 * Send the FlowControlOnly DTCP PDU with the new RightWindowEdge and update the state of 
+	 * this EFCP connection
+	 * @param state
+	 * @param newRightWindowEdge
+	 */
+	private void sendFlowControlOnlyDTCPPDUAndUpdateState(DTAEIState state, long newRightWindowEdge){
+		ConnectionId connectionId = new ConnectionId();
+		connectionId.setQosId(state.getQoSId());
+		FlowControlOnlyDTCPPDU dtcpPDU = this.dataTransferAE.getPDUParser().generateFlowControlOnlyDTCPPDU(
+				state.getDTCPStateVector().getFlowControlOnlyPCI(), state.getDTCPStateVector().getNextSequenceToSend(), 
+				state.getDestinationAddress(), connectionId, newRightWindowEdge, 0, 0);
+		try{
+			this.dataTransferAE.getOutgoingConnectionQueue(state.getSourceCEPid()).writeDataToQueue(dtcpPDU);
+			synchronized(state){
+				state.getDTCPStateVector().incrementNextSequenceToSend();
+				state.getDTCPStateVector().setReceiveRightWindowEdge(newRightWindowEdge);
+			}
+		}catch(Exception ex){
+			log.error("Problems extending credit");
 		}
 	}
 	
