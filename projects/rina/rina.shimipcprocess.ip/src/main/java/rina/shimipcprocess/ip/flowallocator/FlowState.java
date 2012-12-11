@@ -13,9 +13,9 @@ import rina.shimipcprocess.ip.BlockinqQueueReader;
  *
  */
 public class FlowState {
-	
+
 	public enum State {NULL, ALLOCATION_REQUESTED, ALLOCATED, DEALLOCATION_REQUESTED};
-	
+
 	private FlowService flowService = null;
 	private APService applicationCallback = null;
 	private int portId = 0;
@@ -24,35 +24,35 @@ public class FlowState {
 	private DatagramSocket datagramSocket = null;
 	private String blockingQueueId = null;
 	private BlockinqQueueReader blockingQueueReader = null;
-	
+
 	public FlowService getFlowService() {
 		return flowService;
 	}
-	
+
 	public void setFlowService(FlowService flowService) {
 		this.flowService = flowService;
 	}
-	
+
 	public APService getApplicationCallback() {
 		return applicationCallback;
 	}
-	
+
 	public void setApplicationCallback(APService applicationCallback) {
 		this.applicationCallback = applicationCallback;
 	}
-	
+
 	public int getPortId() {
 		return portId;
 	}
-	
+
 	public void setPortId(int portId) {
 		this.portId = portId;
 	}
-	
+
 	public State getState() {
 		return state;
 	}
-	
+
 	public void setState(State state) {
 		this.state = state;
 	}

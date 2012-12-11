@@ -1,5 +1,7 @@
 package rina.efcp.impl.parsers;
 
+import rina.efcp.api.AckAndFlowControlDTCPPDU;
+import rina.efcp.api.AckOnlyDTCPPDU;
 import rina.efcp.api.FlowControlOnlyDTCPPDU;
 import rina.efcp.api.PDU;
 import rina.efcp.api.PDUParser;
@@ -129,6 +131,77 @@ public class PDUParserImpl implements PDUParser{
 		return pdu;
 	}
 	
+	/**
+	 * Generate a DTCP ACK only PDU
+	 * @param pci
+	 * @param sequenceNumber
+	 * @param destinationAddress
+	 * @param connectionId
+	 * @param ack
+	 * @return
+	 */
+	public AckOnlyDTCPPDU generateAckOnlyDTCPPDU(byte[] pci, long sequenceNumber, long destinationAddress, 
+			ConnectionId connectionId, long ack){
+		AckOnlyDTCPPDU pdu = new AckOnlyDTCPPDU();
+		byte[] userData = new byte[4];
+		//Encode ack
+		byte[] aux = Longs.toByteArray(ack);
+		userData[0] = aux[7];
+		userData[1] = aux[6];
+		userData[2] = aux[5];
+		userData[3] = aux[4];
+		
+		this.generateGenericPDU(pdu, pci, sequenceNumber, destinationAddress, connectionId, PDU.ACK_ONLY_DTCP_PDU, 0x00, userData);
+		pdu.setAck(ack);
+		
+		return pdu;
+	}
+	
+	/**
+	 * Generate a DTCP Flow control only PDU
+	 * @param pci
+	 * @param sequenceNumber
+	 * @param destinationAddress
+	 * @param connectionId
+	 * @param rightWindowEdge
+	 * @param newRate
+	 * @param timeUnit
+	 * @return
+	 */
+	public AckAndFlowControlDTCPPDU generateAckAndFlowControlDTCPPDU(byte[] pci, long sequenceNumber, long destinationAddress, 
+			ConnectionId connectionId, long ack, long rightWindowEdge, long newRate, long timeUnit){
+		AckAndFlowControlDTCPPDU pdu = new AckAndFlowControlDTCPPDU();
+		byte[] userData = new byte[12];
+		//Encode ack
+		byte[] aux = Longs.toByteArray(ack);
+		userData[0] = aux[7];
+		userData[1] = aux[6];
+		userData[2] = aux[5];
+		userData[3] = aux[4];
+		//Encode right window edge
+		aux = Longs.toByteArray(rightWindowEdge);
+		userData[4] = aux[7];
+		userData[5] = aux[6];
+		userData[6] = aux[5];
+		userData[7] = aux[4];
+		//Encode newRate
+		aux = Longs.toByteArray(newRate);
+		userData[8] = aux[7];
+		userData[9] = aux[6];
+		//Encode timeUnit
+		aux = Longs.toByteArray(timeUnit);
+		userData[10] = aux[7];
+		userData[11] = aux[6];
+		
+		this.generateGenericPDU(pdu, pci, sequenceNumber, destinationAddress, connectionId, PDU.ACK_AND_FLOW_CONTROL_DTCP_PDU, 0x00, userData);
+		pdu.setAck(ack);
+		pdu.setRightWindowEdge(rightWindowEdge);
+		pdu.setNewRate(newRate);
+		pdu.setTimeUnit(timeUnit);
+		
+		return pdu;
+	}
+	
 	private PDU generateGenericPDU(PDU pdu, byte[] pci, long sequenceNumber, long destinationAddress, 
 			ConnectionId connectionId, int pduType, int flags, byte[] userData){
 		//Encode pduType
@@ -201,6 +274,19 @@ public class PDUParserImpl implements PDUParser{
 			dtcpPDU.setNewRate(this.parse2ByteLittleEndianLong(encodedPDU, 20 + offset));
 			dtcpPDU.setTimeUnit(this.parse2ByteLittleEndianLong(encodedPDU, 22 + offset));
 			return dtcpPDU;
+		case PDU.ACK_ONLY_DTCP_PDU:
+			AckOnlyDTCPPDU adtcpPDU = new AckOnlyDTCPPDU(pdu);
+			adtcpPDU.setSequenceNumber(this.parse4ByteLittleEndianLong(encodedPDU, 14 + offset));
+			adtcpPDU.setAck(this.parse4ByteLittleEndianLong(encodedPDU, 18 + offset));
+			return adtcpPDU;
+		case PDU.ACK_AND_FLOW_CONTROL_DTCP_PDU:
+			AckAndFlowControlDTCPPDU afdtcpPDU = new AckAndFlowControlDTCPPDU(pdu);
+			afdtcpPDU.setSequenceNumber(this.parse4ByteLittleEndianLong(encodedPDU, 14 + offset));
+			afdtcpPDU.setAck(this.parse4ByteLittleEndianLong(encodedPDU, 18 + offset));
+			afdtcpPDU.setRightWindowEdge(this.parse4ByteLittleEndianLong(encodedPDU, 22 + offset));
+			afdtcpPDU.setNewRate(this.parse2ByteLittleEndianLong(encodedPDU, 24 + offset));
+			afdtcpPDU.setTimeUnit(this.parse2ByteLittleEndianLong(encodedPDU, 26 + offset));
+			return afdtcpPDU;
 		}
 		
 		return pdu;

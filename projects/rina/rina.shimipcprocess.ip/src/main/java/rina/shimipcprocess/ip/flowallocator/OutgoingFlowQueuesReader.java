@@ -20,31 +20,31 @@ import rina.ipcmanager.api.IPCManager;
  *
  */
 public class OutgoingFlowQueuesReader implements QueueSubscriptor, Runnable{
-	
+
 	private static final Log log = LogFactory.getLog(OutgoingFlowQueuesReader.class);
-	
+
 	/**
 	 * The queues from incoming flows
 	 */
 	private BlockingQueue<Integer> queuesReadyToBeRead = null;
-	
+
 	/**
 	 * The flow state, including the socket to write to
 	 */
 	private Map<Integer, FlowState> flows = null;
-	
+
 	/**
 	 * The IPCManager
 	 */
 	private IPCManager ipcManager = null;
-	
+
 	/**
 	 * The Delimiter instance
 	 */
 	private Delimiter delimiter = null;
-	
+
 	private boolean end = false;
-	
+
 	public OutgoingFlowQueuesReader(IPCManager ipcManager, 
 			Map<Integer, FlowState> flows, Delimiter delimiter){
 		this.ipcManager = ipcManager;
@@ -52,7 +52,7 @@ public class OutgoingFlowQueuesReader implements QueueSubscriptor, Runnable{
 		this.flows = flows;
 		this.delimiter = delimiter;
 	}
-		
+
 	public void stop(){
 		this.end = true;
 		try{
@@ -68,7 +68,7 @@ public class OutgoingFlowQueuesReader implements QueueSubscriptor, Runnable{
 	public void run() {
 		Integer portId = null;
 		byte[] sdu = null;
-		
+
 		while(!end){
 			try{
 				portId = this.queuesReadyToBeRead.take();
@@ -82,7 +82,7 @@ public class OutgoingFlowQueuesReader implements QueueSubscriptor, Runnable{
 			}
 		}
 	}
-	
+
 	/**
 	 * Delimit the sdu if required, and send it through the right socket
 	 * @param sdu
@@ -90,7 +90,7 @@ public class OutgoingFlowQueuesReader implements QueueSubscriptor, Runnable{
 	 */
 	private void processSDU(byte[] sdu, FlowState flowState){
 		DatagramPacket datagramPacket = null;
-		
+
 		try{
 			if (flowState.getSocket() != null){
 				flowState.getSocket().getOutputStream().write(delimiter.getDelimitedSdu(sdu));

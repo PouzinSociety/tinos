@@ -13,6 +13,11 @@ public class KnownIPCProcessAddress {
 	private String apName = null;
 	
 	/**
+	 * The application process instance of the remote IPC Process
+	 */
+	private String apInstance = null;
+	
+	/**
 	 * The address of the remote IPC Process
 	 */
 	private long address = 0;
@@ -23,6 +28,14 @@ public class KnownIPCProcessAddress {
 
 	public void setApName(String apName) {
 		this.apName = apName;
+	}
+
+	public String getApInstance() {
+		return apInstance;
+	}
+
+	public void setApInstance(String apInstance) {
+		this.apInstance = apInstance;
 	}
 
 	public long getAddress() {

@@ -12,6 +12,8 @@ public class PDU {
 	public static final int DTP_PDU_TYPE = 0x81;
 	public static final int IDENTIFY_SENDER_PDU_TYPE = 0xC1;
 	public static final int FLOW_CONTROL_ONLY_DTCP_PDU = 0x89;
+	public static final int ACK_ONLY_DTCP_PDU = 0x8C;
+	public static final int ACK_AND_FLOW_CONTROL_DTCP_PDU = 0x8D;
 	public static final int MANAGEMENT_PDU_TYPE = 0xC0;	
 	
 	/**

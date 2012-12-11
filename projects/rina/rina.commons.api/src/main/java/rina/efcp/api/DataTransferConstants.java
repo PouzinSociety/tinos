@@ -103,9 +103,21 @@ public class DataTransferConstants {
 	private long SDUGapTimerDelay = 2*1000;
 	
 	/**
-	 * The maximum PDU lifetime in this DIF, in seconds.
+	 * The maximum PDU lifetime in this DIF, in milliseconds. This is MPL in delta-T
 	 */
 	private int maxPDULifetime  = 10*1000;
+	
+	/**
+	 * The maximum time DTCP will try to keep retransmitting a PDU, before discarding it. 
+	 * This is R in delta-T
+	 */
+	private int maxTimeToKeepRetransmitting = 10*1000;
+    
+	/**
+	 * /The maximum time the receiving side of a DTCP connection will take to ACK a PDU 
+	 * once it has received it. This is A in delta-T
+	 */
+	private int maxTimeToACK = 10*1000;  
 
 	public int getQosIdLength() {
 		return qosIdLength;
@@ -251,6 +263,22 @@ public class DataTransferConstants {
 		this.maxPDULifetime = maxPDULifetime;
 	}
 	
+	public int getMaxTimeToKeepRetransmitting() {
+		return maxTimeToKeepRetransmitting;
+	}
+
+	public void setMaxTimeToKeepRetransmitting(int maxTimeToKeepRetransmitting) {
+		this.maxTimeToKeepRetransmitting = maxTimeToKeepRetransmitting;
+	}
+
+	public int getMaxTimeToACK() {
+		return maxTimeToACK;
+	}
+
+	public void setMaxTimeToACK(int maxTimeToACK) {
+		this.maxTimeToACK = maxTimeToACK;
+	}
+
 	@Override
 	public String toString(){
 		String result = "";
@@ -261,7 +289,9 @@ public class DataTransferConstants {
 		result = result + "QoS id length: " + this.getQosIdLength() + "\n";
 		result = result + "Sequence number length: " + this.getSequenceNumberLength() + "\n";
 		result = result + "Packet length length: " + this.getLengthLength() + "\n";
-		result = result + "Max PDU Lifetime: " + this.getMaxPDULifetime() + "\n";
+		result = result + "Max PDU Lifetime (ms): " + this.getMaxPDULifetime() + "\n";
+		result = result + "Max time to keep retransmitting (ms): " + this.getMaxTimeToKeepRetransmitting() + "\n";
+		result = result + "Max time to ACK (ms): " + this.getMaxTimeToACK() + "\n";
 		result = result + "DIF concatenation: " + this.isDIFConcatenation() + "\n";
 		result = result + "DIF fragmentation: " + this.isDIFFragmentation() + "\n";
 		result = result + "DIF integrity: " + this.isDIFIntegrity() + "\n";

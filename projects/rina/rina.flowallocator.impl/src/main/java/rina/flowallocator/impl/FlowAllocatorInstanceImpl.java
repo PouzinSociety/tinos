@@ -197,7 +197,7 @@ public class FlowAllocatorInstanceImpl implements FlowAllocatorInstance, CDAPMes
 	 */
 	public void submitAllocateRequest(FlowService flowService, APService applicationCallback) throws IPCException {
 		this.applicationCallback = applicationCallback;
-		flow = newFlowRequestPolicy.generateFlowObject(flowService);
+		flow = newFlowRequestPolicy.generateFlowObject(flowService, this.flowAllocator.getIPCProcess().getDIFName());
 		log.debug("Generated flow object: "+flow.toString());
 		ObjectValue objectValue = null;
 		CDAPMessage cdapMessage = null;

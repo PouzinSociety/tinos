@@ -233,8 +233,9 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 		
 		//Check if we know the remote IPC Process
 		RINAConfiguration rinaConf = RINAConfiguration.getInstance();
-		KnownIPCProcessAddress ipcAddress = rinaConf.getIPCProcessAddress(
-				this.remotePeer.getApplicationProcessName());
+		KnownIPCProcessAddress ipcAddress = rinaConf.getIPCProcessAddress(this.enrollmentTask.getIPCProcess().getDIFName(),
+				this.remotePeer.getApplicationProcessName(), 
+				this.remotePeer.getApplicationProcessInstance());
 		if (ipcAddress != null){
 			if (ipcAddress.getAddress() == address){
 				return true;
@@ -244,7 +245,8 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 		}
 		
 		//Check if we know the prefix assigned to the organization
-		long prefix = rinaConf.getAddressPrefixConfiguration(this.remotePeer.getApplicationProcessName());
+		long prefix = rinaConf.getAddressPrefixConfiguration(this.enrollmentTask.getIPCProcess().getDIFName(), 
+				this.remotePeer.getApplicationProcessName());
 		if (prefix == -1){
 			//We don't know the organization of the IPC Process
 			return false;
@@ -281,14 +283,16 @@ public class EnrollerStateMachine extends BaseEnrollmentStateMachine{
 		RINAConfiguration rinaConf = RINAConfiguration.getInstance();
 		
 		//See if we know the configuration of the remote IPC Process
-		KnownIPCProcessAddress ipcAddress = rinaConf.getIPCProcessAddress(
-				this.remotePeer.getApplicationProcessName());
+		KnownIPCProcessAddress ipcAddress = rinaConf.getIPCProcessAddress(this.enrollmentTask.getIPCProcess().getDIFName(),
+				this.remotePeer.getApplicationProcessName(), 
+				this.remotePeer.getApplicationProcessInstance());
 		if (ipcAddress != null){
 			return ipcAddress.getAddress();
 		}
 		
 		//See if we know the prefix of the remote IPC Process
-		long prefix = rinaConf.getAddressPrefixConfiguration(this.remotePeer.getApplicationProcessName());
+		long prefix = rinaConf.getAddressPrefixConfiguration(this.enrollmentTask.getIPCProcess().getDIFName(), 
+				this.remotePeer.getApplicationProcessName());
 		if (prefix == -1){
 			//We don't know the prefix, return an invalid address indicating 
 			//that the IPC Process cannot join the DIF

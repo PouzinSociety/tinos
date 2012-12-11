@@ -261,9 +261,9 @@ public class IPCManagerImpl implements IPCManager{
 				}
 
 				KnownIPCProcessAddress ipcProcessAddress = 
-					RINAConfiguration.getInstance().getIPCProcessAddress(apName);
+					RINAConfiguration.getInstance().getIPCProcessAddress(difName, apName, apInstance);
 				if (ipcProcessAddress == null){
-					throw new Exception("Unrecoginzed IPC Process Name: "+apName);
+					throw new Exception("Unrecoginzed IPC Process Name; "+apName+": "+apInstance);
 				}
 
 				WhatevercastName dan = new WhatevercastName();

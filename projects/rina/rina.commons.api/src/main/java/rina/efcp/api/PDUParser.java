@@ -46,6 +46,32 @@ public interface PDUParser {
 			ConnectionId connectionId, long rightWindowEdge, long newRate, long timeUnit);
 	
 	/**
+	 * Generate a DTCP ACK only PDU
+	 * @param pci
+	 * @param sequenceNumber
+	 * @param destinationAddress
+	 * @param connectionId
+	 * @param ack
+	 * @return
+	 */
+	public AckOnlyDTCPPDU generateAckOnlyDTCPPDU(byte[] pci, long sequenceNumber, long destinationAddress, 
+			ConnectionId connectionId, long ack);
+	
+	/**
+	 * Generate a DTCP Flow control only PDU
+	 * @param pci
+	 * @param sequenceNumber
+	 * @param destinationAddress
+	 * @param connectionId
+	 * @param rightWindowEdge
+	 * @param newRate
+	 * @param timeUnit
+	 * @return
+	 */
+	public AckAndFlowControlDTCPPDU generateAckAndFlowControlDTCPPDU(byte[] pci, long sequenceNumber, long destinationAddress, 
+			ConnectionId connectionId, long ack, long rightWindowEdge, long newRate, long timeUnit);
+	
+	/**
 	 * Generates an EFCP Management PDU
 	 * @param managementData
 	 * @return
