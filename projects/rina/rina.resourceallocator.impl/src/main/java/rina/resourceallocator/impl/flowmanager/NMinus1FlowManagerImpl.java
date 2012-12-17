@@ -423,15 +423,19 @@ public class NMinus1FlowManagerImpl implements NMinus1FlowManager, APService{
 					this.pduForwardingTable.addEntry(destinationAddress, qosId, new int[]{portId});
 				}
 				
-				//Send NO-OP PDU
-				try{
-					PDU noOpPDU = this.pduParser.generateIdentifySenderPDU(this.ipcProcess.getAddress().longValue(),  
-							nMinus1FlowDescriptor.getFlowService().getQoSSpecification().getQosCubeId());
-					byte[] sdu = nMinus1FlowDescriptor.getSduProtectionModule().protectPDU(noOpPDU);
-					this.ipcManager.getOutgoingFlowQueue(portId).writeDataToQueue(sdu);
-				}catch(Exception ex){
-					ex.printStackTrace();
-					log.error("Problems sending No OP PDU through N-1 flow "+portId, ex);
+				//Send NO-OP PDU if the underlying IPC Process is a SHIM IP DIF and the N-1 flow is reliable
+				IPCProcess ipcProcess = (IPCProcess) nMinus1FlowDescriptor.getIpcService();
+				if (ipcProcess.getType().equals(IPCProcessType.SHIM_IP) && 
+						nMinus1FlowDescriptor.getFlowService().getQoSSpecification().getQosCubeId() == 2){
+					try{
+						PDU noOpPDU = this.pduParser.generateIdentifySenderPDU(this.ipcProcess.getAddress().longValue(),  
+								nMinus1FlowDescriptor.getFlowService().getQoSSpecification().getQosCubeId());
+						byte[] sdu = nMinus1FlowDescriptor.getSduProtectionModule().protectPDU(noOpPDU);
+						this.ipcManager.getOutgoingFlowQueue(portId).writeDataToQueue(sdu);
+					}catch(Exception ex){
+						ex.printStackTrace();
+						log.error("Problems sending No OP PDU through N-1 flow "+portId, ex);
+					}
 				}
 			}
 			

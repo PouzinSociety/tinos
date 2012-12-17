@@ -7,7 +7,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.aux.QueueSubscriptor;
+import rina.aux.QueueReadyToBeReadSubscriptor;
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.PDU;
 import rina.efcp.api.PDUParser;
@@ -24,7 +24,7 @@ import rina.ribdaemon.api.RIBDaemon;
  * @author eduardgrasa
  *
  */
-public class NMinusOneIncomingSDUListener implements QueueSubscriptor, Runnable{
+public class NMinusOneIncomingSDUListener implements QueueReadyToBeReadSubscriptor, Runnable{
 	
 	private static final Log log = LogFactory.getLog(NMinusOneIncomingSDUListener.class);
 	
@@ -101,6 +101,8 @@ public class NMinusOneIncomingSDUListener implements QueueSubscriptor, Runnable{
 	public void run() {
 		int portId = -1;
 		
+		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+		
 		while(true){
 			try{
 				portId = this.queuesReadyToBeRead.take().intValue();
@@ -116,7 +118,7 @@ public class NMinusOneIncomingSDUListener implements QueueSubscriptor, Runnable{
 		}
 	}
 
-	public void queueReadyToBeRead(int queueId){
+	public void queueReadyToBeRead(int queueId, boolean inputOutput){
 		try {
 			this.queuesReadyToBeRead.put(new Integer(queueId));
 		} catch (InterruptedException e) {

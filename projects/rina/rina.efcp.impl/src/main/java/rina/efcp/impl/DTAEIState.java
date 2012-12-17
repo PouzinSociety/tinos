@@ -1,10 +1,7 @@
 package rina.efcp.impl;
 
-import java.util.ArrayList;
-
 import rina.efcp.api.DataTransferConstants;
 import rina.efcp.api.EFCPPolicyConstants;
-import rina.efcp.api.PDU;
 import rina.efcp.api.PDUParser;
 import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.Flow;
@@ -167,7 +164,6 @@ public class DTAEIState {
 			this.dtcpStateVector.setFlowControlEnabled(true);
 			if (dtcpStateVector.isFlowControlEnabled()){
 				this.dtcpStateVector.setFlowControlType(flowControl);
-				this.dtcpStateVector.setClosedWindowQueue(new ArrayList<PDU>());
 				this.dtcpStateVector.setReceiveRightWindowEdge(50);
 				this.dtcpStateVector.setSendRightWindowEdge(50);
 				this.dtcpStateVector.setFlowControlOnlyPCI(pduParser.preComputePCI(this.destinationAddress, this.sourceAddress, 
@@ -176,6 +172,22 @@ public class DTAEIState {
 		}
 	}
 	
+	/**
+	 * Returns whether we're allowed or not to send a PDU (determined by flow control)
+	 * @return
+	 */
+	public boolean canSend(){
+		if (!this.dtcpStateVector.isFlowControlEnabled()){
+			return true;
+		}
+		
+		if (this.dtcpStateVector.getFlowControlType().equals(EFCPPolicyConstants.CREDIT)){
+			return this.nextSequenceToSend <= this.dtcpStateVector.getSendRightWindowEdge();
+		}
+		
+		return true;
+	}
+
 	public APService getApplicationCallback() {
 		return applicationCallback;
 	}

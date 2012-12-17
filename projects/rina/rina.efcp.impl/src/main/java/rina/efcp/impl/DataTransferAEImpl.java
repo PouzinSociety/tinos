@@ -149,7 +149,8 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 	 * @param portId the id of the incoming flow queue
 	 */
 	public void subscribeToFlow(int portId) throws IPCException{
-		this.ipcManager.getOutgoingFlowQueue(portId).subscribeToQueue(this.outgoingFlowQueuesReader);
+		this.ipcManager.getOutgoingFlowQueue(portId).subscribeToQueueReadyToBeReadEvents(this.outgoingFlowQueuesReader);
+		//this.ipcManager.getIncomingFlowQueue(portId).subscribeToQueueReadyToBeWrittenEvents(this.outgoingFlowQueuesReader);
 	}
 	
 	private void populateRIB(IPCProcess ipcProcess){
@@ -255,18 +256,17 @@ public class DataTransferAEImpl extends BaseDataTransferAE{
 			connectionEndpointId = new Long(connectionId.getDestinationCEPId());
 		}
 		this.connectionStatesByConnectionId.put(connectionEndpointId, state);
-		this.incomingConnectionQueues.put(connectionEndpointId, 
-				new BlockingQueueWithSubscriptor<PDU>(connectionEndpointId.intValue(), 
-				RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues()));
-		this.outgoingConnectionQueues.put(connectionEndpointId, 
-				new BlockingQueueWithSubscriptor<PDU>(connectionEndpointId.intValue(), 
-				RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues()));
+		BlockingQueueWithSubscriptor<PDU> incomingEFCPQueue = new BlockingQueueWithSubscriptor<PDU>(connectionEndpointId.intValue(), 
+				RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues(), 
+				true);
+		incomingEFCPQueue.subscribeToQueueReadyToBeReadEvents(this.incomingEFCPQueuesReader);
+		this.incomingConnectionQueues.put(connectionEndpointId, incomingEFCPQueue);
+		BlockingQueueWithSubscriptor<PDU> outgoingEFCPQueue = new BlockingQueueWithSubscriptor<PDU>(connectionEndpointId.intValue(), 
+				RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues(), 
+				false);
+		//outgoingEFCPQueue.subscribeToQueueReadyToBeWrittenEvents(this.outgoingFlowQueuesReader);
+		this.outgoingConnectionQueues.put(connectionEndpointId, outgoingEFCPQueue);
 		this.portIdToConnectionMapping.put(new Integer(portId), state);
-		try{
-			this.getIncomingConnectionQueue(connectionEndpointId.longValue()).subscribeToQueue(this.incomingEFCPQueuesReader);
-		}catch(Exception ex){
-			log.error("Problems subscribing to incoming EFCP Connection queue identified by connectionEndpoint Id "+connectionEndpointId, ex);
-		}
 		Event event = new EFCPConnectionCreatedEvent(connectionEndpointId.longValue());
 		this.ribDaemon.deliverEvent(event);
 	}

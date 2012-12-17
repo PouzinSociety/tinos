@@ -1,19 +1,9 @@
 package rina.efcp.impl;
 
-import java.util.List;
-
-import rina.efcp.api.PDU;
-
 public class DTCPStateVector {
 	private boolean flowControlEnabled = false;
 	private boolean transmissionControlEnabled = false;
 	private boolean retransmissionControlEnabled = false;
-	
-	/**
-	 * The Closed window queue, where PDUs wait when the 
-	 * flow control window is closed
-	 */
-	private List<PDU> closedWindowQueue = null;
 	
 	/**
 	 * The type of flow control
@@ -50,10 +40,6 @@ public class DTCPStateVector {
 		this.flowControlOnlyPCI = flowControlOnlyPCI;
 	}
 
-	public void setClosedWindowQueue(List<PDU> closedWindowQueue) {
-		this.closedWindowQueue = closedWindowQueue;
-	}
-
 	public boolean isFlowControlEnabled() {
 		return flowControlEnabled;
 	}
@@ -84,10 +70,6 @@ public class DTCPStateVector {
 
 	public void setFlowControlType(String flowControlType) {
 		this.flowControlType = flowControlType;
-	}
-
-	public List<PDU> getClosedWindowQueue() {
-		return closedWindowQueue;
 	}
 
 	public long getSendRightWindowEdge() {

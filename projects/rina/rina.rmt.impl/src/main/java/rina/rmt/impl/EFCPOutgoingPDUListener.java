@@ -6,7 +6,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.aux.QueueSubscriptor;
+import rina.aux.QueueReadyToBeReadSubscriptor;
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.PDU;
 import rina.ipcmanager.api.IPCManager;
@@ -19,7 +19,7 @@ import rina.resourceallocator.api.PDUForwardingTable;
  * @author eduardgrasa
  *
  */
-public class EFCPOutgoingPDUListener implements QueueSubscriptor, Runnable{
+public class EFCPOutgoingPDUListener implements QueueReadyToBeReadSubscriptor, Runnable{
 	
 	private static final Log log = LogFactory.getLog(EFCPOutgoingPDUListener.class);
 	
@@ -72,6 +72,8 @@ public class EFCPOutgoingPDUListener implements QueueSubscriptor, Runnable{
 	public void run() {
 		long connectionEndpointId = -1;
 		
+		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+		
 		while(true){
 			try{
 				connectionEndpointId = this.queuesReadyToBeRead.take().longValue();
@@ -87,7 +89,7 @@ public class EFCPOutgoingPDUListener implements QueueSubscriptor, Runnable{
 		}
 	}
 
-	public void queueReadyToBeRead(int queueId){
+	public void queueReadyToBeRead(int queueId, boolean inputOutput){
 		try {
 			this.queuesReadyToBeRead.put(new Integer(queueId));
 		} catch (InterruptedException e) {

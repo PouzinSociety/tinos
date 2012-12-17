@@ -31,6 +31,16 @@ public class TestFlowStatistics {
 	 * The number of received SDUs that have been lost
 	 */
 	private long receivedSDUsLost = 0;
+	
+	/**
+	 * Number of sent SDUs
+	 */
+	private long sentSDUS = 0;
+	
+	/**
+	 * Number of received SDUs
+	 */
+	private long receivedSDUs = 0;
 
 	public long getFlowSetupTimeInMillis() {
 		return flowSetupTimeInMillis;
@@ -70,5 +80,21 @@ public class TestFlowStatistics {
 
 	public void setReceivedSDUsLost(long receivedSDUsLost) {
 		this.receivedSDUsLost = receivedSDUsLost;
+	}
+
+	public long getSentSDUS() {
+		return sentSDUS;
+	}
+
+	public void setSentSDUS(long sentSDUS) {
+		this.sentSDUS = sentSDUS;
+	}
+
+	public long getReceivedSDUs() {
+		return receivedSDUs;
+	}
+
+	public void setReceivedSDUs(long receivedSDUs) {
+		this.receivedSDUs = receivedSDUs;
 	}
 }

@@ -395,8 +395,8 @@ public class IPCManagerImpl implements IPCManager{
 					IPCException.PROBLEMS_ALLOCATING_FLOW + ". There are existing queues supporting this portId");
 		}
 		
-		this.incomingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor<byte[]>(portId, queueCapacity));
-		this.outgoingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor<byte[]>(portId, queueCapacity));
+		this.incomingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor<byte[]>(portId, queueCapacity, true));
+		this.outgoingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor<byte[]>(portId, queueCapacity, false));
 	}
 	
 	/**

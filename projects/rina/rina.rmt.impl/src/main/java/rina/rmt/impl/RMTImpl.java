@@ -101,7 +101,7 @@ public class RMTImpl extends BaseRMT implements EventListener{
 		}else if (event.getId().equals(Event.EFCP_CONNECTION_CREATED)){
 			EFCPConnectionCreatedEvent efcpEvent = (EFCPConnectionCreatedEvent) event;
 			try{
-				this.dataTransferAE.getOutgoingConnectionQueue(efcpEvent.getConnectionEndpointId()).subscribeToQueue(this.efcpOutgoingPDUListener);
+				this.dataTransferAE.getOutgoingConnectionQueue(efcpEvent.getConnectionEndpointId()).subscribeToQueueReadyToBeReadEvents(this.efcpOutgoingPDUListener);
 			}catch(Exception ex){
 				log.error("Problems subscribing to outgoing EFCP queue.", ex);
 			}
@@ -110,7 +110,7 @@ public class RMTImpl extends BaseRMT implements EventListener{
 	
 	private void processNMinus1FlowAllocatedEvent(NMinus1FlowDescriptor nMinus1FlowDescriptor){
 		try{
-			this.ipcManager.getIncomingFlowQueue(nMinus1FlowDescriptor.getPortId()).subscribeToQueue(this.nMinusOneIncomingSDUListener);
+			this.ipcManager.getIncomingFlowQueue(nMinus1FlowDescriptor.getPortId()).subscribeToQueueReadyToBeReadEvents(this.nMinusOneIncomingSDUListener);
 		}catch(Exception ex){
 			log.error("Problems subscribing to N-1 incoming flow queue.", ex);
 		}

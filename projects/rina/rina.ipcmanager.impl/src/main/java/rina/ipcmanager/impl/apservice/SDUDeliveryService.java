@@ -9,18 +9,18 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.aux.QueueSubscriptor;
+import rina.aux.QueueReadyToBeReadSubscriptor;
 import rina.delimiting.api.Delimiter;
 import rina.delimiting.api.DelimiterFactory;
 import rina.ipcmanager.api.IPCManager;
 
 /**
- * Reads relevant outgoing flow queues and delivers 
+ * Reads relevant incoming flow queues and delivers 
  * the SDUs to applications
  * @author eduardgrasa
  *
  */
-public class SDUDeliveryService implements QueueSubscriptor, Runnable {
+public class SDUDeliveryService implements QueueReadyToBeReadSubscriptor, Runnable {
 	
 	private static final Log log = LogFactory.getLog(SDUDeliveryService.class);
 	
@@ -72,6 +72,8 @@ public class SDUDeliveryService implements QueueSubscriptor, Runnable {
 		byte[] sdu = null;
 		Socket socket = null;
 		
+		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+		
 		while(true){
 			try{
 				portId = this.queuesReadyToBeRead.take().intValue();
@@ -89,7 +91,7 @@ public class SDUDeliveryService implements QueueSubscriptor, Runnable {
 		}
 	}
 	
-	public void queueReadyToBeRead(int queueId) {
+	public void queueReadyToBeRead(int queueId, boolean inputOutput) {
 		try {
 			this.queuesReadyToBeRead.put(new Integer(queueId));
 		} catch (InterruptedException e) {

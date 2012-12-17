@@ -340,7 +340,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			queueCapacity = RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues();
 		}
 		this.ipcManager.addFlowQueues(portId, queueCapacity);
-		this.ipcManager.getOutgoingFlowQueue(portId).subscribeToQueue(this.incomingFlowQueuesReader);
+		this.ipcManager.getOutgoingFlowQueue(portId).subscribeToQueueReadyToBeReadEvents(this.incomingFlowQueuesReader);
 		return portId;
 	}
 
@@ -549,7 +549,7 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 			queueCapacity = RINAConfiguration.getInstance().getLocalConfiguration().getLengthOfFlowQueues();
 		}
 		this.ipcManager.addFlowQueues(portId, queueCapacity);
-		this.ipcManager.getOutgoingFlowQueue(portId).subscribeToQueue(this.incomingFlowQueuesReader);
+		this.ipcManager.getOutgoingFlowQueue(portId).subscribeToQueueReadyToBeReadEvents(this.incomingFlowQueuesReader);
 	}
 
 	private void submitAllocateResponseForReliableFlow(Socket socket, APService applicationCallback, int portId){

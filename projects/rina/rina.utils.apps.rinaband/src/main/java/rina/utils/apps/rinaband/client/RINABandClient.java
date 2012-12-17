@@ -115,11 +115,7 @@ public class RINABandClient implements SDUListener{
 		try{
 			//1 Allocate a flow to the RINABand Server control AE
 			QualityOfServiceSpecification qosSpec = new QualityOfServiceSpecification();
-			if (testInformation.getQos().equals(Main.RELIABLE)){
-				qosSpec.setQosCubeId(2);
-			}else{
-				qosSpec.setQosCubeId(1);
-			}
+			qosSpec.setQosCubeId(2);
 			this.controlFlow = new Flow(this.clientApNamingInfo, this.controlApNamingInfo, qosSpec, this);
 			
 			//2 Send the create test message
@@ -145,6 +141,7 @@ public class RINABandClient implements SDUListener{
 	public void sduDelivered(byte[] sdu){
 		try{
 			CDAPMessage cdapMessage = this.cdapSessionManager.decodeCDAPMessage(sdu);
+			System.out.println("Received a CDAP Message! "+cdapMessage.toString());
 			switch(cdapMessage.getOpCode()){
 			case M_CREATE_R:
 				handleCreateResponseReceived(cdapMessage);
@@ -332,9 +329,11 @@ public class RINABandClient implements SDUListener{
 				System.out.println("Statistics of flow "+currentWorker.getFlow().getPortId());
 				System.out.println("Flow allocation time (ms): "+currentWorker.getStatistics().getFlowSetupTimeInMillis());
 				System.out.println("Flow deallocation time (ms): "+currentWorker.getStatistics().getFlowTearDownTimeInMillis());
+				System.out.println("Sent SDUs: "+currentWorker.getStatistics().getSentSDUS());
 				System.out.println("Sent SDUs per second: "+currentWorker.getStatistics().getSentSDUsPerSecond());
 				System.out.println("Sent KiloBytes per second (KBps): "+
 						currentWorker.getStatistics().getSentSDUsPerSecond()*this.testInformation.getSduSize()/1024);
+				System.out.println("Recveived SDUs: "+currentWorker.getStatistics().getReceivedSDUs());
 				System.out.println("Received SDUs per second: "+currentWorker.getStatistics().getReceivedSDUsPerSecond());
 				System.out.println("Received KiloBytes per second (KBps): "+
 						currentWorker.getStatistics().getReceivedSDUsPerSecond()*this.testInformation.getSduSize()/1024);

@@ -9,7 +9,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.aux.QueueSubscriptor;
+import rina.aux.QueueReadyToBeReadSubscriptor;
 import rina.delimiting.api.Delimiter;
 import rina.ipcmanager.api.IPCManager;
 
@@ -19,7 +19,7 @@ import rina.ipcmanager.api.IPCManager;
  * @author eduardgrasa
  *
  */
-public class OutgoingFlowQueuesReader implements QueueSubscriptor, Runnable{
+public class OutgoingFlowQueuesReader implements QueueReadyToBeReadSubscriptor, Runnable{
 
 	private static final Log log = LogFactory.getLog(OutgoingFlowQueuesReader.class);
 
@@ -68,6 +68,8 @@ public class OutgoingFlowQueuesReader implements QueueSubscriptor, Runnable{
 	public void run() {
 		Integer portId = null;
 		byte[] sdu = null;
+		
+		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
 		while(!end){
 			try{
@@ -112,7 +114,7 @@ public class OutgoingFlowQueuesReader implements QueueSubscriptor, Runnable{
 		}
 	}
 
-	public void queueReadyToBeRead(int queueId) {
+	public void queueReadyToBeRead(int queueId, boolean inputOutput) {
 		try {
 			this.queuesReadyToBeRead.put(new Integer(queueId));
 		} catch (InterruptedException e) {

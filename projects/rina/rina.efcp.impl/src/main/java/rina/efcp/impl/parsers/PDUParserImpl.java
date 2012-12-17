@@ -87,7 +87,7 @@ public class PDUParserImpl implements PDUParser{
 	}
 	
 	public PDU generateIdentifySenderPDU(long address, int qosId){
-		byte[] pci = preComputePCI(0, address, 0, 0, 0);
+		byte[] pci = preComputePCI(0, address, 0, 0, qosId);
 		ConnectionId conId = new ConnectionId();
 		conId.setQosId(qosId);
 		return generateGenericPDU(new PDU(), pci, 0, 0, conId, PDU.IDENTIFY_SENDER_PDU_TYPE, 0, new byte[0]);

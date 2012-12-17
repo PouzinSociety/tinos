@@ -7,7 +7,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import rina.aux.QueueSubscriptor;
+import rina.aux.QueueReadyToBeReadSubscriptor;
 import rina.efcp.api.DataTransferAE;
 import rina.efcp.api.EFCPPolicyConstants;
 import rina.efcp.api.FlowControlOnlyDTCPPDU;
@@ -24,7 +24,7 @@ import rina.ipcmanager.api.IPCManager;
  * @author eduardgrasa
  *
  */
-public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
+public class IncomingEFCPQueuesReader implements Runnable, QueueReadyToBeReadSubscriptor{
 	
 	private static final Log log = LogFactory.getLog(IncomingEFCPQueuesReader.class);
 	
@@ -77,7 +77,7 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 		}
 	}
 	
-	public void queueReadyToBeRead(int queueId) {
+	public void queueReadyToBeRead(int queueId, boolean inputOutput) {
 		try {
 			this.efcpEvents.put(new PDUDeliveredFromRMTEvent(queueId));
 		} catch (InterruptedException e) {
@@ -91,6 +91,8 @@ public class IncomingEFCPQueuesReader implements Runnable, QueueSubscriptor{
 	public void run() {
 		EFCPEvent efcpEvent = null;
 		PDUDeliveredFromRMTEvent pduEvent = null;
+		
+		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 		
 		while(!end){
 			try{
