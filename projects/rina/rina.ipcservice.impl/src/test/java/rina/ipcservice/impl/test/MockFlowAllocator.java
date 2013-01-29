@@ -32,7 +32,7 @@ public class MockFlowAllocator extends BaseFlowAllocator{
 		
 	}
 
-	public void receivedLocalFlowRequest(FlowService arg0, String arg1)
+	public void receivedLocalFlowRequest(FlowService arg0)
 			throws IPCException {
 		// TODO Auto-generated method stub
 		

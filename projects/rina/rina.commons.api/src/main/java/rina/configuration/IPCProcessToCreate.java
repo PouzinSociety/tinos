@@ -19,6 +19,7 @@ public class IPCProcessToCreate {
 	private List<Neighbor> neighbors = null;
 	private List<String> difsToRegisterAt = null;
 	private String hostname = null;
+	private List<SDUProtectionOption> sduProtectionOptions = null;
 	private Map<String, String> parameters = null;
 	
 	public String getType() {
@@ -83,5 +84,14 @@ public class IPCProcessToCreate {
 	
 	public void setDifsToRegisterAt(List<String> difsToRegisterAt) {
 		this.difsToRegisterAt = difsToRegisterAt;
+	}
+
+	public List<SDUProtectionOption> getSduProtectionOptions() {
+		return sduProtectionOptions;
+	}
+
+	public void setSduProtectionOptions(
+			List<SDUProtectionOption> sduProtectionOptions) {
+		this.sduProtectionOptions = sduProtectionOptions;
 	}
 }

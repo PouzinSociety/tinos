@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import rina.efcp.api.DataTransferConstants;
 import rina.efcp.impl.DTAEIState;
+import rina.efcp.impl.parsers.PDUParserImpl;
 import rina.efcp.api.PDU;
 import rina.efcp.api.PDUParser;
 import rina.flowallocator.api.ConnectionId;
@@ -17,6 +18,7 @@ public class TestPDUParserAndDTAEIState {
 	private DTAEIState state = null;
 	private ConnectionId connectionId = null;
 	private DataTransferConstants dataTransferConstants = null;
+	private PDUParser pduParser = null;
 	
 	@Before
 	public void setup(){
@@ -31,23 +33,25 @@ public class TestPDUParserAndDTAEIState {
 		connectionId.setSourceCEPId(12);
 		connectionId.setQosId((byte)1);
 		flow.getConnectionIds().add(connectionId);
+		pduParser = new PDUParserImpl();
 		
 		dataTransferConstants = new DataTransferConstants();
 		
-		state = new DTAEIState(flow, dataTransferConstants);
+		state = new DTAEIState(flow, dataTransferConstants, pduParser);
 	}
 	
 	@Test
 	public void testPDUEncodingDecoding(){
-		byte[] pdu = null;
+		PDU pdu = null;
 		byte[] sdu = new String("Testing EFCP encoding and decoding").getBytes();
 		
 		for(int i=0; i<3; i++){
-			pdu = PDUParser.generatePDU(state.getPreComputedPCI(), 
-					state.getNextSequenceToSend(), 0x81, 0x00, sdu);
-			printBytes(pdu);
+			pdu = pduParser.generateDTPPDU(state.getPreComputedPCI(), 
+					state.getNextSequenceToSend(), flow.getDestinationAddress(), 
+					flow.getConnectionIds().get(0), 0x00, sdu);
+			printBytes(pdu.getEncodedPCI());
 
-			PDU decodedPDU = PDUParser.parsePDU(pdu);
+			PDU decodedPDU = pduParser.parsePCIForEFCP(pduParser.parsePCIForRMT(pdu));
 			state.incrementNextSequenceToSend();
 			
 			System.out.println(decodedPDU.toString());
@@ -60,7 +64,7 @@ public class TestPDUParserAndDTAEIState {
 			Assert.assertEquals(i, decodedPDU.getSequenceNumber());
 			Assert.assertEquals(0x81, decodedPDU.getPduType());
 			Assert.assertEquals(0x00, decodedPDU.getFlags());
-			Assert.assertEquals(new String(sdu), new String(decodedPDU.getUserData().get(0)));
+			Assert.assertEquals(new String(sdu), new String(decodedPDU.getUserData()));
 		}
 	}
 	

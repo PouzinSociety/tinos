@@ -2,6 +2,7 @@ package rina.encoding.impl.googleprotobuf.flow.tests;
 
 import rina.aux.BlockingQueueWithSubscriptor;
 import rina.efcp.api.BaseDataTransferAE;
+import rina.efcp.api.PDUParser;
 import rina.flowallocator.api.Flow;
 import rina.ipcservice.api.APService;
 import rina.ipcservice.api.IPCException;
@@ -58,6 +59,12 @@ public class FakeDataTransferAE extends BaseDataTransferAE{
 	public void deleteConnection(long arg0) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public PDUParser getPDUParser() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

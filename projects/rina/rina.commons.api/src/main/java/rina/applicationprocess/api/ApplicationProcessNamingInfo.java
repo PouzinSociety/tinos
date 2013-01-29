@@ -167,4 +167,14 @@ public class ApplicationProcessNamingInfo {
 		return result;
 	}
 	
+	@Override
+	public Object clone(){
+		ApplicationProcessNamingInfo result = new ApplicationProcessNamingInfo();
+		result.setApplicationProcessName(this.getApplicationProcessName());
+		result.setApplicationProcessInstance(this.getApplicationProcessInstance());
+		result.setApplicationEntityName(this.getApplicationEntityName());
+		result.setApplicationEntityInstance(this.getApplicationEntityInstance());
+		return result;
+	}
+	
 }

@@ -87,7 +87,7 @@ public interface FlowAllocatorInstance{
 	 * @param objectName
 	 * @throws IPCException
 	 */
-	public void receivedLocalFlowRequest(FlowService flowService, String objectName) throws IPCException;
+	public void receivedLocalFlowRequest(FlowService flowService) throws IPCException;
 	
 	/**
 	 * Called when the Flow Allocator receives a response to a request for a local flow

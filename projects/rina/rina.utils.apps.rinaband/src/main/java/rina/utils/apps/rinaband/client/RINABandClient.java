@@ -2,6 +2,7 @@ package rina.utils.apps.rinaband.client;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -14,6 +15,8 @@ import rina.cdap.api.message.ObjectValue;
 import rina.cdap.impl.CDAPSessionManagerImpl;
 import rina.cdap.impl.googleprotobuf.GoogleProtocolBufWireMessageProviderFactory;
 import rina.ipcservice.api.IPCException;
+import rina.ipcservice.api.QualityOfServiceSpecification;
+import rina.utils.apps.rinaband.Main;
 import rina.utils.apps.rinaband.StatisticsInformation;
 import rina.utils.apps.rinaband.TestInformation;
 import rina.utils.apps.rinaband.protobuf.RINABandStatisticsMessageEncoder;
@@ -95,6 +98,7 @@ public class RINABandClient implements SDUListener{
 	private long epochTimeFirstSDUSent = 0;
 	private long epochTimeLastSDUSent = 0;
 	private int completedReceives = 0;
+	private Timer timer = null;
 	
 	public RINABandClient(TestInformation testInformation, ApplicationProcessNamingInfo controlApNamingInfo, 
 			ApplicationProcessNamingInfo dataApNamingInfo){
@@ -110,7 +114,9 @@ public class RINABandClient implements SDUListener{
 	public void execute(){
 		try{
 			//1 Allocate a flow to the RINABand Server control AE
-			this.controlFlow = new Flow(this.clientApNamingInfo, this.controlApNamingInfo, null, this);
+			QualityOfServiceSpecification qosSpec = new QualityOfServiceSpecification();
+			qosSpec.setQosCubeId(2);
+			this.controlFlow = new Flow(this.clientApNamingInfo, this.controlApNamingInfo, qosSpec, this);
 			
 			//2 Send the create test message
 			ObjectValue objectValue = new ObjectValue();
@@ -135,6 +141,7 @@ public class RINABandClient implements SDUListener{
 	public void sduDelivered(byte[] sdu){
 		try{
 			CDAPMessage cdapMessage = this.cdapSessionManager.decodeCDAPMessage(sdu);
+			System.out.println("Received a CDAP Message! "+cdapMessage.toString());
 			switch(cdapMessage.getOpCode()){
 			case M_CREATE_R:
 				handleCreateResponseReceived(cdapMessage);
@@ -182,9 +189,16 @@ public class RINABandClient implements SDUListener{
 			TestWorker testWorker = null;
 			long before = 0;
 			int retries = 0;
+			QualityOfServiceSpecification qosSpec = new QualityOfServiceSpecification();
+			if (testInformation.getQos().equals(Main.RELIABLE)){
+				qosSpec.setQosCubeId(2);
+			}else{
+				qosSpec.setQosCubeId(1);
+			}
+			this.timer = new Timer();
 			for(int i=0; i<this.testInformation.getNumberOfFlows(); i++){
 				try{
-					testWorker = new TestWorker(this.testInformation, this);
+					testWorker = new TestWorker(this.testInformation, this, timer);
 					before = System.currentTimeMillis();
 					retries = 0;
 					
@@ -192,7 +206,7 @@ public class RINABandClient implements SDUListener{
 					//reached the directory of the IPC process running in the local system
 					while(retries < 3){
 						try{
-							flow =  new Flow(this.clientApNamingInfo, this.dataApNamingInfo, null, testWorker);
+							flow =  new Flow(this.clientApNamingInfo, this.dataApNamingInfo, qosSpec, testWorker);
 							testWorker.setFlow(flow, System.currentTimeMillis() - before);
 							this.testWorkers.add(testWorker);
 							break;
@@ -315,12 +329,15 @@ public class RINABandClient implements SDUListener{
 				System.out.println("Statistics of flow "+currentWorker.getFlow().getPortId());
 				System.out.println("Flow allocation time (ms): "+currentWorker.getStatistics().getFlowSetupTimeInMillis());
 				System.out.println("Flow deallocation time (ms): "+currentWorker.getStatistics().getFlowTearDownTimeInMillis());
+				System.out.println("Sent SDUs: "+currentWorker.getStatistics().getSentSDUS());
 				System.out.println("Sent SDUs per second: "+currentWorker.getStatistics().getSentSDUsPerSecond());
 				System.out.println("Sent KiloBytes per second (KBps): "+
 						currentWorker.getStatistics().getSentSDUsPerSecond()*this.testInformation.getSduSize()/1024);
+				System.out.println("Recveived SDUs: "+currentWorker.getStatistics().getReceivedSDUs());
 				System.out.println("Received SDUs per second: "+currentWorker.getStatistics().getReceivedSDUsPerSecond());
 				System.out.println("Received KiloBytes per second (KBps): "+
 						currentWorker.getStatistics().getReceivedSDUsPerSecond()*this.testInformation.getSduSize()/1024);
+				System.out.println("% of received SDUs lost: "+100*currentWorker.getStatistics().getReceivedSDUsLost()/this.testInformation.getNumberOfSDUs());
 				System.out.println();
 			}
 			

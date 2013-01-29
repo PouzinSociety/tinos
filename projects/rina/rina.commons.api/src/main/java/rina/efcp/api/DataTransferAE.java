@@ -71,4 +71,9 @@ public interface DataTransferAE extends IPCProcessComponent {
 	 */
 	public BlockingQueueWithSubscriptor<PDU> getOutgoingConnectionQueue(long connectionEndpointId) throws IPCException;
 	
+	/**
+	 * Return the PDU Parser to be used by this IPC Process
+	 * @return
+	 */
+	public PDUParser getPDUParser();
 }

@@ -1,8 +1,5 @@
 package rina.efcp.api;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import rina.flowallocator.api.ConnectionId;
 
 /**
@@ -12,10 +9,27 @@ import rina.flowallocator.api.ConnectionId;
  */
 public class PDU {
 	
+	public static final int DTP_PDU_TYPE = 0x81;
+	public static final int IDENTIFY_SENDER_PDU_TYPE = 0xC1;
+	public static final int FLOW_CONTROL_ONLY_DTCP_PDU = 0x89;
+	public static final int ACK_ONLY_DTCP_PDU = 0x8C;
+	public static final int ACK_AND_FLOW_CONTROL_DTCP_PDU = 0x8D;
+	public static final int MANAGEMENT_PDU_TYPE = 0xC0;	
+	
 	/**
 	 * The PDU before parsing it
 	 */
 	private byte[] rawPDU = null;
+	
+	/**
+	 * The first byte that belongs to the PCI in the rawPDU array 
+	 */
+	private byte pciStartIndex = 0;
+	
+	/**
+	 * The encoded PCI
+	 */
+	private byte[] encodedPCI = null;
 	
 	/**
 	 * A synonym for the application process name designating an IPC process 
@@ -38,7 +52,7 @@ public class PDU {
 	/**
 	 * The field indicates the type of PDU.
 	 */
-	private int pduType = -1;
+	private int pduType = 0;
 	
 	/**
 	 * This field indicates conditions that affect the handling of the PDU. Flags should only indicate 
@@ -46,7 +60,7 @@ public class PDU {
 	 * of the connection should be established during allocation or by the action of management. The 
 	 * interpretation of the flags depends on the PDU Type.
 	 */
-	private int flags = 0;
+	public int flags = 0;
 	
 	/**
 	 * The PDU sequenceNumber
@@ -54,16 +68,19 @@ public class PDU {
 	private long sequenceNumber = 0;
 	
 	/**
+	 * The Error check code bytes (may be added by SDU protection)
+	 */
+	private byte[] errorCheckCode = new byte[0];
+	
+	/**
 	 * This field contains one or more octets that are uninterpreted by EFCP. This field contains a 
 	 * SDU-Fragment or one or more Delimited-SDUs up to the MaxPDUSize. PDUs containing SDU Fragments other 
 	 * than the last fragment should be MaxPDUSize. (Because the PCI is fixed length a field is not 
 	 * required to specify the length of the last fragment).
 	 */
-	private List<byte[]> userData = null;
-	
+	private byte[] userData = null;
 	
 	public PDU(){
-		userData = new ArrayList<byte[]>();
 	}
 
 	public long getSourceAddress() {
@@ -98,20 +115,28 @@ public class PDU {
 		this.pduType = pduType;
 	}
 
-	public int getFlags() {
-		return flags;
-	}
-
-	public void setFlags(int flags) {
-		this.flags = flags;
-	}
-
 	public byte[] getRawPDU() {
 		return rawPDU;
 	}
 
 	public void setRawPDU(byte[] rawPDU) {
 		this.rawPDU = rawPDU;
+	}
+	
+	public byte getPciStartIndex() {
+		return pciStartIndex;
+	}
+
+	public void setPciStartIndex(byte pciStartIndex) {
+		this.pciStartIndex = pciStartIndex;
+	}
+
+	public byte[] getEncodedPCI(){
+		return encodedPCI;
+	}
+	
+	public void setEncodedPCI(byte[] encodedPCI){
+		this.encodedPCI = encodedPCI;
 	}
 
 	public long getSequenceNumber() {
@@ -122,14 +147,30 @@ public class PDU {
 		this.sequenceNumber = sequenceNumber;
 	}
 
-	public List<byte[]> getUserData() {
+	public byte[] getUserData() {
 		return userData;
 	}
 
-	public void setUserData(List<byte[]> userData) {
+	public void setUserData(byte[] userData) {
 		this.userData = userData;
 	}
-	
+
+	public byte[] getErrorCheckCode() {
+		return errorCheckCode;
+	}
+
+	public void setErrorCheckCode(byte[] errorCheckCode) {
+		this.errorCheckCode = errorCheckCode;
+	}
+
+	public int getFlags() {
+		return flags;
+	}
+
+	public void setFlags(int flags) {
+		this.flags = flags;
+	}
+
 	public boolean equals(Object candidate){
 		if (candidate == null){
 			return false;
@@ -148,8 +189,8 @@ public class PDU {
 		String result = "";
 		result = result + "Destination @: " +this.destinationAddress + " CEPid: " + this.connectionId.getDestinationCEPId() + 
 			" Source @: " +this.sourceAddress + " CEPid: " +this.connectionId.getSourceCEPId() + "\n" + 
-			" QoSid: " +this.connectionId.getQosId() + " PDU type: " +this.getPduType() + 
-			" Flags: " +this.flags + " Sequence number: " +this.sequenceNumber;
+			" QoSid: " +this.connectionId.getQosId() + " PDU type: " +this.getPduType() + " Flags: " + this.getFlags() +
+			" Sequence number: " +this.sequenceNumber;
 		
 		return result;
 	}

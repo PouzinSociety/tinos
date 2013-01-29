@@ -23,17 +23,6 @@ public class RINAConfiguration {
 	 * The configurations of zero or more DIFs
 	 */
 	private List<DIFConfiguration> difConfigurations = null;
-	
-	/**
-	 * The addresses of the known IPC Process (apname, address) 
-	 * that can potentially be members of the DIFs I know
-	 */
-	private List<KnownIPCProcessAddress> knownIPCProcessAddresses = null;
-	
-	/**
-	 * The address prefixes, assigned to different organizations
-	 */
-	private List<AddressPrefixConfiguration> addressPrefixes = null;
 
 	/**
 	 * The single instance of this class
@@ -72,23 +61,6 @@ public class RINAConfiguration {
 	public void setDifConfigurations(List<DIFConfiguration> difConfigurations) {
 		this.difConfigurations = difConfigurations;
 	}
-
-	public List<KnownIPCProcessAddress> getKnownIPCProcessAddresses() {
-		return knownIPCProcessAddresses;
-	}
-
-	public void setKnownIPCProcessAddresses(
-			List<KnownIPCProcessAddress> knownIPCProcessAddresses) {
-		this.knownIPCProcessAddresses = knownIPCProcessAddresses;
-	}
-
-	public List<AddressPrefixConfiguration> getAddressPrefixes() {
-		return addressPrefixes;
-	}
-
-	public void setAddressPrefixes(List<AddressPrefixConfiguration> addressPrefixes) {
-		this.addressPrefixes = addressPrefixes;
-	}
 	
 	/**
 	 * Return the configuration of the DIF named "difName" if it is known, null 
@@ -113,17 +85,31 @@ public class RINAConfiguration {
 	/**
 	 * Return the address of the IPC process named "apName" if it is known, 
 	 * null otherwise
+	 * @param difName
 	 * @param apName
+	 * @param instance
 	 * @return
 	 */
-	public KnownIPCProcessAddress getIPCProcessAddress(String apName){
+	public KnownIPCProcessAddress getIPCProcessAddress(String difName, String apName, String apInstance){
+		DIFConfiguration difConfiguration = this.getDIFConfiguration(difName);
+		if (difConfiguration == null){
+			return null;
+		}
+		
+		List<KnownIPCProcessAddress> knownIPCProcessAddresses = difConfiguration.getKnownIPCProcessAddresses();
 		if (knownIPCProcessAddresses == null){
 			return null;
 		}
 		
+		KnownIPCProcessAddress currentAddress = null;
 		for(int i=0; i<knownIPCProcessAddresses.size(); i++){
-			if (knownIPCProcessAddresses.get(i).getApName().equals(apName)){
-				return knownIPCProcessAddresses.get(i);
+			currentAddress = knownIPCProcessAddresses.get(i);
+			if (currentAddress.getApName().equals(apName)){
+				if (apInstance == null && currentAddress.getApInstance() == null){	
+					return currentAddress;
+				}else if (apInstance != null && currentAddress.getApInstance() != null && apInstance.equals(currentAddress.getApInstance())){
+					return currentAddress;
+				}
 			}
 		}
 		
@@ -133,10 +119,17 @@ public class RINAConfiguration {
 	/**
 	 * Return the configuration of the IPC process whose address is "address" if it is known, 
 	 * null otherwise
+	 * @param difName
 	 * @param address
 	 * @return
 	 */
-	public KnownIPCProcessAddress getIPCProcessAddress(long address){
+	public KnownIPCProcessAddress getIPCProcessAddress(String difName, long address){
+		DIFConfiguration difConfiguration = this.getDIFConfiguration(difName);
+		if (difConfiguration == null){
+			return null;
+		}
+		
+		List<KnownIPCProcessAddress> knownIPCProcessAddresses = difConfiguration.getKnownIPCProcessAddresses();
 		if (knownIPCProcessAddresses == null){
 			return null;
 		}
@@ -167,17 +160,24 @@ public class RINAConfiguration {
 	/**
 	 * Get the address prefix that corresponds to the application process name of the 
 	 * IPC Process. Return -1 if there is no matching.
+	 * @param difName
 	 * @param ipcProcessName
 	 * @return the address prefix
 	 */
-	public long getAddressPrefixConfiguration(String apName){
-		if (this.getAddressPrefixes() == null){
+	public long getAddressPrefixConfiguration(String difName, String apName){
+		DIFConfiguration difConfiguration = this.getDIFConfiguration(difName);
+		if (difConfiguration == null){
 			return -1;
 		}
 		
-		for(int i=0; i<this.getAddressPrefixes().size(); i++){
-			if (apName.indexOf(this.getAddressPrefixes().get(i).getOrganization()) != -1){
-				return this.getAddressPrefixes().get(i).getAddressPrefix();
+		List<AddressPrefixConfiguration> addressPrefixes = difConfiguration.getAddressPrefixes();
+		if (addressPrefixes == null){
+			return -1;
+		}
+		
+		for(int i=0; i<addressPrefixes.size(); i++){
+			if (apName.indexOf(addressPrefixes.get(i).getOrganization()) != -1){
+				return addressPrefixes.get(i).getAddressPrefix();
 			}
 		}
 		

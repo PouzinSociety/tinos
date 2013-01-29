@@ -119,6 +119,20 @@ public final class DataTransferConstantsMessage {
     public boolean hasDIFIntegrity() { return hasDIFIntegrity; }
     public boolean getDIFIntegrity() { return dIFIntegrity_; }
     
+    // optional uint32 maxTimeToKeepRetransmitting = 13;
+    public static final int MAXTIMETOKEEPRETRANSMITTING_FIELD_NUMBER = 13;
+    private boolean hasMaxTimeToKeepRetransmitting;
+    private int maxTimeToKeepRetransmitting_ = 0;
+    public boolean hasMaxTimeToKeepRetransmitting() { return hasMaxTimeToKeepRetransmitting; }
+    public int getMaxTimeToKeepRetransmitting() { return maxTimeToKeepRetransmitting_; }
+    
+    // optional uint32 maxTimeToACK = 14;
+    public static final int MAXTIMETOACK_FIELD_NUMBER = 14;
+    private boolean hasMaxTimeToACK;
+    private int maxTimeToACK_ = 0;
+    public boolean hasMaxTimeToACK() { return hasMaxTimeToACK; }
+    public int getMaxTimeToACK() { return maxTimeToACK_; }
+    
     private void initFields() {
     }
     public final boolean isInitialized() {
@@ -163,6 +177,12 @@ public final class DataTransferConstantsMessage {
       }
       if (hasDIFIntegrity()) {
         output.writeBool(12, getDIFIntegrity());
+      }
+      if (hasMaxTimeToKeepRetransmitting()) {
+        output.writeUInt32(13, getMaxTimeToKeepRetransmitting());
+      }
+      if (hasMaxTimeToACK()) {
+        output.writeUInt32(14, getMaxTimeToACK());
       }
       getUnknownFields().writeTo(output);
     }
@@ -220,6 +240,14 @@ public final class DataTransferConstantsMessage {
       if (hasDIFIntegrity()) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(12, getDIFIntegrity());
+      }
+      if (hasMaxTimeToKeepRetransmitting()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(13, getMaxTimeToKeepRetransmitting());
+      }
+      if (hasMaxTimeToACK()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(14, getMaxTimeToACK());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -415,6 +443,12 @@ public final class DataTransferConstantsMessage {
         if (other.hasDIFIntegrity()) {
           setDIFIntegrity(other.getDIFIntegrity());
         }
+        if (other.hasMaxTimeToKeepRetransmitting()) {
+          setMaxTimeToKeepRetransmitting(other.getMaxTimeToKeepRetransmitting());
+        }
+        if (other.hasMaxTimeToACK()) {
+          setMaxTimeToACK(other.getMaxTimeToACK());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -486,6 +520,14 @@ public final class DataTransferConstantsMessage {
             }
             case 96: {
               setDIFIntegrity(input.readBool());
+              break;
+            }
+            case 104: {
+              setMaxTimeToKeepRetransmitting(input.readUInt32());
+              break;
+            }
+            case 112: {
+              setMaxTimeToACK(input.readUInt32());
               break;
             }
           }
@@ -709,6 +751,42 @@ public final class DataTransferConstantsMessage {
         return this;
       }
       
+      // optional uint32 maxTimeToKeepRetransmitting = 13;
+      public boolean hasMaxTimeToKeepRetransmitting() {
+        return result.hasMaxTimeToKeepRetransmitting();
+      }
+      public int getMaxTimeToKeepRetransmitting() {
+        return result.getMaxTimeToKeepRetransmitting();
+      }
+      public Builder setMaxTimeToKeepRetransmitting(int value) {
+        result.hasMaxTimeToKeepRetransmitting = true;
+        result.maxTimeToKeepRetransmitting_ = value;
+        return this;
+      }
+      public Builder clearMaxTimeToKeepRetransmitting() {
+        result.hasMaxTimeToKeepRetransmitting = false;
+        result.maxTimeToKeepRetransmitting_ = 0;
+        return this;
+      }
+      
+      // optional uint32 maxTimeToACK = 14;
+      public boolean hasMaxTimeToACK() {
+        return result.hasMaxTimeToACK();
+      }
+      public int getMaxTimeToACK() {
+        return result.getMaxTimeToACK();
+      }
+      public Builder setMaxTimeToACK(int value) {
+        result.hasMaxTimeToACK = true;
+        result.maxTimeToACK_ = value;
+        return this;
+      }
+      public Builder clearMaxTimeToACK() {
+        result.hasMaxTimeToACK = false;
+        result.maxTimeToACK_ = 0;
+        return this;
+      }
+      
       // @@protoc_insertion_point(builder_scope:rina.messages.dataTransferConstants_t)
     }
     
@@ -736,7 +814,7 @@ public final class DataTransferConstantsMessage {
   static {
     java.lang.String[] descriptorData = {
       "\n-protofiles/DataTransferConstantsMessag" +
-      "e.proto\022\rrina.messages\"\270\002\n\027dataTransferC" +
+      "e.proto\022\rrina.messages\"\363\002\n\027dataTransferC" +
       "onstants_t\022\022\n\nmaxPDUSize\030\001 \001(\r\022\025\n\raddres" +
       "sLength\030\002 \001(\r\022\024\n\014portIdLength\030\003 \001(\r\022\023\n\013c" +
       "epIdLength\030\004 \001(\r\022\023\n\013qosidLength\030\005 \001(\r\022\034\n" +
@@ -744,8 +822,10 @@ public final class DataTransferConstantsMessage {
       "gth\030\007 \001(\r\022\034\n\024seqRolloverThreshold\030\010 \001(\004\022" +
       "\026\n\016maxPDULifetime\030\t \001(\r\022\030\n\020DIFConcatenat" +
       "ion\030\n \001(\010\022\030\n\020DIFFragmentation\030\013 \001(\010\022\024\n\014D" +
-      "IFIntegrity\030\014 \001(\010B9\n7rina.encoding.impl.",
-      "googleprotobuf.datatransferconstants"
+      "IFIntegrity\030\014 \001(\010\022#\n\033maxTimeToKeepRetran",
+      "smitting\030\r \001(\r\022\024\n\014maxTimeToACK\030\016 \001(\rB9\n7" +
+      "rina.encoding.impl.googleprotobuf.datatr" +
+      "ansferconstants"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -757,7 +837,7 @@ public final class DataTransferConstantsMessage {
           internal_static_rina_messages_dataTransferConstants_t_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rina_messages_dataTransferConstants_t_descriptor,
-              new java.lang.String[] { "MaxPDUSize", "AddressLength", "PortIdLength", "CepIdLength", "QosidLength", "SequenceNumberLength", "LengthLength", "SeqRolloverThreshold", "MaxPDULifetime", "DIFConcatenation", "DIFFragmentation", "DIFIntegrity", },
+              new java.lang.String[] { "MaxPDUSize", "AddressLength", "PortIdLength", "CepIdLength", "QosidLength", "SequenceNumberLength", "LengthLength", "SeqRolloverThreshold", "MaxPDULifetime", "DIFConcatenation", "DIFFragmentation", "DIFIntegrity", "MaxTimeToKeepRetransmitting", "MaxTimeToACK", },
               rina.encoding.impl.googleprotobuf.datatransferconstants.DataTransferConstantsMessage.dataTransferConstants_t.class,
               rina.encoding.impl.googleprotobuf.datatransferconstants.DataTransferConstantsMessage.dataTransferConstants_t.Builder.class);
           return null;

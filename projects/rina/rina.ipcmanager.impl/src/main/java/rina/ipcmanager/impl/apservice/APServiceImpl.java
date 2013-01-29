@@ -328,7 +328,7 @@ public class APServiceImpl implements APService{
 				flowServiceState.setStatus(Status.ALLOCATED);
 				socketReader.setIPCManager(this.ipcManager);
 				sduDeliveryService.addSocketToPortIdMapping(flowServiceState.getSocket(), portId);
-				ipcManager.getIncomingFlowQueue(portId).subscribeToQueue(sduDeliveryService);
+				ipcManager.getIncomingFlowQueue(portId).subscribeToQueueReadyToBeReadEvents(sduDeliveryService);
 			}catch(Exception ex){
 				ex.printStackTrace();
 				//TODO what to do?
@@ -373,7 +373,7 @@ public class APServiceImpl implements APService{
 					flowServiceState.setStatus(Status.ALLOCATED);
 					flowServiceState.getTcpSocketReader().setIPCManager(this.ipcManager);
 					sduDeliveryService.addSocketToPortIdMapping(flowServiceState.getSocket(), portId);
-					ipcManager.getIncomingFlowQueue(portId).subscribeToQueue(sduDeliveryService);
+					ipcManager.getIncomingFlowQueue(portId).subscribeToQueueReadyToBeReadEvents(sduDeliveryService);
 					byte[] encodedValue = encoder.encode(flowServiceState.getFlowService());
 					ObjectValue objectValue = new ObjectValue();
 					objectValue.setByteval(encodedValue);

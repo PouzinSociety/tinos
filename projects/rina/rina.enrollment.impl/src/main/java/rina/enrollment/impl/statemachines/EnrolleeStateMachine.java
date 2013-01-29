@@ -16,6 +16,7 @@ import rina.enrollment.api.Neighbor;
 import rina.flowallocator.api.QoSCube;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.IPCException;
+import rina.ipcservice.api.IPCService;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonException;
 import rina.ribdaemon.api.RIBObjectNames;
@@ -56,8 +57,8 @@ public class EnrolleeStateMachine extends BaseEnrollmentStateMachine{
 		case NULL:
 			try{
 				ApplicationProcessNamingInfo apNamingInfo = (ApplicationProcessNamingInfo) ribDaemon.getIPCProcess().getApplicationProcessNamingInfo();
-				CDAPMessage requestMessage = cdapSessionManager.getOpenConnectionRequestMessage(portId, AuthTypes.AUTH_NONE, null, null, BaseEnrollmentStateMachine.DEFAULT_ENROLLMENT, 
-						candidate.getApplicationProcessInstance(), candidate.getApplicationProcessName(), null, BaseEnrollmentStateMachine.DEFAULT_ENROLLMENT, 
+				CDAPMessage requestMessage = cdapSessionManager.getOpenConnectionRequestMessage(portId, AuthTypes.AUTH_NONE, null, null, IPCService.MANAGEMENT_AE, 
+						candidate.getApplicationProcessInstance(), candidate.getApplicationProcessName(), null, IPCService.MANAGEMENT_AE, 
 						apNamingInfo.getApplicationProcessInstance(), apNamingInfo.getApplicationProcessName());
 				ribDaemon.sendMessage(requestMessage, portId, null);
 				this.portId = portId;

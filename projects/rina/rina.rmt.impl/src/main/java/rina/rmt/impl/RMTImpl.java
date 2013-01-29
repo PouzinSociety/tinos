@@ -12,6 +12,7 @@ import rina.events.api.events.NMinusOneFlowAllocatedEvent;
 import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.IPCProcess;
 import rina.resourceallocator.api.BaseResourceAllocator;
+import rina.resourceallocator.api.NMinus1FlowDescriptor;
 import rina.resourceallocator.api.ResourceAllocator;
 import rina.ribdaemon.api.BaseRIBDaemon;
 import rina.ribdaemon.api.RIBDaemon;
@@ -70,11 +71,13 @@ public class RMTImpl extends BaseRMT implements EventListener{
 		
 		//Initialize and execute the N-1 Incoming SDU Listener
 		this.nMinusOneIncomingSDUListener = new NMinusOneIncomingSDUListener(ipcManager, ribDaemon, 
-				resourceAllocator.getPDUForwardingTable(), ipcProcess, dataTransferAE);
+				resourceAllocator.getPDUForwardingTable(), ipcProcess, dataTransferAE, 
+				resourceAllocator.getNMinus1FlowManager());
 		this.ipcManager.execute(this.nMinusOneIncomingSDUListener);
 		
 		//Initialize and execute the EFCP Outgoing PDU Listener
-		this.efcpOutgoingPDUListener = new EFCPOutgoingPDUListener(ipcManager, dataTransferAE, resourceAllocator.getPDUForwardingTable());
+		this.efcpOutgoingPDUListener = new EFCPOutgoingPDUListener(ipcManager, dataTransferAE, 
+				resourceAllocator.getPDUForwardingTable(), resourceAllocator.getNMinus1FlowManager());
 		this.ipcManager.execute(this.efcpOutgoingPDUListener);
 	}
 	
@@ -94,18 +97,22 @@ public class RMTImpl extends BaseRMT implements EventListener{
 	public void eventHappened(Event event) {
 		if (event.getId().equals(Event.N_MINUS_1_FLOW_ALLOCATED)){
 			NMinusOneFlowAllocatedEvent flowEvent = (NMinusOneFlowAllocatedEvent) event;
-			try{
-				this.ipcManager.getIncomingFlowQueue(flowEvent.getPortId()).subscribeToQueue(this.nMinusOneIncomingSDUListener);
-			}catch(Exception ex){
-				log.error("Problems subscribing to N-1 incoming flow queue.", ex);
-			}
+			this.processNMinus1FlowAllocatedEvent(flowEvent.getNMinusOneFlowDescriptor());
 		}else if (event.getId().equals(Event.EFCP_CONNECTION_CREATED)){
 			EFCPConnectionCreatedEvent efcpEvent = (EFCPConnectionCreatedEvent) event;
 			try{
-				this.dataTransferAE.getOutgoingConnectionQueue(efcpEvent.getConnectionEndpointId()).subscribeToQueue(this.efcpOutgoingPDUListener);
+				this.dataTransferAE.getOutgoingConnectionQueue(efcpEvent.getConnectionEndpointId()).subscribeToQueueReadyToBeReadEvents(this.efcpOutgoingPDUListener);
 			}catch(Exception ex){
 				log.error("Problems subscribing to outgoing EFCP queue.", ex);
 			}
+		}
+	}
+	
+	private void processNMinus1FlowAllocatedEvent(NMinus1FlowDescriptor nMinus1FlowDescriptor){
+		try{
+			this.ipcManager.getIncomingFlowQueue(nMinus1FlowDescriptor.getPortId()).subscribeToQueueReadyToBeReadEvents(this.nMinusOneIncomingSDUListener);
+		}catch(Exception ex){
+			log.error("Problems subscribing to N-1 incoming flow queue.", ex);
 		}
 	}
 }

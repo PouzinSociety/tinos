@@ -3,7 +3,7 @@ package rina.resourceallocator.impl.ribobjects;
 import rina.cdap.api.CDAPSessionDescriptor;
 import rina.cdap.api.message.CDAPMessage;
 import rina.ipcprocess.api.IPCProcess;
-import rina.ipcservice.api.FlowService;
+import rina.resourceallocator.api.NMinus1FlowDescriptor;
 import rina.resourceallocator.api.NMinus1FlowManager;
 import rina.ribdaemon.api.BaseRIBObject;
 import rina.ribdaemon.api.ObjectInstanceGenerator;
@@ -36,13 +36,13 @@ public class NMinus1FlowSetRIBObject extends BaseRIBObject{
 	
 	@Override
 	public void create(String objectClass, long objectInstance, String objectName, Object object) throws RIBDaemonException{
-		if (!(object instanceof FlowService)){
+		if (!(object instanceof NMinus1FlowDescriptor)){
 			throw new RIBDaemonException(RIBDaemonException.OBJECTCLASS_DOES_NOT_MATCH_OBJECTNAME, 
 					"Object class ("+object.getClass().getName()+") does not match object name "+objectName);
 		}
 		
 		NMinus1FlowRIBObject ribObject = new NMinus1FlowRIBObject(this.getIPCProcess(), objectName, 
-				(FlowService) object, this.nMinus1FlowManager);
+				(NMinus1FlowDescriptor) object, this.nMinus1FlowManager);
 		this.addChild(ribObject);
 		getRIBDaemon().addRIBObject(ribObject);
 	}
@@ -54,9 +54,9 @@ public class NMinus1FlowSetRIBObject extends BaseRIBObject{
 	
 	@Override
 	public Object getObjectValue(){
-		FlowService[] result = new FlowService[this.getChildren().size()];
+		NMinus1FlowDescriptor[] result = new NMinus1FlowDescriptor[this.getChildren().size()];
 		for(int i=0; i<result.length; i++){
-			result[i] = (FlowService) this.getChildren().get(i).getObjectValue();
+			result[i] = (NMinus1FlowDescriptor) this.getChildren().get(i).getObjectValue();
 		}
 		
 		return result;

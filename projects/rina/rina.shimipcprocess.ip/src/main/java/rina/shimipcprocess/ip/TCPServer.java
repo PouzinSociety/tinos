@@ -20,46 +20,46 @@ import rina.shimipcprocess.ip.flowallocator.FlowAllocatorImpl;
 public class TCPServer implements Runnable{
 
 	private static final Log log = LogFactory.getLog(TCPServer.class);
-	
+
 	/**
 	 * Controls when the server will finish the execution
 	 */
 	private boolean end = false;
-	
+
 	/**
 	 * Controls whether the server is listening
 	 */
 	private boolean listening = false;
-	
+
 	/**
 	 * The TCP port to listen for incoming connections
 	 */
 	private int port = 0;
-	
+
 	/**
 	 * The hostname or IP address of the interface the 
 	 * Shim IPC Process is bounded to 
 	 */
 	private String hostname = null;
-	
+
 	/**
 	 * The flow allocator
 	 */
 	private FlowAllocatorImpl flowAllocator = null;
-	
+
 	/**
 	 * The server socket that listens for incoming connections
 	 */
 	private ServerSocket serverSocket = null;
-	
+
 	/**
 	 * The application to call back when a new connection is accepted
 	 */
 	private APService applicationCallback = null;
-	
-	
+
+
 	private ApplicationProcessNamingInfo apNamingInfo= null;
-	
+
 	public TCPServer(String hostname, int port, APService applicationCallback, 
 			ApplicationProcessNamingInfo apNamingInfo, FlowAllocatorImpl flowAllocator){
 		this.hostname = hostname;
@@ -68,7 +68,7 @@ public class TCPServer implements Runnable{
 		this.applicationCallback = applicationCallback;
 		this.apNamingInfo = apNamingInfo;
 	}
-	
+
 	public void setEnd(boolean end){
 		this.end = end;
 		if (end){
@@ -81,11 +81,11 @@ public class TCPServer implements Runnable{
 			}
 		}
 	}
-	
+
 	public boolean isListening(){
 		return listening;
 	}
-	
+
 	public void run() {
 		try{
 			log.debug("Starting a new TCP server socket");
@@ -109,5 +109,5 @@ public class TCPServer implements Runnable{
 		}
 	}
 
-	
+
 }

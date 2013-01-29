@@ -25,6 +25,7 @@ import rina.configuration.DIFConfiguration;
 import rina.configuration.IPCProcessToCreate;
 import rina.configuration.KnownIPCProcessAddress;
 import rina.configuration.RINAConfiguration;
+import rina.configuration.SDUProtectionOption;
 import rina.delimiting.api.DelimiterFactory;
 import rina.efcp.api.DataTransferConstants;
 import rina.encoding.api.EncoderFactory;
@@ -232,15 +233,18 @@ public class IPCManagerImpl implements IPCManager{
 			try{
 				this.createIPCProcess(currentProcess.getType(), currentProcess.getApplicationProcessName(), 
 						currentProcess.getApplicationProcessInstance(), currentProcess.getDifName(), 
-						rinaConfiguration, currentProcess.getNeighbors(), currentProcess.getDifsToRegisterAt());
+						rinaConfiguration, currentProcess.getNeighbors(), currentProcess.getDifsToRegisterAt(), 
+						currentProcess.getSduProtectionOptions());
 			}catch(Exception ex){
+				ex.printStackTrace();
 				log.error(ex);
 			}
 		}
 	}
 
 	public void createIPCProcess(String type, String apName, String apInstance, String difName, 
-			RINAConfiguration config, List<Neighbor> neighbors, List<String> difsToRegisterAt) throws Exception{
+			RINAConfiguration config, List<Neighbor> neighbors, List<String> difsToRegisterAt, 
+			List<SDUProtectionOption> sduProtectionOptions) throws Exception{
 		IPCProcessFactory ipcProcessFactory = this.ipcProcessFactories.get(type);
 		if (ipcProcessFactory == null){
 			throw new Exception("Unsupported IPC Process type: "+type);
@@ -257,9 +261,9 @@ public class IPCManagerImpl implements IPCManager{
 				}
 
 				KnownIPCProcessAddress ipcProcessAddress = 
-					RINAConfiguration.getInstance().getIPCProcessAddress(apName);
+					RINAConfiguration.getInstance().getIPCProcessAddress(difName, apName, apInstance);
 				if (ipcProcessAddress == null){
-					throw new Exception("Unrecoginzed IPC Process Name: "+apName);
+					throw new Exception("Unrecoginzed IPC Process Name; "+apName+": "+apInstance);
 				}
 
 				WhatevercastName dan = new WhatevercastName();
@@ -294,8 +298,9 @@ public class IPCManagerImpl implements IPCManager{
 						RIBObjectNames.OPERATIONAL_STATUS_RIB_OBJECT_NAME);
 			}
 			
+			ResourceAllocator resourceAllocator = null;
 			if (difsToRegisterAt != null){
-				ResourceAllocator resourceAllocator = (ResourceAllocator) ipcProcess.getIPCProcessComponent(BaseResourceAllocator.getComponentName());
+				resourceAllocator = (ResourceAllocator) ipcProcess.getIPCProcessComponent(BaseResourceAllocator.getComponentName());
 				for(int i=0; i<difsToRegisterAt.size(); i++){
 					try{
 						resourceAllocator.getNMinus1FlowManager().registerIPCProcess(difsToRegisterAt.get(i));
@@ -303,6 +308,11 @@ public class IPCManagerImpl implements IPCManager{
 						log.error("Error registering IPC Process "+apName+" "+apInstance+" to N-1 DIF "+difsToRegisterAt);
 					}
 				}
+			}
+			
+			if (sduProtectionOptions != null){
+				resourceAllocator = (ResourceAllocator) ipcProcess.getIPCProcessComponent(BaseResourceAllocator.getComponentName());
+				resourceAllocator.getNMinus1FlowManager().setSDUProtecionOptions(sduProtectionOptions);
 			}
 		}
 	}
@@ -374,9 +384,10 @@ public class IPCManagerImpl implements IPCManager{
 	/**
 	 * Add an incoming and outgoing flow queues to support the flow identified by portId
 	 * @param portId
+	  * @param queueCapacity the capacity of the queue, it it is <= 0 an unlimited capacity queue will be used
 	 * @throws IPCException if the portId is already in use
 	 */
-	public void addFlowQueues(int portId, int capacity) throws IPCException{
+	public void addFlowQueues(int portId, int queueCapacity) throws IPCException{
 		Integer queueId = new Integer(portId);
 		if (this.incomingFlowQueues.get(queueId) != null || 
 				this.outgoingFlowQueues.get(queueId) != null){
@@ -384,8 +395,8 @@ public class IPCManagerImpl implements IPCManager{
 					IPCException.PROBLEMS_ALLOCATING_FLOW + ". There are existing queues supporting this portId");
 		}
 		
-		this.incomingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor<byte[]>(portId, capacity));
-		this.outgoingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor<byte[]>(portId, capacity));
+		this.incomingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor<byte[]>(portId, queueCapacity, true));
+		this.outgoingFlowQueues.put(queueId, new BlockingQueueWithSubscriptor<byte[]>(portId, queueCapacity, false));
 	}
 	
 	/**

@@ -198,10 +198,9 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 	/**
 	 * Called by the flow allocator instance when a request for a local flow is received
 	 * @param flowService
-	 * @param objectName
 	 * @throws IPCException
 	 */
-	public void receivedLocalFlowRequest(FlowService flowService, String objectName) throws IPCException{
+	public void receivedLocalFlowRequest(FlowService flowService) throws IPCException{
 		int portId = this.getIPCProcess().getIPCManager().getAvailablePortId();
 		FlowAllocatorInstance flowAllocatorInstance = new FlowAllocatorInstanceImpl(this.getIPCProcess(), this, portId);
 		FlowService clonedFlowService = new FlowService();
@@ -209,8 +208,8 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		clonedFlowService.setDestinationAPNamingInfo(flowService.getDestinationAPNamingInfo());
 		clonedFlowService.setQoSSpecification(flowService.getQoSSpecification());
 		clonedFlowService.setPortId(flowService.getPortId());
-		flowAllocatorInstance.receivedLocalFlowRequest(clonedFlowService, objectName);
 		flowAllocatorInstances.put(new Integer(portId), flowAllocatorInstance);
+		flowAllocatorInstance.receivedLocalFlowRequest(clonedFlowService);
 	}
 	
 	/**
