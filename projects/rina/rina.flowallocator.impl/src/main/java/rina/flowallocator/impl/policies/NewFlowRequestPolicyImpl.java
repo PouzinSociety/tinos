@@ -45,7 +45,7 @@ public class NewFlowRequestPolicyImpl implements NewFlowRequestPolicy{
 		flow.getPolicyParameters().put(EFCPPolicyConstants.DTCP_FLOW_CONTROL_INITIAL_CREDIT_POLICY_CONSTANT_VALUE, "50");
 		flow.getPolicyParameters().put(EFCPPolicyConstants.DTCP_FLOW_CONTROL_UPDATE_CREDIT_POLICY_CONSTANT_VALUE, "50");*/
 		
-		DIFConfiguration difConfiguration = RINAConfiguration.getInstance().getDIFConfiguration(difName);
+		/*DIFConfiguration difConfiguration = RINAConfiguration.getInstance().getDIFConfiguration(difName);
 		List<Property> properties = difConfiguration.getPolicies();
 		for(int i=0; i<properties.size(); i++){
 			flow.getPolicies().put(properties.get(i).getName(), properties.get(i).getValue());
@@ -54,7 +54,7 @@ public class NewFlowRequestPolicyImpl implements NewFlowRequestPolicy{
 		properties = difConfiguration.getPolicyParameters();
 		for(int i=0; i<properties.size(); i++){
 			flow.getPolicyParameters().put(properties.get(i).getName(), properties.get(i).getValue());
-		}
+		}*/
 		
 		return flow;
 	}

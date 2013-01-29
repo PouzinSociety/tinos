@@ -272,6 +272,10 @@ public class FlowAllocatorImpl extends BaseFlowAllocator{
 		log.debug("Requested new flow with the following characteristics:\n" + flowService.toString());
 
 		//See if we have an entry for the destination application
+		if (flowService.getDestinationAPNamingInfo().getApplicationProcessInstance()==null || 
+				flowService.getDestinationAPNamingInfo().getApplicationProcessInstance().equals("")){
+			flowService.getDestinationAPNamingInfo().setApplicationProcessInstance("1");
+		}
 		DirectoryEntry directoryEntry = this.directory.get(flowService.getDestinationAPNamingInfo().getEncodedString());
 		if (directoryEntry == null){
 			throw new IPCException(IPCException.COULD_NOT_FIND_ENTRY_IN_DIRECTORY_FORWARDING_TABLE_CODE, 
