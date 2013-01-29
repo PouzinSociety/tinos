@@ -2,7 +2,7 @@ package rina.events.api.events;
 
 import rina.events.api.BaseEvent;
 import rina.events.api.Event;
-import rina.ipcservice.api.FlowService;
+import rina.resourceallocator.api.NMinus1FlowDescriptor;
 
 /**
  * Event that signals the deallocation of an 
@@ -12,31 +12,21 @@ import rina.ipcservice.api.FlowService;
  */
 public class NMinusOneFlowAllocatedEvent extends BaseEvent{
 
-	/** The portId of the allocated flow **/
-	private int portId = 0;
+	private NMinus1FlowDescriptor nMinus1FlowDescriptor = null;
 	
-	/** The FlowService object describing the flow **/
-	private FlowService flowService = null;
-	
-	public NMinusOneFlowAllocatedEvent(int portId, FlowService flowService) {
+	public NMinusOneFlowAllocatedEvent(NMinus1FlowDescriptor nMinus1FlowDescriptor) {
 		super(Event.N_MINUS_1_FLOW_ALLOCATED);
-		this.portId = portId;
-		this.flowService = flowService;
+		this.nMinus1FlowDescriptor = nMinus1FlowDescriptor;
 	}
 
-	public int getPortId() {
-		return this.portId;
-	}
-	
-	public FlowService getFlowService() {
-		return this.flowService;
+	public NMinus1FlowDescriptor getNMinusOneFlowDescriptor(){
+		return this.nMinus1FlowDescriptor;
 	}
 	
 	@Override
 	public String toString(){
 		String result = "Event id: "+this.getId()+" \n";
-		result = result + "Port id: "+this.getPortId() + "\n";
-		result = result + "Flow description: " + this.getFlowService() + "\n";
+		result = result + "N-1 Flow Descriptor: "+this.getNMinusOneFlowDescriptor()+ "\n";
 		
 		return result;
 	}

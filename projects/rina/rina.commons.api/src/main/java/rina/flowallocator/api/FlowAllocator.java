@@ -71,10 +71,9 @@ public interface FlowAllocator extends IPCProcessComponent{
 	/**
 	 * Called by the flow allocator instance when a request for a local flow is received
 	 * @param flowService
-	 * @param objectname
 	 * @throws IPCException
 	 */
-	public void receivedLocalFlowRequest(FlowService flowService, String objectname) throws IPCException;
+	public void receivedLocalFlowRequest(FlowService flowService) throws IPCException;
 	
 	/**
 	 * Called by the flow allocator instance when a response for a local flow is received

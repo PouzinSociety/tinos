@@ -14,4 +14,6 @@ message dataTransferConstants_t{					//Specifies the constants for EFCP to use
 	optional bool DIFConcatenation = 10;			//This is true if multiple SDUs can be delimited and concatenated within a single PDU
 	optional bool DIFFragmentation = 11;			//This is true if multiple SDUs can be fragmented and reassembled within a single PDU
 	optional bool DIFIntegrity = 12;				//True if the PDUs in this DIF have CRC, TTL, and/or encryption
+    optional uint32 maxTimeToKeepRetransmitting = 13;            //The maximum time DTCP will try to keep retransmitting a PDU, before discarding it. This is R in delta-T
+    optional uint32 maxTimeToACK = 14;                      //The maximum time the receiving side of a DTCP connection will take to ACK a PDU once it has received it. This is A in delta-T
 }

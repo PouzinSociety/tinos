@@ -36,6 +36,8 @@ public class DataTransferConstantsEncoderTest {
 		Assert.assertEquals(dataTransferConstants.getCepIdLength(), recoveredDataTransferConstants.getCepIdLength());
 		Assert.assertEquals(dataTransferConstants.getLengthLength(), recoveredDataTransferConstants.getLengthLength());
 		Assert.assertEquals(dataTransferConstants.getMaxPDULifetime(), recoveredDataTransferConstants.getMaxPDULifetime());
+		Assert.assertEquals(dataTransferConstants.getMaxTimeToACK(), recoveredDataTransferConstants.getMaxTimeToACK());
+		Assert.assertEquals(dataTransferConstants.getMaxTimeToKeepRetransmitting(), recoveredDataTransferConstants.getMaxTimeToKeepRetransmitting());
 		Assert.assertEquals(dataTransferConstants.getMaxPDUSize(), recoveredDataTransferConstants.getMaxPDUSize());
 		Assert.assertEquals(dataTransferConstants.isDIFConcatenation(), recoveredDataTransferConstants.isDIFConcatenation());
 		Assert.assertEquals(dataTransferConstants.isDIFFragmentation(), recoveredDataTransferConstants.isDIFFragmentation());

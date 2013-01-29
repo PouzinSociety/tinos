@@ -17,6 +17,7 @@ import rina.ipcmanager.api.IPCManager;
 import rina.ipcprocess.api.IPCProcess;
 import rina.ipcprocess.api.IPCProcessFactory;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
+import rina.protection.api.SDUProtecionModuleRepositoryFactory;
 import rina.resourceallocator.api.ResourceAllocatorFactory;
 import rina.ribdaemon.api.RIBDaemon;
 import rina.ribdaemon.api.RIBDaemonFactory;
@@ -75,6 +76,11 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 	private ResourceAllocatorFactory resourceAllocatorFactory = null;
 	
 	/**
+	 * Factory of SDU Protection modules
+	 */
+	private SDUProtecionModuleRepositoryFactory sduProtectionModuleRepositoryFactory = null;
+	
+	/**
 	 * The IPCManager of this system
 	 */
 	private IPCManager ipcManager = null;
@@ -85,6 +91,11 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 
 	public void setRibDaemonFactory(RIBDaemonFactory ribDaemonFactory) {
 		this.ribDaemonFactory = ribDaemonFactory;
+	}
+
+	public void setSduProtectionModuleRepositoryFactory(
+			SDUProtecionModuleRepositoryFactory sduProtectionModuleRepositoryFactory) {
+		this.sduProtectionModuleRepositoryFactory = sduProtectionModuleRepositoryFactory;
 	}
 
 	public void setRmtFactory(RMTFactory rmtFactory) {
@@ -185,19 +196,19 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 		}else{
 			throw new Exception("Encoder Factory is null");
 		}
-
+		
 		ipcProcess.addIPCProcessComponent(ribDaemon);
+		
+		if (this.dataTransferAEFactory != null){
+			ipcProcess.addIPCProcessComponent(dataTransferAEFactory.createDataTransferAE(apNamingInfo));
+		}else{
+			throw new Exception("Data Transfer AE Factory is null");
+		}
 		
 		if (this.resourceAllocatorFactory != null){
 			ipcProcess.addIPCProcessComponent(this.resourceAllocatorFactory.createResourceAllocator(apNamingInfo));
 		}else{
 			throw new Exception("Resource Allocator Factory is null");
-		}
-
-		if (this.dataTransferAEFactory != null){
-			ipcProcess.addIPCProcessComponent(dataTransferAEFactory.createDataTransferAE(apNamingInfo));
-		}else{
-			throw new Exception("Data Transfer AE Factory is null");
 		}
 		
 		if (this.rmtFactory != null){
@@ -216,6 +227,12 @@ public class IPCProcessFactoryImpl implements IPCProcessFactory{
 			ipcProcess.addIPCProcessComponent(this.enrollmentTaskFactory.createEnrollmentTask(apNamingInfo));
 		}else{
 			throw new Exception("Enrollment Task Factory is null");
+		}
+		
+		if (this.sduProtectionModuleRepositoryFactory != null){
+			ipcProcess.addIPCProcessComponent(this.sduProtectionModuleRepositoryFactory.createSDUProtecionModuleRepository(apNamingInfo));
+		}else{
+			throw new Exception("SDU Protection Module Repository Factory is null");
 		}
 
 		ipcProcesses.put(apName+"-"+apInstance, ipcProcess);

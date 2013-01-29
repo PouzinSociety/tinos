@@ -21,16 +21,16 @@ import rina.shimipcprocess.ip.flowallocator.FlowAllocatorImpl;
 import rina.shimipcprocess.ip.flowallocator.FlowState;
 
 public class RIBDaemonImpl extends BaseRIBDaemon{
-	
+
 	private ShimIPCProcessForIPLayers ipcProcess = null;
 	private FlowAllocatorImpl flowAllocator = null;
-	
+
 	public RIBDaemonImpl(ShimIPCProcessForIPLayers ipcProcess, FlowAllocatorImpl flowAllocator){
 		super();
 		this.ipcProcess = ipcProcess;
 		this.flowAllocator = flowAllocator;
 	}
-	
+
 	@Override
 	public void setIPCProcess(IPCProcess ipcProcess){
 		super.setIPCProcess(ipcProcess);
@@ -38,14 +38,14 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 
 	public List<RIBObject> getRIBObjects() {
 		List<RIBObject> result = new ArrayList<RIBObject>();
-		
+
 		RIBObject ribObject = new SimpleRIBObject(ipcProcess, "address", "/daf/management/naming/address", ipcProcess.getHostname());
 		result.add(ribObject);
 		ribObject = new SimpleRIBObject(ipcProcess, "applicationprocessname", "/daf/management/naming/applicationprocessname", ipcProcess.getApplicationProcessNamingInfo());
 		result.add(ribObject);
 		ribObject = new SimpleRIBObject(ipcProcess, "allowed local apps set", "/dif/management/flowallocator/allowedLocalApplications", "set");
 		result.add(ribObject);
-		
+
 		Iterator<Entry<String, Integer>>  iterator = this.flowAllocator.getExpectedApplicationRegistrations().entrySet().iterator();
 		Entry<String, Integer> currentEntry = null;
 		while(iterator.hasNext()){
@@ -55,10 +55,10 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 					currentEntry.getKey(), currentEntry.getKey() + ", port "+currentEntry.getValue());
 			result.add(ribObject);
 		}
-		
+
 		ribObject = new SimpleRIBObject(ipcProcess, "directoryforwardingtableentry set", "/dif/management/flowallocator/directoryforwardingtableentries", "set");
 		result.add(ribObject);
-		
+
 		Iterator<Entry<String, DirectoryEntry>> iterator2 = this.flowAllocator.getDirectory().entrySet().iterator();
 		Entry<String, DirectoryEntry> currentEntry2 = null;
 		while(iterator2.hasNext()){
@@ -69,7 +69,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 					currentEntry2.getValue().getHostname() + " port " + currentEntry2.getValue().getPortNumber());
 			result.add(ribObject);
 		}
-		
+
 		ribObject = new SimpleRIBObject(ipcProcess, "qos cube set", "/dif/management/flowallocator/qoscubes", "set");
 		result.add(ribObject);
 		ribObject = new SimpleRIBObject(ipcProcess, "qos cube", "/dif/management/flowallocator/qoscubes/reliable", flowAllocator.getQoSCubes().get(0));
@@ -78,7 +78,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 		result.add(ribObject);
 		ribObject = new SimpleRIBObject(ipcProcess, "flow set", "/dif/resourceallocation/flowallocator/flows", "set");
 		result.add(ribObject);
-		
+
 		Iterator<Entry<Integer, FlowState>> iterator3 = this.flowAllocator.getFlows().entrySet().iterator();
 		Entry<Integer, FlowState> currentEntry3 = null;
 		boolean reliable = false;
@@ -94,7 +94,7 @@ public class RIBDaemonImpl extends BaseRIBDaemon{
 					"\nPort Id: "+currentEntry3.getValue().getPortId()+ " State: "+currentEntry3.getValue().getState() + " Reliable: "+reliable);
 			result.add(ribObject);
 		}
-		
+
 		return result;
 	}
 

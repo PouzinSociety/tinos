@@ -59,10 +59,10 @@ public interface IPCManager {
 	/**
 	 * Add an incoming and outgoing flow queues to support the flow identified by portId
 	 * @param portId
-	 * @param capacity the capacity of the queues
+	  * @param queueCapacity the capacity of the queue, it it is <= 0 an unlimited capacity queue will be used
 	 * @throws IPCException if the portId is already in use
 	 */
-	public void addFlowQueues(int portId, int capacity) throws IPCException;
+	public void addFlowQueues(int portId, int queueCapacity) throws IPCException;
 	
 	/**
 	 * Remove the incoming and outgoing flow queues that support the flow identified by portId

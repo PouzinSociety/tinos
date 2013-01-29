@@ -12,7 +12,7 @@ public class EFCPConnectionDeletedEvent extends BaseEvent{
 
 	/** The portId of the allocated flow **/
 	private long connectionEndpointId = -1;
-	
+
 	public EFCPConnectionDeletedEvent(long connectionEndpointId) {
 		super(Event.EFCP_CONNECTION_DELETED);
 		this.connectionEndpointId = connectionEndpointId;
@@ -21,12 +21,12 @@ public class EFCPConnectionDeletedEvent extends BaseEvent{
 	public long getConnectionEndpointId() {
 		return this.connectionEndpointId;
 	}
-	
+
 	@Override
 	public String toString(){
 		String result = "Event id: "+this.getId()+" \n";
 		result = result + "Connection endpoint id: "+this.getConnectionEndpointId() + "\n";
-		
+
 		return result;
 	}
 

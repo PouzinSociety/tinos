@@ -1,7 +1,6 @@
 package rina.enrollment.impl;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +40,7 @@ import rina.ipcprocess.api.IPCProcess;
 import rina.applicationprocess.api.ApplicationProcessNamingInfo;
 import rina.ipcservice.api.FlowService;
 import rina.ipcservice.api.IPCException;
+import rina.ipcservice.api.IPCService;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 import rina.resourceallocator.api.BaseResourceAllocator;
 import rina.resourceallocator.api.ResourceAllocator;
@@ -83,7 +83,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 	private Timer timer = null;
 
 	public EnrollmentTaskImpl(){
-		this.enrollmentStateMachines = new Hashtable<String, BaseEnrollmentStateMachine>();
+		this.enrollmentStateMachines = new ConcurrentHashMap<String, BaseEnrollmentStateMachine>();
 		this.timeout = RINAConfiguration.getInstance().getLocalConfiguration().getEnrollmentTimeoutInMs();
 		this.portIdsPendingToBeAllocated = new ConcurrentHashMap<Integer, Neighbor>();
 		this.timer = new Timer();
@@ -225,7 +225,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 		BaseEnrollmentStateMachine enrollmentStateMachine = null;
 
 		if (apNamingInfo.getApplicationEntityName() == null || 
-				apNamingInfo.getApplicationEntityName().equals(BaseEnrollmentStateMachine.DEFAULT_ENROLLMENT)){
+				apNamingInfo.getApplicationEntityName().equals(IPCService.MANAGEMENT_AE)){
 			if (enrollee){
 				enrollmentStateMachine = new EnrolleeStateMachine(ribDaemon, cdapSessionManager, encoder, 
 						apNamingInfo, this, timeout);
@@ -291,11 +291,14 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 			qosSpec.setOrder(true);
 		}
 
+		candidateNamingInfo.setApplicationEntityName(IPCService.MANAGEMENT_AE);
+		ApplicationProcessNamingInfo apNamingInfo = (ApplicationProcessNamingInfo) this.getIPCProcess().getApplicationProcessNamingInfo().clone();
+		apNamingInfo.setApplicationEntityName(IPCService.MANAGEMENT_AE);
 		FlowService flowService = new FlowService();
 		flowService.setDestinationAPNamingInfo(candidateNamingInfo);
-		flowService.setSourceAPNamingInfo(this.getIPCProcess().getApplicationProcessNamingInfo());
+		flowService.setSourceAPNamingInfo(apNamingInfo);
 		flowService.setQoSSpecification(qosSpec);
-		this.resourceAllocator.getNMinus1FlowManager().allocateNMinus1Flow(flowService, true);
+		this.resourceAllocator.getNMinus1FlowManager().allocateNMinus1Flow(flowService);
 
 		//Store state of pending flows
 		this.portIdsPendingToBeAllocated.put(new Integer(flowService.getPortId()), candidate);
@@ -434,7 +437,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 			this.nMinusOneFlowDeallocated(flowEvent.getPortId(), flowEvent.getCdapSessionDescriptor());
 		}else if (event.getId().equals(Event.N_MINUS_1_FLOW_ALLOCATED)){
 			NMinusOneFlowAllocatedEvent flowEvent = (NMinusOneFlowAllocatedEvent) event;
-			this.nMinusOneFlowAllocated(flowEvent.getPortId());
+			this.nMinusOneFlowAllocated(flowEvent.getNMinusOneFlowDescriptor().getPortId());
 		}else if (event.getId().equals(Event.N_MINUS_1_FLOW_ALLOCATION_FAILED)){
 			NMinusOneFlowAllocationFailedEvent flowEvent = (NMinusOneFlowAllocationFailedEvent) event;
 			this.nMinusOneFlowAllocationFailed(flowEvent.getPortId(), 
@@ -573,7 +576,7 @@ public class EnrollmentTaskImpl extends BaseEnrollmentTask implements EventListe
 	  */
 	 public void enrollmentCompleted(Neighbor dafMember, boolean enrollee){
 		 if (enrollee){
-			 //request the allocation of N-1 flows with the neighbor, to be used by data transfer
+			 //request the allocation of N-1 flows to the neighbor's Data Transfer AE
 			 RequestNMinusOneFlowAllocation task = new RequestNMinusOneFlowAllocation(dafMember, 
 					 this.getIPCProcess().getApplicationProcessNamingInfo(), this.resourceAllocator.getNMinus1FlowManager(), 
 					 RINAConfiguration.getInstance().getDIFConfiguration(this.getIPCProcess().getDIFName()));

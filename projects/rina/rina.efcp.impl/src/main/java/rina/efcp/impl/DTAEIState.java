@@ -1,6 +1,7 @@
 package rina.efcp.impl;
 
 import rina.efcp.api.DataTransferConstants;
+import rina.efcp.api.EFCPPolicyConstants;
 import rina.efcp.api.PDUParser;
 import rina.flowallocator.api.ConnectionId;
 import rina.flowallocator.api.Flow;
@@ -52,15 +53,9 @@ public class DTAEIState {
 	private String state = null;
 	
 	/**
-	 * NOTE: Will be implemented in the future, after the demo
+	 * DTCP State Vector
 	 */
-	//private DTCPStateVector dtcpStateVector = null;
-	
-	/**
-	 * The highest sequence number that the remote application is currently 
-	 * willing to accept on this connection.
-	 */
-	private long rightWindowEdge = 0L;
+    private DTCPStateVector dtcpStateVector = null;
 	
 	/**
 	 * The queue of PDUs that have been handed off to the RMT but not yet acknowledged.
@@ -68,13 +63,6 @@ public class DTAEIState {
 	 * the real type
 	 */
 	private String retransmissionQueue = null;
-	
-	/**
-	 * The queue of PDUs ready to be sent once the window opens.
-	 * NOTE: The String type is just a placeholder, obviously it will be replaced by 
-	 * the real type
-	 */
-	private String closedWindowQueue = null;
 	
 	/**
 	 * The source Connection Endpoint ID
@@ -147,7 +135,7 @@ public class DTAEIState {
 	 * @param flow
 	 * @param dataTransferConstants
 	 */
-	public DTAEIState(Flow flow, DataTransferConstants dataTransferConstants){
+	public DTAEIState(Flow flow, DataTransferConstants dataTransferConstants, PDUParser pduParser){
 		this.flow = flow;
 		ConnectionId connectionId = flow.getConnectionIds().get(flow.getCurrentConnectionIdIndex());
 		this.qosid = connectionId.getQosId(); 
@@ -167,16 +155,49 @@ public class DTAEIState {
 		this.reasemblyQeueue = new ReassemblyQueue();
 		this.maxFlowSDUSize = dataTransferConstants.getMaxSDUSize();
 		this.maxFlowPDUSize = dataTransferConstants.getMaxPDUSize();
-		this.preComputedPCI = PDUParser.computePCI(this.destinationAddress, 
+		this.preComputedPCI = pduParser.preComputePCI(this.destinationAddress, 
 				this.sourceAddress, this.sourceCEPid, this.destinationCEPid, this.qosid);
+
+		this.dtcpStateVector = new DTCPStateVector();
+		String flowControl = flow.getPolicies().get(EFCPPolicyConstants.DTCP_FLOW_CONTROL);
+		if (flowControl != null){
+			this.dtcpStateVector.setFlowControlEnabled(true);
+			if (dtcpStateVector.isFlowControlEnabled()){
+				this.dtcpStateVector.setFlowControlType(flowControl);
+				this.dtcpStateVector.setReceiveRightWindowEdge(50);
+				this.dtcpStateVector.setSendRightWindowEdge(50);
+				this.dtcpStateVector.setFlowControlOnlyPCI(pduParser.preComputePCI(this.destinationAddress, this.sourceAddress, 
+						this.sourceCEPid, this.destinationCEPid, this.qosid));
+			}
+		}
 	}
 	
+	/**
+	 * Returns whether we're allowed or not to send a PDU (determined by flow control)
+	 * @return
+	 */
+	public boolean canSend(){
+		if (!this.dtcpStateVector.isFlowControlEnabled()){
+			return true;
+		}
+		
+		if (this.dtcpStateVector.getFlowControlType().equals(EFCPPolicyConstants.CREDIT)){
+			return this.nextSequenceToSend <= this.dtcpStateVector.getSendRightWindowEdge();
+		}
+		
+		return true;
+	}
+
 	public APService getApplicationCallback() {
 		return applicationCallback;
 	}
 
 	public void setApplicationCallback(APService applicationCallback) {
 		this.applicationCallback = applicationCallback;
+	}
+	
+	public DTCPStateVector getDTCPStateVector(){
+		return this.dtcpStateVector;
 	}
 	
 	public long getSourceAddress(){
@@ -291,27 +312,11 @@ public class DTAEIState {
 		this.nextSequenceToSend++;
 	}
 
-	public long getRightWindowEdge() {
-		return rightWindowEdge;
-	}
-
-	public void setRightWindowEdge(long rightWindowEdge) {
-		this.rightWindowEdge = rightWindowEdge;
-	}
-
 	public String getRetransmissionQueue() {
 		return retransmissionQueue;
 	}
 
 	public void setRetransmissionQueue(String retransmissionQueue) {
 		this.retransmissionQueue = retransmissionQueue;
-	}
-
-	public String getClosedWindowQueue() {
-		return closedWindowQueue;
-	}
-
-	public void setClosedWindowQueue(String closedWindowQueue) {
-		this.closedWindowQueue = closedWindowQueue;
 	}
 }

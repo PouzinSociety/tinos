@@ -9,6 +9,7 @@ import rina.configuration.DIFConfiguration;
 import rina.configuration.NMinusOneFlowsConfiguration;
 import rina.enrollment.api.Neighbor;
 import rina.ipcservice.api.FlowService;
+import rina.ipcservice.api.IPCService;
 import rina.ipcservice.api.QualityOfServiceSpecification;
 import rina.resourceallocator.api.NMinus1FlowManager;
 
@@ -22,7 +23,8 @@ public class RequestNMinusOneFlowAllocation extends TimerTask{
 	public RequestNMinusOneFlowAllocation(Neighbor dafMember, ApplicationProcessNamingInfo myNamingInfo, 
 			NMinus1FlowManager nMinus1FlowManager, DIFConfiguration difConfiguration){
 		this.dafMember = dafMember;
-		this.myNamingInfo = myNamingInfo;
+		this.myNamingInfo = (ApplicationProcessNamingInfo) myNamingInfo.clone();
+		this.myNamingInfo.setApplicationEntityName(IPCService.DATA_TRANSFER_AE);
 		this.nMinus1FlowManager = nMinus1FlowManager;
 		this.difConfiguration = difConfiguration;
 	}
@@ -47,6 +49,7 @@ public class RequestNMinusOneFlowAllocation extends TimerTask{
 		FlowService flowService = null;
 		ApplicationProcessNamingInfo neighbourNamingInfo = new ApplicationProcessNamingInfo(dafMember.getApplicationProcessName(), 
 				dafMember.getApplicationProcessInstance());
+		neighbourNamingInfo.setApplicationEntityName(IPCService.DATA_TRANSFER_AE);
 		for(int i=0; i<qosIds.size(); i++){
 			qosSpec = new QualityOfServiceSpecification();
 			qosSpec.setQosCubeId(qosIds.get(i));
@@ -66,7 +69,7 @@ public class RequestNMinusOneFlowAllocation extends TimerTask{
 			flowService.setDestinationAPNamingInfo(neighbourNamingInfo);
 			flowService.setSourceAPNamingInfo(myNamingInfo);
 			flowService.setQoSSpecification(qosSpec);
-			nMinus1FlowManager.allocateNMinus1Flow(flowService, false);
+			nMinus1FlowManager.allocateNMinus1Flow(flowService);
 		}
 	}
 
